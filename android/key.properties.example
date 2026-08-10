@@ -1,0 +1,6 @@
+# Copy to android/key.properties and fill in.
+# This file is git-ignored — keep your own backup somewhere safe.
+storePassword=<كلمة المرور التي اخترتها>
+keyPassword=<نفسها عادةً>
+keyAlias=upload
+storeFile=upload-keystore.jks

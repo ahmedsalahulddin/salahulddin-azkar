@@ -39,6 +39,13 @@ void main() {
       await AuthService.signOut();
       expect(AuthService.user.value, isNull);
     });
+
+    test('deleting an account nobody is signed in to reports failure',
+        () async {
+      // It must never claim success: the reader would believe their data was
+      // removed when nothing happened.
+      expect(await AuthService.deleteAccount(), isFalse);
+    });
   });
 
   group('display of a signed-in reader', () {

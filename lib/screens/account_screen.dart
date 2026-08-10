@@ -18,6 +18,7 @@ class AccountScreen extends StatefulWidget {
 
 class _AccountScreenState extends State<AccountScreen> {
   SignInProvider? _busyWith;
+  bool _deleting = false;
 
   Future<void> _signIn(SignInProvider provider) async {
     setState(() => _busyWith = provider);
@@ -207,17 +208,164 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 
   Widget _signedInActions() {
-    return SizedBox(
-      width: double.infinity,
-      child: OutlinedButton.icon(
-        onPressed: _signOut,
-        icon: const Icon(Icons.logout, size: 17),
-        style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.textMuted,
-          side: const BorderSide(color: AppColors.goldBorder),
-          padding: const EdgeInsets.symmetric(vertical: 11),
+    return Column(
+      children: [
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: _deleting ? null : _signOut,
+            icon: const Icon(Icons.logout, size: 17),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.textMuted,
+              side: const BorderSide(color: AppColors.goldBorder),
+              padding: const EdgeInsets.symmetric(vertical: 11),
+            ),
+            label: const Text('تسجيل الخروج'),
+          ),
         ),
-        label: const Text('تسجيل الخروج'),
+        const SizedBox(height: 8),
+        SizedBox(
+          width: double.infinity,
+          child: TextButton.icon(
+            onPressed: _deleting ? null : _deleteAccount,
+            icon: _deleting
+                ? const SizedBox(
+                    width: 15,
+                    height: 15,
+                    child: CircularProgressIndicator(
+                        strokeWidth: 2, color: AppColors.error),
+                  )
+                : const Icon(Icons.delete_forever, size: 17),
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            label: Text(_deleting ? 'جاري الحذف…' : 'حذف الحساب نهائياً'),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Two-step on purpose: the reader confirms, then types the word, because a
+  /// mis-tap here cannot be undone.
+  Future<void> _deleteAccount() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          backgroundColor: AppColors.blackCard,
+          title: const Text('حذف الحساب نهائياً',
+              style: TextStyle(color: AppColors.error, fontSize: 17)),
+          content: const Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'سيُحذف حسابك وكل ما يخصّه من خوادمنا حذفاً لا رجعة فيه.',
+                style: TextStyle(
+                    color: AppColors.textPrimary, fontSize: 14, height: 1.7),
+              ),
+              SizedBox(height: 10),
+              Text(
+                'أذكارك المحفوظة وعلاماتك على هذا الجهاز تبقى كما هي — '
+                'يمحوها حذف التطبيق.',
+                style: TextStyle(
+                    color: AppColors.textMuted, fontSize: 12, height: 1.7),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('إلغاء',
+                  style: TextStyle(color: AppColors.textSecondary)),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('متابعة',
+                  style: TextStyle(color: AppColors.error)),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    final typed = await _confirmByTyping();
+    if (typed != true || !mounted) return;
+
+    setState(() => _deleting = true);
+    final ok = await AuthService.deleteAccount();
+    if (!mounted) return;
+    setState(() => _deleting = false);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          ok
+              ? 'تم حذف حسابك'
+              : 'تعذّر الحذف — حاول مرة أخرى أو راسلنا',
+          textDirection: TextDirection.rtl,
+        ),
+        backgroundColor: ok ? AppColors.emerald : AppColors.error,
+      ),
+    );
+  }
+
+  Future<bool?> _confirmByTyping() {
+    const word = 'حذف';
+    final controller = TextEditingController();
+
+    return showDialog<bool>(
+      context: context,
+      builder: (ctx) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: StatefulBuilder(
+          builder: (ctx, setLocal) => AlertDialog(
+            backgroundColor: AppColors.blackCard,
+            title: const Text('تأكيد أخير',
+                style: TextStyle(color: AppColors.error, fontSize: 17)),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('اكتب كلمة «حذف» للتأكيد:',
+                    style: TextStyle(
+                        color: AppColors.textSecondary, fontSize: 13)),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: controller,
+                  autofocus: true,
+                  textAlign: TextAlign.center,
+                  onChanged: (_) => setLocal(() {}),
+                  style: const TextStyle(color: AppColors.textPrimary),
+                  decoration: const InputDecoration(
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: AppColors.goldBorder),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('إلغاء',
+                    style: TextStyle(color: AppColors.textSecondary)),
+              ),
+              TextButton(
+                onPressed: controller.text.trim() == word
+                    ? () => Navigator.pop(ctx, true)
+                    : null,
+                child: Text('احذف حسابي',
+                    style: TextStyle(
+                      color: controller.text.trim() == word
+                          ? AppColors.error
+                          : AppColors.textMuted,
+                    )),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

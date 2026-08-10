@@ -1,0 +1,18 @@
+# Regenerate with: dart run flutter_launcher_icons
+# Source artwork is produced by tools/make_icon.py
+flutter_launcher_icons:
+  image_path: "assets/icon/icon.png"
+
+  android: true
+  # Adaptive icons keep the mark clear of whatever shape the launcher crops to.
+  adaptive_icon_background: "#0D0D0D"
+  adaptive_icon_foreground: "assets/icon/foreground.png"
+
+  ios: true
+  # iOS rejects icons with an alpha channel.
+  remove_alpha_ios: true
+
+  web:
+    generate: true
+    background_color: "#0D0D0D"
+    theme_color: "#D4A843"

@@ -185,6 +185,24 @@ class AuthService {
 
   static Future<bool> signInWithGoogle() => signInWith(SignInProvider.google);
 
+  /// Deletes the signed-in account for good.
+  ///
+  /// Clients cannot touch auth.users directly, so this calls the
+  /// `delete_own_account` function (see supabase/delete_own_account.sql), which
+  /// deletes the caller and only the caller. Returns false if it did not go
+  /// through, so the reader is never told their account is gone when it is not.
+  static Future<bool> deleteAccount() async {
+    if (!_initialised || user.value == null) return false;
+    try {
+      await Supabase.instance.client.rpc('delete_own_account');
+    } catch (_) {
+      return false;
+    }
+    // The session outlives the row, so end it explicitly.
+    await signOut();
+    return true;
+  }
+
   static Future<void> signOut() async {
     if (!_initialised) return;
     try {
