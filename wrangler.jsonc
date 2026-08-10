@@ -1,0 +1,21 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "noor-azkar-flutter",
+  "compatibility_date": "2026-08-08",
+  "observability": {
+    "enabled": true
+  },
+  "assets": {
+    "directory": "build/web"
+  },
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "routes": [
+    {
+      "pattern": "islamic-azkar.yallanow.app",
+      "zone_name": "yallanow.app",
+      "custom_domain": true
+    }
+  ]
+}

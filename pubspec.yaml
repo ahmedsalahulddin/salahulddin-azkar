@@ -1,0 +1,48 @@
+name: salahulddin_azkar
+description: "salahulddin-AZKAR — أذكار المسلم والمصحف الشريف"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.5
+
+dependencies:
+  flutter:
+    sdk: flutter
+  shared_preferences: ^2.3.4
+  supabase_flutter: ^2.8.4
+  flutter_local_notifications: ^18.0.1
+  vibration: ^2.0.1
+  timezone: ^0.10.1
+  adhan: ^2.0.0+1
+  geolocator: ^14.0.2
+  intl: ^0.20.3
+  just_audio: ^0.10.6
+  path_provider: ^2.1.6
+  http: ^1.6.0
+  share_plus: ^12.0.2
+  characters: ^1.4.1
+  flutter_svg: ^2.3.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/quran/
+    # Directory entries are not recursive, so each tafsir edition is listed.
+    - assets/tafsir/muyassar/
+    - assets/tafsir/mukhtasar/
+    - assets/adhkar/
+    - assets/books/
+
+  fonts:
+    # Amiri Quran (SIL OFL) — carries the Mushaf marks the KFGQPC text needs
+    # (U+08F0-08F2 open tanween, U+0671 alef wasla), which system fonts lack.
+    - family: AmiriQuran
+      fonts:
+        - asset: assets/fonts/AmiriQuran.ttf

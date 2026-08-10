@@ -1,0 +1,250 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:just_audio/just_audio.dart';
+import '../constants/theme.dart';
+import '../data/adhkar_data.dart';
+import '../services/storage_service.dart';
+
+class AdhkarCard extends StatefulWidget {
+  final Dhikr dhikr;
+  final FontSizeOption fontSize;
+  final VoidCallback? onTasbih;
+
+  const AdhkarCard({
+    super.key,
+    required this.dhikr,
+    required this.fontSize,
+    this.onTasbih,
+  });
+
+  @override
+  State<AdhkarCard> createState() => _AdhkarCardState();
+}
+
+class _AdhkarCardState extends State<AdhkarCard> {
+  bool _isFavorite = false;
+  bool _showBenefit = false;
+
+  AudioPlayer? _player;
+  bool _isPlaying = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFavorite();
+  }
+
+  @override
+  void dispose() {
+    _player?.dispose();
+    super.dispose();
+  }
+
+  /// The player is created on first use — most cards never play anything, and
+  /// a list of them would otherwise hold dozens of idle players.
+  Future<void> _toggleAudio() async {
+    final url = widget.dhikr.audioUrl;
+    if (url == null) return;
+    HapticFeedback.lightImpact();
+
+    final player = _player ??= AudioPlayer()
+      ..playerStateStream.listen((state) {
+        if (!mounted) return;
+        if (state.processingState == ProcessingState.completed) {
+          setState(() => _isPlaying = false);
+        }
+      });
+
+    if (_isPlaying) {
+      await player.pause();
+      if (mounted) setState(() => _isPlaying = false);
+      return;
+    }
+
+    setState(() => _isPlaying = true);
+    try {
+      if (player.audioSource == null) await player.setUrl(url);
+      await player.play();
+    } catch (_) {
+      if (mounted) setState(() => _isPlaying = false);
+    }
+  }
+
+  Future<void> _loadFavorite() async {
+    final fav = await StorageService.isFavorite(widget.dhikr.id);
+    if (mounted) setState(() => _isFavorite = fav);
+  }
+
+  Future<void> _toggleFavorite() async {
+    HapticFeedback.lightImpact();
+    final added = await StorageService.toggleFavorite(widget.dhikr.id);
+    if (mounted) setState(() => _isFavorite = added);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final dhikr = widget.dhikr;
+    final dhikrSize = AppFontSizes.dhikr(widget.fontSize);
+    final sourceSize = AppFontSizes.source(widget.fontSize);
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.blackCard,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.goldBorder),
+      ),
+      child: IntrinsicHeight(
+        child: Directionality(
+          textDirection: TextDirection.rtl,
+          child: Row(
+            children: [
+              // Side icons
+              Container(
+                width: 44,
+                decoration: const BoxDecoration(
+                  color: AppColors.goldMuted,
+                  borderRadius: BorderRadius.only(
+                    topRight: Radius.circular(15),
+                    bottomRight: Radius.circular(15),
+                  ),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 8),
+                    GestureDetector(
+                      onTap: _toggleFavorite,
+                      child: Icon(
+                        _isFavorite ? Icons.star : Icons.star_border,
+                        color: _isFavorite ? AppColors.gold : AppColors.textMuted,
+                        size: 22,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    GestureDetector(
+                      onTap: widget.onTasbih,
+                      child: Text(
+                        '${dhikr.repetitions}',
+                        style: const TextStyle(
+                          color: AppColors.gold,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                    // Only the adhkar with a verified recitation get a button.
+                    if (dhikr.hasAudio) ...[
+                      const SizedBox(height: 12),
+                      GestureDetector(
+                        onTap: _toggleAudio,
+                        child: Icon(
+                          _isPlaying ? Icons.pause_circle : Icons.volume_up,
+                          color:
+                              _isPlaying ? AppColors.gold : AppColors.textMuted,
+                          size: 20,
+                        ),
+                      ),
+                    ],
+                    if (dhikr.benefit != null) ...[
+                      const SizedBox(height: 12),
+                      GestureDetector(
+                        onTap: () => setState(() => _showBenefit = !_showBenefit),
+                        child: Icon(
+                          _showBenefit ? Icons.info : Icons.info_outline,
+                          color: AppColors.textMuted,
+                          size: 20,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 8),
+                  ],
+                ),
+              ),
+              // Content
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        dhikr.text,
+                        style: TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: dhikrSize,
+                          height: 1.8,
+                        ),
+                        textAlign: TextAlign.right,
+                        textDirection: TextDirection.rtl,
+                      ),
+                      if (_showBenefit) ...[
+                        const SizedBox(height: 10),
+                        Container(
+                          padding: const EdgeInsets.only(top: 8),
+                          decoration: const BoxDecoration(
+                            border: Border(top: BorderSide(color: AppColors.goldBorder)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Text(
+                                '📖 ${dhikr.source}',
+                                style: TextStyle(color: AppColors.textSecondary, fontSize: sourceSize),
+                                textAlign: TextAlign.right,
+                              ),
+                              if (dhikr.benefit != null) ...[
+                                const SizedBox(height: 8),
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.emeraldMuted,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    '✨ ${dhikr.benefit}',
+                                    style: TextStyle(color: AppColors.textSecondary, fontSize: sourceSize),
+                                    textAlign: TextAlign.right,
+                                    textDirection: TextDirection.rtl,
+                                  ),
+                                ),
+                              ],
+                              if (dhikr.repetitions > 1) ...[
+                                const SizedBox(height: 8),
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      HapticFeedback.mediumImpact();
+                                      widget.onTasbih?.call();
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.goldMuted,
+                                        borderRadius: BorderRadius.circular(20),
+                                        border: Border.all(color: AppColors.goldBorder),
+                                      ),
+                                      child: const Text(
+                                        'عداد التسبيح',
+                                        style: TextStyle(color: AppColors.gold, fontSize: 13, fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

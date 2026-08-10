@@ -1,0 +1,1355 @@
+import 'dart:async';
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:just_audio/just_audio.dart';
+import 'package:share_plus/share_plus.dart';
+import '../constants/theme.dart';
+import '../data/ayah_boxes.dart';
+import '../data/quran_data.dart';
+import '../data/tafsir_data.dart';
+import '../services/bookmark_service.dart';
+import '../services/mushaf_image_service.dart';
+import '../services/recitation_service.dart';
+import '../services/repeat_settings.dart';
+import '../services/storage_service.dart';
+import '../widgets/mushaf_page_view.dart';
+import '../widgets/tafsir_sheet.dart';
+
+/// The Mushaf face: the printed Madinah page, turned like a paper copy.
+///
+/// Tapping an ayah selects it — a soft wash marks it and the action bar acts on
+/// that ayah. Tapping anywhere else clears the selection and toggles the
+/// surrounding chrome, so the page can stand alone.
+class MushafScreen extends StatefulWidget {
+  final int initialPage;
+
+  const MushafScreen({super.key, this.initialPage = 1});
+
+  @override
+  State<MushafScreen> createState() => _MushafScreenState();
+}
+
+const _mushafFont = 'AmiriQuran';
+const _paper = Color(0xFFF7F1E1);
+const _ink = Color(0xFF1A1A1A);
+
+class _MushafScreenState extends State<MushafScreen> {
+  late final PageController _controller =
+      PageController(initialPage: widget.initialPage - 1);
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
+  final _player = AudioPlayer();
+
+  List<MushafPage>? _pages;
+  List<SurahInfo>? _index;
+  late int _current = widget.initialPage;
+
+  bool _chromeVisible = true;
+  AyahBoxes? _selected;
+  Reciter _reciter = RecitationService.defaultReciter;
+  RepeatSettings _repeat = const RepeatSettings();
+  StreamSubscription<int?>? _indexSub;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  @override
+  void dispose() {
+    _indexSub?.cancel();
+    _player.dispose();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _load() async {
+    final pages = await QuranService.pages();
+    final index = await QuranService.index();
+    final reciter = await RecitationService.getReciter();
+    final repeat = await RepeatSettings.load();
+    if (!mounted) return;
+    setState(() {
+      _pages = pages;
+      _index = index;
+      _reciter = reciter;
+      _repeat = repeat;
+    });
+    _prefetchAround(_current);
+  }
+
+  SurahInfo _surahInfo(int number) =>
+      _index!.firstWhere((s) => s.number == number);
+
+  void _onPageChanged(int i) {
+    setState(() {
+      _current = i + 1;
+      _selected = null;
+    });
+    _player.stop();
+    StorageService.setLastMushafPage(i + 1);
+    _prefetchAround(i + 1);
+  }
+
+  void _prefetchAround(int page) {
+    for (final p in [page + 1, page - 1]) {
+      if (p >= 1 && p <= QuranService.pageCount) MushafImageService.fetch(p);
+    }
+  }
+
+  void _goToPage(int page) =>
+      _controller.jumpToPage(page.clamp(1, QuranService.pageCount) - 1);
+
+  Future<void> _goToSurah(SurahInfo info) async =>
+      _goToPage(await QuranService.pageOfSurah(info.number));
+
+  Future<String> _ayahText(AyahBoxes a) async {
+    final surah = await QuranService.surah(a.surah);
+    return surah.ayahs[a.ayah - 1].text;
+  }
+
+  String _reference(AyahBoxes a) =>
+      'سورة ${_surahInfo(a.surah).name} — الآية ${a.ayah}';
+
+  void _toast(String message, {bool error = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, textDirection: TextDirection.rtl),
+        backgroundColor: error ? AppColors.error : AppColors.emerald,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  // ---- ayah actions ----------------------------------------------------
+
+  Future<void> _playFrom(AyahBoxes start) async {
+    final surah = await QuranService.surah(start.surah);
+
+    // With repetition on, the playlist is the drill order; otherwise it simply
+    // runs from the tapped ayah to the end of the surah.
+    final order = _repeat.isActive
+        ? _repeat.playbackOrder(start.ayah, surah.ayahs.length)
+        : [for (var n = start.ayah; n <= surah.ayahs.length; n++) n];
+
+    try {
+      await _player.setAudioSources(
+        [
+          for (final ayah in order)
+            AudioSource.uri(Uri.parse(RecitationService.urlFor(
+              reciterId: _reciter.id,
+              surah: start.surah,
+              ayah: ayah,
+            ))),
+        ],
+        initialIndex: 0,
+      );
+
+      // Follow the recitation with the highlight.
+      _indexSub?.cancel();
+      _indexSub = _player.currentIndexStream.listen((i) async {
+        if (!mounted || i == null || i >= order.length) return;
+        final boxes = await AyahBoxService.forPage(_current);
+        final match = boxes
+            .where((b) => b.surah == start.surah && b.ayah == order[i])
+            .firstOrNull;
+        if (match != null && mounted) setState(() => _selected = match);
+      });
+
+      await _player.play();
+    } catch (_) {
+      if (mounted) _toast('تعذّر تشغيل التلاوة — تحقّق من الاتصال', error: true);
+    }
+  }
+
+  Future<void> _openRepeatSettings() async {
+    final updated = await showModalBottomSheet<RepeatSettings>(
+      context: context,
+      backgroundColor: AppColors.blackCard,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: _RepeatSheet(initial: _repeat),
+      ),
+    );
+    if (updated == null || !mounted) return;
+
+    await updated.save();
+    setState(() => _repeat = updated);
+    _toast(updated.isActive ? 'تم ضبط التكرار' : 'أُلغي التكرار');
+  }
+
+  Future<void> _copyAyah(AyahBoxes a) async {
+    await Clipboard.setData(
+      ClipboardData(text: '${await _ayahText(a)}\n\n[${_reference(a)}]'),
+    );
+    if (!mounted) return;
+    HapticFeedback.lightImpact();
+    _toast('تم نسخ الآية');
+  }
+
+  Future<void> _shareAyah(AyahBoxes a) async {
+    final text = '${await _ayahText(a)}\n\n[${_reference(a)}]';
+    await SharePlus.instance.share(ShareParams(text: text));
+  }
+
+  Future<void> _markAyah(AyahBoxes a) async {
+    final kind = await showModalBottomSheet<BookmarkKind>(
+      context: context,
+      backgroundColor: AppColors.blackCard,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(14),
+                child: Text('علامة على ${_reference(a)}',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                        color: AppColors.gold,
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold)),
+              ),
+              const Divider(color: AppColors.goldBorder, height: 1),
+              for (final kind in BookmarkKind.values)
+                ListTile(
+                  leading: Text(kind.icon, style: const TextStyle(fontSize: 20)),
+                  title: Text(kind.label,
+                      style: const TextStyle(color: AppColors.textPrimary)),
+                  onTap: () => Navigator.pop(ctx, kind),
+                ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (kind == null || !mounted) return;
+
+    String? note;
+    if (kind == BookmarkKind.note) {
+      note = await _askForNote(a);
+      if (note == null) return;
+    }
+
+    final marked = await BookmarkService.toggle(Bookmark(
+      kind: kind,
+      surah: a.surah,
+      ayah: a.ayah,
+      page: _current,
+      note: note,
+    ));
+    if (!mounted) return;
+    _toast(marked ? 'أُضيفت علامة ${kind.label}' : 'أُزيلت علامة ${kind.label}');
+  }
+
+  Future<String?> _askForNote(AyahBoxes a) async {
+    final controller = TextEditingController();
+    return showDialog<String>(
+      context: context,
+      builder: (ctx) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          backgroundColor: AppColors.blackCard,
+          title: const Text('ملاحظة',
+              style: TextStyle(color: AppColors.gold, fontSize: 17)),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            maxLines: 4,
+            style: const TextStyle(color: AppColors.textPrimary),
+            decoration: const InputDecoration(
+              hintText: 'اكتب ملاحظتك على هذه الآية…',
+              hintStyle: TextStyle(color: AppColors.textMuted, fontSize: 13),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('إلغاء',
+                  style: TextStyle(color: AppColors.textMuted)),
+            ),
+            TextButton(
+              onPressed: () {
+                final text = controller.text.trim();
+                Navigator.pop(ctx, text.isEmpty ? null : text);
+              },
+              child: const Text('حفظ',
+                  style: TextStyle(color: AppColors.gold)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showTafsir(AyahBoxes a) async {
+    final ayahText = await _ayahText(a);
+    if (!mounted) return;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppColors.blackCard,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: TafsirSheet(
+          surah: a.surah,
+          ayah: a.ayah,
+          reference: _reference(a),
+          ayahText: ayahText,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickReciter() async {
+    final chosen = await showModalBottomSheet<Reciter>(
+      context: context,
+      backgroundColor: AppColors.blackCard,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Padding(
+                padding: EdgeInsets.all(14),
+                child: Text('اختر القارئ',
+                    style: TextStyle(
+                        color: AppColors.gold,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold)),
+              ),
+              const Divider(color: AppColors.goldBorder, height: 1),
+              for (final r in RecitationService.reciters)
+                ListTile(
+                  dense: true,
+                  title: Text(r.name,
+                      style: const TextStyle(color: AppColors.textPrimary)),
+                  trailing: r.id == _reciter.id
+                      ? const Icon(Icons.check, color: AppColors.gold, size: 18)
+                      : null,
+                  onTap: () => Navigator.pop(ctx, r),
+                ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    if (chosen == null || chosen.id == _reciter.id) return;
+    await RecitationService.setReciter(chosen.id);
+    await _player.stop();
+    if (!mounted) return;
+    setState(() => _reciter = chosen);
+  }
+
+  // ---- build -----------------------------------------------------------
+
+  @override
+  Widget build(BuildContext context) {
+    final pages = _pages;
+
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        key: _scaffoldKey,
+        backgroundColor: _paper,
+        drawer: pages == null ? null : _NavigationDrawer(
+          index: _index!,
+          pages: pages,
+          onSurah: (info) {
+            Navigator.pop(context);
+            _goToSurah(info);
+          },
+          onPage: (page) {
+            Navigator.pop(context);
+            _goToPage(page);
+          },
+          onBookmark: (b) {
+            Navigator.pop(context);
+            _goToPage(b.page);
+          },
+        ),
+        body: pages == null
+            ? const Center(child: CircularProgressIndicator(color: AppColors.gold))
+            : Stack(
+                children: [
+                  PageView.builder(
+                    controller: _controller,
+                    itemCount: pages.length,
+                    onPageChanged: _onPageChanged,
+                    itemBuilder: (context, i) => _PageSheet(
+                      page: pages[i],
+                      surahInfo: _surahInfo,
+                      selected: i + 1 == _current ? _selected : null,
+                      onAyahTapped: (a) => setState(() {
+                        _selected = a;
+                        _chromeVisible = true;
+                      }),
+                      onBackgroundTapped: () => setState(() {
+                        if (_selected != null) {
+                          _selected = null;
+                        } else {
+                          _chromeVisible = !_chromeVisible;
+                        }
+                      }),
+                    ),
+                  ),
+                  if (_chromeVisible) _topBar(pages[_current - 1]),
+                  if (_chromeVisible) _bottomBar(),
+                ],
+              ),
+      ),
+    );
+  }
+
+  /// Two tight rows: where you are in the Mushaf, then what to listen to.
+  ///
+  /// Splitting them keeps the surah name readable — packed onto one line with
+  /// the controls it had to be truncated on narrow phones.
+  Widget _topBar(MushafPage page) {
+    final names = page.runs.map((r) => _surahInfo(r.surah).name).toSet();
+    final selected = _selected;
+
+    final surahLine = selected == null
+        ? 'سورة ${names.join(' · ')}'
+        : 'سورة ${_surahInfo(selected.surah).name} — آية ${QuranService.toArabicDigits(selected.ayah)}';
+
+    return Positioned(
+      top: 0,
+      left: 0,
+      right: 0,
+      child: Container(
+        padding: EdgeInsets.fromLTRB(
+            4, MediaQuery.viewPaddingOf(context).top + 2, 4, 3),
+        decoration: BoxDecoration(
+          color: AppColors.blackCard.withValues(alpha: 0.97),
+          border: const Border(bottom: BorderSide(color: AppColors.goldBorder)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Where you are: surah leads, position trails it.
+            Row(
+              children: [
+                _barIcon(Icons.menu, 'التصفّح',
+                    () => _scaffoldKey.currentState?.openDrawer()),
+                Flexible(
+                  child: Text(
+                    surahLine,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                        color: AppColors.gold,
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'الجزء ${QuranService.toArabicDigits(page.juz)} · صفحة ${QuranService.toArabicDigits(page.number)}',
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                        color: AppColors.textMuted, fontSize: 12),
+                  ),
+                ),
+                _barIcon(Icons.close, 'رجوع', () => Navigator.pop(context)),
+              ],
+            ),
+            // Who is reciting, then the controls.
+            Padding(
+              padding: const EdgeInsets.only(right: 8, bottom: 2, top: 1),
+              child: Row(
+                children: [
+                  Flexible(
+                    child: GestureDetector(
+                      onTap: _pickReciter,
+                      behavior: HitTestBehavior.opaque,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppColors.blackSurface,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: AppColors.goldBorder),
+                        ),
+                        child: Text(
+                          _reciter.name,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              color: AppColors.textGold, fontSize: 12),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  _barIcon(Icons.record_voice_over, 'اختر القارئ', _pickReciter),
+                  _barIcon(Icons.repeat, 'التكرار', _openRepeatSettings,
+                      active: _repeat.isActive),
+                  _playButton(),
+                  const Spacer(),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _barIcon(IconData icon, String tooltip, VoidCallback onTap,
+      {bool active = false}) {
+    return Tooltip(
+      message: tooltip,
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
+          child: Icon(icon,
+              size: 21,
+              color: active ? AppColors.gold : AppColors.textSecondary),
+        ),
+      ),
+    );
+  }
+
+  Widget _playButton() {
+    return StreamBuilder<PlayerState>(
+      stream: _player.playerStateStream,
+      builder: (context, snapshot) {
+        final playing = snapshot.data?.playing ?? false;
+        final loading =
+            snapshot.data?.processingState == ProcessingState.loading ||
+                snapshot.data?.processingState == ProcessingState.buffering;
+
+        if (loading) {
+          // Same padding as _barIcon, so the row keeps its height.
+          return const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            child: SizedBox(
+              width: 19,
+              height: 19,
+              child: CircularProgressIndicator(
+                  strokeWidth: 2, color: AppColors.gold),
+            ),
+          );
+        }
+
+        return _barIcon(
+          playing ? Icons.pause : Icons.play_arrow,
+          playing ? 'إيقاف مؤقت' : 'تلاوة الآية المحددة',
+          () {
+            if (playing) {
+              _player.pause();
+            } else if (_selected != null) {
+              _playFrom(_selected!);
+            } else {
+              _toast('اضغط على آية أولاً لتبدأ التلاوة منها');
+            }
+          },
+          active: true,
+        );
+      },
+    );
+  }
+
+  Widget _bottomBar() {
+    final inset = MediaQuery.viewPaddingOf(context).bottom;
+    final selected = _selected;
+
+    return Positioned(
+      bottom: 0,
+      left: 0,
+      right: 0,
+      child: Container(
+        padding: EdgeInsets.fromLTRB(
+            8, 6, 8, 6 + (inset > 0 ? inset : 8)),
+        decoration: BoxDecoration(
+          color: AppColors.blackCard.withValues(alpha: 0.97),
+          border: const Border(top: BorderSide(color: AppColors.goldBorder)),
+        ),
+        child: Row(
+          children: [
+            _action(Icons.bookmark_border, 'علامة',
+                selected == null ? null : () => _markAyah(selected)),
+            _action(Icons.menu_book, 'التفسير',
+                selected == null ? null : () => _showTafsir(selected)),
+            _action(Icons.copy, 'نسخ',
+                selected == null ? null : () => _copyAyah(selected)),
+            _action(Icons.share, 'مشاركة',
+                selected == null ? null : () => _shareAyah(selected)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _action(IconData icon, String label, VoidCallback? onTap) {
+    final enabled = onTap != null;
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon,
+                  color: enabled ? AppColors.gold : AppColors.textMuted,
+                  size: 21),
+              const SizedBox(height: 3),
+              Text(label,
+                  style: TextStyle(
+                      color: enabled
+                          ? AppColors.textSecondary
+                          : AppColors.textMuted,
+                      fontSize: 10)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ---- repeat -------------------------------------------------------------
+
+/// Sets up a memorisation drill: how many times each ayah repeats, how many
+/// ayahs the drill covers, and how many times the whole passage is replayed.
+class _RepeatSheet extends StatefulWidget {
+  final RepeatSettings initial;
+
+  const _RepeatSheet({required this.initial});
+
+  @override
+  State<_RepeatSheet> createState() => _RepeatSheetState();
+}
+
+class _RepeatSheetState extends State<_RepeatSheet> {
+  late RepeatSettings _value = widget.initial;
+
+  @override
+  Widget build(BuildContext context) {
+    final total = _value.perAyah * _value.rangeLength * _value.wholeRange;
+
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text('التكرار للحفظ',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    color: AppColors.gold,
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold)),
+            const SizedBox(height: 4),
+            const Text('تبدأ من الآية التي تحددها',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
+            const SizedBox(height: 16),
+
+            _counter(
+              label: 'عدد الآيات',
+              hint: 'كم آية يشملها التكرار',
+              value: _value.rangeLength,
+              min: 1,
+              max: 20,
+              onChanged: (v) =>
+                  setState(() => _value = _value.copyWith(rangeLength: v)),
+            ),
+            _counter(
+              label: 'تكرار كل آية',
+              hint: 'كم مرة تُعاد الآية الواحدة',
+              value: _value.perAyah,
+              min: 1,
+              max: 20,
+              onChanged: (v) =>
+                  setState(() => _value = _value.copyWith(perAyah: v)),
+            ),
+            _counter(
+              label: 'تكرار المقطع',
+              hint: 'كم مرة يُعاد المقطع كاملاً',
+              value: _value.wholeRange,
+              min: 1,
+              max: 20,
+              onChanged: (v) =>
+                  setState(() => _value = _value.copyWith(wholeRange: v)),
+            ),
+
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              decoration: BoxDecoration(
+                color: AppColors.goldMuted,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppColors.goldBorder),
+              ),
+              child: Text(
+                _value.isActive
+                    ? 'إجمالاً: $total تلاوة'
+                    : 'التكرار مُطفأ — تُقرأ السورة من الآية المحددة',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                    color: AppColors.textGold, fontSize: 13),
+              ),
+            ),
+            const SizedBox(height: 14),
+
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(
+                        context, const RepeatSettings()),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: AppColors.goldBorder),
+                    ),
+                    child: const Text('إيقاف التكرار',
+                        style: TextStyle(color: AppColors.textMuted)),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context, _value),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.emerald,
+                      foregroundColor: AppColors.white,
+                    ),
+                    child: const Text('حفظ'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _counter({
+    required String label,
+    required String hint,
+    required int value,
+    required int min,
+    required int max,
+    required ValueChanged<int> onChanged,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label,
+                    style: const TextStyle(
+                        color: AppColors.textPrimary, fontSize: 14)),
+                Text(hint,
+                    style: const TextStyle(
+                        color: AppColors.textMuted, fontSize: 11)),
+              ],
+            ),
+          ),
+          _stepper(Icons.remove,
+              value > min ? () => onChanged(value - 1) : null),
+          SizedBox(
+            width: 40,
+            child: Text(QuranService.toArabicDigits(value),
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                    color: AppColors.gold,
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold)),
+          ),
+          _stepper(Icons.add, value < max ? () => onChanged(value + 1) : null),
+        ],
+      ),
+    );
+  }
+
+  Widget _stepper(IconData icon, VoidCallback? onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          color: AppColors.blackSurface,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: AppColors.goldBorder),
+        ),
+        child: Icon(icon,
+            size: 17,
+            color: onTap == null ? AppColors.textMuted : AppColors.gold),
+      ),
+    );
+  }
+}
+
+// ---- page ---------------------------------------------------------------
+
+class _PageSheet extends StatefulWidget {
+  final MushafPage page;
+  final SurahInfo Function(int) surahInfo;
+  final AyahBoxes? selected;
+  final ValueChanged<AyahBoxes?> onAyahTapped;
+  final VoidCallback onBackgroundTapped;
+
+  const _PageSheet({
+    required this.page,
+    required this.surahInfo,
+    required this.selected,
+    required this.onAyahTapped,
+    required this.onBackgroundTapped,
+  });
+
+  @override
+  State<_PageSheet> createState() => _PageSheetState();
+}
+
+class _PageSheetState extends State<_PageSheet> {
+  late Future<File?> _image;
+  List<AyahBoxes> _boxes = const [];
+
+  @override
+  void initState() {
+    super.initState();
+    _image = MushafImageService.fetch(widget.page.number);
+    AyahBoxService.forPage(widget.page.number).then((b) {
+      if (mounted) setState(() => _boxes = b);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: _paper,
+      child: FutureBuilder<File?>(
+        future: _image,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState != ConnectionState.done) {
+            return const Center(
+              child: CircularProgressIndicator(
+                  color: AppColors.goldDark, strokeWidth: 2),
+            );
+          }
+          final file = snapshot.data;
+          if (file == null) return _textFallback();
+
+          return MushafPageImage(
+            file: file,
+            boxes: _boxes,
+            selected: widget.selected,
+            onAyahTapped: widget.onAyahTapped,
+            onBackgroundTapped: widget.onBackgroundTapped,
+          );
+        },
+      ),
+    );
+  }
+
+  /// Same page from the bundled text — used offline and on web.
+  Widget _textFallback() {
+    final view = MediaQuery.viewPaddingOf(context);
+    return GestureDetector(
+      onTap: widget.onBackgroundTapped,
+      child: SingleChildScrollView(
+        // Clears the two-row bar above and the action bar below, plus the
+        // system bars.
+        padding: EdgeInsets.fromLTRB(16, 80 + view.top, 16, 62 + view.bottom),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            for (final run in widget.page.runs) ..._runWidgets(run),
+            const SizedBox(height: 8),
+            Text('صفحة ${QuranService.toArabicDigits(widget.page.number)}',
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Color(0xFF8A7C5C), fontSize: 12)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _runWidgets(AyahRun run) {
+    final info = widget.surahInfo(run.surah);
+    return [
+      if (run.startsSurah) ...[
+        Container(
+          margin: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            color: const Color(0xFFE8DCC0),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: const Color(0xFFC9B37E)),
+          ),
+          child: Text('سورة ${info.name}',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                  color: Color(0xFF6B5A2E),
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold)),
+        ),
+        if (info.hasBasmala)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: Text(QuranService.basmala,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontFamily: _mushafFont,
+                  color: Color(0xFF6B5A2E),
+                  fontSize: 20,
+                  height: 1.9,
+                )),
+          ),
+      ],
+      FutureBuilder<Surah>(
+        future: QuranService.surah(run.surah),
+        builder: (context, snapshot) {
+          final surah = snapshot.data;
+          if (surah == null) return const SizedBox(height: 40);
+          return Text.rich(
+            TextSpan(children: [
+              for (var n = run.first; n <= run.last; n++) ...[
+                TextSpan(text: surah.ayahs[n - 1].text),
+                TextSpan(
+                  text: ' ﴿${QuranService.toArabicDigits(n)}﴾ ',
+                  style: const TextStyle(color: Color(0xFF9A7B2E), fontSize: 15),
+                ),
+              ],
+            ]),
+            textAlign: TextAlign.justify,
+            style: const TextStyle(
+              fontFamily: _mushafFont,
+              color: _ink,
+              fontSize: 21,
+              height: 2.2,
+            ),
+          );
+        },
+      ),
+      const SizedBox(height: 6),
+    ];
+  }
+}
+
+// ---- drawer -------------------------------------------------------------
+
+class _NavigationDrawer extends StatelessWidget {
+  final List<SurahInfo> index;
+  final List<MushafPage> pages;
+  final ValueChanged<SurahInfo> onSurah;
+  final ValueChanged<int> onPage;
+  final ValueChanged<Bookmark> onBookmark;
+
+  const _NavigationDrawer({
+    required this.index,
+    required this.pages,
+    required this.onSurah,
+    required this.onPage,
+    required this.onBookmark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Drawer(
+      backgroundColor: AppColors.black,
+      child: Directionality(
+        textDirection: TextDirection.rtl,
+        child: DefaultTabController(
+          length: 4,
+          child: SafeArea(
+            child: Column(
+              children: [
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: Text('التصفّح والبحث',
+                      style: TextStyle(
+                          color: AppColors.gold,
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold)),
+                ),
+                const TabBar(
+                  isScrollable: true,
+                  tabAlignment: TabAlignment.center,
+                  labelColor: AppColors.gold,
+                  unselectedLabelColor: AppColors.textMuted,
+                  indicatorColor: AppColors.gold,
+                  labelStyle: TextStyle(fontSize: 13),
+                  tabs: [
+                    Tab(text: 'السور'),
+                    Tab(text: 'الأجزاء'),
+                    Tab(text: 'العلامات'),
+                    Tab(text: 'التنزيل'),
+                  ],
+                ),
+                Expanded(
+                  child: TabBarView(children: [
+                    _SurahTab(index: index, onSurah: onSurah),
+                    _JuzTab(pages: pages, onPage: onPage),
+                    _BookmarksTab(index: index, onBookmark: onBookmark),
+                    const _DownloadsTab(),
+                  ]),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SurahTab extends StatefulWidget {
+  final List<SurahInfo> index;
+  final ValueChanged<SurahInfo> onSurah;
+
+  const _SurahTab({required this.index, required this.onSurah});
+
+  @override
+  State<_SurahTab> createState() => _SurahTabState();
+}
+
+class _SurahTabState extends State<_SurahTab> {
+  String _query = '';
+
+  @override
+  Widget build(BuildContext context) {
+    final q = _query.trim();
+    final filtered = q.isEmpty
+        ? widget.index
+        : widget.index
+            .where((s) =>
+                s.name.contains(q) ||
+                s.nameEn.toLowerCase().contains(q.toLowerCase()) ||
+                s.number.toString() == q)
+            .toList();
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(10),
+          child: TextField(
+            onChanged: (v) => setState(() => _query = v),
+            textAlign: TextAlign.right,
+            style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
+            decoration: InputDecoration(
+              hintText: 'ابحث عن سورة…',
+              hintStyle:
+                  const TextStyle(color: AppColors.textMuted, fontSize: 13),
+              filled: true,
+              fillColor: AppColors.blackSurface,
+              isDense: true,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: AppColors.goldBorder),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: AppColors.goldBorder),
+              ),
+              suffixIcon:
+                  const Icon(Icons.search, color: AppColors.textMuted, size: 18),
+            ),
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            itemCount: filtered.length,
+            itemBuilder: (context, i) => ListTile(
+              dense: true,
+              leading: Text(QuranService.toArabicDigits(filtered[i].number),
+                  style: const TextStyle(color: AppColors.gold, fontSize: 13)),
+              title: Text(filtered[i].name,
+                  style: const TextStyle(
+                      color: AppColors.textPrimary, fontSize: 14)),
+              subtitle: Text(
+                  '${filtered[i].type} • ${filtered[i].ayahCount} آية',
+                  style: const TextStyle(
+                      color: AppColors.textMuted, fontSize: 11)),
+              onTap: () => widget.onSurah(filtered[i]),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _JuzTab extends StatelessWidget {
+  final List<MushafPage> pages;
+  final ValueChanged<int> onPage;
+
+  const _JuzTab({required this.pages, required this.onPage});
+
+  @override
+  Widget build(BuildContext context) {
+    final firstPage = <int, int>{};
+    for (final p in pages) {
+      firstPage.putIfAbsent(p.juz, () => p.number);
+    }
+    final juz = firstPage.keys.toList()..sort();
+
+    return ListView.builder(
+      itemCount: juz.length,
+      itemBuilder: (context, i) => ListTile(
+        dense: true,
+        leading: Text(QuranService.toArabicDigits(juz[i]),
+            style: const TextStyle(color: AppColors.gold, fontSize: 13)),
+        title: Text('الجزء ${QuranService.toArabicDigits(juz[i])}',
+            style:
+                const TextStyle(color: AppColors.textPrimary, fontSize: 14)),
+        subtitle: Text(
+            'يبدأ في صفحة ${QuranService.toArabicDigits(firstPage[juz[i]]!)}',
+            style: const TextStyle(color: AppColors.textMuted, fontSize: 11)),
+        onTap: () => onPage(firstPage[juz[i]]!),
+      ),
+    );
+  }
+}
+
+class _BookmarksTab extends StatefulWidget {
+  final List<SurahInfo> index;
+  final ValueChanged<Bookmark> onBookmark;
+
+  const _BookmarksTab({required this.index, required this.onBookmark});
+
+  @override
+  State<_BookmarksTab> createState() => _BookmarksTabState();
+}
+
+class _BookmarksTabState extends State<_BookmarksTab> {
+  List<Bookmark>? _marks;
+
+  @override
+  void initState() {
+    super.initState();
+    BookmarkService.all().then((m) {
+      if (mounted) setState(() => _marks = m);
+    });
+  }
+
+  String _name(int surah) =>
+      widget.index.firstWhere((s) => s.number == surah).name;
+
+  @override
+  Widget build(BuildContext context) {
+    final marks = _marks;
+    if (marks == null) {
+      return const Center(
+          child: CircularProgressIndicator(color: AppColors.gold));
+    }
+    if (marks.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(24),
+          child: Text(
+            'لا توجد علامات بعد.\nاضغط على آية ثم «علامة».',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: AppColors.textMuted, fontSize: 13),
+          ),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      itemCount: marks.length,
+      itemBuilder: (context, i) {
+        final b = marks[i];
+        return ListTile(
+          dense: true,
+          leading: Text(b.kind.icon, style: const TextStyle(fontSize: 18)),
+          title: Text('${_name(b.surah)} — آية ${b.ayah}',
+              style:
+                  const TextStyle(color: AppColors.textPrimary, fontSize: 14)),
+          subtitle: Text(
+              b.note ??
+                  '${b.kind.label} • صفحة ${QuranService.toArabicDigits(b.page)}',
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(color: AppColors.textMuted, fontSize: 11)),
+          trailing: IconButton(
+            icon: const Icon(Icons.delete_outline,
+                color: AppColors.textMuted, size: 18),
+            onPressed: () async {
+              await BookmarkService.remove(b.kind, b.surah, b.ayah);
+              final refreshed = await BookmarkService.all();
+              if (mounted) setState(() => _marks = refreshed);
+            },
+          ),
+          onTap: () => widget.onBookmark(b),
+        );
+      },
+    );
+  }
+}
+
+/// Pulls the whole Mushaf down so it reads with no connection at all.
+class _DownloadsTab extends StatefulWidget {
+  const _DownloadsTab();
+
+  @override
+  State<_DownloadsTab> createState() => _DownloadsTabState();
+}
+
+class _DownloadsTabState extends State<_DownloadsTab> {
+  int _cached = 0;
+  bool _running = false;
+  int _done = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _refresh();
+  }
+
+  Future<void> _refresh() async {
+    final count = await MushafImageService.cachedCount();
+    if (mounted) setState(() => _cached = count);
+  }
+
+  Future<void> _start() async {
+    setState(() {
+      _running = true;
+      _done = 0;
+    });
+
+    final failed = await MushafImageService.downloadAll(
+      onProgress: (done, _) {
+        if (mounted) setState(() => _done = done);
+      },
+    );
+
+    if (!mounted) return;
+    setState(() => _running = false);
+    await _refresh();
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          failed == 0
+              ? 'اكتمل تنزيل المصحف — يعمل الآن بلا إنترنت'
+              : 'تعذّر تنزيل $failed صفحة — أعد المحاولة لإكمالها',
+          textDirection: TextDirection.rtl,
+        ),
+        backgroundColor: failed == 0 ? AppColors.emerald : AppColors.error,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    const total = QuranService.pageCount;
+    final complete = _cached >= total;
+
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        const Text('تنزيل الملحقات',
+            style: TextStyle(
+                color: AppColors.gold,
+                fontSize: 15,
+                fontWeight: FontWeight.bold)),
+        const SizedBox(height: 6),
+        const Text(
+          'نزّل صفحات المصحف مرة واحدة لتقرأها بلا إنترنت. '
+          'الصفحة التي تفتحها تُحفظ تلقائياً على أي حال.',
+          style: TextStyle(color: AppColors.textMuted, fontSize: 12, height: 1.6),
+        ),
+        const SizedBox(height: 14),
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: AppColors.blackCard,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.goldBorder),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('الصفحات',
+                      style: TextStyle(
+                          color: AppColors.textPrimary, fontSize: 14)),
+                  Text(
+                    _running
+                        ? '$_done / $total'
+                        : '$_cached / $total',
+                    style: const TextStyle(
+                        color: AppColors.textGold, fontSize: 13),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(3),
+                child: LinearProgressIndicator(
+                  value: (_running ? _done : _cached) / total,
+                  backgroundColor: AppColors.blackSurface,
+                  valueColor: const AlwaysStoppedAnimation(AppColors.gold),
+                  minHeight: 5,
+                ),
+              ),
+              const SizedBox(height: 12),
+              if (_running)
+                OutlinedButton(
+                  onPressed: MushafImageService.cancelDownloadAll,
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: AppColors.goldBorder),
+                  ),
+                  child: const Text('إيقاف',
+                      style: TextStyle(color: AppColors.textMuted)),
+                )
+              else
+                ElevatedButton(
+                  onPressed: complete ? null : _start,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.emerald,
+                    disabledBackgroundColor: AppColors.blackSurface,
+                  ),
+                  child: Text(
+                    complete ? '✓ مكتمل' : 'نزّل المصحف كاملاً (~٥٩ م.ب)',
+                    style: const TextStyle(color: AppColors.white),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 14),
+        const Text(
+          'التلاوات تُبَث عند التشغيل ولا تحتاج تنزيلاً مسبقاً.',
+          style: TextStyle(color: AppColors.textMuted, fontSize: 11),
+        ),
+      ],
+    );
+  }
+}
