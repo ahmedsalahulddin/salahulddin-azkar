@@ -6,6 +6,7 @@ import 'screens/favorites_screen.dart';
 import 'screens/settings_screen.dart';
 import 'services/auth_service.dart';
 import 'services/notification_service.dart';
+import 'services/section_config.dart';
 import 'services/storage_service.dart';
 
 void main() async {
@@ -18,6 +19,12 @@ void main() async {
   // No-op until the project credentials are supplied; the app runs as a guest.
   try {
     await AuthService.init();
+  } catch (_) {}
+
+  // Reads the cached layout and refreshes in the background. Never blocks the
+  // first frame, and shows every section if it cannot reach the project.
+  try {
+    await SectionConfig.load();
   } catch (_) {}
 
   try {

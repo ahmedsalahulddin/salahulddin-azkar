@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../constants/theme.dart';
 import '../data/adhkar_data.dart';
 import '../services/auth_service.dart';
+import '../services/section_config.dart';
 import 'account_screen.dart';
 import '../widgets/prayer_times_card.dart';
 import '../widgets/tasbih_counter.dart';
@@ -21,33 +22,45 @@ const _freeTasbih = Dhikr(
 );
 
 class _Section {
+  /// Matches the key in app_sections, so visibility and order can be changed
+  /// remotely.
+  final String key;
   final String icon;
   final String title;
   final String subtitle;
   final Color tint;
   final Widget Function() open;
 
-  const _Section(this.icon, this.title, this.subtitle, this.tint, this.open);
+  const _Section(
+      this.key, this.icon, this.title, this.subtitle, this.tint, this.open);
 }
+
+// Top-level so the section list can stay const.
+Widget _openAdhkar() => const AdhkarHomeScreen();
+Widget _openQuran() => const QuranHomeScreen();
+Widget _openBooks() => const BooksScreen();
+Widget _openTasbih() => const TasbihCounter(dhikr: _freeTasbih);
+Widget _openDeceased() => const DeceasedScreen();
+Widget _openFavorites() => const FavoritesScreen();
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final sections = <_Section>[
-      _Section('📿', 'الأذكار', '${adhkar.length} ذكر', AppColors.goldMuted,
-          () => const AdhkarHomeScreen()),
-      _Section('📖', 'القرآن الكريم', 'تدبّر وقراءة', AppColors.emeraldMuted,
-          () => const QuranHomeScreen()),
-      _Section('📚', 'المكتبة', '١٠ كتب حديث', AppColors.goldMuted,
-          () => const BooksScreen()),
-      _Section('🔢', 'عداد التسبيح', 'سبّح واحتسب', AppColors.emeraldMuted,
-          () => const TasbihCounter(dhikr: _freeTasbih)),
-      _Section('🕊️', 'الوفيات', 'ادعُ لموتاك', AppColors.goldMuted,
-          () => const DeceasedScreen()),
-      _Section('⭐', 'المفضلة', 'أذكاري المحفوظة', AppColors.emeraldMuted,
-          () => const FavoritesScreen()),
+    const all = <_Section>[
+      _Section('adhkar', '📿', 'الأذكار', 'أذكار المسلم', AppColors.goldMuted,
+          _openAdhkar),
+      _Section('quran', '📖', 'القرآن الكريم', 'تدبّر وقراءة',
+          AppColors.emeraldMuted, _openQuran),
+      _Section('library', '📚', 'المكتبة', '١٠ كتب حديث', AppColors.goldMuted,
+          _openBooks),
+      _Section('tasbih', '🔢', 'عداد التسبيح', 'سبّح واحتسب',
+          AppColors.emeraldMuted, _openTasbih),
+      _Section('deceased', '🕊️', 'الوفيات', 'ادعُ لموتاك', AppColors.goldMuted,
+          _openDeceased),
+      _Section('favorites', '⭐', 'المفضلة', 'أذكاري المحفوظة',
+          AppColors.emeraldMuted, _openFavorites),
     ];
 
     return Directionality(
@@ -108,18 +121,33 @@ class HomeScreen extends StatelessWidget {
                           fontWeight: FontWeight.bold)),
                 ),
 
-                GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 12,
-                    crossAxisSpacing: 12,
-                    childAspectRatio: 1.15,
-                  ),
-                  itemCount: sections.length,
-                  itemBuilder: (context, i) => _sectionCard(context, sections[i]),
+                // Visibility and order can be changed remotely; if that config
+                // is unavailable every section shows in its built-in order.
+                ValueListenableBuilder<Map<String, SectionSetting>>(
+                  valueListenable: SectionConfig.settings,
+                  builder: (context, _, _) {
+                    final visible = [
+                      for (var i = 0; i < all.length; i++)
+                        if (SectionConfig.isVisible(all[i].key)) (all[i], i),
+                    ]..sort((a, b) => SectionConfig.orderOf(a.$1.key, a.$2)
+                        .compareTo(SectionConfig.orderOf(b.$1.key, b.$2)));
+
+                    return GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        mainAxisSpacing: 12,
+                        crossAxisSpacing: 12,
+                        childAspectRatio: 1.15,
+                      ),
+                      itemCount: visible.length,
+                      itemBuilder: (context, i) =>
+                          _sectionCard(context, visible[i].$1),
+                    );
+                  },
                 ),
                 const SizedBox(height: 24),
               ],

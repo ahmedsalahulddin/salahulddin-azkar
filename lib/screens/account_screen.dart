@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../constants/theme.dart';
 import '../services/auth_service.dart';
+import '../services/section_config.dart';
 import '../widgets/sign_in_buttons.dart';
+import 'admin_screen.dart';
 import 'settings_screen.dart';
 
 /// The account and settings entry point behind the avatar.
@@ -19,6 +21,26 @@ class AccountScreen extends StatefulWidget {
 class _AccountScreenState extends State<AccountScreen> {
   SignInProvider? _busyWith;
   bool _deleting = false;
+  bool _isAdmin = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAdmin();
+    // Signing in or out changes the answer.
+    AuthService.user.addListener(_checkAdmin);
+  }
+
+  @override
+  void dispose() {
+    AuthService.user.removeListener(_checkAdmin);
+    super.dispose();
+  }
+
+  Future<void> _checkAdmin() async {
+    final admin = await SectionConfig.isAdmin();
+    if (mounted && admin != _isAdmin) setState(() => _isAdmin = admin);
+  }
 
   Future<void> _signIn(SignInProvider provider) async {
     setState(() => _busyWith = provider);
@@ -97,6 +119,21 @@ class _AccountScreenState extends State<AccountScreen> {
                   MaterialPageRoute(builder: (_) => const SettingsScreen()),
                 ),
               ),
+              // Only shown to accounts listed in app_admins; a non-admin never
+              // learns the screen exists.
+              if (_isAdmin) ...[
+                const SizedBox(height: 20),
+                _sectionTitle('الإدارة'),
+                _tile(
+                  icon: Icons.dashboard_customize,
+                  title: 'إدارة الأقسام',
+                  subtitle: 'أظهِر وأخفِ ورتّب أقسام الشاشة الرئيسية',
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const AdminScreen()),
+                  ),
+                ),
+              ],
               const SizedBox(height: 20),
               _sectionTitle('عن التطبيق'),
               _aboutCard(),
