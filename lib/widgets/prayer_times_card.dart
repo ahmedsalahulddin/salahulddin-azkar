@@ -167,6 +167,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> {
                 _locationChip(data.status),
               ],
             ),
+            footer: const VerseCitation(),
           ),
           const SizedBox(height: 12),
           const RotatingVerse(),

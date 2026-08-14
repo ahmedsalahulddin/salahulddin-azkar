@@ -5,15 +5,15 @@ import 'package:flutter/material.dart';
 import '../constants/theme.dart';
 import '../data/quran_data.dart';
 
-/// A verse under the arch, changing every so often.
+/// The rotation itself, shared so the verse and its citation can live in two
+/// different places — the verse under the sky panel, the citation inside it —
+/// and still change together.
 ///
 /// The text is read out of the bundled Mushaf by reference rather than typed
 /// here. Arabic typed by hand does not reliably come back as the same code
 /// points as the printed edition — the app has been bitten by that before —
 /// and a verse on the home screen is the last place to be approximate.
-class RotatingVerse extends StatefulWidget {
-  const RotatingVerse({super.key});
-
+class VerseRotation {
   /// Surah and ayah of each verse in the rotation.
   static const references = [
     (33, 41),
@@ -26,38 +26,24 @@ class RotatingVerse extends StatefulWidget {
 
   static const interval = Duration(seconds: 9);
 
-  @override
-  State<RotatingVerse> createState() => _RotatingVerseState();
-}
+  /// The verse on show now, with its citation. Null until the bundle loads.
+  static final current = ValueNotifier<(String text, String citation)?>(null);
 
-class _RotatingVerseState extends State<RotatingVerse> {
-  List<(String text, String citation)> _verses = const [];
-  int _index = 0;
-  Timer? _timer;
+  static List<(String, String)> _verses = const [];
+  static int _index = 0;
+  static Timer? _timer;
 
-  @override
-  void initState() {
-    super.initState();
-    _load();
-  }
+  /// Idempotent: the first caller starts the rotation, later calls join it.
+  static Future<void> start() async {
+    if (_timer != null || _verses.isNotEmpty) return;
 
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
-
-  Future<void> _load() async {
     final index = await QuranService.index();
     final loaded = <(String, String)>[];
-
-    for (final (surahNumber, ayahNumber) in RotatingVerse.references) {
+    for (final (surahNumber, ayahNumber) in references) {
       try {
         final surah = await QuranService.surah(surahNumber);
-        final ayah =
-            surah.ayahs.firstWhere((a) => a.number == ayahNumber);
-        final name =
-            index.firstWhere((s) => s.number == surahNumber).name;
+        final ayah = surah.ayahs.firstWhere((a) => a.number == ayahNumber);
+        final name = index.firstWhere((s) => s.number == surahNumber).name;
         loaded.add((
           ayah.text,
           '$name: ${QuranService.toArabicDigits(ayahNumber)}',
@@ -66,28 +52,43 @@ class _RotatingVerseState extends State<RotatingVerse> {
         // Skip a verse we cannot read rather than showing a placeholder.
       }
     }
+    if (loaded.isEmpty) return;
 
-    if (!mounted || loaded.isEmpty) return;
-    setState(() => _verses = loaded);
-    _timer = Timer.periodic(RotatingVerse.interval, (_) {
-      if (mounted) setState(() => _index = (_index + 1) % _verses.length);
+    _verses = loaded;
+    current.value = loaded.first;
+    _timer = Timer.periodic(interval, (_) {
+      _index = (_index + 1) % _verses.length;
+      current.value = _verses[_index];
     });
+  }
+}
+
+/// The verse alone. Its citation is [VerseCitation], shown elsewhere.
+class RotatingVerse extends StatefulWidget {
+  const RotatingVerse({super.key});
+
+  @override
+  State<RotatingVerse> createState() => _RotatingVerseState();
+}
+
+class _RotatingVerseState extends State<RotatingVerse> {
+  @override
+  void initState() {
+    super.initState();
+    VerseRotation.start();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_verses.isEmpty) return const SizedBox.shrink();
-    final (text, citation) = _verses[_index];
-
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 700),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        // Keyed by index so the switcher knows one verse from the next.
-        key: ValueKey(_index),
-        children: [
-          Text(
-            text,
+    return ValueListenableBuilder<(String, String)?>(
+      valueListenable: VerseRotation.current,
+      builder: (context, verse, _) {
+        if (verse == null) return const SizedBox.shrink();
+        return AnimatedSwitcher(
+          duration: const Duration(milliseconds: 700),
+          child: Text(
+            verse.$1,
+            key: ValueKey(verse.$1),
             textAlign: TextAlign.center,
             maxLines: 3,
             overflow: TextOverflow.ellipsis,
@@ -98,13 +99,32 @@ class _RotatingVerseState extends State<RotatingVerse> {
               height: 1.9,
             ),
           ),
-          const SizedBox(height: 6),
-          Text(
-            citation,
+        );
+      },
+    );
+  }
+}
+
+/// The surah and ayah of whatever [RotatingVerse] is showing, kept in step by
+/// the shared rotation.
+class VerseCitation extends StatelessWidget {
+  const VerseCitation({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<(String, String)?>(
+      valueListenable: VerseRotation.current,
+      builder: (context, verse, _) {
+        if (verse == null) return const SizedBox.shrink();
+        return AnimatedSwitcher(
+          duration: const Duration(milliseconds: 700),
+          child: Text(
+            verse.$2,
+            key: ValueKey(verse.$2),
             style: const TextStyle(color: AppColors.textGold, fontSize: 10.5),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

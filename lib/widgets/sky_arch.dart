@@ -21,7 +21,12 @@ class SkyArch extends StatelessWidget {
   /// which is why the dome is drawn wide enough to house a line of text.
   final Widget? inDome;
 
-  const SkyArch({super.key, required this.data, required this.now, this.inDome});
+  /// Pinned to the panel's bottom centre, under the dome's drum — the verse
+  /// citation sits here so it ends up directly above the verse below.
+  final Widget? footer;
+
+  const SkyArch(
+      {super.key, required this.data, required this.now, this.inDome, this.footer});
 
   static const height = 252.0;
 
@@ -45,6 +50,13 @@ class SkyArch extends StatelessWidget {
               right: 0,
               bottom: height * (1 - horizonFraction) + 8,
               child: Center(child: inDome!),
+            ),
+          if (footer != null)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 7,
+              child: Center(child: footer!),
             ),
         ],
       ),

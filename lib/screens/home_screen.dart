@@ -26,15 +26,6 @@ class HomeScreen extends StatelessWidget {
                 const PrayerTimesCard(),
                 const SizedBox(height: 20),
 
-                const Padding(
-                  padding: EdgeInsets.fromLTRB(16, 0, 16, 10),
-                  child: Text('الأقسام',
-                      style: TextStyle(
-                          color: AppColors.textGold,
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold)),
-                ),
-
                 // Visibility and order can be changed remotely; if that config
                 // is unavailable every section shows in its built-in order.
                 ValueListenableBuilder<Map<String, SectionSetting>>(
