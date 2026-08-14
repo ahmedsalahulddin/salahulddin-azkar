@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import '../constants/theme.dart';
+import '../data/lessons.dart';
+import 'lesson_screen.dart';
 
-/// The lessons shelf: prophet stories and tafsir, meant to play from the
-/// channel once it exists.
+/// The lessons shelf, in two halves.
 ///
-/// The cards are listed before the videos are, deliberately — the shape of the
-/// section is settled here, and each card says plainly that its lessons are not
-/// up yet rather than opening onto nothing.
+/// The teachings come first because they are here now: each is built from
+/// verses of the bundled Mushaf and hadiths of the bundled collections, and
+/// names the place every text comes from. Under them sit the video series,
+/// still waiting on a channel and saying so on each card rather than opening
+/// onto nothing.
 class LessonsScreen extends StatelessWidget {
   const LessonsScreen({super.key});
 
@@ -45,6 +48,29 @@ class LessonsScreen extends StatelessWidget {
         body: ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            const Text('التعاليم',
+                style: TextStyle(
+                    color: AppColors.gold,
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold)),
+            const SizedBox(height: 4),
+            const Text(
+              'كل درس مبنيّ على آيات المصحف وأحاديث الكتب المرفقة بالتطبيق، '
+              'مع ذكر موضع كل نصّ.',
+              style: TextStyle(color: AppColors.textMuted, fontSize: 11.5),
+            ),
+            const SizedBox(height: 12),
+            for (final lesson in Lessons.all) ...[
+              _lessonCard(context, lesson),
+              const SizedBox(height: 10),
+            ],
+            const SizedBox(height: 14),
+            const Text('على القناة',
+                style: TextStyle(
+                    color: AppColors.gold,
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold)),
+            const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
@@ -74,6 +100,58 @@ class LessonsScreen extends StatelessWidget {
               _card(lesson),
               const SizedBox(height: 12),
             ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _lessonCard(BuildContext context, Lesson lesson) {
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => LessonScreen(lesson: lesson)),
+      ),
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: AppColors.blackCard,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.goldBorder),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: AppColors.goldMuted,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Center(
+                  child:
+                      Text(lesson.icon, style: const TextStyle(fontSize: 21))),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(lesson.title,
+                      style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 2),
+                  Text(lesson.summary,
+                      style: const TextStyle(
+                          color: AppColors.textMuted, fontSize: 11.5)),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_left,
+                color: AppColors.textMuted, size: 20),
           ],
         ),
       ),

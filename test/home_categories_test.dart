@@ -30,7 +30,9 @@ void main() {
       final shelves = {for (final s in buildShelves()) s.key: s};
       expect(shelves['adhkar']!.pinned.title, 'صحيح الأذكار');
       expect(shelves['quran']!.pinned.title, 'تلاوة وتدبّر');
-      expect(shelves['lessons']!.pinned.title, 'قصص الأنبياء للأطفال');
+      // The lessons shelf leads with a lesson that exists rather than one
+      // waiting on a channel.
+      expect(shelves['lessons']!.pinned.title, 'أركان الإسلام');
       expect(shelves['cards']!.pinned.title, 'كروت يومية');
     });
 

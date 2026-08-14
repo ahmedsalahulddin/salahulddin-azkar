@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../constants/theme.dart';
 import '../data/adhkar_data.dart';
 import '../data/greeting_cards.dart';
+import '../data/lessons.dart';
 import '../data/library_data.dart';
 import '../screens/adhkar_home_screen.dart';
 import '../screens/book_reader_screen.dart';
@@ -10,6 +11,7 @@ import '../screens/books_screen.dart';
 import '../screens/cards_screen.dart';
 import '../screens/category_screen.dart';
 import '../screens/deceased_screen.dart';
+import '../screens/lesson_screen.dart';
 import '../screens/lessons_screen.dart';
 import '../screens/memorisation_test_screen.dart';
 import '../screens/mushaf_screen.dart';
@@ -172,22 +174,23 @@ HomeShelf _lessonsShelf() => HomeShelf(
       tint: AppColors.goldMuted,
       all: () => const LessonsScreen(),
       pinned: ShelfItem(
-        icon: '🧒',
-        title: 'قصص الأنبياء للأطفال',
-        subtitle: 'حلقات مبسّطة',
-        open: (c) => _push(c, () => const LessonsScreen()),
+        icon: Lessons.all.first.icon,
+        title: Lessons.all.first.title,
+        subtitle: Lessons.all.first.summary,
+        open: (c) => _push(c, () => LessonScreen(lesson: Lessons.all.first)),
       ),
       rest: [
+        for (final lesson in Lessons.all.skip(1))
+          ShelfItem(
+            icon: lesson.icon,
+            title: lesson.title,
+            subtitle: lesson.summary,
+            open: (c) => _push(c, () => LessonScreen(lesson: lesson)),
+          ),
         ShelfItem(
-          icon: '🕌',
+          icon: '🎬',
           title: 'قصص الأنبياء',
-          subtitle: 'بالأدلة والمواضع',
-          open: (c) => _push(c, () => const LessonsScreen()),
-        ),
-        ShelfItem(
-          icon: '📜',
-          title: 'التفسير',
-          subtitle: 'أكثر من مفسّر',
+          subtitle: 'على القناة — قريباً',
           open: (c) => _push(c, () => const LessonsScreen()),
         ),
       ],
