@@ -529,10 +529,12 @@ class _MushafScreenState extends State<MushafScreen> {
                   ),
                   const SizedBox(width: 4),
                   _barIcon(Icons.record_voice_over, 'اختر القارئ', _pickReciter),
-                  _barIcon(Icons.repeat, 'التكرار', _openRepeatSettings,
-                      active: _repeat.isActive),
-                  _speedButton(),
+                  // Play leads the controls; repeat is a setting, so it sits
+                  // at the far end rather than between the two.
                   _playButton(),
+                  _speedButton(),
+                  _barIcon(Icons.repeat, 'التكرار', _openRepeatSettings,
+                      label: 'تكرار', active: _repeat.isActive),
                   const Spacer(),
                 ],
               ),
@@ -543,18 +545,35 @@ class _MushafScreenState extends State<MushafScreen> {
     );
   }
 
+  /// A bar control. Passing [label] spells the action out beside the icon —
+  /// worth the width for the ones whose symbol alone is ambiguous.
   Widget _barIcon(IconData icon, String tooltip, VoidCallback onTap,
-      {bool active = false}) {
+      {bool active = false, String? label}) {
+    final tint = active ? AppColors.gold : AppColors.textSecondary;
     return Tooltip(
       message: tooltip,
       child: GestureDetector(
         onTap: onTap,
         behavior: HitTestBehavior.opaque,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
-          child: Icon(icon,
-              size: 21,
-              color: active ? AppColors.gold : AppColors.textSecondary),
+          padding: EdgeInsets.symmetric(
+              horizontal: label == null ? 7 : 5, vertical: 5),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 21, color: tint),
+              if (label != null) ...[
+                const SizedBox(width: 3),
+                Text(label,
+                    style: TextStyle(
+                      color: tint,
+                      fontSize: 11,
+                      fontWeight:
+                          active ? FontWeight.bold : FontWeight.normal,
+                    )),
+              ],
+            ],
+          ),
         ),
       ),
     );
@@ -619,7 +638,7 @@ class _MushafScreenState extends State<MushafScreen> {
 
         return _barIcon(
           playing ? Icons.pause : Icons.play_arrow,
-          playing ? 'إيقاف مؤقت' : 'تلاوة الآية المحددة',
+          playing ? 'إيقاف' : 'تلاوة الآية المحددة',
           () {
             if (playing) {
               _player.pause();
@@ -629,6 +648,7 @@ class _MushafScreenState extends State<MushafScreen> {
               _toast('اضغط على آية أولاً لتبدأ التلاوة منها');
             }
           },
+          label: playing ? 'إيقاف' : 'تشغيل',
           active: true,
         );
       },
