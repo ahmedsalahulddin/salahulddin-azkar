@@ -4,7 +4,7 @@ import 'package:salahulddin_azkar/data/home_shelves.dart';
 import 'package:salahulddin_azkar/screens/home_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// The home screen is four shelves. Each names itself, keeps its most-used
+/// The home screen is a set of shelves. Each names itself, keeps its most-used
 /// card pinned where the thumb expects it, and lets the rest run off the side.
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -21,9 +21,9 @@ void main() {
   }
 
   group('the shelves themselves', () {
-    test('four of them, in the order they were asked for', () {
+    test('in the order they were asked for', () {
       expect(buildShelves().map((s) => s.key).toList(),
-          ['adhkar', 'quran', 'lessons', 'library']);
+          ['adhkar', 'quran', 'lessons', 'library', 'cards']);
     });
 
     test('the pinned card is the one asked for on each shelf', () {
@@ -31,6 +31,7 @@ void main() {
       expect(shelves['adhkar']!.pinned.title, 'صحيح الأذكار');
       expect(shelves['quran']!.pinned.title, 'تلاوة وتدبّر');
       expect(shelves['lessons']!.pinned.title, 'قصص الأنبياء للأطفال');
+      expect(shelves['cards']!.pinned.title, 'كروت يومية');
     });
 
     test('the pinned card is never repeated among the rest', () {

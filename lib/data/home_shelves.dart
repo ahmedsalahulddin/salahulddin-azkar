@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 
 import '../constants/theme.dart';
 import '../data/adhkar_data.dart';
+import '../data/greeting_cards.dart';
 import '../data/library_data.dart';
 import '../screens/adhkar_home_screen.dart';
 import '../screens/book_reader_screen.dart';
 import '../screens/books_screen.dart';
+import '../screens/cards_screen.dart';
 import '../screens/category_screen.dart';
 import '../screens/deceased_screen.dart';
 import '../screens/lessons_screen.dart';
@@ -77,13 +79,14 @@ class HomeShelf {
 Future<void> _push(BuildContext context, Widget Function() build) =>
     Navigator.push(context, MaterialPageRoute(builder: (_) => build()));
 
-/// The four shelves, built fresh so the adhkar counts and book list are
+/// The shelves, built fresh so the adhkar counts and book list are
 /// whatever they are now rather than whatever they were at startup.
 List<HomeShelf> buildShelves() => [
       _adhkarShelf(),
       _quranShelf(),
       _lessonsShelf(),
       _librarySheet(),
+      _cardsShelf(),
     ];
 
 HomeShelf _adhkarShelf() {
@@ -189,6 +192,28 @@ HomeShelf _lessonsShelf() => HomeShelf(
         ),
       ],
     );
+
+HomeShelf _cardsShelf() {
+  ShelfItem card(CardShelf shelf) => ShelfItem(
+        icon: shelf.icon,
+        title: shelf.title,
+        subtitle: shelf.subtitle,
+        open: (c) => _push(c, () => CardsScreen(shelf: shelf)),
+      );
+
+  return HomeShelf(
+    key: 'cards',
+    icon: '💌',
+    title: 'كروت المعايدة',
+    tint: AppColors.goldMuted,
+    all: () => const CardsScreen(shelf: CardShelf.daily),
+    pinned: card(CardShelf.daily),
+    rest: [
+      for (final shelf in CardShelf.values)
+        if (shelf != CardShelf.daily) card(shelf),
+    ],
+  );
+}
 
 HomeShelf _librarySheet() {
   final books = LibraryService.books;
