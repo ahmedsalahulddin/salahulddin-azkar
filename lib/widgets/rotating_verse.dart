@@ -65,7 +65,11 @@ class VerseRotation {
 
 /// The verse alone. Its citation is [VerseCitation], shown elsewhere.
 class RotatingVerse extends StatefulWidget {
-  const RotatingVerse({super.key});
+  /// Set when the verse floats in the sky panel, where the room is tighter
+  /// than under it.
+  final bool dense;
+
+  const RotatingVerse({super.key, this.dense = false});
 
   @override
   State<RotatingVerse> createState() => _RotatingVerseState();
@@ -90,13 +94,13 @@ class _RotatingVerseState extends State<RotatingVerse> {
             verse.$1,
             key: ValueKey(verse.$1),
             textAlign: TextAlign.center,
-            maxLines: 3,
+            maxLines: widget.dense ? 2 : 3,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
+            style: TextStyle(
               fontFamily: 'AmiriQuran',
               color: AppColors.textPrimary,
-              fontSize: 15,
-              height: 1.9,
+              fontSize: widget.dense ? 12.5 : 15,
+              height: widget.dense ? 1.75 : 1.9,
             ),
           ),
         );

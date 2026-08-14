@@ -149,9 +149,12 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> {
           SkyArch(
             data: data,
             now: DateTime.now(),
+            aboveDome: const RotatingVerse(dense: true),
             inDome: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                _locationChip(data.status),
+                const SizedBox(height: 3),
                 Text(
                   PrayerService.formatCountdown(_remaining),
                   textDirection: TextDirection.ltr,
@@ -163,15 +166,11 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> {
                     fontFeatures: [FontFeature.tabularFigures()],
                   ),
                 ),
-                const SizedBox(height: 3),
-                _locationChip(data.status),
               ],
             ),
             footer: const VerseCitation(),
           ),
-          const SizedBox(height: 12),
-          const RotatingVerse(),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
             child: Row(

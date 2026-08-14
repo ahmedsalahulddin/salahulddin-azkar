@@ -21,14 +21,22 @@ class SkyArch extends StatelessWidget {
   /// which is why the dome is drawn wide enough to house a line of text.
   final Widget? inDome;
 
-  /// Pinned to the panel's bottom centre, under the dome's drum — the verse
-  /// citation sits here so it ends up directly above the verse below.
+  /// Pinned to the panel's bottom centre, under the dome's drum.
   final Widget? footer;
 
-  const SkyArch(
-      {super.key, required this.data, required this.now, this.inDome, this.footer});
+  /// Floated in the open sky above the dome — the verse lives here, between
+  /// the apex of the path and the dome's crescent.
+  final Widget? aboveDome;
 
-  static const height = 252.0;
+  const SkyArch(
+      {super.key,
+      required this.data,
+      required this.now,
+      this.inDome,
+      this.footer,
+      this.aboveDome});
+
+  static const height = 253.0;
 
   /// Where the ground runs, as a fraction of the height. Shared with the
   /// painter so the widget laid inside the dome sits on the same floor the
@@ -57,6 +65,18 @@ class SkyArch extends StatelessWidget {
               right: 0,
               bottom: 7,
               child: Center(child: footer!),
+            ),
+          if (aboveDome != null)
+            Positioned(
+              top: 64,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: FractionallySizedBox(
+                  widthFactor: 0.56,
+                  child: aboveDome!,
+                ),
+              ),
             ),
         ],
       ),
@@ -191,17 +211,18 @@ class SkyArchPainter extends CustomPainter {
     canvas.drawLine(drum.topRight, drum.bottomRight, edge);
 
     // The onion bulb: out past the drum, then a long taper into the point.
+    // Kept squat so the verse floating above clears the crescent.
     final y0 = ground - 14;
     final bulb = Path()
       ..moveTo(cx - 78, y0)
-      ..cubicTo(cx - 100, y0 - 26, cx - 88, y0 - 74, cx - 16, y0 - 98)
-      ..quadraticBezierTo(cx, y0 - 106, cx + 16, y0 - 98)
-      ..cubicTo(cx + 88, y0 - 74, cx + 100, y0 - 26, cx + 78, y0);
+      ..cubicTo(cx - 102, y0 - 18, cx - 90, y0 - 42, cx - 20, y0 - 46)
+      ..quadraticBezierTo(cx, y0 - 52, cx + 20, y0 - 46)
+      ..cubicTo(cx + 90, y0 - 42, cx + 102, y0 - 18, cx + 78, y0);
     canvas.drawPath(bulb, fill);
     canvas.drawPath(bulb, edge);
 
     // Finial and crescent.
-    final tip = Offset(cx, y0 - 106);
+    final tip = Offset(cx, y0 - 52);
     canvas.drawLine(
         tip,
         tip - const Offset(0, 7),
@@ -334,9 +355,16 @@ class SkyArchPainter extends CustomPainter {
     final outward = at - Offset(cx, horizon);
     final length = outward.distance == 0 ? 1.0 : outward.distance;
     final unit = outward / length;
-    final anchor = at.dy > horizon + 1
+    var anchor = at.dy > horizon + 1
         ? at + Offset(-unit.dx * 12, 13)
         : at - unit * 16;
+    // Hand-set nudges: the horizon pair ride two up and one in toward the
+    // dome; Dhuhr steps two right so the verse floating below it has room.
+    if (name == 'الشروق' || name == 'المغرب') {
+      anchor += Offset(unit.dx > 0 ? -1 : 1, -2);
+    } else if (name == 'الظهر') {
+      anchor += const Offset(2, 0);
+    }
 
     painter.paint(canvas,
         Offset(anchor.dx - painter.width / 2, anchor.dy - painter.height / 2));
