@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../constants/theme.dart';
 import '../services/prayer_service.dart';
+import 'rotating_verse.dart';
+import 'sky_arch.dart';
 
 class PrayerTimesCard extends StatefulWidget {
   const PrayerTimesCard({super.key});
@@ -124,23 +126,36 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [AppColors.navyLight, AppColors.navy],
+    final data = _data;
+
+    return Column(
+      children: [
+        // The sky above, the reckoning below.
+        if (data != null)
+          SkyArch(
+            data: data,
+            now: DateTime.now(),
+            child: const RotatingVerse(),
+          ),
+        Container(
+          margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [AppColors.navyLight, AppColors.navy],
+            ),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppColors.goldBorder),
+          ),
+          child: _failed
+              ? _message('تعذّر حساب أوقات الصلاة')
+              : data == null
+                  ? _message('جاري حساب أوقات الصلاة…')
+                  : _content(data),
         ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.goldBorder),
-      ),
-      child: _failed
-          ? _message('تعذّر حساب أوقات الصلاة')
-          : _data == null
-              ? _message('جاري حساب أوقات الصلاة…')
-              : _content(_data!),
+      ],
     );
   }
 
@@ -151,12 +166,49 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> {
         ),
       );
 
-  /// Just the time left and the six prayers, with an arrow over the next one.
-  /// The prayer's name and clock time already sit in the row below, so naming
-  /// them again above only cost height.
+  /// The reckoning: which prayer is next and when, the time left, where the
+  /// times were computed for, and the six of them in a row.
   Widget _content(PrayerData data) {
     return Column(
       children: [
+        // Which prayer is being counted down to, and when it falls.
+        Padding(
+          padding: const EdgeInsets.fromLTRB(18, 0, 18, 10),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('الصلاة القادمة',
+                      style: TextStyle(
+                          color: AppColors.textMuted, fontSize: 11)),
+                  const SizedBox(height: 2),
+                  Text(data.nextName,
+                      style: const TextStyle(
+                          color: AppColors.gold,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold)),
+                ],
+              ),
+              const Spacer(),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  const Text('الموعد',
+                      style: TextStyle(
+                          color: AppColors.textMuted, fontSize: 11)),
+                  const SizedBox(height: 2),
+                  Text(PrayerService.formatTime(data.nextTime),
+                      style: const TextStyle(
+                          color: AppColors.textGold,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold)),
+                ],
+              ),
+            ],
+          ),
+        ),
         // Countdown and location share a row — the location is a one-off
         // caption and did not earn a line of its own.
         Row(

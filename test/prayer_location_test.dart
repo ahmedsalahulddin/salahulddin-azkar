@@ -137,9 +137,10 @@ void main() {
 
       expect(find.textContaining('الرياض'), findsOneWidget);
       expect(find.textContaining('حدّد موقعك'), findsOneWidget);
-      // The times themselves still rendered.
-      expect(find.text('الفجر'), findsOneWidget);
-      expect(find.text('المغرب'), findsOneWidget);
+      // The times themselves still rendered. Named more than once when the
+      // prayer in question is also the next one, so this must not count.
+      expect(find.text('الفجر'), findsWidgets);
+      expect(find.text('المغرب'), findsWidgets);
 
       await tester.pumpWidget(const SizedBox());
     });

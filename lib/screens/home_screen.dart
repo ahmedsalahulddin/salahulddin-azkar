@@ -53,12 +53,9 @@ class HomeScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 10),
 
-                // The verse that names the app's purpose leads the screen.
-                _quranQuote(),
-                const SizedBox(height: 16),
-
+                // The verse now turns under the arch, inside the card.
                 const PrayerTimesCard(),
                 const SizedBox(height: 20),
 
@@ -94,46 +91,6 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _quranQuote() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.emeraldMuted,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.emerald),
-      ),
-      // Reference sits beside the verse rather than under it. A Row keeps it
-      // there at any width — inline it would break onto its own line as soon
-      // as the verse filled the column.
-      child: const Row(
-        children: [
-          Expanded(
-            // Scales down rather than wrapping, so the card stays one line
-            // tall on a narrow phone instead of growing back to two.
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                '«أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ»',
-                maxLines: 1,
-                style: TextStyle(
-                    color: AppColors.textPrimary, fontSize: 18, height: 1.5),
-              ),
-            ),
-          ),
-          SizedBox(width: 6),
-          Text(
-            'الرعد: ٢٨',
-            // Must not break across lines — it is a citation, not prose.
-            softWrap: false,
-            maxLines: 1,
-            style: TextStyle(color: AppColors.textMuted, fontSize: 11),
-          ),
-        ],
       ),
     );
   }
