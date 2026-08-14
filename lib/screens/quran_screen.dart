@@ -43,13 +43,7 @@ class _QuranScreenState extends State<QuranScreen> {
 
   List<SurahInfo> get _filtered {
     if (_search.isEmpty) return _all;
-    final q = _search.trim();
-    final qLower = q.toLowerCase();
-    return _all.where((s) {
-      return s.name.contains(q) ||
-          s.nameEn.toLowerCase().contains(qLower) ||
-          s.number.toString() == q;
-    }).toList();
+    return _all.where((s) => QuranService.surahMatches(s, _search)).toList();
   }
 
   Future<void> _open(SurahInfo s) async {

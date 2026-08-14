@@ -134,65 +134,7 @@ class _QuranHomeScreenState extends State<QuranHomeScreen> {
     );
   }
 
-  Future<void> _openMemorisationTest() async {
-    final index = await QuranService.index();
-    if (!mounted) return;
-
-    final chosen = await showModalBottomSheet<SurahInfo>(
-      context: context,
-      backgroundColor: AppColors.blackCard,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => Directionality(
-        textDirection: TextDirection.rtl,
-        child: DraggableScrollableSheet(
-          expand: false,
-          initialChildSize: 0.75,
-          builder: (ctx, scrollController) => Column(
-            children: [
-              const Padding(
-                padding: EdgeInsets.all(14),
-                child: Text('اختر سورة للاختبار',
-                    style: TextStyle(
-                        color: AppColors.gold,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold)),
-              ),
-              const Divider(color: AppColors.goldBorder, height: 1),
-              Expanded(
-                child: ListView.builder(
-                  controller: scrollController,
-                  itemCount: index.length,
-                  itemBuilder: (ctx, i) => ListTile(
-                    dense: true,
-                    leading: Text(
-                        QuranService.toArabicDigits(index[i].number),
-                        style: const TextStyle(
-                            color: AppColors.gold, fontSize: 13)),
-                    title: Text(index[i].name,
-                        style:
-                            const TextStyle(color: AppColors.textPrimary)),
-                    subtitle: Text('${index[i].ayahCount} آية',
-                        style: const TextStyle(
-                            color: AppColors.textMuted, fontSize: 11)),
-                    onTap: () => Navigator.pop(ctx, index[i]),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-
-    if (chosen == null || !mounted) return;
-    await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => MemorisationTestScreen(info: chosen)),
-    );
-  }
+  Future<void> _openMemorisationTest() => openMemorisationPicker(context);
 
   Widget _modeCard({
     required String icon,

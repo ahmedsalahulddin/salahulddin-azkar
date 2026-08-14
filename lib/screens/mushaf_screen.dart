@@ -1405,10 +1405,7 @@ class _SurahTabState extends State<_SurahTab> {
     final filtered = q.isEmpty
         ? widget.index
         : widget.index
-            .where((s) =>
-                s.name.contains(q) ||
-                s.nameEn.toLowerCase().contains(q.toLowerCase()) ||
-                s.number.toString() == q)
+            .where((s) => QuranService.surahMatches(s, q))
             .toList();
 
     return Column(

@@ -3,20 +3,12 @@ import '../constants/theme.dart';
 import '../data/adhkar_data.dart';
 import '../data/hisn_data.dart';
 import '../data/umrah_data.dart';
+import '../data/home_shelves.dart';
 import '../widgets/tasbih_counter.dart';
 import 'category_screen.dart';
 import 'deceased_screen.dart';
 import 'sahih_adhkar_screen.dart';
 import 'umrah_screen.dart';
-
-/// Free-running tasbih, not tied to any one dhikr.
-const _freeTasbih = Dhikr(
-  id: 'free-tasbih',
-  categoryId: 'tasbih',
-  text: 'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ',
-  source: 'صحيح مسلم',
-  repetitions: 33,
-);
 
 class AdhkarHomeScreen extends StatelessWidget {
   const AdhkarHomeScreen({super.key});
@@ -100,7 +92,7 @@ class AdhkarHomeScreen extends StatelessWidget {
       onTap: () => Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (_) => const TasbihCounter(dhikr: _freeTasbih)),
+            builder: (_) => const TasbihCounter(dhikr: freeTasbih)),
       ),
       child: Container(
         padding: const EdgeInsets.all(12),

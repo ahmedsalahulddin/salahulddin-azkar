@@ -1,65 +1,119 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:salahulddin_azkar/data/home_shelves.dart';
 import 'package:salahulddin_azkar/screens/home_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// The home screen is four shelves now, not a grid of loose tiles. Each shelf
-/// has to name what is on it — the point of the change was that "المكتبة" on
-/// its own told the reader nothing about whether Bukhari was inside.
+/// The home screen is four shelves. Each names itself, keeps its most-used
+/// card pinned where the thumb expects it, and lets the rest run off the side.
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
   Future<void> pumpHome(WidgetTester tester) async {
+    tester.view.physicalSize = const Size(400, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
     await tester.pumpWidget(const MaterialApp(home: HomeScreen()));
     await tester.pump(const Duration(milliseconds: 50));
   }
 
-  testWidgets('four shelves, in the order they were asked for', (tester) async {
-    await pumpHome(tester);
+  group('the shelves themselves', () {
+    test('four of them, in the order they were asked for', () {
+      expect(buildShelves().map((s) => s.key).toList(),
+          ['adhkar', 'quran', 'lessons', 'library']);
+    });
 
-    const expected = ['الأذكار', 'القرآن الكريم', 'الدروس', 'الكتب والأحاديث'];
-    for (final title in expected) {
-      expect(find.text(title), findsOneWidget, reason: '$title is missing');
-    }
+    test('the pinned card is the one asked for on each shelf', () {
+      final shelves = {for (final s in buildShelves()) s.key: s};
+      expect(shelves['adhkar']!.pinned.title, 'صحيح الأذكار');
+      expect(shelves['quran']!.pinned.title, 'تلاوة وتدبّر');
+      expect(shelves['lessons']!.pinned.title, 'قصص الأنبياء للأطفال');
+    });
 
-    // Top to bottom, in that order.
-    var previous = -1.0;
-    for (final title in expected) {
-      final y = tester.getTopLeft(find.text(title)).dy;
-      expect(y, greaterThan(previous), reason: '$title is out of order');
-      previous = y;
-    }
+    test('the pinned card is never repeated among the rest', () {
+      for (final shelf in buildShelves()) {
+        expect(shelf.rest.map((i) => i.title), isNot(contains(shelf.pinned.title)),
+            reason: '${shelf.key} shows its pinned card twice');
+      }
+    });
+
+    test('every shelf has something beside the pinned card to scroll', () {
+      for (final shelf in buildShelves()) {
+        expect(shelf.rest, isNotEmpty, reason: '${shelf.key} has nothing to scroll');
+      }
+    });
+
+    test('the Quran shelf holds exactly the three ways to read', () {
+      final quran = buildShelves().firstWhere((s) => s.key == 'quran');
+      expect([quran.pinned.title, ...quran.rest.map((i) => i.title)],
+          ['تلاوة وتدبّر', 'قراءة', 'اختبار الحفظ']);
+    });
+
+    test('the adhkar shelf gathers what used to be loose on the home screen',
+        () {
+      final adhkar = buildShelves().firstWhere((s) => s.key == 'adhkar');
+      final titles = adhkar.rest.map((i) => i.title).toList();
+      expect(titles, contains('أدعية العمرة'));
+      expect(titles, contains('عداد التسبيح'));
+      // Ten or so cards, which is what makes the row worth scrolling.
+      expect(adhkar.rest.length, greaterThan(5));
+    });
   });
 
-  testWidgets('each shelf names what is on it', (tester) async {
-    await pumpHome(tester);
+  group('on screen', () {
+    testWidgets('each shelf shows its name and its pinned card',
+        (tester) async {
+      await pumpHome(tester);
 
-    // A reader looking for Hisn al-Muslim or Bukhari can see which shelf to
-    // open without opening any of them.
-    expect(find.textContaining('حصن المسلم'), findsOneWidget);
-    expect(find.textContaining('اختبار الحفظ'), findsOneWidget);
-    expect(find.textContaining('قصص الأنبياء'), findsOneWidget);
-    expect(find.textContaining('البخاري'), findsOneWidget);
-  });
+      for (final shelf in buildShelves()) {
+        expect(find.text(shelf.title), findsOneWidget,
+            reason: '${shelf.key} has no heading');
+        expect(find.text(shelf.pinned.title), findsWidgets,
+            reason: '${shelf.key} is missing its pinned card');
+      }
+    });
 
-  testWidgets('the loose tiles are gone from the top level', (tester) async {
-    await pumpHome(tester);
+    testWidgets('the rest of each shelf scrolls sideways', (tester) async {
+      await pumpHome(tester);
 
-    // Tasbih moved in with the adhkar; favourites has its own tab. Finding
-    // either as a top-level card would mean the old grid came back.
-    expect(find.text('عداد التسبيح'), findsNothing);
-    expect(find.text('المفضلة'), findsNothing);
-    expect(find.text('الوفيات'), findsNothing);
-  });
+      // A horizontal list per shelf — that is what makes the row scrollable
+      // rather than a fixed set of tiles.
+      final rows = find.byWidgetPredicate((w) =>
+          w is ListView && w.scrollDirection == Axis.horizontal);
+      expect(rows, findsNWidgets(buildShelves().length));
+    });
 
-  testWidgets('the prayer card still leads, above the shelves', (tester) async {
-    await pumpHome(tester);
+    testWidgets('a card far along the adhkar row can be scrolled to',
+        (tester) async {
+      await pumpHome(tester);
 
-    final shelf = tester.getTopLeft(find.text('الأذكار')).dy;
-    // The countdown sits inside the prayer card.
-    expect(find.text('الأقسام'), findsOneWidget);
-    expect(tester.getTopLeft(find.text('الأقسام')).dy, lessThan(shelf));
+      final row = find
+          .byWidgetPredicate(
+              (w) => w is ListView && w.scrollDirection == Axis.horizontal)
+          .first;
+      // The tasbih sits at the end of the adhkar shelf.
+      expect(find.text('عداد التسبيح'), findsNothing);
+      await tester.drag(row, const Offset(900, 0));
+      await tester.pump();
+      expect(find.text('عداد التسبيح'), findsOneWidget);
+    });
+
+    testWidgets('the pinned card stays put while its row scrolls',
+        (tester) async {
+      await pumpHome(tester);
+
+      final before = tester.getTopLeft(find.text('صحيح الأذكار'));
+      final row = find
+          .byWidgetPredicate(
+              (w) => w is ListView && w.scrollDirection == Axis.horizontal)
+          .first;
+      await tester.drag(row, const Offset(600, 0));
+      await tester.pump();
+
+      expect(tester.getTopLeft(find.text('صحيح الأذكار')), before);
+    });
   });
 }

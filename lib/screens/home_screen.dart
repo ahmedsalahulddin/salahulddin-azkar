@@ -1,57 +1,17 @@
 import 'package:flutter/material.dart';
 import '../constants/theme.dart';
+import '../data/home_shelves.dart';
 import '../services/auth_service.dart';
 import '../services/section_config.dart';
 import 'account_screen.dart';
 import '../widgets/prayer_times_card.dart';
-import 'adhkar_home_screen.dart';
-import 'books_screen.dart';
-import 'lessons_screen.dart';
-import 'quran_home_screen.dart';
-
-/// One of the four shelves the home screen is divided into.
-class _Category {
-  /// Matches the key in app_sections, so visibility and order can be changed
-  /// remotely.
-  final String key;
-  final String icon;
-  final String title;
-
-  /// What is inside, named rather than described — the reader should not have
-  /// to open a shelf to find out whether the thing they want is on it.
-  final String contents;
-  final Color tint;
-  final Widget Function() open;
-
-  const _Category(
-      this.key, this.icon, this.title, this.contents, this.tint, this.open);
-}
-
-// Top-level so the category list can stay const.
-Widget _openAdhkar() => const AdhkarHomeScreen();
-Widget _openQuran() => const QuranHomeScreen();
-Widget _openLessons() => const LessonsScreen();
-Widget _openBooks() => const BooksScreen();
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    const all = <_Category>[
-      _Category('adhkar', '📿', 'الأذكار',
-          'الصباح والمساء · حصن المسلم · أدعية العمرة · التسبيح · الوفيات',
-          AppColors.goldMuted, _openAdhkar),
-      _Category('quran', '📖', 'القرآن الكريم',
-          'تلاوة وتدبّر · المصحف كاملاً · اختبار الحفظ',
-          AppColors.emeraldMuted, _openQuran),
-      _Category('lessons', '🎓', 'الدروس',
-          'قصص الأنبياء للأطفال · قصص الأنبياء · التفسير',
-          AppColors.goldMuted, _openLessons),
-      _Category('library', '📚', 'الكتب والأحاديث',
-          'عشرة مجلدات · البخاري ومسلم والسنن · رياض الصالحين',
-          AppColors.emeraldMuted, _openBooks),
-    ];
+    final all = buildShelves();
 
     return Directionality(
       textDirection: TextDirection.rtl,
@@ -122,19 +82,10 @@ class HomeScreen extends StatelessWidget {
                     ]..sort((a, b) => SectionConfig.orderOf(a.$1.key, a.$2)
                         .compareTo(SectionConfig.orderOf(b.$1.key, b.$2)));
 
-                    // One shelf per row, so each is wide enough to name what
-                    // it holds instead of leaving the reader to guess from a
-                    // two-word tile.
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Column(
-                        children: [
-                          for (final (category, _) in visible) ...[
-                            _categoryRow(context, category),
-                            const SizedBox(height: 12),
-                          ],
-                        ],
-                      ),
+                    return Column(
+                      children: [
+                        for (final (shelf, _) in visible) _shelfRow(context, shelf),
+                      ],
                     );
                   },
                 ),
@@ -187,56 +138,116 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _categoryRow(BuildContext context, _Category c) {
-    return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => c.open()),
-      ),
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        decoration: BoxDecoration(
-          color: AppColors.blackCard,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.goldBorder),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                color: c.tint,
-                borderRadius: BorderRadius.circular(14),
+  /// A shelf: its name, then one card that stays put and the rest running
+  /// off the side. Pinning the first card means the thing a reader opens most
+  /// is always under the thumb, however far they scrolled the row last time.
+  Widget _shelfRow(BuildContext context, HomeShelf shelf) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            child: GestureDetector(
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => shelf.all()),
               ),
-              child: Center(
-                  child: Text(c.icon, style: const TextStyle(fontSize: 25))),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              behavior: HitTestBehavior.opaque,
+              child: Row(
                 children: [
-                  Text(c.title,
-                      style: const TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 3),
-                  Text(
-                    c.contents,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                        color: AppColors.textMuted, fontSize: 11, height: 1.4),
+                  Text(shelf.icon, style: const TextStyle(fontSize: 17)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(shelf.title,
+                        style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold)),
                   ),
+                  const Text('الكل',
+                      style:
+                          TextStyle(color: AppColors.textGold, fontSize: 12)),
+                  const Icon(Icons.chevron_left,
+                      color: AppColors.textGold, size: 18),
                 ],
               ),
             ),
-            const SizedBox(width: 6),
-            const Icon(Icons.chevron_left,
-                color: AppColors.textMuted, size: 22),
+          ),
+          SizedBox(
+            // Tall enough for a two-line title plus its subtitle; anything
+            // less and the longer adhkar names overflow the card.
+            height: 124,
+            child: Row(
+              children: [
+                const SizedBox(width: 16),
+                _shelfCard(context, shelf.pinned, shelf.tint, pinned: true),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.only(left: 16),
+                    itemCount: shelf.rest.length,
+                    separatorBuilder: (_, _) => const SizedBox(width: 8),
+                    itemBuilder: (context, i) =>
+                        _shelfCard(context, shelf.rest[i], shelf.tint),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _shelfCard(BuildContext context, ShelfItem item, Color tint,
+      {bool pinned = false}) {
+    return GestureDetector(
+      onTap: () => item.open(context),
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        width: 116,
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 9),
+        decoration: BoxDecoration(
+          color: AppColors.blackCard,
+          borderRadius: BorderRadius.circular(14),
+          // The pinned card carries the full gold edge; the rest are quieter,
+          // so the row reads as "this one, and then the others".
+          border: Border.all(
+              color: pinned ? AppColors.gold : AppColors.goldBorder),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: tint,
+                borderRadius: BorderRadius.circular(11),
+              ),
+              child: Center(
+                  child: Text(item.icon, style: const TextStyle(fontSize: 19))),
+            ),
+            const SizedBox(height: 7),
+            Text(item.title,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 12,
+                    height: 1.25,
+                    fontWeight: FontWeight.w600)),
+            const SizedBox(height: 2),
+            Text(item.subtitle,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style:
+                    const TextStyle(color: AppColors.textMuted, fontSize: 10)),
           ],
         ),
       ),

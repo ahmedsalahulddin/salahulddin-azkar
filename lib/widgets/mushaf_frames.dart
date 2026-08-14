@@ -105,12 +105,32 @@ class MushafFrameBox extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final size = Size(constraints.maxWidth, constraints.maxHeight);
-        return CustomPaint(
-          painter: MushafFramePainter(frame: frame, color: color),
-          child: Padding(
-            padding: EdgeInsets.all(frame.insetFor(size)),
-            child: child,
-          ),
+        final scale = frame.scaleFor(size);
+        final inset = frame.insetFor(size);
+
+        // The ornament is painted wider than the page and hangs off both
+        // sides, so only its top and bottom courses are in view. A page of the
+        // Mushaf needs every millimetre of width it can get; side bands would
+        // take that width from the ayahs, which is the one place it cannot
+        // come from. The parent clips the overhang.
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            Positioned(
+              left: -inset,
+              right: -inset,
+              top: 0,
+              bottom: 0,
+              child: CustomPaint(
+                painter: MushafFramePainter(
+                    frame: frame, color: color, scale: scale),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: inset),
+              child: child,
+            ),
+          ],
         );
       },
     );
@@ -118,15 +138,19 @@ class MushafFrameBox extends StatelessWidget {
 }
 
 class MushafFramePainter extends CustomPainter {
-  MushafFramePainter({required this.frame, required this.color});
+  MushafFramePainter({required this.frame, required this.color, this.scale});
 
   final MushafFrame frame;
   final Color color;
 
+  /// Set when the canvas is deliberately wider than the page, so the ornament
+  /// keeps the size the page asked for instead of growing with the overhang.
+  final double? scale;
+
   @override
   void paint(Canvas canvas, Size size) {
     if (frame == MushafFrame.none) return;
-    final s = frame.scaleFor(size);
+    final s = scale ?? frame.scaleFor(size);
 
     switch (frame) {
       case MushafFrame.none:
@@ -513,5 +537,5 @@ class MushafFramePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(MushafFramePainter old) =>
-      old.frame != frame || old.color != color;
+      old.frame != frame || old.color != color || old.scale != scale;
 }

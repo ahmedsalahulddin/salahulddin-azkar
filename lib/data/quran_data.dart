@@ -254,6 +254,41 @@ class QuranService {
     return total;
   }
 
+  /// Whether [info] answers [query].
+  ///
+  /// The reader types plainly: no hamza, no madda, no ta marbuta, and usually
+  /// without the article — "اخلاص" has to find "الإخلاص" and "عمران" has to
+  /// find "آل عمران". Comparing the raw names finds neither, so both sides are
+  /// folded through [searchKey] first.
+  static bool surahMatches(SurahInfo info, String query) {
+    final q = query.trim();
+    if (q.isEmpty) return true;
+
+    final needle = searchKey(q);
+    if (needle.isNotEmpty && searchKey(info.name).contains(needle)) return true;
+    if (info.nameEn.toLowerCase().contains(q.toLowerCase())) return true;
+
+    // Readers type the surah number in whichever digits their keyboard gives.
+    final digits = toWesternDigits(q);
+    return digits.isNotEmpty && info.number.toString() == digits;
+  }
+
+  /// Turns ٢٥ into 25, leaving anything that is not a digit behind.
+  static String toWesternDigits(String text) {
+    const arabicZero = 0x0660;
+    final buffer = StringBuffer();
+    for (final rune in text.runes) {
+      if (rune >= arabicZero && rune <= arabicZero + 9) {
+        buffer.writeCharCode(0x30 + (rune - arabicZero));
+      } else if (rune >= 0x30 && rune <= 0x39) {
+        buffer.writeCharCode(rune);
+      } else if (rune != 0x20) {
+        return ''; // not a number at all
+      }
+    }
+    return buffer.toString();
+  }
+
   /// Converts 25 -> ٢٥ for the ayah-number ornament.
   static String toArabicDigits(int n) {
     const zero = 0x0660; // ARABIC-INDIC DIGIT ZERO

@@ -17,9 +17,11 @@ void main() {
 
   /// Non-transparent pixels the painter puts down, optionally counting only
   /// those inside [within].
-  Future<int> ink(MushafFrame frame, Size size, {Rect? within}) async {
+  Future<int> ink(MushafFrame frame, Size size,
+      {Rect? within, double? scale}) async {
     final recorder = ui.PictureRecorder();
-    MushafFramePainter(frame: frame, color: const Color(0xFF000000))
+    MushafFramePainter(
+            frame: frame, color: const Color(0xFF000000), scale: scale)
         .paint(Canvas(recorder), size);
     final image = await recorder
         .endRecording()
@@ -76,13 +78,16 @@ void main() {
     });
 
     test('the ornament never strays into the text', () async {
-      // This is the one that matters: the page is inset by exactly this much,
-      // so any ink inside the box would be sitting on top of an ayah.
+      // This is the one that matters. The page keeps its full width and is
+      // inset only top and bottom, on a canvas widened by that inset on each
+      // side so the ornament's flanks hang off view. Any ink inside the box
+      // would be sitting on top of an ayah.
       for (final frame in MushafFrame.values) {
         final inset = frame.insetFor(page);
-        final content = Rect.fromLTWH(inset, inset, page.width - inset * 2,
-            page.height - inset * 2);
-        expect(await ink(frame, page, within: content), 0,
+        final widened = Size(page.width + inset * 2, page.height);
+        final content =
+            Rect.fromLTWH(inset, inset, page.width, page.height - inset * 2);
+        expect(await ink(frame, widened, within: content, scale: frame.scaleFor(page)), 0,
             reason: '${frame.id} drew inside the text area');
       }
     });
@@ -159,7 +164,8 @@ void main() {
 
     final inset = MushafFrame.stars.insetFor(const Size(380, 600));
     final child = tester.getSize(find.byKey(const ValueKey('page')));
-    expect(child.width, closeTo(380 - inset * 2, 0.5));
+    // Full width kept; only the top and bottom courses take room.
+    expect(child.width, closeTo(380, 0.5));
     expect(child.height, closeTo(600 - inset * 2, 0.5));
   });
 }
