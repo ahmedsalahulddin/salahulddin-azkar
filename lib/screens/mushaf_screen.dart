@@ -51,31 +51,22 @@ class _MushafScreenState extends State<MushafScreen> {
   RepeatSettings _repeat = const RepeatSettings();
   StreamSubscription<int?>? _indexSub;
 
-  /// Recitation speeds, cycled by tapping the badge. 1x sits in the middle so
-  /// the common case is one tap away in either direction.
+  /// Speeds offered in the picker, slowest first.
   static const _speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0];
   double _speed = 1.0;
 
-  Future<void> _cycleSpeed() async {
-    final next = _speeds[(_speeds.indexOf(_speed) + 1) % _speeds.length];
-    setState(() => _speed = next);
-    try {
-      await _player.setSpeed(next);
-    } catch (_) {
-      // Speed is a convenience; failing to set it must not break playback.
-    }
-  }
-
   /// Renders 1.0 as "١" and 0.75 as "٠٫٧٥" — trailing zeros read as noise.
-  String get _speedLabel {
-    final text = _speed == _speed.roundToDouble()
-        ? _speed.toInt().toString()
-        : _speed.toString().replaceFirst('.', '٫');
+  static String _arabicSpeed(double speed) {
+    final text = speed == speed.roundToDouble()
+        ? speed.toInt().toString()
+        : speed.toString().replaceFirst('.', '٫');
     return text.split('').map((c) {
       final digit = int.tryParse(c);
       return digit == null ? c : QuranService.toArabicDigits(digit);
     }).join();
   }
+
+  String get _speedLabel => _arabicSpeed(_speed);
 
   @override
   void initState() {
@@ -342,52 +333,6 @@ class _MushafScreenState extends State<MushafScreen> {
     );
   }
 
-  Future<void> _pickReciter() async {
-    final chosen = await showModalBottomSheet<Reciter>(
-      context: context,
-      backgroundColor: AppColors.blackCard,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => Directionality(
-        textDirection: TextDirection.rtl,
-        child: SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Padding(
-                padding: EdgeInsets.all(14),
-                child: Text('اختر القارئ',
-                    style: TextStyle(
-                        color: AppColors.gold,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold)),
-              ),
-              const Divider(color: AppColors.goldBorder, height: 1),
-              for (final r in RecitationService.reciters)
-                ListTile(
-                  dense: true,
-                  title: Text(r.name,
-                      style: const TextStyle(color: AppColors.textPrimary)),
-                  trailing: r.id == _reciter.id
-                      ? const Icon(Icons.check, color: AppColors.gold, size: 18)
-                      : null,
-                  onTap: () => Navigator.pop(ctx, r),
-                ),
-              const SizedBox(height: 8),
-            ],
-          ),
-        ),
-      ),
-    );
-
-    if (chosen == null || chosen.id == _reciter.id) return;
-    await RecitationService.setReciter(chosen.id);
-    await _player.stop();
-    if (!mounted) return;
-    setState(() => _reciter = chosen);
-  }
-
   // ---- build -----------------------------------------------------------
 
   @override
@@ -504,40 +449,28 @@ class _MushafScreenState extends State<MushafScreen> {
             // Who is reciting, then the controls.
             Padding(
               padding: const EdgeInsets.only(right: 8, bottom: 2, top: 1),
-              child: Row(
-                children: [
-                  // Takes the leftover width instead of leaving it blank, so
-                  // the reciter's name is spelled out rather than truncated.
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: _pickReciter,
-                      behavior: HitTestBehavior.opaque,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: AppColors.blackSurface,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: AppColors.goldBorder),
-                        ),
-                        child: Text(
-                          _reciter.name,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                              color: AppColors.textGold, fontSize: 12),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  _barIcon(Icons.record_voice_over, 'اختر القارئ', _pickReciter),
-                  // Play leads the controls; repeat is a setting, so it sits
-                  // at the far end rather than between the two.
-                  _playButton(),
-                  _speedButton(),
-                  _barIcon(Icons.repeat, 'التكرار', _openRepeatSettings,
-                      label: 'تكرار', active: _repeat.isActive),
-                ],
+              // Fixed height so a larger icon cannot push the bar down over
+              // the page. Everything inside centres within it.
+              child: SizedBox(
+                height: 34,
+                child: Row(
+                  children: [
+                    // Takes whatever the controls leave. The controls set
+                    // their own width, so widening a label narrows this rather
+                    // than growing the row.
+                    Expanded(child: _reciterChip()),
+                    const SizedBox(width: 4),
+                    _reciterMenu(),
+                    // Play leads the controls; repeat is a setting, so it sits
+                    // at the far end rather than between the two.
+                    _playButton(),
+                    _speedButton(),
+                    _barIcon(Icons.repeat, 'التكرار', _openRepeatSettings,
+                        label: 'تـكرار',
+                        active: _repeat.isActive,
+                        iconSize: 23),
+                  ],
+                ),
               ),
             ),
           ],
@@ -549,7 +482,7 @@ class _MushafScreenState extends State<MushafScreen> {
   /// A bar control. Passing [label] spells the action out beside the icon —
   /// worth the width for the ones whose symbol alone is ambiguous.
   Widget _barIcon(IconData icon, String tooltip, VoidCallback onTap,
-      {bool active = false, String? label}) {
+      {bool active = false, String? label, double iconSize = 21}) {
     final tint = active ? AppColors.gold : AppColors.textSecondary;
     return Tooltip(
       message: tooltip,
@@ -557,12 +490,13 @@ class _MushafScreenState extends State<MushafScreen> {
         onTap: onTap,
         behavior: HitTestBehavior.opaque,
         child: Padding(
-          padding: EdgeInsets.symmetric(
-              horizontal: label == null ? 7 : 5, vertical: 5),
+          // Horizontal only: the row's fixed height does the vertical work, so
+          // a bigger icon cannot make the bar taller.
+          padding: EdgeInsets.symmetric(horizontal: label == null ? 7 : 5),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 21, color: tint),
+              Icon(icon, size: iconSize, color: tint),
               if (label != null) ...[
                 const SizedBox(width: 3),
                 Text(label,
@@ -580,53 +514,170 @@ class _MushafScreenState extends State<MushafScreen> {
     );
   }
 
-  Widget _speedButton() {
-    final changed = _speed != 1.0;
-    return Tooltip(
-      message: 'سرعة التلاوة',
-      child: GestureDetector(
-        onTap: _cycleSpeed,
-        behavior: HitTestBehavior.opaque,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 26,
-                height: 26,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: changed ? AppColors.goldMuted : Colors.transparent,
-                  border: Border.all(
-                    color: changed ? AppColors.gold : AppColors.goldBorder,
-                  ),
-                ),
-                child: Center(
-                  child: Text(
-                    _speedLabel,
-                    style: TextStyle(
-                      color:
-                          changed ? AppColors.gold : AppColors.textSecondary,
-                      fontSize: _speedLabel.length > 2 ? 8 : 11,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 3),
-              Text('سرعة',
-                  style: TextStyle(
-                    color: changed ? AppColors.gold : AppColors.textSecondary,
-                    fontSize: 11,
-                    fontWeight:
-                        changed ? FontWeight.bold : FontWeight.normal,
-                  )),
-            ],
-          ),
+  /// The reciter's name. Tapping opens the list right under it.
+  Widget _reciterChip() {
+    return _reciterPopup(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        decoration: BoxDecoration(
+          color: AppColors.blackSurface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppColors.goldBorder),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          _reciter.name,
+          overflow: TextOverflow.ellipsis,
+          maxLines: 1,
+          style: const TextStyle(color: AppColors.textGold, fontSize: 12),
         ),
       ),
     );
+  }
+
+  Widget _reciterMenu() => _reciterPopup(
+        child: const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 6),
+          child: Icon(Icons.record_voice_over,
+              size: 22, color: AppColors.textSecondary),
+        ),
+      );
+
+  /// Drops the reciter list below whatever it wraps — a sheet rising from the
+  /// bottom of the screen put the choices as far from the button as possible.
+  Widget _reciterPopup({required Widget child}) {
+    return PopupMenuButton<Reciter>(
+      tooltip: 'اختر القارئ',
+      color: AppColors.blackCard,
+      position: PopupMenuPosition.under,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: AppColors.goldBorder),
+      ),
+      padding: EdgeInsets.zero,
+      onSelected: _applyReciter,
+      itemBuilder: (context) => [
+        for (final r in RecitationService.reciters)
+          PopupMenuItem(
+            value: r,
+            height: 40,
+            child: Directionality(
+              textDirection: TextDirection.rtl,
+              child: Row(
+                children: [
+                  if (r.id == _reciter.id)
+                    const Icon(Icons.check, color: AppColors.gold, size: 16)
+                  else
+                    const SizedBox(width: 16),
+                  const SizedBox(width: 8),
+                  Text(r.name,
+                      style: TextStyle(
+                        color: r.id == _reciter.id
+                            ? AppColors.gold
+                            : AppColors.textPrimary,
+                        fontSize: 13,
+                      )),
+                ],
+              ),
+            ),
+          ),
+      ],
+      child: child,
+    );
+  }
+
+  Future<void> _applyReciter(Reciter chosen) async {
+    if (chosen.id == _reciter.id) return;
+    await RecitationService.setReciter(chosen.id);
+    await _player.stop();
+    if (!mounted) return;
+    setState(() => _reciter = chosen);
+  }
+
+  /// Speeds are picked from a list under the badge rather than cycled: seven
+  /// steps meant up to six taps to reach the one you wanted.
+  Widget _speedButton() {
+    final changed = _speed != 1.0;
+    final tint = changed ? AppColors.gold : AppColors.textSecondary;
+
+    return PopupMenuButton<double>(
+      tooltip: 'سرعة التلاوة',
+      color: AppColors.blackCard,
+      position: PopupMenuPosition.under,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: AppColors.goldBorder),
+      ),
+      padding: EdgeInsets.zero,
+      onSelected: _applySpeed,
+      itemBuilder: (context) => [
+        for (final s in _speeds)
+          PopupMenuItem(
+            value: s,
+            height: 38,
+            child: Row(
+              children: [
+                if (s == _speed)
+                  const Icon(Icons.check, color: AppColors.gold, size: 15)
+                else
+                  const SizedBox(width: 15),
+                const SizedBox(width: 8),
+                Text(
+                  s == 1.0 ? 'الطبيعية' : '${_arabicSpeed(s)}×',
+                  style: TextStyle(
+                    color:
+                        s == _speed ? AppColors.gold : AppColors.textPrimary,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 5),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 30,
+              height: 30,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: changed ? AppColors.goldMuted : Colors.transparent,
+                border: Border.all(color: tint, width: 2),
+              ),
+              child: Center(
+                child: Text(
+                  _speedLabel,
+                  style: TextStyle(
+                    color: tint,
+                    fontSize: _speedLabel.length > 2 ? 9 : 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 3),
+            Text('سـرعة',
+                style: TextStyle(
+                  color: tint,
+                  fontSize: 11,
+                  fontWeight: changed ? FontWeight.bold : FontWeight.normal,
+                )),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _applySpeed(double speed) async {
+    setState(() => _speed = speed);
+    try {
+      await _player.setSpeed(speed);
+    } catch (_) {
+      // Speed is a convenience; failing to set it must not break playback.
+    }
   }
 
   Widget _playButton() {
@@ -663,7 +714,8 @@ class _MushafScreenState extends State<MushafScreen> {
               _toast('اضغط على آية أولاً لتبدأ التلاوة منها');
             }
           },
-          label: playing ? 'إيقاف' : 'تشغيل',
+          label: playing ? 'إيـقاف' : 'تـشغيل',
+          iconSize: 26,
           active: true,
         );
       },
