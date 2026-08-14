@@ -506,7 +506,9 @@ class _MushafScreenState extends State<MushafScreen> {
               padding: const EdgeInsets.only(right: 8, bottom: 2, top: 1),
               child: Row(
                 children: [
-                  Flexible(
+                  // Takes the leftover width instead of leaving it blank, so
+                  // the reciter's name is spelled out rather than truncated.
+                  Expanded(
                     child: GestureDetector(
                       onTap: _pickReciter,
                       behavior: HitTestBehavior.opaque,
@@ -535,7 +537,6 @@ class _MushafScreenState extends State<MushafScreen> {
                   _speedButton(),
                   _barIcon(Icons.repeat, 'التكرار', _openRepeatSettings,
                       label: 'تكرار', active: _repeat.isActive),
-                  const Spacer(),
                 ],
               ),
             ),
@@ -588,26 +589,40 @@ class _MushafScreenState extends State<MushafScreen> {
         behavior: HitTestBehavior.opaque,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-          child: Container(
-            width: 26,
-            height: 26,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: changed ? AppColors.goldMuted : Colors.transparent,
-              border: Border.all(
-                color: changed ? AppColors.gold : AppColors.goldBorder,
-              ),
-            ),
-            child: Center(
-              child: Text(
-                _speedLabel,
-                style: TextStyle(
-                  color: changed ? AppColors.gold : AppColors.textSecondary,
-                  fontSize: _speedLabel.length > 2 ? 8 : 11,
-                  fontWeight: FontWeight.bold,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 26,
+                height: 26,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: changed ? AppColors.goldMuted : Colors.transparent,
+                  border: Border.all(
+                    color: changed ? AppColors.gold : AppColors.goldBorder,
+                  ),
+                ),
+                child: Center(
+                  child: Text(
+                    _speedLabel,
+                    style: TextStyle(
+                      color:
+                          changed ? AppColors.gold : AppColors.textSecondary,
+                      fontSize: _speedLabel.length > 2 ? 8 : 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
-            ),
+              const SizedBox(width: 3),
+              Text('سرعة',
+                  style: TextStyle(
+                    color: changed ? AppColors.gold : AppColors.textSecondary,
+                    fontSize: 11,
+                    fontWeight:
+                        changed ? FontWeight.bold : FontWeight.normal,
+                  )),
+            ],
           ),
         ),
       ),
@@ -931,8 +946,20 @@ class _PageSheetState extends State<_PageSheet> {
 
   @override
   Widget build(BuildContext context) {
+    // A thin frame in the app's own gold, set slightly in from the edge so it
+    // reads as the binding holding the page rather than competing with the
+    // ornamental border printed on the sheet itself.
+    //
+    // The colour comes from AppColors, so changing the app's identity in one
+    // place carries the frame with it.
     return Container(
-      color: _paper,
+      margin: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: _paper,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: AppColors.gold, width: 1.5),
+      ),
+      clipBehavior: Clip.antiAlias,
       child: FutureBuilder<File?>(
         future: _image,
         builder: (context, snapshot) {
