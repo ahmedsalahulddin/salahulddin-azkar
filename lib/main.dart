@@ -4,7 +4,7 @@ import 'package:just_audio_background/just_audio_background.dart';
 import 'constants/theme.dart';
 import 'screens/home_screen.dart';
 import 'screens/favorites_screen.dart';
-import 'screens/settings_screen.dart';
+import 'screens/account_screen.dart';
 import 'services/auth_service.dart';
 import 'services/notification_service.dart';
 import 'services/prayer_settings.dart';
@@ -89,7 +89,7 @@ class _MainNavigationState extends State<MainNavigation> {
   final _screens = const [
     FavoritesScreen(),
     HomeScreen(),
-    SettingsScreen(),
+    AccountScreen(),
   ];
 
   @override
@@ -117,7 +117,8 @@ class _MainNavigationState extends State<MainNavigation> {
             items: const [
               BottomNavigationBarItem(icon: Icon(Icons.star_rounded), label: 'أذكاري'),
               BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: 'الرئيسية'),
-              BottomNavigationBarItem(icon: Icon(Icons.settings_rounded), label: 'الإعدادات'),
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.person_rounded), label: 'حسابي'),
             ],
           ),
         ),

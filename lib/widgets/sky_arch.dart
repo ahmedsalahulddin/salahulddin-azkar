@@ -34,7 +34,7 @@ class SkyArch extends StatelessWidget {
   /// Tall enough to hold the prayer times inside the arch rather than under
   /// it. The crown keeps its size whatever this is — see [_archPath] — so the
   /// extra height all goes to the jambs.
-  static const height = 438.0;
+  static const height = 524.0;
 
   /// Where the crown stops and the jambs begin, for a given width and height.
   static double springOf(Size size) =>

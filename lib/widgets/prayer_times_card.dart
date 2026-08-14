@@ -127,125 +127,64 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> {
   @override
   Widget build(BuildContext context) {
     final data = _data;
-
-    return Column(
-      children: [
-        // The sky above, the reckoning below.
-        if (data != null)
-          SkyArch(
-            data: data,
-            now: DateTime.now(),
-            child: Column(
-              children: [
-                const Expanded(child: RotatingVerse()),
-                const SizedBox(height: 8),
-                _timesColumn(data),
-              ],
-            ),
+    if (data == null || _failed) {
+      return SizedBox(
+        height: 200,
+        child: Center(
+          child: Text(
+            _failed ? 'تعذّر حساب أوقات الصلاة' : 'جاري حساب أوقات الصلاة…',
+            style: const TextStyle(color: AppColors.textMuted, fontSize: 14),
           ),
-        Container(
-          margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [AppColors.navyLight, AppColors.navy],
-            ),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.goldBorder),
-          ),
-          child: _failed
-              ? _message('تعذّر حساب أوقات الصلاة')
-              : data == null
-                  ? _message('جاري حساب أوقات الصلاة…')
-                  : _content(data),
         ),
-      ],
+      );
+    }
+
+    // Everything the reader needs about the prayer day now lives inside the
+    // arch. The card that used to sit under it repeated what the arch already
+    // said, and cost a screenful doing it.
+    return SkyArch(
+      data: data,
+      now: DateTime.now(),
+      child: Column(
+        children: [
+          const Expanded(child: RotatingVerse()),
+          const SizedBox(height: 10),
+          _countdown(data),
+          const SizedBox(height: 8),
+          _locationChip(data.status),
+          const SizedBox(height: 10),
+          _timesColumn(data),
+        ],
+      ),
     );
   }
 
-  Widget _message(String text) => SizedBox(
-        height: 150,
-        child: Center(
-          child: Text(text, style: const TextStyle(color: AppColors.textMuted, fontSize: 14)),
-        ),
-      );
-
-  /// The reckoning under the arch: which prayer is next and when, the time
-  /// left, and where the times were computed for. The times themselves are up
-  /// inside the arch now.
-  Widget _content(PrayerData data) {
+  /// How long until the next prayer, and which one it is.
+  Widget _countdown(PrayerData data) {
     return Column(
       children: [
-        // Which prayer is being counted down to, and when it falls.
-        Padding(
-          padding: const EdgeInsets.fromLTRB(18, 0, 18, 10),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('الصلاة القادمة',
-                      style: TextStyle(
-                          color: AppColors.textMuted, fontSize: 11)),
-                  const SizedBox(height: 2),
-                  Text(data.nextName,
-                      style: const TextStyle(
-                          color: AppColors.gold,
-                          fontSize: 21,
-                          fontWeight: FontWeight.bold)),
-                ],
-              ),
-              const Spacer(),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  const Text('الموعد',
-                      style: TextStyle(
-                          color: AppColors.textMuted, fontSize: 11)),
-                  const SizedBox(height: 2),
-                  Text(PrayerService.formatTime(data.nextTime),
-                      style: const TextStyle(
-                          color: AppColors.textGold,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold)),
-                ],
-              ),
-            ],
+        Text('${data.nextName} بعد',
+            style: const TextStyle(color: AppColors.textMuted, fontSize: 11)),
+        const SizedBox(height: 4),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+          decoration: BoxDecoration(
+            color: AppColors.goldMuted,
+            borderRadius: BorderRadius.circular(30),
+            border: Border.all(color: AppColors.goldBorder),
+          ),
+          child: Text(
+            PrayerService.formatCountdown(_remaining),
+            textDirection: TextDirection.ltr,
+            style: const TextStyle(
+              color: AppColors.textGold,
+              fontSize: 19,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.5,
+              fontFeatures: [FontFeature.tabularFigures()],
+            ),
           ),
         ),
-        // Countdown and location share a row — the location is a one-off
-        // caption and did not earn a line of its own.
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
-              decoration: BoxDecoration(
-                color: AppColors.goldMuted,
-                borderRadius: BorderRadius.circular(30),
-                border: Border.all(color: AppColors.goldBorder),
-              ),
-              child: Text(
-                PrayerService.formatCountdown(_remaining),
-                textDirection: TextDirection.ltr,
-                style: const TextStyle(
-                  color: AppColors.textGold,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 2,
-                  fontFeatures: [FontFeature.tabularFigures()],
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Flexible(child: _locationChip(data.status)),
-          ],
-        ),
-        const SizedBox(height: 10),
-
       ],
     );
   }

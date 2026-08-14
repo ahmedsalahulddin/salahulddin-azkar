@@ -98,7 +98,7 @@ class _AccountScreenState extends State<AccountScreen> {
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
-          title: const Text('حسابي'),
+          title: const Text('حسابي والإعدادات'),
           backgroundColor: AppColors.black,
           foregroundColor: AppColors.gold,
         ),
@@ -108,17 +108,11 @@ class _AccountScreenState extends State<AccountScreen> {
             padding: const EdgeInsets.all(16),
             children: [
               _profileCard(user),
-              const SizedBox(height: 20),
-              _sectionTitle('الإعدادات'),
-              _tile(
-                icon: Icons.tune,
-                title: 'حجم الخط والتذكيرات',
-                subtitle: 'اضبط المظهر ومواعيد الإشعارات',
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const SettingsScreen()),
-                ),
-              ),
+              const SizedBox(height: 10),
+              // The settings themselves, not a link to them: there is one
+              // place the reader goes for anything about themselves or the
+              // app, and this is it.
+              const SettingsScreen(embedded: true),
               // Only shown to accounts listed in app_admins; a non-admin never
               // learns the screen exists.
               if (_isAdmin) ...[

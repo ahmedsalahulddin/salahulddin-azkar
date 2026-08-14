@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/theme.dart';
 import '../data/home_shelves.dart';
-import '../services/auth_service.dart';
 import '../services/section_config.dart';
-import 'account_screen.dart';
 import '../widgets/prayer_times_card.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -22,37 +20,6 @@ class HomeScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Header
-                Container(
-                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-                  decoration: const BoxDecoration(
-                    border: Border(bottom: BorderSide(color: AppColors.goldBorder)),
-                  ),
-                  child: Row(
-                    children: [
-                      // Balances the avatar so the basmala stays centred.
-                      const SizedBox(width: 34),
-                      const Expanded(
-                        child: Text('بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                                color: AppColors.textMuted, fontSize: 13)),
-                      ),
-                      ValueListenableBuilder<AppUser?>(
-                        valueListenable: AuthService.user,
-                        builder: (context, user, _) => GestureDetector(
-                          onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => const AccountScreen()),
-                          ),
-                          behavior: HitTestBehavior.opaque,
-                          child: UserAvatar(user: user),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
                 const SizedBox(height: 10),
 
                 // The verse now turns under the arch, inside the card.

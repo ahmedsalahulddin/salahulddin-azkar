@@ -5,7 +5,11 @@ import '../services/storage_service.dart';
 import '../services/notification_service.dart';
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key});
+  /// True when the settings sit inside another screen's scroll view, which is
+  /// how they are reached now — the account page carries them.
+  final bool embedded;
+
+  const SettingsScreen({super.key, this.embedded = false});
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -44,30 +48,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     final previewSize = _fontSize == 'small' ? 18.0 : _fontSize == 'large' ? 28.0 : 22.0;
 
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
-        backgroundColor: AppColors.black,
-        body: SafeArea(
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Header
-                Container(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  decoration: const BoxDecoration(
-                    border: Border(bottom: BorderSide(color: AppColors.goldBorder)),
-                  ),
-                  child: const Column(
-                    children: [
-                      Text('⚙️', style: TextStyle(fontSize: 32)),
-                      SizedBox(height: 4),
-                      Text('الإعدادات',
-                          style: TextStyle(color: AppColors.gold, fontSize: 24, fontWeight: FontWeight.bold)),
-                    ],
-                  ),
-                ),
+    final body = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
 
                 // Font size section
                 _sectionTitle('حجم الخط'),
@@ -129,37 +112,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   },
                 ),
 
-                // About
-                _sectionTitle('عن التطبيق'),
-                Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 16),
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: AppColors.blackCard,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.goldBorder),
-                  ),
-                  child: const Column(
-                    children: [
-                      Text('salahulddin-AZKAR',
-                          style: TextStyle(color: AppColors.gold, fontSize: 22, fontWeight: FontWeight.bold)),
-                      SizedBox(height: 4),
-                      Text('الإصدار 1.0.0',
-                          style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
-                      SizedBox(height: 10),
-                      Text(
-                        'تطبيق لأذكار المسلم اليومية من القرآن والسنة الصحيحة',
-                        style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.6),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 40),
-              ],
-            ),
-          ),
+      ],
+    );
+
+    // Embedded, the caller owns the page and its scrolling.
+    if (widget.embedded) return body;
+
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        backgroundColor: AppColors.black,
+        appBar: AppBar(
+          title: const Text('الإعدادات'),
+          backgroundColor: AppColors.black,
+          foregroundColor: AppColors.gold,
         ),
+        body: SafeArea(child: SingleChildScrollView(child: body)),
+
       ),
     );
   }
