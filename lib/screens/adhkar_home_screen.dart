@@ -3,10 +3,20 @@ import '../constants/theme.dart';
 import '../data/adhkar_data.dart';
 import '../data/hisn_data.dart';
 import '../data/umrah_data.dart';
+import '../widgets/tasbih_counter.dart';
 import 'category_screen.dart';
 import 'deceased_screen.dart';
 import 'sahih_adhkar_screen.dart';
 import 'umrah_screen.dart';
+
+/// Free-running tasbih, not tied to any one dhikr.
+const _freeTasbih = Dhikr(
+  id: 'free-tasbih',
+  categoryId: 'tasbih',
+  text: 'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ',
+  source: 'صحيح مسلم',
+  repetitions: 33,
+);
 
 class AdhkarHomeScreen extends StatelessWidget {
   const AdhkarHomeScreen({super.key});
@@ -32,12 +42,14 @@ class AdhkarHomeScreen extends StatelessWidget {
             crossAxisSpacing: 12,
             childAspectRatio: 1.05,
           ),
-          // +2 for the Hisn al-Muslim and Umrah tiles, which lead the grid.
-          itemCount: cats.length + 2,
+          // +3 for the Hisn al-Muslim, Umrah and tasbih tiles, which lead the
+          // grid.
+          itemCount: cats.length + 3,
           itemBuilder: (context, i) {
             if (i == 0) return _sahihCard(context);
             if (i == 1) return _umrahCard(context);
-            final cat = cats[i - 2];
+            if (i == 2) return _tasbihCard(context);
+            final cat = cats[i - 3];
             return GestureDetector(
               onTap: () => Navigator.push(
                 context,
@@ -76,6 +88,42 @@ class AdhkarHomeScreen extends StatelessWidget {
               ),
             );
           },
+        ),
+      ),
+    );
+  }
+
+  /// The counter lives with the adhkar now that the home screen is four
+  /// shelves rather than a grid of loose tiles.
+  Widget _tasbihCard(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (_) => const TasbihCounter(dhikr: _freeTasbih)),
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppColors.blackCard,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.goldBorder),
+        ),
+        child: const Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('🔢', style: TextStyle(fontSize: 32)),
+            SizedBox(height: 8),
+            Text('عداد التسبيح',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600)),
+            SizedBox(height: 4),
+            Text('سبّح واحتسب',
+                style: TextStyle(color: AppColors.textMuted, fontSize: 11)),
+          ],
         ),
       ),
     );

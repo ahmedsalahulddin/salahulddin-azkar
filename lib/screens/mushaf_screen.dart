@@ -14,6 +14,7 @@ import '../services/mushaf_image_service.dart';
 import '../services/recitation_service.dart';
 import '../services/repeat_settings.dart';
 import '../services/storage_service.dart';
+import '../widgets/mushaf_frames.dart';
 import '../widgets/mushaf_page_view.dart';
 import '../widgets/tafsir_sheet.dart';
 
@@ -998,40 +999,45 @@ class _PageSheetState extends State<_PageSheet> {
 
   @override
   Widget build(BuildContext context) {
-    // A thin frame in the app's own gold, set slightly in from the edge so it
-    // reads as the binding holding the page rather than competing with the
-    // ornamental border printed on the sheet itself.
-    //
-    // The colour comes from AppColors, so changing the app's identity in one
-    // place carries the frame with it.
+    // The page sits inside the reader's chosen border, drawn in the app's own
+    // colour so changing the theme carries the ornament with it. The page
+    // images are text on a transparent ground with no printed border of their
+    // own, so nothing is being drawn over.
     return Container(
       margin: const EdgeInsets.all(3),
       decoration: BoxDecoration(
         color: _paper,
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: AppColors.gold, width: 1.5),
       ),
       clipBehavior: Clip.antiAlias,
-      child: FutureBuilder<File?>(
-        future: _image,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done) {
-            return const Center(
-              child: CircularProgressIndicator(
-                  color: AppColors.goldDark, strokeWidth: 2),
-            );
-          }
-          final file = snapshot.data;
-          if (file == null) return _textFallback();
+      child: ValueListenableBuilder<MushafFrame>(
+        valueListenable: MushafFrames.current,
+        builder: (context, frame, child) => MushafFrameBox(
+          frame: frame,
+          color: AppColors.gold,
+          child: child!,
+        ),
+        child: FutureBuilder<File?>(
+          future: _image,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState != ConnectionState.done) {
+              return const Center(
+                child: CircularProgressIndicator(
+                    color: AppColors.goldDark, strokeWidth: 2),
+              );
+            }
+            final file = snapshot.data;
+            if (file == null) return _textFallback();
 
-          return MushafPageImage(
-            file: file,
-            boxes: _boxes,
-            selected: widget.selected,
-            onAyahTapped: widget.onAyahTapped,
-            onBackgroundTapped: widget.onBackgroundTapped,
-          );
-        },
+            return MushafPageImage(
+              file: file,
+              boxes: _boxes,
+              selected: widget.selected,
+              onAyahTapped: widget.onAyahTapped,
+              onBackgroundTapped: widget.onBackgroundTapped,
+            );
+          },
+        ),
       ),
     );
   }
@@ -1190,6 +1196,7 @@ class _DrawerBodyState extends State<_DrawerBody> {
     (icon: Icons.search, label: 'الكلمات'),
     (icon: Icons.bookmark, label: 'العلامات'),
     (icon: Icons.download, label: 'التنزيل'),
+    (icon: Icons.filter_frames, label: 'الإطار'),
   ];
 
   @override
@@ -1208,6 +1215,7 @@ class _DrawerBodyState extends State<_DrawerBody> {
               _BookmarksTab(
                   index: widget.index, onBookmark: widget.onBookmark),
               const _DownloadsTab(),
+              const _FrameTab(),
             ],
           ),
         ),
@@ -1265,6 +1273,114 @@ class _DrawerBodyState extends State<_DrawerBody> {
                 )),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Picks the border drawn around the page. Every swatch is the real painter at
+/// preview size, so what the reader taps is exactly what the page becomes.
+class _FrameTab extends StatelessWidget {
+  const _FrameTab();
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<MushafFrame>(
+      valueListenable: MushafFrames.current,
+      builder: (context, chosen, _) => ListView(
+        padding: const EdgeInsets.all(12),
+        children: [
+          const Text('إطار الصفحة',
+              style: TextStyle(
+                  color: AppColors.gold,
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold)),
+          const SizedBox(height: 4),
+          const Text(
+            'زخارف مرسومة داخل التطبيق، تأخذ لون السمة وتتغيّر معه.',
+            style: TextStyle(color: AppColors.textMuted, fontSize: 11),
+          ),
+          const SizedBox(height: 12),
+          GridView.count(
+            crossAxisCount: 3,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            mainAxisSpacing: 10,
+            crossAxisSpacing: 10,
+            childAspectRatio: 0.66,
+            children: [
+              for (final frame in MushafFrame.values)
+                _swatch(frame, frame == chosen),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _swatch(MushafFrame frame, bool active) {
+    return GestureDetector(
+      onTap: () => MushafFrames.choose(frame),
+      behavior: HitTestBehavior.opaque,
+      child: Column(
+        children: [
+          Expanded(
+            child: Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: _paper,
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(
+                  color: active ? AppColors.gold : Colors.transparent,
+                  width: 2,
+                ),
+              ),
+              child: MushafFrameBox(
+                frame: frame,
+                color: AppColors.gold,
+                // Stand-in for the text, so the swatch shows how much room the
+                // ornament leaves the page.
+                child: const _PreviewLines(),
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            frame.label,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: active ? AppColors.gold : AppColors.textMuted,
+              fontSize: 10,
+              fontWeight: active ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PreviewLines extends StatelessWidget {
+  const _PreviewLines();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(2),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          for (var i = 0; i < 4; i++)
+            Container(
+              height: 2,
+              margin: const EdgeInsets.symmetric(vertical: 2),
+              width: i.isEven ? double.infinity : null,
+              constraints: const BoxConstraints(minWidth: 14),
+              color: const Color(0xFF6B6250),
+            ),
+        ],
       ),
     );
   }

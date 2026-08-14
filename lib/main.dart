@@ -8,6 +8,7 @@ import 'services/auth_service.dart';
 import 'services/notification_service.dart';
 import 'services/section_config.dart';
 import 'services/storage_service.dart';
+import 'widgets/mushaf_frames.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,6 +27,9 @@ void main() async {
   try {
     await SectionConfig.load();
   } catch (_) {}
+
+  // The chosen Mushaf border, so the first page opens already wearing it.
+  await MushafFrames.load();
 
   try {
     await NotificationService.init();

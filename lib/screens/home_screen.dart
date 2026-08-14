@@ -1,66 +1,56 @@
 import 'package:flutter/material.dart';
 import '../constants/theme.dart';
-import '../data/adhkar_data.dart';
 import '../services/auth_service.dart';
 import '../services/section_config.dart';
 import 'account_screen.dart';
 import '../widgets/prayer_times_card.dart';
-import '../widgets/tasbih_counter.dart';
 import 'adhkar_home_screen.dart';
 import 'books_screen.dart';
-import 'deceased_screen.dart';
-import 'favorites_screen.dart';
+import 'lessons_screen.dart';
 import 'quran_home_screen.dart';
 
-/// Free-running tasbih used by the home shortcut (not tied to a specific dhikr).
-const _freeTasbih = Dhikr(
-  id: 'free-tasbih',
-  categoryId: 'tasbih',
-  text: 'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ',
-  source: 'صحيح مسلم',
-  repetitions: 33,
-);
-
-class _Section {
+/// One of the four shelves the home screen is divided into.
+class _Category {
   /// Matches the key in app_sections, so visibility and order can be changed
   /// remotely.
   final String key;
   final String icon;
   final String title;
-  final String subtitle;
+
+  /// What is inside, named rather than described — the reader should not have
+  /// to open a shelf to find out whether the thing they want is on it.
+  final String contents;
   final Color tint;
   final Widget Function() open;
 
-  const _Section(
-      this.key, this.icon, this.title, this.subtitle, this.tint, this.open);
+  const _Category(
+      this.key, this.icon, this.title, this.contents, this.tint, this.open);
 }
 
-// Top-level so the section list can stay const.
+// Top-level so the category list can stay const.
 Widget _openAdhkar() => const AdhkarHomeScreen();
 Widget _openQuran() => const QuranHomeScreen();
+Widget _openLessons() => const LessonsScreen();
 Widget _openBooks() => const BooksScreen();
-Widget _openTasbih() => const TasbihCounter(dhikr: _freeTasbih);
-Widget _openDeceased() => const DeceasedScreen();
-Widget _openFavorites() => const FavoritesScreen();
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    const all = <_Section>[
-      _Section('adhkar', '📿', 'الأذكار', 'أذكار المسلم', AppColors.goldMuted,
-          _openAdhkar),
-      _Section('quran', '📖', 'القرآن الكريم', 'تدبّر وقراءة',
+    const all = <_Category>[
+      _Category('adhkar', '📿', 'الأذكار',
+          'الصباح والمساء · حصن المسلم · أدعية العمرة · التسبيح · الوفيات',
+          AppColors.goldMuted, _openAdhkar),
+      _Category('quran', '📖', 'القرآن الكريم',
+          'تلاوة وتدبّر · المصحف كاملاً · اختبار الحفظ',
           AppColors.emeraldMuted, _openQuran),
-      _Section('library', '📚', 'المكتبة', '١٠ كتب حديث', AppColors.goldMuted,
-          _openBooks),
-      _Section('tasbih', '🔢', 'عداد التسبيح', 'سبّح واحتسب',
-          AppColors.emeraldMuted, _openTasbih),
-      _Section('deceased', '🕊️', 'الوفيات', 'ادعُ لموتاك', AppColors.goldMuted,
-          _openDeceased),
-      _Section('favorites', '⭐', 'المفضلة', 'أذكاري المحفوظة',
-          AppColors.emeraldMuted, _openFavorites),
+      _Category('lessons', '🎓', 'الدروس',
+          'قصص الأنبياء للأطفال · قصص الأنبياء · التفسير',
+          AppColors.goldMuted, _openLessons),
+      _Category('library', '📚', 'الكتب والأحاديث',
+          'عشرة مجلدات · البخاري ومسلم والسنن · رياض الصالحين',
+          AppColors.emeraldMuted, _openBooks),
     ];
 
     return Directionality(
@@ -132,20 +122,19 @@ class HomeScreen extends StatelessWidget {
                     ]..sort((a, b) => SectionConfig.orderOf(a.$1.key, a.$2)
                         .compareTo(SectionConfig.orderOf(b.$1.key, b.$2)));
 
-                    return GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
+                    // One shelf per row, so each is wide enough to name what
+                    // it holds instead of leaving the reader to guess from a
+                    // two-word tile.
+                    return Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        mainAxisSpacing: 12,
-                        crossAxisSpacing: 12,
-                        childAspectRatio: 1.15,
+                      child: Column(
+                        children: [
+                          for (final (category, _) in visible) ...[
+                            _categoryRow(context, category),
+                            const SizedBox(height: 12),
+                          ],
+                        ],
                       ),
-                      itemCount: visible.length,
-                      itemBuilder: (context, i) =>
-                          _sectionCard(context, visible[i].$1),
                     );
                   },
                 ),
@@ -198,42 +187,56 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _sectionCard(BuildContext context, _Section s) {
+  Widget _categoryRow(BuildContext context, _Category c) {
     return GestureDetector(
       onTap: () => Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => s.open()),
+        MaterialPageRoute(builder: (_) => c.open()),
       ),
+      behavior: HitTestBehavior.opaque,
       child: Container(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
           color: AppColors.blackCard,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AppColors.goldBorder),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Row(
           children: [
             Container(
-              width: 52,
-              height: 52,
+              width: 50,
+              height: 50,
               decoration: BoxDecoration(
-                color: s.tint,
+                color: c.tint,
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: Center(child: Text(s.icon, style: const TextStyle(fontSize: 26))),
+              child: Center(
+                  child: Text(c.icon, style: const TextStyle(fontSize: 25))),
             ),
-            const SizedBox(height: 10),
-            Text(s.title,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600)),
-            const SizedBox(height: 3),
-            Text(s.subtitle,
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: AppColors.textMuted, fontSize: 11)),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(c.title,
+                      style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 3),
+                  Text(
+                    c.contents,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                        color: AppColors.textMuted, fontSize: 11, height: 1.4),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 6),
+            const Icon(Icons.chevron_left,
+                color: AppColors.textMuted, size: 22),
           ],
         ),
       ),
