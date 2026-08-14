@@ -139,107 +139,71 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> {
       );
     }
 
-    // The sky panel — dome, sun path, prayer marks — then the day's numbers
-    // under it. The verse turns between the two.
+    // The sky panel carries the countdown and the location inside its dome —
+    // no caption needed, the marked prayer on the path says which one it is.
+    // Under the panel: the verse, then the six times in one row.
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         children: [
-          SkyArch(data: data, now: DateTime.now()),
+          SkyArch(
+            data: data,
+            now: DateTime.now(),
+            inDome: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  PrayerService.formatCountdown(_remaining),
+                  textDirection: TextDirection.ltr,
+                  style: const TextStyle(
+                    color: AppColors.textGold,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.5,
+                    fontFeatures: [FontFeature.tabularFigures()],
+                  ),
+                ),
+                const SizedBox(height: 3),
+                _locationChip(data.status),
+              ],
+            ),
+          ),
           const SizedBox(height: 12),
           const RotatingVerse(),
           const SizedBox(height: 12),
-          _countdown(data),
-          const SizedBox(height: 8),
-          _locationChip(data.status),
-          const SizedBox(height: 10),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 26),
-            child: _timesColumn(data),
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: data.prayers.map(_prayerColumn).toList(),
+            ),
           ),
         ],
       ),
     );
   }
 
-  /// How long until the next prayer, and which one it is.
-  Widget _countdown(PrayerData data) {
+  /// One prayer in the strip: name, time under it, an arrow over the next.
+  Widget _prayerColumn(PrayerInfo p) {
+    final color = p.isNext ? AppColors.gold : AppColors.textMuted;
     return Column(
       children: [
-        Text('${data.nextName} بعد',
-            style: const TextStyle(color: AppColors.textMuted, fontSize: 11)),
-        const SizedBox(height: 4),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
-          decoration: BoxDecoration(
-            color: AppColors.goldMuted,
-            borderRadius: BorderRadius.circular(30),
-            border: Border.all(color: AppColors.goldBorder),
-          ),
-          child: Text(
-            PrayerService.formatCountdown(_remaining),
-            textDirection: TextDirection.ltr,
-            style: const TextStyle(
-              color: AppColors.textGold,
-              fontSize: 19,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.5,
-              fontFeatures: [FontFeature.tabularFigures()],
-            ),
-          ),
+        Icon(
+          Icons.arrow_drop_down,
+          size: 16,
+          color: p.isNext ? AppColors.gold : Colors.transparent,
         ),
+        Text(p.name,
+            style: TextStyle(
+                color: color,
+                fontSize: 12,
+                fontWeight: p.isNext ? FontWeight.bold : FontWeight.normal)),
+        const SizedBox(height: 2),
+        Text(PrayerService.formatTime(p.time),
+            style: TextStyle(
+                color: p.isNext ? AppColors.textGold : AppColors.textMuted,
+                fontSize: 11)),
       ],
-    );
-  }
-
-  /// The five prayers, one to a line, inside the arch.
-  ///
-  /// Sunrise is not among them: it is not a prayer, and it is already marked on
-  /// the sky above where it means something — the end of Fajr's time and the
-  /// point the sun crosses the horizon.
-  Widget _timesColumn(PrayerData data) {
-    final prayers =
-        data.prayers.where((p) => p.name != 'الشروق').toList();
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        for (final prayer in prayers) _timeRow(prayer),
-      ],
-    );
-  }
-
-  Widget _timeRow(PrayerInfo prayer) {
-    final next = prayer.isNext;
-    return Container(
-      margin: const EdgeInsets.only(bottom: 3),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: next ? AppColors.goldMuted : Colors.transparent,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-            color: next ? AppColors.gold : Colors.transparent, width: 1),
-      ),
-      child: Row(
-        children: [
-          if (next)
-            const Padding(
-              padding: EdgeInsets.only(left: 5),
-              child: Icon(Icons.play_arrow, size: 11, color: AppColors.gold),
-            ),
-          Text(prayer.name,
-              style: TextStyle(
-                  color: next ? AppColors.gold : AppColors.textSecondary,
-                  fontSize: 12.5,
-                  fontWeight: next ? FontWeight.bold : FontWeight.normal)),
-          const Spacer(),
-          Text(PrayerService.formatTime(prayer.time),
-              style: TextStyle(
-                  color: next ? AppColors.textGold : AppColors.textMuted,
-                  fontSize: 12,
-                  fontWeight: next ? FontWeight.bold : FontWeight.normal)),
-        ],
-      ),
     );
   }
 

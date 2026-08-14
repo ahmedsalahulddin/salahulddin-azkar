@@ -17,16 +17,37 @@ class SkyArch extends StatelessWidget {
   final PrayerData data;
   final DateTime now;
 
-  const SkyArch({super.key, required this.data, required this.now});
+  /// Laid inside the dome — the countdown and the location marker live there,
+  /// which is why the dome is drawn wide enough to house a line of text.
+  final Widget? inDome;
 
-  static const height = 236.0;
+  const SkyArch({super.key, required this.data, required this.now, this.inDome});
+
+  static const height = 252.0;
+
+  /// Where the ground runs, as a fraction of the height. Shared with the
+  /// painter so the widget laid inside the dome sits on the same floor the
+  /// dome is drawn on.
+  static const horizonFraction = 0.78;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       height: height,
       width: double.infinity,
-      child: CustomPaint(painter: SkyArchPainter(data: data, now: now)),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          CustomPaint(painter: SkyArchPainter(data: data, now: now)),
+          if (inDome != null)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: height * (1 - horizonFraction) + 8,
+              child: Center(child: inDome!),
+            ),
+        ],
+      ),
     );
   }
 }
@@ -101,7 +122,7 @@ class SkyArchPainter extends CustomPainter {
     );
     _stars(canvas, size);
 
-    final horizon = size.height * 0.74;
+    final horizon = size.height * SkyArch.horizonFraction;
     _horizon(canvas, size, horizon);
     _dome(canvas, Offset(size.width / 2, horizon));
     _skyPath(canvas, size, horizon);
@@ -152,30 +173,30 @@ class SkyArchPainter extends CustomPainter {
       ..color = _gold;
 
     // The drum the bulb sits on.
-    final drum = Rect.fromLTRB(cx - 26, ground - 16, cx + 26, ground);
+    final drum = Rect.fromLTRB(cx - 78, ground - 14, cx + 78, ground);
     canvas.drawRect(drum, fill);
     canvas.drawLine(drum.topLeft, drum.bottomLeft, edge);
     canvas.drawLine(drum.topRight, drum.bottomRight, edge);
 
     // The onion bulb: out past the drum, then a long taper into the point.
-    final y0 = ground - 16;
+    final y0 = ground - 14;
     final bulb = Path()
-      ..moveTo(cx - 26, y0)
-      ..cubicTo(cx - 46, y0 - 14, cx - 40, y0 - 46, cx - 8, y0 - 66)
-      ..quadraticBezierTo(cx, y0 - 72, cx + 8, y0 - 66)
-      ..cubicTo(cx + 40, y0 - 46, cx + 46, y0 - 14, cx + 26, y0);
+      ..moveTo(cx - 78, y0)
+      ..cubicTo(cx - 100, y0 - 26, cx - 88, y0 - 74, cx - 16, y0 - 98)
+      ..quadraticBezierTo(cx, y0 - 106, cx + 16, y0 - 98)
+      ..cubicTo(cx + 88, y0 - 74, cx + 100, y0 - 26, cx + 78, y0);
     canvas.drawPath(bulb, fill);
     canvas.drawPath(bulb, edge);
 
     // Finial and crescent.
-    final tip = Offset(cx, y0 - 72);
+    final tip = Offset(cx, y0 - 106);
     canvas.drawLine(
         tip,
-        tip - const Offset(0, 9),
+        tip - const Offset(0, 7),
         Paint()
           ..strokeWidth = 1.6
           ..color = _gold);
-    final c = tip - const Offset(0, 15);
+    final c = tip - const Offset(0, 12);
     final disc = Path()..addOval(Rect.fromCircle(center: c, radius: 5.4));
     final bite = Path()
       ..addOval(
