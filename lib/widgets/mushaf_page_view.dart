@@ -18,6 +18,11 @@ class MushafPageImage extends StatefulWidget {
   /// Called when the tap misses every ayah, e.g. a margin or the border.
   final VoidCallback onBackgroundTapped;
 
+  /// Where the page actually landed inside the box it was given. Published
+  /// heights vary from page to page, so the only way to draw a border that
+  /// hugs the text is to be told where the text ended up.
+  final ValueChanged<Rect>? onDrawn;
+
   const MushafPageImage({
     super.key,
     required this.file,
@@ -25,6 +30,7 @@ class MushafPageImage extends StatefulWidget {
     required this.selected,
     required this.onAyahTapped,
     required this.onBackgroundTapped,
+    this.onDrawn,
   });
 
   @override
@@ -60,6 +66,8 @@ class _MushafPageImageState extends State<MushafPageImage> {
     _dropStream();
     super.dispose();
   }
+
+  Rect? _reported;
 
   void _resolve() {
     _stream = _provider.resolve(const ImageConfiguration());
@@ -130,6 +138,16 @@ class _MushafPageImageState extends State<MushafPageImage> {
       builder: (context, constraints) {
         final box = Size(constraints.maxWidth, constraints.maxHeight);
         final image = _intrinsic;
+
+        if (image != null && widget.onDrawn != null) {
+          final drawn = _drawnRect(box, image);
+          if (drawn != _reported) {
+            _reported = drawn;
+            // After this frame: the listener resizes what encloses us.
+            WidgetsBinding.instance.addPostFrameCallback(
+                (_) => widget.onDrawn!(drawn));
+          }
+        }
 
         return GestureDetector(
           behavior: HitTestBehavior.opaque,

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
@@ -1001,6 +1002,10 @@ class _PageSheetState extends State<_PageSheet> {
   late Future<File?> _image;
   List<AyahBoxes> _boxes = const [];
 
+  /// Where the printed page landed, so the border can sit on its first and
+  /// last lines instead of on the edges of the screen.
+  Rect? _drawn;
+
   @override
   void initState() {
     super.initState();
@@ -1018,41 +1023,30 @@ class _PageSheetState extends State<_PageSheet> {
     // own, so nothing is being drawn over.
     return ValueListenableBuilder<MushafPalette>(
       valueListenable: MushafPalettes.current,
-      builder: (context, palette, _) => Container(
-        margin: const EdgeInsets.all(3),
-        decoration: BoxDecoration(
-          color: palette.paper,
-          borderRadius: BorderRadius.circular(6),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: ValueListenableBuilder<MushafFrame>(
-          valueListenable: MushafFrames.current,
-          builder: (context, frame, child) => MushafFrameBox(
-            frame: frame,
-            color: palette.ink,
-            child: child!,
+      builder: (context, palette, _) => ValueListenableBuilder<MushafFrame>(
+        valueListenable: MushafFrames.current,
+        builder: (context, frame, _) => Container(
+          margin: const EdgeInsets.all(3),
+          decoration: BoxDecoration(
+            color: palette.paper,
+            borderRadius: BorderRadius.circular(6),
           ),
-          child: FutureBuilder<File?>(
-            future: _image,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState != ConnectionState.done) {
-                return Center(
-                  child: CircularProgressIndicator(
-                      color: palette.ink, strokeWidth: 2),
-                );
-              }
-              final file = snapshot.data;
-              if (file == null) return _textFallback(palette);
+          clipBehavior: Clip.antiAlias,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final size = Size(constraints.maxWidth, constraints.maxHeight);
+              // Whatever ornament is chosen, each band still has to hold a
+              // line of text: the surah and juz above, the page number below.
+              final band = math.max(frame.insetFor(size), 27.0);
 
-              return InvertedInk(
-                active: palette.invert,
-                child: MushafPageImage(
-                  file: file,
-                  boxes: _boxes,
-                  selected: widget.selected,
-                  onAyahTapped: widget.onAyahTapped,
-                  onBackgroundTapped: widget.onBackgroundTapped,
-                ),
+              return Stack(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.symmetric(vertical: band),
+                    child: _page(palette),
+                  ),
+                  _frame(frame, palette, band, size),
+                ],
               );
             },
           ),
@@ -1061,7 +1055,107 @@ class _PageSheetState extends State<_PageSheet> {
     );
   }
 
-  /// Same page from the bundled text — used offline and on web.
+  Widget _page(MushafPalette palette) {
+    return FutureBuilder<File?>(
+      future: _image,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return Center(
+            child:
+                CircularProgressIndicator(color: palette.ink, strokeWidth: 2),
+          );
+        }
+        final file = snapshot.data;
+        if (file == null) return _textFallback(palette);
+
+        return InvertedInk(
+          active: palette.invert,
+          child: MushafPageImage(
+            file: file,
+            boxes: _boxes,
+            selected: widget.selected,
+            onAyahTapped: widget.onAyahTapped,
+            onBackgroundTapped: widget.onBackgroundTapped,
+            onDrawn: (rect) {
+              if (mounted && rect != _drawn) setState(() => _drawn = rect);
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  /// The border, sitting directly on the first and last lines of the page.
+  ///
+  /// Published pages differ in height, so the band positions come from where
+  /// the image actually landed rather than from the space it was offered —
+  /// otherwise the border would float somewhere above the text on a short page
+  /// and the whole point of a border would be lost.
+  Widget _frame(
+      MushafFrame frame, MushafPalette palette, double band, Size size) {
+    final drawn = _drawn;
+    final top = (drawn?.top ?? 0) + band;
+    final bottom = (drawn?.bottom ?? size.height - band * 2) + band;
+
+    final surah = widget.surahInfo(widget.page.runs.first.surah);
+    final caption = TextStyle(
+        color: palette.onPaperMuted, fontSize: 11.5, height: 1.1);
+
+    return Positioned(
+      left: 0,
+      right: 0,
+      top: (top - band).clamp(0.0, size.height),
+      height: (bottom - top + band * 2).clamp(0.0, size.height),
+      child: Stack(
+        children: [
+          // Painted wider than the page so the ornament's flanks fall out of
+          // view; a Mushaf page cannot spare width from its ayahs.
+          Positioned(
+            left: -band,
+            right: -band,
+            top: 0,
+            bottom: 0,
+            child: CustomPaint(
+              painter: MushafFramePainter(
+                frame: frame,
+                color: palette.ink,
+                scale: frame.scaleFor(size),
+              ),
+            ),
+          ),
+          // Surah on the right, juz on the left — the printed page's header.
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: band,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  Text(surah.name, style: caption),
+                  const Spacer(),
+                  Text('الجزء ${QuranService.toArabicDigits(widget.page.juz)}',
+                      style: caption),
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: band,
+            child: Center(
+              child: Text(QuranService.toArabicDigits(widget.page.number),
+                  style: caption),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _textFallback(MushafPalette palette) {
     final view = MediaQuery.viewPaddingOf(context);
     return GestureDetector(

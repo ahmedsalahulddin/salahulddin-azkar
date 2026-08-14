@@ -98,8 +98,10 @@ void main() {
     await tester.pump();
     await tester.pump();
 
-    // The bar reports the position on its first row.
-    expect(find.textContaining('الجزء ١'), findsOneWidget);
+    // The bar reports the position on its first row. The page carries the
+    // same juz in its own header now, so the bar's copy is one of two — the
+    // bar hides while reading, and the page has to stand alone when it does.
     expect(find.textContaining('صفحة ٢'), findsOneWidget);
+    expect(find.textContaining('الجزء ١'), findsWidgets);
   });
 }
