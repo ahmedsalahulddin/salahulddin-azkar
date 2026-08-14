@@ -1,8 +1,61 @@
 import 'package:adhan/adhan.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:geolocator/geolocator.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Fallback location (Riyadh) used when GPS is unavailable or denied.
 final _riyadh = Coordinates(24.7136, 46.6753);
+
+/// Where the times were computed from, and — when it is not the reader's own
+/// position — what stopped us. The card turns this into something the reader
+/// can act on, so every failure has to stay distinguishable.
+enum LocationStatus {
+  /// A fresh fix from the device.
+  fixed,
+
+  /// The last fix we obtained, reused because a new one did not arrive.
+  remembered,
+
+  /// Location permission has not been granted.
+  denied,
+
+  /// Denied for good — the system will not show the dialog again, so only the
+  /// app's settings page can grant it.
+  blocked,
+
+  /// Location is switched off on the device.
+  serviceOff,
+
+  /// Permitted, but no fix arrived (indoors, or the timeout hit).
+  unavailable,
+}
+
+extension LocationStatusLabel on LocationStatus {
+  /// True when the times below actually belong to the reader.
+  bool get isMine =>
+      this == LocationStatus.fixed || this == LocationStatus.remembered;
+
+  /// The caption on the prayer card.
+  String get label => switch (this) {
+        LocationStatus.fixed => 'حسب موقعك',
+        LocationStatus.remembered => 'موقعك المحفوظ',
+        _ => 'الرياض',
+      };
+
+  /// Said once, after the reader taps the marker.
+  String get explanation => switch (this) {
+        LocationStatus.fixed => 'تم تحديد موقعك، وحُسبت المواقيت عليه',
+        LocationStatus.remembered =>
+          'تعذّر تحديث الموقع الآن، والمواقيت محسوبة على آخر موقع معروف',
+        LocationStatus.denied =>
+          'التطبيق يحتاج إذن الموقع ليحسب المواقيت على مدينتك',
+        LocationStatus.blocked =>
+          'إذن الموقع مرفوض من إعدادات الجهاز، ولن يظهر السؤال مرة أخرى',
+        LocationStatus.serviceOff => 'خدمة الموقع مغلقة في جهازك',
+        LocationStatus.unavailable =>
+          'تعذّر الوصول للموقع. جرّب قرب نافذة أو في مكان مكشوف',
+      };
+}
 
 class PrayerInfo {
   final String name;
@@ -16,17 +69,20 @@ class PrayerData {
   final List<PrayerInfo> prayers;
   final String nextName;
   final DateTime nextTime;
-  final bool isLocationBased;
+  final LocationStatus status;
 
   const PrayerData({
     required this.prayers,
     required this.nextName,
     required this.nextTime,
-    required this.isLocationBased,
+    required this.status,
   });
 }
 
 class PrayerService {
+  static const _latKey = 'prayer_lat';
+  static const _lngKey = 'prayer_lng';
+
   static const _order = [
     Prayer.fajr,
     Prayer.sunrise,
@@ -45,18 +101,34 @@ class PrayerService {
     Prayer.isha: 'العشاء',
   };
 
-  static Future<PrayerData> load() async {
+  /// Prayer times for today.
+  ///
+  /// [ask] decides whether a missing permission raises the system dialog. The
+  /// card passes false on the automatic load and true when the reader taps the
+  /// marker, so the app never demands the location before it has shown the
+  /// reader why it wants it.
+  static Future<PrayerData> load({bool ask = false}) async {
     var coords = _riyadh;
-    var locationBased = false;
+    var status = LocationStatus.denied;
 
     try {
-      final pos = await _locate();
+      final fix = await _locate(ask: ask);
+      status = fix.status;
+      final pos = fix.position;
       if (pos != null) {
         coords = Coordinates(pos.latitude, pos.longitude);
-        locationBased = true;
+        await _remember(pos);
+      } else {
+        // No fix now, but a place we reached before beats defaulting to a city
+        // the reader may be nowhere near.
+        final last = await _lastKnown();
+        if (last != null) {
+          coords = last;
+          status = LocationStatus.remembered;
+        }
       }
     } catch (_) {
-      // Fall back to Riyadh silently.
+      // Geolocator is unavailable (tests, web without permission). Riyadh it is.
     }
 
     final params = CalculationMethod.umm_al_qura.getParameters()
@@ -89,27 +161,65 @@ class PrayerService {
       prayers: prayers,
       nextName: nextName,
       nextTime: nextTime,
-      isLocationBased: locationBased,
+      status: status,
     );
   }
 
-  static Future<Position?> _locate() async {
-    if (!await Geolocator.isLocationServiceEnabled()) return null;
+  static Future<({Position? position, LocationStatus status})> _locate({
+    required bool ask,
+  }) async {
+    if (!await Geolocator.isLocationServiceEnabled()) {
+      return (position: null, status: LocationStatus.serviceOff);
+    }
 
     var perm = await Geolocator.checkPermission();
-    if (perm == LocationPermission.denied) {
+    if (perm == LocationPermission.denied && ask) {
       perm = await Geolocator.requestPermission();
     }
-    if (perm == LocationPermission.denied || perm == LocationPermission.deniedForever) {
-      return null;
+    if (perm == LocationPermission.denied) {
+      return (position: null, status: LocationStatus.denied);
+    }
+    if (perm == LocationPermission.deniedForever) {
+      return (position: null, status: LocationStatus.blocked);
     }
 
-    return Geolocator.getCurrentPosition(
-      locationSettings: const LocationSettings(
-        accuracy: LocationAccuracy.low,
-        timeLimit: Duration(seconds: 8),
-      ),
-    );
+    try {
+      final pos = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.low,
+          timeLimit: Duration(seconds: 12),
+        ),
+      );
+      return (position: pos, status: LocationStatus.fixed);
+    } catch (_) {
+      // Permission is there; the fix simply did not arrive.
+      return (position: null, status: LocationStatus.unavailable);
+    }
+  }
+
+  /// Opens the page that can undo whatever blocked us, so a rejected permission
+  /// is two taps from fixed rather than a dead end.
+  static Future<void> openSettingsFor(LocationStatus status) async {
+    if (kIsWeb) return;
+    if (status == LocationStatus.serviceOff) {
+      await Geolocator.openLocationSettings();
+    } else {
+      await Geolocator.openAppSettings();
+    }
+  }
+
+  static Future<void> _remember(Position pos) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(_latKey, pos.latitude);
+    await prefs.setDouble(_lngKey, pos.longitude);
+  }
+
+  static Future<Coordinates?> _lastKnown() async {
+    final prefs = await SharedPreferences.getInstance();
+    final lat = prefs.getDouble(_latKey);
+    final lng = prefs.getDouble(_lngKey);
+    if (lat == null || lng == null) return null;
+    return Coordinates(lat, lng);
   }
 
   static String formatTime(DateTime dt) {
