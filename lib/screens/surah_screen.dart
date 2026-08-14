@@ -171,11 +171,19 @@ class _SurahScreenState extends State<SurahScreen> {
     });
   }
 
+  /// Stops playback and clears the highlight.
+  Future<void> _stop() async {
+    await _player.stop();
+    if (mounted) setState(() => _playingAyah = null);
+  }
+
   Widget _ayahAction({
     required IconData icon,
     required String label,
     required VoidCallback onTap,
+    bool active = false,
   }) {
+    final tint = active ? AppColors.gold : AppColors.textMuted;
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
@@ -183,17 +191,16 @@ class _SurahScreenState extends State<SurahScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 6),
           decoration: BoxDecoration(
-            color: AppColors.blackSurface,
+            color: active ? AppColors.goldMuted : AppColors.blackSurface,
             borderRadius: BorderRadius.circular(8),
+            border: active ? Border.all(color: AppColors.goldBorder) : null,
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: AppColors.textMuted, size: 14),
+              Icon(icon, color: tint, size: 14),
               const SizedBox(width: 5),
-              Text(label,
-                  style: const TextStyle(
-                      color: AppColors.textMuted, fontSize: 11)),
+              Text(label, style: TextStyle(color: tint, fontSize: 11)),
             ],
           ),
         ),
@@ -569,10 +576,13 @@ class _SurahScreenState extends State<SurahScreen> {
                   onTap: () => _showTafsir(a),
                 ),
                 const SizedBox(width: 6),
+                // The same button stops what it started — there was no other
+                // way to silence a verse once it began.
                 _ayahAction(
-                  icon: isPlaying ? Icons.graphic_eq : Icons.play_arrow,
-                  label: 'استمع',
-                  onTap: () => _play(fromAyah: a.number),
+                  icon: isPlaying ? Icons.stop : Icons.play_arrow,
+                  label: isPlaying ? 'إيقاف' : 'استمع',
+                  active: isPlaying,
+                  onTap: () => isPlaying ? _stop() : _play(fromAyah: a.number),
                 ),
                 const SizedBox(width: 6),
                 _ayahAction(

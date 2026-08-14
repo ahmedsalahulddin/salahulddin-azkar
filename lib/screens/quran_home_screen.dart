@@ -85,7 +85,7 @@ class _QuranHomeScreenState extends State<QuranHomeScreen> {
 
               _modeCard(
                 icon: '🕮',
-                title: 'تدبّر',
+                title: 'تلاوة وتدبّر',
                 subtitle: 'آية آية، مع التفسير والتلاوة',
                 details: const [
                   'التفسير الميسّر لكل آية',

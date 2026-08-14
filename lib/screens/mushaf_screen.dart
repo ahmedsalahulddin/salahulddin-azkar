@@ -8,6 +8,7 @@ import '../constants/theme.dart';
 import '../data/ayah_boxes.dart';
 import '../data/quran_data.dart';
 import '../data/tafsir_data.dart';
+import '../data/translation_data.dart';
 import '../services/bookmark_service.dart';
 import '../services/mushaf_image_service.dart';
 import '../services/recitation_service.dart';
@@ -49,6 +50,32 @@ class _MushafScreenState extends State<MushafScreen> {
   Reciter _reciter = RecitationService.defaultReciter;
   RepeatSettings _repeat = const RepeatSettings();
   StreamSubscription<int?>? _indexSub;
+
+  /// Recitation speeds, cycled by tapping the badge. 1x sits in the middle so
+  /// the common case is one tap away in either direction.
+  static const _speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0];
+  double _speed = 1.0;
+
+  Future<void> _cycleSpeed() async {
+    final next = _speeds[(_speeds.indexOf(_speed) + 1) % _speeds.length];
+    setState(() => _speed = next);
+    try {
+      await _player.setSpeed(next);
+    } catch (_) {
+      // Speed is a convenience; failing to set it must not break playback.
+    }
+  }
+
+  /// Renders 1.0 as "١" and 0.75 as "٠٫٧٥" — trailing zeros read as noise.
+  String get _speedLabel {
+    final text = _speed == _speed.roundToDouble()
+        ? _speed.toInt().toString()
+        : _speed.toString().replaceFirst('.', '٫');
+    return text.split('').map((c) {
+      final digit = int.tryParse(c);
+      return digit == null ? c : QuranService.toArabicDigits(digit);
+    }).join();
+  }
 
   @override
   void initState() {
@@ -504,6 +531,7 @@ class _MushafScreenState extends State<MushafScreen> {
                   _barIcon(Icons.record_voice_over, 'اختر القارئ', _pickReciter),
                   _barIcon(Icons.repeat, 'التكرار', _openRepeatSettings,
                       active: _repeat.isActive),
+                  _speedButton(),
                   _playButton(),
                   const Spacer(),
                 ],
@@ -527,6 +555,41 @@ class _MushafScreenState extends State<MushafScreen> {
           child: Icon(icon,
               size: 21,
               color: active ? AppColors.gold : AppColors.textSecondary),
+        ),
+      ),
+    );
+  }
+
+  Widget _speedButton() {
+    final changed = _speed != 1.0;
+    return Tooltip(
+      message: 'سرعة التلاوة',
+      child: GestureDetector(
+        onTap: _cycleSpeed,
+        behavior: HitTestBehavior.opaque,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+          child: Container(
+            width: 26,
+            height: 26,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: changed ? AppColors.goldMuted : Colors.transparent,
+              border: Border.all(
+                color: changed ? AppColors.gold : AppColors.goldBorder,
+              ),
+            ),
+            child: Center(
+              child: Text(
+                _speedLabel,
+                style: TextStyle(
+                  color: changed ? AppColors.gold : AppColors.textSecondary,
+                  fontSize: _speedLabel.length > 2 ? 8 : 11,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -980,46 +1043,128 @@ class _NavigationDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Drawer(
       backgroundColor: AppColors.black,
+      width: MediaQuery.sizeOf(context).width * 0.92,
       child: Directionality(
         textDirection: TextDirection.rtl,
-        child: DefaultTabController(
-          length: 4,
-          child: SafeArea(
-            child: Column(
-              children: [
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12),
-                  child: Text('التصفّح والبحث',
-                      style: TextStyle(
-                          color: AppColors.gold,
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold)),
-                ),
-                const TabBar(
-                  isScrollable: true,
-                  tabAlignment: TabAlignment.center,
-                  labelColor: AppColors.gold,
-                  unselectedLabelColor: AppColors.textMuted,
-                  indicatorColor: AppColors.gold,
-                  labelStyle: TextStyle(fontSize: 13),
-                  tabs: [
-                    Tab(text: 'السور'),
-                    Tab(text: 'الأجزاء'),
-                    Tab(text: 'العلامات'),
-                    Tab(text: 'التنزيل'),
-                  ],
-                ),
-                Expanded(
-                  child: TabBarView(children: [
-                    _SurahTab(index: index, onSurah: onSurah),
-                    _JuzTab(pages: pages, onPage: onPage),
-                    _BookmarksTab(index: index, onBookmark: onBookmark),
-                    const _DownloadsTab(),
-                  ]),
-                ),
-              ],
+        child: SafeArea(
+          child: _DrawerBody(
+            index: index,
+            pages: pages,
+            onSurah: onSurah,
+            onPage: onPage,
+            onBookmark: onBookmark,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Tabs run down the side rather than across the top: five Arabic labels do
+/// not fit on one line on a phone, and a scrolling tab strip hides whichever
+/// ones happen to be off-screen.
+class _DrawerBody extends StatefulWidget {
+  final List<SurahInfo> index;
+  final List<MushafPage> pages;
+  final ValueChanged<SurahInfo> onSurah;
+  final ValueChanged<int> onPage;
+  final ValueChanged<Bookmark> onBookmark;
+
+  const _DrawerBody({
+    required this.index,
+    required this.pages,
+    required this.onSurah,
+    required this.onPage,
+    required this.onBookmark,
+  });
+
+  @override
+  State<_DrawerBody> createState() => _DrawerBodyState();
+}
+
+class _DrawerBodyState extends State<_DrawerBody> {
+  int _tab = 0;
+
+  static const _tabs = [
+    (icon: Icons.menu_book, label: 'السور'),
+    (icon: Icons.auto_stories, label: 'الأجزاء'),
+    (icon: Icons.search, label: 'الكلمات'),
+    (icon: Icons.bookmark, label: 'العلامات'),
+    (icon: Icons.download, label: 'التنزيل'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        _rail(),
+        const VerticalDivider(width: 1, color: AppColors.goldBorder),
+        Expanded(
+          child: IndexedStack(
+            index: _tab,
+            children: [
+              _SurahTab(index: widget.index, onSurah: widget.onSurah),
+              _JuzTab(pages: widget.pages, onPage: widget.onPage),
+              _WordSearchTab(onGoTo: widget.onSurah, index: widget.index),
+              _BookmarksTab(
+                  index: widget.index, onBookmark: widget.onBookmark),
+              const _DownloadsTab(),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _rail() {
+    return Container(
+      width: 78,
+      color: AppColors.blackCard,
+      child: Column(
+        children: [
+          const SizedBox(height: 10),
+          const Text('التصفّح',
+              style: TextStyle(
+                  color: AppColors.gold,
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold)),
+          const SizedBox(height: 10),
+          for (var i = 0; i < _tabs.length; i++) _railItem(i),
+        ],
+      ),
+    );
+  }
+
+  Widget _railItem(int i) {
+    final active = _tab == i;
+    return GestureDetector(
+      onTap: () => setState(() => _tab = i),
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: active ? AppColors.goldMuted : Colors.transparent,
+          border: Border(
+            right: BorderSide(
+              color: active ? AppColors.gold : Colors.transparent,
+              width: 3,
             ),
           ),
+        ),
+        child: Column(
+          children: [
+            Icon(_tabs[i].icon,
+                size: 20,
+                color: active ? AppColors.gold : AppColors.textMuted),
+            const SizedBox(height: 4),
+            Text(_tabs[i].label,
+                style: TextStyle(
+                  color: active ? AppColors.gold : AppColors.textMuted,
+                  fontSize: 11,
+                  fontWeight: active ? FontWeight.bold : FontWeight.normal,
+                )),
+          ],
         ),
       ),
     );
@@ -1129,6 +1274,180 @@ class _JuzTab extends StatelessWidget {
             'يبدأ في صفحة ${QuranService.toArabicDigits(firstPage[juz[i]]!)}',
             style: const TextStyle(color: AppColors.textMuted, fontSize: 11)),
         onTap: () => onPage(firstPage[juz[i]]!),
+      ),
+    );
+  }
+}
+
+/// Finds a word anywhere in the Mushaf and lists where it occurs, in order.
+///
+/// Matching ignores diacritics: nobody types the Mushaf's tashkeel, so a plain
+/// query has to reach the marked-up text.
+class _WordSearchTab extends StatefulWidget {
+  final List<SurahInfo> index;
+  final ValueChanged<SurahInfo> onGoTo;
+
+  const _WordSearchTab({required this.index, required this.onGoTo});
+
+  @override
+  State<_WordSearchTab> createState() => _WordSearchTabState();
+}
+
+class _WordSearchTabState extends State<_WordSearchTab> {
+  final _controller = TextEditingController();
+  List<AyahHit> _hits = const [];
+  int _occurrences = 0;
+  bool _searching = false;
+  String _lastQuery = '';
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _run(String query) async {
+    final trimmed = query.trim();
+    if (trimmed == _lastQuery) return;
+    _lastQuery = trimmed;
+
+    if (trimmed.isEmpty) {
+      setState(() {
+        _hits = const [];
+        _occurrences = 0;
+      });
+      return;
+    }
+
+    setState(() => _searching = true);
+    final hits = await QuranService.search(trimmed);
+    final count = await QuranService.countOccurrences(trimmed);
+    if (!mounted || _lastQuery != trimmed) return;
+    setState(() {
+      _hits = hits;
+      _occurrences = count;
+      _searching = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(10),
+          child: TextField(
+            controller: _controller,
+            onChanged: _run,
+            textAlign: TextAlign.right,
+            style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
+            decoration: InputDecoration(
+              hintText: 'اكتب كلمة…',
+              hintStyle:
+                  const TextStyle(color: AppColors.textMuted, fontSize: 13),
+              filled: true,
+              fillColor: AppColors.blackSurface,
+              isDense: true,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: AppColors.goldBorder),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: AppColors.goldBorder),
+              ),
+              suffixIcon:
+                  const Icon(Icons.search, color: AppColors.textMuted, size: 18),
+            ),
+          ),
+        ),
+        if (_searching)
+          const Padding(
+            padding: EdgeInsets.all(8),
+            child: SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(
+                  strokeWidth: 2, color: AppColors.gold),
+            ),
+          )
+        else if (_lastQuery.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            child: Row(
+              children: [
+                Text(
+                  _hits.isEmpty
+                      ? 'لا نتائج'
+                      : 'وردت ${QuranService.toArabicDigits(_occurrences)} مرة '
+                          'في ${QuranService.toArabicDigits(_hits.length)} آية',
+                  style: const TextStyle(
+                      color: AppColors.textGold, fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+        Expanded(
+          child: _lastQuery.isEmpty
+              ? const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(24),
+                    child: Text(
+                      'ابحث عن أي كلمة في المصحف.\nلا حاجة لكتابة التشكيل.',
+                      textAlign: TextAlign.center,
+                      style:
+                          TextStyle(color: AppColors.textMuted, fontSize: 13),
+                    ),
+                  ),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.fromLTRB(10, 8, 10, 16),
+                  itemCount: _hits.length,
+                  itemBuilder: (context, i) => _hitCard(_hits[i]),
+                ),
+        ),
+      ],
+    );
+  }
+
+  Widget _hitCard(AyahHit hit) {
+    return GestureDetector(
+      onTap: () {
+        final info =
+            widget.index.where((s) => s.number == hit.surah).firstOrNull;
+        if (info != null) widget.onGoTo(info);
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(11),
+        decoration: BoxDecoration(
+          color: AppColors.blackCard,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: AppColors.goldBorder),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              hit.text,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.right,
+              style: const TextStyle(
+                fontFamily: _mushafFont,
+                color: AppColors.textPrimary,
+                fontSize: 16,
+                height: 1.9,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              '${hit.surahName} — آية ${QuranService.toArabicDigits(hit.ayah)}',
+              style:
+                  const TextStyle(color: AppColors.textMuted, fontSize: 11),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1344,12 +1663,182 @@ class _DownloadsTabState extends State<_DownloadsTab> {
             ],
           ),
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 18),
+        const Text('التفاسير والتراجم',
+            style: TextStyle(
+                color: AppColors.gold,
+                fontSize: 15,
+                fontWeight: FontWeight.bold)),
+        const SizedBox(height: 6),
         const Text(
-          'التلاوات تُبَث عند التشغيل ولا تحتاج تنزيلاً مسبقاً.',
-          style: TextStyle(color: AppColors.textMuted, fontSize: 11),
+          'الميسّر والمختصر مضمّنان أصلاً. نزّل البقية لتعمل بلا إنترنت.',
+          style: TextStyle(color: AppColors.textMuted, fontSize: 12, height: 1.6),
+        ),
+        const SizedBox(height: 10),
+        for (final edition in TafsirService.editions.where((e) => !e.isBundled))
+          _RemoteItem(
+            title: edition.name,
+            subtitle: '${edition.author} · ${edition.downloadSize}',
+            isDownloaded: () => TafsirService.isDownloaded(edition),
+            download: (onProgress) async {
+              final failed = await TafsirService.download(edition,
+                  onProgress: (done, total) => onProgress(done, total));
+              return failed == 0;
+            },
+          ),
+        for (final translation in TranslationService.available)
+          _RemoteItem(
+            title: translation.language,
+            subtitle: translation.translator,
+            isDownloaded: () => TranslationService.isDownloaded(translation),
+            download: (onProgress) async {
+              final failed = await TranslationService.download(translation,
+                  onProgress: (done, total) => onProgress(done, total));
+              return failed == 0;
+            },
+          ),
+
+        const SizedBox(height: 18),
+        const Text('التلاوات',
+            style: TextStyle(
+                color: AppColors.gold,
+                fontSize: 15,
+                fontWeight: FontWeight.bold)),
+        const SizedBox(height: 6),
+        const Text(
+          'تُبَث عند التشغيل ولا تُنزَّل بعد — تلاوة قارئ واحد للمصحف كامل '
+          'تقارب ٣٠٠ م.ب، وتنزيلها يحتاج إدارة مساحة لم تُبنَ.',
+          style: TextStyle(color: AppColors.textMuted, fontSize: 12, height: 1.6),
         ),
       ],
+    );
+  }
+}
+
+/// A downloadable extra: shows whether it is already on the device, and its
+/// progress while it arrives.
+class _RemoteItem extends StatefulWidget {
+  final String title;
+  final String subtitle;
+  final Future<bool> Function() isDownloaded;
+  final Future<bool> Function(void Function(int done, int total)) download;
+
+  const _RemoteItem({
+    required this.title,
+    required this.subtitle,
+    required this.isDownloaded,
+    required this.download,
+  });
+
+  @override
+  State<_RemoteItem> createState() => _RemoteItemState();
+}
+
+class _RemoteItemState extends State<_RemoteItem> {
+  bool? _ready;
+  bool _busy = false;
+  double _progress = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.isDownloaded().then((v) {
+      if (mounted) setState(() => _ready = v);
+    });
+  }
+
+  Future<void> _start() async {
+    setState(() {
+      _busy = true;
+      _progress = 0;
+    });
+
+    final ok = await widget.download((done, total) {
+      if (mounted && total > 0) setState(() => _progress = done / total);
+    });
+
+    if (!mounted) return;
+    setState(() {
+      _busy = false;
+      _ready = ok;
+    });
+
+    if (!ok) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('لم يكتمل التنزيل — أعد المحاولة',
+              textDirection: TextDirection.rtl),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.blackCard,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.goldBorder),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(widget.title,
+                        style: const TextStyle(
+                            color: AppColors.textPrimary, fontSize: 14)),
+                    Text(widget.subtitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                            color: AppColors.textMuted, fontSize: 11)),
+                  ],
+                ),
+              ),
+              if (_busy)
+                const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2, color: AppColors.gold),
+                )
+              else if (_ready == true)
+                const Icon(Icons.offline_pin,
+                    color: AppColors.emeraldLight, size: 20)
+              else
+                GestureDetector(
+                  onTap: _start,
+                  behavior: HitTestBehavior.opaque,
+                  child: const Padding(
+                    padding: EdgeInsets.all(4),
+                    child: Icon(Icons.download,
+                        color: AppColors.gold, size: 20),
+                  ),
+                ),
+            ],
+          ),
+          if (_busy) ...[
+            const SizedBox(height: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(3),
+              child: LinearProgressIndicator(
+                value: _progress == 0 ? null : _progress,
+                backgroundColor: AppColors.blackSurface,
+                valueColor: const AlwaysStoppedAnimation(AppColors.gold),
+                minHeight: 4,
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 }

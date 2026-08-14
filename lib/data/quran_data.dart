@@ -84,6 +84,25 @@ class MushafPage {
       );
 }
 
+/// An ayah that matched a search, with where it lives.
+class AyahHit {
+  final int surah;
+  final String surahName;
+  final int ayah;
+  final String text;
+
+  /// The text stripped of diacritics, so a plainly typed query can match it.
+  final String key;
+
+  const AyahHit({
+    required this.surah,
+    required this.surahName,
+    required this.ayah,
+    required this.text,
+    required this.key,
+  });
+}
+
 class QuranService {
   static const pageCount = 604;
 
@@ -149,6 +168,90 @@ class QuranService {
       }
     }
     return 1;
+  }
+
+  /// One ayah matching a search, with enough context to jump to it.
+  static List<AyahHit>? _searchIndex;
+
+  /// Strips what a reader will not type: diacritics, the marks specific to the
+  /// Mushaf, and the letter variants they will not distinguish. Searching for
+  /// "الرحمن" has to find "ٱلرَّحۡمَٰن".
+  static String searchKey(String text) {
+    const marks = {
+      0x0640, // tatweel
+      0x0670, // superscript alef
+    };
+    final buffer = StringBuffer();
+    for (final rune in text.runes) {
+      if (marks.contains(rune)) continue;
+      // Harakat, tanween, Mushaf marks and Arabic Extended-A additions.
+      if ((rune >= 0x0610 && rune <= 0x061A) ||
+          (rune >= 0x064B && rune <= 0x065F) ||
+          (rune >= 0x06D6 && rune <= 0x06ED) ||
+          (rune >= 0x08D3 && rune <= 0x08FF)) {
+        continue;
+      }
+      final char = String.fromCharCode(rune);
+      buffer.write(switch (char) {
+        'ٱ' || 'آ' || 'أ' || 'إ' => 'ا',
+        'ى' => 'ي',
+        'ؤ' => 'و',
+        'ئ' => 'ي',
+        'ة' => 'ه',
+        'ء' => '',
+        _ => char,
+      });
+    }
+    return buffer.toString();
+  }
+
+  /// Every ayah, keyed for searching. Built once — 6236 ayahs is small enough
+  /// to hold, and rebuilding it per keystroke would make search unusable.
+  static Future<List<AyahHit>> _buildSearchIndex() async {
+    final cached = _searchIndex;
+    if (cached != null) return cached;
+
+    final built = <AyahHit>[];
+    for (final info in await index()) {
+      final surah = await QuranService.surah(info.number);
+      for (final ayah in surah.ayahs) {
+        built.add(AyahHit(
+          surah: info.number,
+          surahName: info.name,
+          ayah: ayah.number,
+          text: ayah.text,
+          key: searchKey(ayah.text),
+        ));
+      }
+    }
+    return _searchIndex = built;
+  }
+
+  /// Ayahs containing [query], in Mushaf order.
+  static Future<List<AyahHit>> search(String query) async {
+    final needle = searchKey(query.trim());
+    if (needle.isEmpty) return const [];
+    return (await _buildSearchIndex())
+        .where((hit) => hit.key.contains(needle))
+        .toList();
+  }
+
+  /// Total occurrences of [query], counting a verse more than once when it
+  /// repeats the word.
+  static Future<int> countOccurrences(String query) async {
+    final needle = searchKey(query.trim());
+    if (needle.isEmpty) return 0;
+    var total = 0;
+    for (final hit in await _buildSearchIndex()) {
+      var from = 0;
+      while (true) {
+        final at = hit.key.indexOf(needle, from);
+        if (at < 0) break;
+        total++;
+        from = at + needle.length;
+      }
+    }
+    return total;
   }
 
   /// Converts 25 -> ٢٥ for the ayah-number ornament.
