@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/theme.dart';
+import '../services/prayer_settings.dart';
 import '../services/storage_service.dart';
 import '../services/notification_service.dart';
 
@@ -98,6 +99,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
 
+                // Prayer times
+                _sectionTitle('حساب مواقيت الصلاة'),
+                _prayerMethod(),
+                const SizedBox(height: 10),
+                _asrSchool(),
+
                 // Notifications
                 _sectionTitle('التذكيرات'),
                 _notifRow(
@@ -152,6 +159,134 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  /// Each authority sets its own twilight angles, so this is not a matter of
+  /// taste: Makkah's method in Cairo gives the wrong Isha, by a quarter of an
+  /// hour or more.
+  Widget _prayerMethod() {
+    return ValueListenableBuilder<PrayerMethod>(
+      valueListenable: PrayerSettings.method,
+      builder: (context, chosen, _) => Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(
+          color: AppColors.blackCard,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.goldBorder),
+        ),
+        child: Column(
+          children: [
+            for (final method in PrayerMethod.values)
+              InkWell(
+                onTap: () => PrayerSettings.setMethod(method),
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+                  child: Row(
+                    children: [
+                      Icon(
+                        method == chosen
+                            ? Icons.radio_button_checked
+                            : Icons.radio_button_unchecked,
+                        color: method == chosen
+                            ? AppColors.gold
+                            : AppColors.textMuted,
+                        size: 19,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(method.label,
+                                style: TextStyle(
+                                    color: method == chosen
+                                        ? AppColors.gold
+                                        : AppColors.textPrimary,
+                                    fontSize: 14)),
+                            Text(method.where,
+                                style: const TextStyle(
+                                    color: AppColors.textMuted, fontSize: 11)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// The two rules for Asr are about forty minutes apart in summer.
+  Widget _asrSchool() {
+    return ValueListenableBuilder<AsrSchool>(
+      valueListenable: PrayerSettings.school,
+      builder: (context, chosen, _) => Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppColors.blackCard,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.goldBorder),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Padding(
+              padding: EdgeInsets.only(right: 2, bottom: 8),
+              child: Text('وقت العصر',
+                  style:
+                      TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+            ),
+            Row(
+              children: [
+                for (final school in AsrSchool.values)
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 3),
+                      child: GestureDetector(
+                        onTap: () => PrayerSettings.setSchool(school),
+                        behavior: HitTestBehavior.opaque,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          decoration: BoxDecoration(
+                            color: school == chosen
+                                ? AppColors.goldMuted
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                                color: school == chosen
+                                    ? AppColors.gold
+                                    : AppColors.goldBorder),
+                          ),
+                          child: Column(
+                            children: [
+                              Text(school.label,
+                                  style: TextStyle(
+                                      color: school == chosen
+                                          ? AppColors.gold
+                                          : AppColors.textMuted,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold)),
+                              Text(school.note,
+                                  style: const TextStyle(
+                                      color: AppColors.textMuted,
+                                      fontSize: 10)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ],
         ),
       ),
     );

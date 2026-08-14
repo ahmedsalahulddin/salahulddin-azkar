@@ -135,11 +135,17 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> {
           SkyArch(
             data: data,
             now: DateTime.now(),
-            child: const RotatingVerse(),
+            child: Column(
+              children: [
+                const Expanded(child: RotatingVerse()),
+                const SizedBox(height: 8),
+                _timesColumn(data),
+              ],
+            ),
           ),
         Container(
-          margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-          padding: const EdgeInsets.symmetric(vertical: 12),
+          margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+          padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               begin: Alignment.topCenter,
@@ -166,8 +172,9 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> {
         ),
       );
 
-  /// The reckoning: which prayer is next and when, the time left, where the
-  /// times were computed for, and the six of them in a row.
+  /// The reckoning under the arch: which prayer is next and when, the time
+  /// left, and where the times were computed for. The times themselves are up
+  /// inside the arch now.
   Widget _content(PrayerData data) {
     return Column(
       children: [
@@ -187,7 +194,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> {
                   Text(data.nextName,
                       style: const TextStyle(
                           color: AppColors.gold,
-                          fontSize: 24,
+                          fontSize: 21,
                           fontWeight: FontWeight.bold)),
                 ],
               ),
@@ -202,7 +209,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> {
                   Text(PrayerService.formatTime(data.nextTime),
                       style: const TextStyle(
                           color: AppColors.textGold,
-                          fontSize: 20,
+                          fontSize: 18,
                           fontWeight: FontWeight.bold)),
                 ],
               ),
@@ -239,14 +246,58 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> {
         ),
         const SizedBox(height: 10),
 
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: data.prayers.map(_prayerColumn).toList(),
-          ),
-        ),
       ],
+    );
+  }
+
+  /// The five prayers, one to a line, inside the arch.
+  ///
+  /// Sunrise is not among them: it is not a prayer, and it is already marked on
+  /// the sky above where it means something — the end of Fajr's time and the
+  /// point the sun crosses the horizon.
+  Widget _timesColumn(PrayerData data) {
+    final prayers =
+        data.prayers.where((p) => p.name != 'الشروق').toList();
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (final prayer in prayers) _timeRow(prayer),
+      ],
+    );
+  }
+
+  Widget _timeRow(PrayerInfo prayer) {
+    final next = prayer.isNext;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 3),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: next ? AppColors.goldMuted : Colors.transparent,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+            color: next ? AppColors.gold : Colors.transparent, width: 1),
+      ),
+      child: Row(
+        children: [
+          if (next)
+            const Padding(
+              padding: EdgeInsets.only(left: 5),
+              child: Icon(Icons.play_arrow, size: 11, color: AppColors.gold),
+            ),
+          Text(prayer.name,
+              style: TextStyle(
+                  color: next ? AppColors.gold : AppColors.textSecondary,
+                  fontSize: 12.5,
+                  fontWeight: next ? FontWeight.bold : FontWeight.normal)),
+          const Spacer(),
+          Text(PrayerService.formatTime(prayer.time),
+              style: TextStyle(
+                  color: next ? AppColors.textGold : AppColors.textMuted,
+                  fontSize: 12,
+                  fontWeight: next ? FontWeight.bold : FontWeight.normal)),
+        ],
+      ),
     );
   }
 
@@ -300,27 +351,5 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> {
     );
   }
 
-  Widget _prayerColumn(PrayerInfo p) {
-    final color = p.isNext ? AppColors.gold : AppColors.textMuted;
-    return Column(
-      children: [
-        // Marks the prayer being counted down to.
-        Icon(
-          Icons.arrow_drop_down,
-          size: 16,
-          color: p.isNext ? AppColors.gold : Colors.transparent,
-        ),
-        Text(p.name,
-            style: TextStyle(
-                color: color,
-                fontSize: 12,
-                fontWeight: p.isNext ? FontWeight.bold : FontWeight.normal)),
-        const SizedBox(height: 2),
-        Text(PrayerService.formatTime(p.time),
-            style: TextStyle(
-                color: p.isNext ? AppColors.textGold : AppColors.textMuted,
-                fontSize: 11)),
-      ],
-    );
-  }
+
 }

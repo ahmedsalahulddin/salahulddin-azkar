@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'prayer_settings.dart';
+
 /// Fallback location (Riyadh) used when GPS is unavailable or denied.
 final _riyadh = Coordinates(24.7136, 46.6753);
 
@@ -71,11 +73,16 @@ class PrayerData {
   final DateTime nextTime;
   final LocationStatus status;
 
+  /// The method these times were actually computed with, so the reader can be
+  /// told rather than left to assume.
+  final PrayerMethod method;
+
   const PrayerData({
     required this.prayers,
     required this.nextName,
     required this.nextTime,
     required this.status,
+    this.method = PrayerMethod.ummAlQura,
   });
 }
 
@@ -131,8 +138,9 @@ class PrayerService {
       // Geolocator is unavailable (tests, web without permission). Riyadh it is.
     }
 
-    final params = CalculationMethod.umm_al_qura.getParameters()
-      ..madhab = Madhab.shafi;
+    // The authority and the Asr rule come from the reader's settings, which
+    // default to whichever method is used where they are standing.
+    final params = PrayerSettings.parametersFor(coords.latitude, coords.longitude);
 
     final today = PrayerTimes.today(coords, params);
     final next = today.nextPrayer();
@@ -162,6 +170,7 @@ class PrayerService {
       nextName: nextName,
       nextTime: nextTime,
       status: status,
+      method: PrayerSettings.effective(coords.latitude, coords.longitude),
     );
   }
 

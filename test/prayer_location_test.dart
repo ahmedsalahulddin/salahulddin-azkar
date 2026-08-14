@@ -124,8 +124,12 @@ void main() {
 
   group('the card', () {
     Future<void> pumpCard(WidgetTester tester) async {
+      // Mounted the way the home screen mounts it: the header is taller than
+      // a short screen, and scrolls there rather than being squeezed.
       await tester.pumpWidget(const MaterialApp(
-        home: Scaffold(body: PrayerTimesCard()),
+        home: Scaffold(
+          body: SingleChildScrollView(child: PrayerTimesCard()),
+        ),
       ));
       await tester.pump(const Duration(milliseconds: 50));
     }

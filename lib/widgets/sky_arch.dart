@@ -31,7 +31,14 @@ class SkyArch extends StatelessWidget {
     this.child,
   });
 
-  static const height = 292.0;
+  /// Tall enough to hold the prayer times inside the arch rather than under
+  /// it. The crown keeps its size whatever this is — see [_archPath] — so the
+  /// extra height all goes to the jambs.
+  static const height = 438.0;
+
+  /// Where the crown stops and the jambs begin, for a given width and height.
+  static double springOf(Size size) =>
+      math.min(size.height * 0.62, size.width * 0.55);
 
   @override
   Widget build(BuildContext context) {
@@ -43,8 +50,8 @@ class SkyArch extends StatelessWidget {
         child: child == null
             ? null
             : Padding(
-                // Clear of the arch's shoulders and the horizon above.
-                padding: const EdgeInsets.fromLTRB(38, 196, 38, 14),
+                // Inside the jambs, and below the horizon the sky is drawn on.
+                padding: const EdgeInsets.fromLTRB(54, 208, 54, 14),
                 child: child,
               ),
       ),
@@ -141,7 +148,9 @@ class SkyArchPainter extends CustomPainter {
     // that the widest of them still clears the edge — otherwise the shoulders
     // are cut off by the canvas and the arch reads as a plain dome.
     final margin = 16.0 + inset;
-    final spring = h * 0.62 - inset * 0.3;
+    // Tied to the width, not the height: making the arch taller should lengthen
+    // its jambs, not blow up its crown.
+    final spring = math.min(h * 0.62, w * 0.55) - inset * 0.3;
     final rx = (cx - margin) / (1 + swell);
     final ry = (spring - (h * 0.03 + inset)) / (1 + crown);
 
@@ -276,7 +285,9 @@ class SkyArchPainter extends CustomPainter {
   void _paintSkyPath(Canvas canvas, Size size) {
     final clock = SkyClock(data);
     final cx = size.width / 2;
-    final horizon = size.height * 0.545;
+    // The sky belongs to the crown, so it is measured from the springing
+    // rather than from the bottom of a box whose height now varies.
+    final horizon = SkyArch.springOf(size) * 0.86;
     final radius = math.min(size.width * 0.335, horizon - 56);
     // Deep enough that Fajr and Isha clear the two horizon prayers they sit
     // beside; any shallower and their names collide.

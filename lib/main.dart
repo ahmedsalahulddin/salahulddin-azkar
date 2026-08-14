@@ -7,6 +7,7 @@ import 'screens/favorites_screen.dart';
 import 'screens/settings_screen.dart';
 import 'services/auth_service.dart';
 import 'services/notification_service.dart';
+import 'services/prayer_settings.dart';
 import 'services/section_config.dart';
 import 'services/storage_service.dart';
 import 'widgets/mushaf_frames.dart';
@@ -45,6 +46,7 @@ void main() async {
   } catch (_) {}
 
   // The chosen Mushaf border, so the first page opens already wearing it.
+  await PrayerSettings.load();
   await MushafFrames.load();
   await MushafPalettes.load();
 
