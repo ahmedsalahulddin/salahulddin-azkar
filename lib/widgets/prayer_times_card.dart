@@ -139,21 +139,24 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> {
       );
     }
 
-    // Everything the reader needs about the prayer day now lives inside the
-    // arch. The card that used to sit under it repeated what the arch already
-    // said, and cost a screenful doing it.
-    return SkyArch(
-      data: data,
-      now: DateTime.now(),
+    // The sky panel — dome, sun path, prayer marks — then the day's numbers
+    // under it. The verse turns between the two.
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         children: [
-          const Expanded(child: RotatingVerse()),
-          const SizedBox(height: 10),
+          SkyArch(data: data, now: DateTime.now()),
+          const SizedBox(height: 12),
+          const RotatingVerse(),
+          const SizedBox(height: 12),
           _countdown(data),
           const SizedBox(height: 8),
           _locationChip(data.status),
           const SizedBox(height: 10),
-          _timesColumn(data),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 26),
+            child: _timesColumn(data),
+          ),
         ],
       ),
     );

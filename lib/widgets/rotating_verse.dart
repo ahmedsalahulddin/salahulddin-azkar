@@ -82,22 +82,20 @@ class _RotatingVerseState extends State<RotatingVerse> {
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 700),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         // Keyed by index so the switcher knows one verse from the next.
         key: ValueKey(_index),
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Flexible(
-            child: Text(
-              text,
-              textAlign: TextAlign.center,
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontFamily: 'AmiriQuran',
-                color: AppColors.textPrimary,
-                fontSize: 15,
-                height: 1.9,
-              ),
+          Text(
+            text,
+            textAlign: TextAlign.center,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontFamily: 'AmiriQuran',
+              color: AppColors.textPrimary,
+              fontSize: 15,
+              height: 1.9,
             ),
           ),
           const SizedBox(height: 6),
