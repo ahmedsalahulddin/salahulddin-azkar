@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 
+/// The Uthmanic face the bundled Quran text is set in. Anything rendering
+/// ayah text — the Mushaf's fallback page, a search hit — has to ask for it by
+/// name, so it lives with the other constants rather than in one screen.
+const mushafFont = 'AmiriQuran';
+
 class AppColors {
   // Primary - Metallic Gold
   static const gold = Color(0xFFB8860B);

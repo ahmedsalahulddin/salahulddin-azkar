@@ -13,10 +13,10 @@ import '../services/prayer_service.dart';
 /// meridian, so it lands at the apex on its own, without being placed there.
 /// Asr falls where the afternoon really is, a little past three quarters.
 ///
-/// Night is the shallow dip below the horizon, running from Maghrib on the
-/// left back round to Fajr on the right. Together the two make one closed
-/// circuit of twenty-four hours, and the sun or the moon is somewhere on it at
-/// every moment — which is the whole idea.
+/// The two night prayers sit just past the horizon on the same line — Isha a
+/// little below the left end, Fajr a little below the right — and the line
+/// stops shortly after each of them. The hours nobody is waiting on are not
+/// drawn: closing the loop underneath turned the sky into a ring.
 class SkyArch extends StatelessWidget {
   final PrayerData data;
   final DateTime now;
@@ -114,61 +114,86 @@ class SkyArchPainter extends CustomPainter {
     _paintNight(canvas, size);
     _paintSkyPath(canvas, size);
     canvas.restore();
-    _paintArchEdge(canvas, arch);
+    _paintArchEdge(canvas, size, arch);
   }
 
   // ---- the arch ----------------------------------------------------------
 
-  /// A multifoil arch, built the way one is actually built: a run of circular
-  /// lobes strung along a guide, each meeting its neighbour at a cusp, on
-  /// straight jambs. The guide is an ellipse rather than a circle so the crown
-  /// stays broad — a narrow crown would crowd the sun off its own path — with
-  /// a sharp rise at the very top to give the ogee its point.
-  Path _archPath(Size size) {
-    final cx = size.width / 2;
-    final spring = size.height * 0.62;
-    final rx = size.width / 2 - 5;
-    final ry = (spring - 12) / 1.17;
-    const lobes = 8;
+  /// A mihrab arch: straight jambs, two lobes rising on each side, and a point
+  /// at the crown.
+  ///
+  /// It is swept rather than assembled. A radius that swells with |sin 4θ| puts
+  /// four lobes around the arch and leaves a cusp wherever the swell returns to
+  /// zero — including at the very top, which is then lifted into the crown's
+  /// point by a spike narrow enough to touch nothing else. Cusps come out sharp
+  /// because they are where two smooth lobes meet at an angle, which is how the
+  /// real thing is built.
+  Path _archPath(Size size, {double inset = 0}) {
+    final w = size.width;
+    final h = size.height;
+    final cx = w / 2;
 
-    Offset guide(double s) {
-      final theta = math.pi * s;
-      // Narrow and strong, so the boost lands on the top cusp alone and
-      // leaves it a point rather than lifting the whole crown.
-      final peak = 1 + 0.17 * math.pow(math.sin(theta), 26).toDouble();
+    /// How far the lobes swell, and how far the crown rises past them.
+    const swell = 0.16;
+    const crown = 0.32;
+
+    // The lobes bulge past the guide, so the guide has to sit in far enough
+    // that the widest of them still clears the edge — otherwise the shoulders
+    // are cut off by the canvas and the arch reads as a plain dome.
+    final margin = 16.0 + inset;
+    final spring = h * 0.62 - inset * 0.3;
+    final rx = (cx - margin) / (1 + swell);
+    final ry = (spring - (h * 0.03 + inset)) / (1 + crown);
+
+    Offset at(double theta) {
+      final lobe = 1 + swell * math.sin(4 * theta).abs();
+      // A tent, not a bell. Its sides are straight and meet at an angle, which
+      // is what makes the crown a point; anything smooth peaks in a dome no
+      // matter how narrow it is made.
+      const reach = 0.26;
+      final near = 1 - math.min(1.0, math.cos(theta).abs() / reach);
+      final point = 1 + crown * near;
       return Offset(
-          cx + rx * math.cos(theta), spring - ry * math.sin(theta) * peak);
+        cx + rx * lobe * math.cos(theta),
+        spring - ry * lobe * math.sin(theta) * point,
+      );
     }
 
     final path = Path()
-      ..moveTo(cx + rx, size.height)
+      ..moveTo(cx + rx, h)
       ..lineTo(cx + rx, spring);
-    for (var i = 0; i < lobes; i++) {
-      final from = guide(i / lobes);
-      final to = guide((i + 1) / lobes);
-      // Bulging outward, so the meeting points read as cusps rather than as a
-      // rippled curve.
-      path.arcToPoint(to,
-          radius: Radius.circular((to - from).distance * 0.6),
-          clockwise: false);
+    const steps = 240;
+    for (var i = 1; i <= steps; i++) {
+      final p = at(math.pi * i / steps);
+      path.lineTo(p.dx, p.dy);
     }
-    path.lineTo(cx - rx, size.height);
+    path.lineTo(cx - rx, h);
     return path..close();
   }
 
-  void _paintArchEdge(Canvas canvas, Path arch) {
+  /// The gold band, and the thin line that runs inside it — a single stroke
+  /// reads as a cheap outline, and the drawing this copies has both.
+  void _paintArchEdge(Canvas canvas, Size size, Path arch) {
     canvas.drawPath(
         arch,
         Paint()
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 7
-          ..color = _gold.withValues(alpha: 0.85));
+          ..strokeWidth = 11
+          ..strokeJoin = StrokeJoin.round
+          ..color = _gold);
     canvas.drawPath(
         arch,
         Paint()
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 2.2
+          ..strokeWidth = 4
+          ..strokeJoin = StrokeJoin.round
           ..color = _goldLight);
+    canvas.drawPath(
+        _archPath(size, inset: 13),
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.4
+          ..color = _gold.withValues(alpha: 0.75));
   }
 
   /// The eight-point star tessellation behind the arch — the ground the
@@ -177,25 +202,38 @@ class SkyArchPainter extends CustomPainter {
     canvas.save();
     canvas.clipRect(Offset.zero & size);
 
+    final strap = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.6
+      ..color = _gold.withValues(alpha: 0.62);
     final line = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.1
-      ..color = _gold.withValues(alpha: 0.30);
+      ..color = _gold.withValues(alpha: 0.42);
     final faint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 0.8
-      ..color = _gold.withValues(alpha: 0.16);
+      ..strokeWidth = 0.9
+      ..color = _gold.withValues(alpha: 0.26);
 
-    const cell = 46.0;
+    // Fine and close-set. The panel behind a mihrab is a dense field, not a
+    // handful of large stars with gaps between them.
+    const cell = 28.0;
     for (var y = -cell; y < size.height + cell; y += cell) {
       for (var x = -cell; x < size.width + cell; x += cell) {
         final c = Offset(x + cell / 2, y + cell / 2);
-        _star(canvas, c, cell * 0.42, 8, line, innerRatio: 0.52);
-        _star(canvas, c, cell * 0.42, 8, faint,
-            innerRatio: 0.52, rotation: math.pi / 8);
+        // The eight-point star, doubled at half a turn — the two together are
+        // what a pierced gold panel actually looks like.
+        _star(canvas, c, cell * 0.46, 8, strap, innerRatio: 0.55);
+        _star(canvas, c, cell * 0.46, 8, line,
+            innerRatio: 0.55, rotation: math.pi / 8);
+        // A rosette in the middle of each star, the way the ground is filled.
+        _star(canvas, c, cell * 0.17, 8, faint, innerRatio: 0.42);
+        canvas.drawCircle(c, cell * 0.07, faint);
         // The octagon between four stars, which is what closes the pattern.
-        _star(canvas, Offset(c.dx + cell / 2, c.dy + cell / 2), cell * 0.19, 4,
-            faint, innerRatio: 0.86, rotation: math.pi / 4);
+        _star(canvas, Offset(c.dx + cell / 2, c.dy + cell / 2), cell * 0.22, 4,
+            line, innerRatio: 0.86, rotation: math.pi / 4);
+        _star(canvas, Offset(c.dx + cell / 2, c.dy + cell / 2), cell * 0.13, 8,
+            faint, innerRatio: 0.5);
       }
     }
     canvas.restore();
@@ -258,24 +296,27 @@ class SkyArchPainter extends CustomPainter {
           cx - radius * math.cos(theta), horizon + dip * math.sin(theta));
     }
 
-    // The daylight arc, drawn solid; the night, dotted.
-    final day = Path();
-    for (var i = 0; i <= 90; i++) {
-      final p = at(i / 90);
-      i == 0 ? day.moveTo(p.dx, p.dy) : day.lineTo(p.dx, p.dy);
+    // One open line, from a little before Fajr round to a little past Isha.
+    //
+    // The path is not closed at the bottom: the hours between Isha and Fajr
+    // are the ones nobody is waiting on, and drawing them shut turned the sky
+    // into a ring. Both ends simply run off past their prayer.
+    final from = clock.fractionFor(clock.fajr) - 0.10;
+    final to = 2 + clock.fractionFor(clock.isha) + 0.07;
+
+    final line = Path();
+    const steps = 150;
+    for (var i = 0; i <= steps; i++) {
+      final p = at(from + (to - from) * i / steps);
+      i == 0 ? line.moveTo(p.dx, p.dy) : line.lineTo(p.dx, p.dy);
     }
     canvas.drawPath(
-        day,
+        line,
         Paint()
           ..style = PaintingStyle.stroke
           ..strokeWidth = 1.5
-          ..color = _gold.withValues(alpha: 0.75));
-
-    for (var i = 0; i < 46; i++) {
-      final p = at(1 + i / 46);
-      canvas.drawCircle(
-          p, 0.9, Paint()..color = _gold.withValues(alpha: 0.42));
-    }
+          ..strokeCap = StrokeCap.round
+          ..color = _gold.withValues(alpha: 0.8));
 
     // Where the sun or moon is now, with its glow laid down first.
     final fraction = clock.fractionFor(now);
@@ -306,11 +347,13 @@ class SkyArchPainter extends CustomPainter {
     daylight ? _paintSun(canvas, here) : _paintMoon(canvas, here);
   }
 
+  /// Kept tight. A wide halo washed over the two names beside it, and a prayer
+  /// time that cannot be read is worse than one that does not glow.
   void _paintGlow(Canvas canvas, Offset centre, bool daylight) {
     final colour = daylight ? const Color(0xFFFFD98A) : const Color(0xFFF3E4B8);
-    for (var i = 5; i >= 1; i--) {
-      canvas.drawCircle(centre, i * 8.5,
-          Paint()..color = colour.withValues(alpha: 0.055 * (6 - i)));
+    for (var i = 4; i >= 1; i--) {
+      canvas.drawCircle(centre, i * 5.5,
+          Paint()..color = colour.withValues(alpha: 0.05 * (5 - i)));
     }
   }
 
