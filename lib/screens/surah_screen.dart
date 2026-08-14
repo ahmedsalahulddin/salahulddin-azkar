@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 import '../constants/theme.dart';
 import '../data/quran_data.dart';
 import '../data/tafsir_data.dart';
@@ -95,11 +96,20 @@ class _SurahScreenState extends State<SurahScreen> {
         await _player.setAudioSources(
           [
             for (final a in surah.ayahs)
-              AudioSource.uri(Uri.parse(RecitationService.urlFor(
-                reciterId: _reciter.id,
-                surah: surah.number,
-                ayah: a.number,
-              ))),
+              AudioSource.uri(
+                Uri.parse(RecitationService.urlFor(
+                  reciterId: _reciter.id,
+                  surah: surah.number,
+                  ayah: a.number,
+                )),
+                tag: MediaItem(
+                  id: '${_reciter.id}:${surah.number}:${a.number}',
+                  title:
+                      '${surah.name} — الآية ${QuranService.toArabicDigits(a.number)}',
+                  artist: _reciter.name,
+                  album: 'القرآن الكريم',
+                ),
+              ),
           ],
           initialIndex: fromAyah - 1,
         );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 import '../constants/theme.dart';
 import '../data/adhkar_data.dart';
 import '../services/storage_service.dart';
@@ -63,7 +64,16 @@ class _AdhkarCardState extends State<AdhkarCard> {
 
     setState(() => _isPlaying = true);
     try {
-      if (player.audioSource == null) await player.setUrl(url);
+      if (player.audioSource == null) {
+        await player.setAudioSource(AudioSource.uri(
+          Uri.parse(url),
+          tag: MediaItem(
+            id: 'dhikr:${widget.dhikr.categoryId}:${widget.dhikr.id}',
+            title: 'ذكر',
+            album: 'الأذكار',
+          ),
+        ));
+      }
       await player.play();
     } catch (_) {
       if (mounted) setState(() => _isPlaying = false);

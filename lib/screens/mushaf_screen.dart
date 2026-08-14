@@ -14,7 +14,9 @@ import '../services/mushaf_image_service.dart';
 import '../services/recitation_service.dart';
 import '../services/repeat_settings.dart';
 import '../services/storage_service.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 import '../widgets/mushaf_frames.dart';
+import '../widgets/mushaf_palettes.dart';
 import '../widgets/mushaf_page_view.dart';
 import '../widgets/tafsir_sheet.dart';
 
@@ -32,9 +34,10 @@ class MushafScreen extends StatefulWidget {
   State<MushafScreen> createState() => _MushafScreenState();
 }
 
-const _mushafFont = 'AmiriQuran';
-const _paper = Color(0xFFF7F1E1);
 const _ink = Color(0xFF1A1A1A);
+
+/// The Uthmanic face the bundled text is set in.
+const _mushafFont = 'AmiriQuran';
 
 class _MushafScreenState extends State<MushafScreen> {
   late final PageController _controller =
@@ -156,11 +159,21 @@ class _MushafScreenState extends State<MushafScreen> {
       await _player.setAudioSources(
         [
           for (final ayah in order)
-            AudioSource.uri(Uri.parse(RecitationService.urlFor(
-              reciterId: _reciter.id,
-              surah: start.surah,
-              ayah: ayah,
-            ))),
+            AudioSource.uri(
+              Uri.parse(RecitationService.urlFor(
+                reciterId: _reciter.id,
+                surah: start.surah,
+                ayah: ayah,
+              )),
+              // Names the track in the notification and on the lock screen,
+              // and is what lets playback survive leaving the app.
+              tag: MediaItem(
+                id: '${_reciter.id}:${start.surah}:$ayah',
+                title: '${surah.name} — الآية ${QuranService.toArabicDigits(ayah)}',
+                artist: _reciter.name,
+                album: 'القرآن الكريم',
+              ),
+            ),
         ],
         initialIndex: 0,
       );
@@ -344,7 +357,7 @@ class _MushafScreenState extends State<MushafScreen> {
       textDirection: TextDirection.rtl,
       child: Scaffold(
         key: _scaffoldKey,
-        backgroundColor: _paper,
+        backgroundColor: MushafPalettes.current.value.paper,
         drawer: pages == null ? null : _NavigationDrawer(
           index: _index!,
           pages: pages,
@@ -1003,47 +1016,53 @@ class _PageSheetState extends State<_PageSheet> {
     // colour so changing the theme carries the ornament with it. The page
     // images are text on a transparent ground with no printed border of their
     // own, so nothing is being drawn over.
-    return Container(
-      margin: const EdgeInsets.all(3),
-      decoration: BoxDecoration(
-        color: _paper,
-        borderRadius: BorderRadius.circular(6),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: ValueListenableBuilder<MushafFrame>(
-        valueListenable: MushafFrames.current,
-        builder: (context, frame, child) => MushafFrameBox(
-          frame: frame,
-          color: AppColors.gold,
-          child: child!,
+    return ValueListenableBuilder<MushafPalette>(
+      valueListenable: MushafPalettes.current,
+      builder: (context, palette, _) => Container(
+        margin: const EdgeInsets.all(3),
+        decoration: BoxDecoration(
+          color: palette.paper,
+          borderRadius: BorderRadius.circular(6),
         ),
-        child: FutureBuilder<File?>(
-          future: _image,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState != ConnectionState.done) {
-              return const Center(
-                child: CircularProgressIndicator(
-                    color: AppColors.goldDark, strokeWidth: 2),
-              );
-            }
-            final file = snapshot.data;
-            if (file == null) return _textFallback();
+        clipBehavior: Clip.antiAlias,
+        child: ValueListenableBuilder<MushafFrame>(
+          valueListenable: MushafFrames.current,
+          builder: (context, frame, child) => MushafFrameBox(
+            frame: frame,
+            color: palette.ink,
+            child: child!,
+          ),
+          child: FutureBuilder<File?>(
+            future: _image,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState != ConnectionState.done) {
+                return Center(
+                  child: CircularProgressIndicator(
+                      color: palette.ink, strokeWidth: 2),
+                );
+              }
+              final file = snapshot.data;
+              if (file == null) return _textFallback(palette);
 
-            return MushafPageImage(
-              file: file,
-              boxes: _boxes,
-              selected: widget.selected,
-              onAyahTapped: widget.onAyahTapped,
-              onBackgroundTapped: widget.onBackgroundTapped,
-            );
-          },
+              return InvertedInk(
+                active: palette.invert,
+                child: MushafPageImage(
+                  file: file,
+                  boxes: _boxes,
+                  selected: widget.selected,
+                  onAyahTapped: widget.onAyahTapped,
+                  onBackgroundTapped: widget.onBackgroundTapped,
+                ),
+              );
+            },
+          ),
         ),
       ),
     );
   }
 
   /// Same page from the bundled text — used offline and on web.
-  Widget _textFallback() {
+  Widget _textFallback(MushafPalette palette) {
     final view = MediaQuery.viewPaddingOf(context);
     return GestureDetector(
       onTap: widget.onBackgroundTapped,
@@ -1058,7 +1077,7 @@ class _PageSheetState extends State<_PageSheet> {
             const SizedBox(height: 8),
             Text('صفحة ${QuranService.toArabicDigits(widget.page.number)}',
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Color(0xFF8A7C5C), fontSize: 12)),
+                style: TextStyle(color: palette.onPaperMuted, fontSize: 12)),
           ],
         ),
       ),
@@ -1197,6 +1216,7 @@ class _DrawerBodyState extends State<_DrawerBody> {
     (icon: Icons.bookmark, label: 'العلامات'),
     (icon: Icons.download, label: 'التنزيل'),
     (icon: Icons.filter_frames, label: 'الإطار'),
+    (icon: Icons.palette, label: 'اللون'),
   ];
 
   @override
@@ -1216,6 +1236,7 @@ class _DrawerBodyState extends State<_DrawerBody> {
                   index: widget.index, onBookmark: widget.onBookmark),
               const _DownloadsTab(),
               const _FrameTab(),
+              const _PaletteTab(),
             ],
           ),
         ),
@@ -1328,16 +1349,17 @@ class _FrameTab extends StatelessWidget {
             child: Container(
               width: double.infinity,
               decoration: BoxDecoration(
-                color: _paper,
+                color: MushafPalettes.current.value.paper,
                 borderRadius: BorderRadius.circular(4),
                 border: Border.all(
                   color: active ? AppColors.gold : Colors.transparent,
                   width: 2,
                 ),
               ),
+              clipBehavior: Clip.antiAlias,
               child: MushafFrameBox(
                 frame: frame,
-                color: AppColors.gold,
+                color: MushafPalettes.current.value.ink,
                 // Stand-in for the text, so the swatch shows how much room the
                 // ornament leaves the page.
                 child: const _PreviewLines(),
@@ -1362,8 +1384,97 @@ class _FrameTab extends StatelessWidget {
   }
 }
 
+/// Picks the paper. Each swatch is that paper with that ornament on it, so
+/// the choice is made by looking rather than by reading a colour name.
+class _PaletteTab extends StatelessWidget {
+  const _PaletteTab();
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<MushafPalette>(
+      valueListenable: MushafPalettes.current,
+      builder: (context, chosen, _) => ValueListenableBuilder<MushafFrame>(
+        valueListenable: MushafFrames.current,
+        builder: (context, frame, _) => ListView(
+          padding: const EdgeInsets.all(12),
+          children: [
+            const Text('لون الصفحة',
+                style: TextStyle(
+                    color: AppColors.gold,
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold)),
+            const SizedBox(height: 4),
+            const Text(
+              'الإطار وأرقام الآيات تأخذ لون الورقة. الأوراق الداكنة تقلب لون '
+              'الخط ليبقى مقروءاً.',
+              style: TextStyle(color: AppColors.textMuted, fontSize: 11),
+            ),
+            const SizedBox(height: 12),
+            GridView.count(
+              crossAxisCount: 3,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              mainAxisSpacing: 10,
+              crossAxisSpacing: 10,
+              childAspectRatio: 0.66,
+              children: [
+                for (final palette in MushafPalette.values)
+                  _swatch(palette, frame, palette == chosen),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _swatch(MushafPalette palette, MushafFrame frame, bool active) {
+    return GestureDetector(
+      onTap: () => MushafPalettes.choose(palette),
+      behavior: HitTestBehavior.opaque,
+      child: Column(
+        children: [
+          Expanded(
+            child: Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: palette.paper,
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(
+                  color: active ? AppColors.gold : Colors.transparent,
+                  width: 2,
+                ),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: MushafFrameBox(
+                frame: frame,
+                color: palette.ink,
+                child: _PreviewLines(color: palette.onPaperMuted),
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            palette.label,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: active ? AppColors.gold : AppColors.textMuted,
+              fontSize: 10,
+              fontWeight: active ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _PreviewLines extends StatelessWidget {
-  const _PreviewLines();
+  const _PreviewLines({this.color = const Color(0xFF6B6250)});
+
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
@@ -1378,7 +1489,7 @@ class _PreviewLines extends StatelessWidget {
               margin: const EdgeInsets.symmetric(vertical: 2),
               width: i.isEven ? double.infinity : null,
               constraints: const BoxConstraints(minWidth: 14),
-              color: const Color(0xFF6B6250),
+              color: color,
             ),
         ],
       ),

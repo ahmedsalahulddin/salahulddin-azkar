@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 import '../constants/theme.dart';
 import '../data/hisn_data.dart';
 
@@ -44,7 +45,14 @@ class DhikrAudioController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _player.setUrl(url);
+      await _player.setAudioSource(AudioSource.uri(
+        Uri.parse(url),
+        tag: MediaItem(
+          id: 'hisn:${dhikr.number}',
+          title: 'ذكر ${dhikr.number}',
+          album: 'الأذكار',
+        ),
+      ));
       await _player.play();
     } catch (_) {
       _failed = true;

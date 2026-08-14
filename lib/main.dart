@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 import 'constants/theme.dart';
 import 'screens/home_screen.dart';
 import 'screens/favorites_screen.dart';
@@ -9,6 +10,7 @@ import 'services/notification_service.dart';
 import 'services/section_config.dart';
 import 'services/storage_service.dart';
 import 'widgets/mushaf_frames.dart';
+import 'widgets/mushaf_palettes.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,6 +19,20 @@ void main() async {
     statusBarColor: AppColors.black,
     statusBarIconBrightness: Brightness.light,
   ));
+  // Lets recitation keep playing once the reader leaves the app, and puts the
+  // controls in the notification shade and on the lock screen. Must run before
+  // any player is built.
+  try {
+    await JustAudioBackground.init(
+      androidNotificationChannelId: 'app.yallanow.azkar.audio',
+      androidNotificationChannelName: 'التلاوة',
+      androidNotificationOngoing: true,
+      androidStopForegroundOnPause: true,
+    );
+  } catch (_) {
+    // Playback still works in the foreground if the service cannot start.
+  }
+
   // No-op until the project credentials are supplied; the app runs as a guest.
   try {
     await AuthService.init();
@@ -30,6 +46,7 @@ void main() async {
 
   // The chosen Mushaf border, so the first page opens already wearing it.
   await MushafFrames.load();
+  await MushafPalettes.load();
 
   try {
     await NotificationService.init();
