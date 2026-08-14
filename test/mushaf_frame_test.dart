@@ -144,6 +144,59 @@ void main() {
     });
   });
 
+  group('the border is decoration', () {
+    test('it refuses every tap offered to it', () {
+      // CustomPainter.hitTest returns null by default and RenderCustomPaint
+      // reads null as yes, so a painter laid over the page swallows the taps
+      // that select an ayah — and with them the bookmark, tafsir, copy and
+      // share buttons, which only work once one is selected.
+      final painter = MushafFramePainter(
+          frame: MushafFrame.stars, color: const Color(0xFFB8860B));
+      for (final point in [
+        Offset.zero,
+        const Offset(190, 300),
+        const Offset(379, 599),
+      ]) {
+        expect(painter.hitTest(point), isFalse);
+      }
+    });
+
+    testWidgets('a tap passes through it to the page underneath',
+        (tester) async {
+      var taps = 0;
+      await tester.pumpWidget(MaterialApp(
+        home: Center(
+          child: SizedBox(
+            width: 380,
+            height: 600,
+            child: Stack(
+              children: [
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => taps++,
+                  child: const SizedBox.expand(),
+                ),
+                // The border, laid over the whole page exactly as the Mushaf
+                // lays it.
+                Positioned.fill(
+                  child: CustomPaint(
+                    painter: MushafFramePainter(
+                        frame: MushafFrame.filigree,
+                        color: const Color(0xFFB8860B)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ));
+
+      await tester.tapAt(tester.getCenter(find.byType(Stack).last));
+      await tester.pump();
+      expect(taps, 1, reason: 'the border swallowed the tap');
+    });
+  });
+
   testWidgets('the box insets its child by exactly what the frame needs',
       (tester) async {
     await tester.pumpWidget(const MaterialApp(

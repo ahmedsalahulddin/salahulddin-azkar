@@ -121,9 +121,11 @@ class MushafFrameBox extends StatelessWidget {
               right: -inset,
               top: 0,
               bottom: 0,
-              child: CustomPaint(
-                painter: MushafFramePainter(
-                    frame: frame, color: color, scale: scale),
+              child: IgnorePointer(
+                child: CustomPaint(
+                  painter: MushafFramePainter(
+                      frame: frame, color: color, scale: scale),
+                ),
               ),
             ),
             Padding(
@@ -534,6 +536,16 @@ class MushafFramePainter extends CustomPainter {
       canvas.drawCircle(Offset(cx, y), r, _stroke(0.7 * s, _soft));
     }
   }
+
+  /// The border is decoration and must never take a tap.
+  ///
+  /// This is not a default worth trusting: [CustomPainter.hitTest] returns
+  /// null, and RenderCustomPaint reads that as *yes*. A painter laid over the
+  /// page therefore swallows every tap on it — which is exactly what stopped
+  /// ayahs being selected, and with them the bookmark, tafsir, copy and share
+  /// buttons that only light up once one is.
+  @override
+  bool hitTest(Offset position) => false;
 
   @override
   bool shouldRepaint(MushafFramePainter old) =>

@@ -1106,7 +1106,10 @@ class _PageSheetState extends State<_PageSheet> {
       right: 0,
       top: (top - band).clamp(0.0, size.height),
       height: (bottom - top + band * 2).clamp(0.0, size.height),
-      child: Stack(
+      // Decoration only. Without this the border sits over the page and eats
+      // the taps that select an ayah.
+      child: IgnorePointer(
+        child: Stack(
         children: [
           // Painted wider than the page so the ornament's flanks fall out of
           // view; a Mushaf page cannot spare width from its ayahs.
@@ -1141,17 +1144,18 @@ class _PageSheetState extends State<_PageSheet> {
               ),
             ),
           ),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: band,
-            child: Center(
-              child: Text(QuranService.toArabicDigits(widget.page.number),
-                  style: caption),
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: band,
+              child: Center(
+                child: Text(QuranService.toArabicDigits(widget.page.number),
+                    style: caption),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
