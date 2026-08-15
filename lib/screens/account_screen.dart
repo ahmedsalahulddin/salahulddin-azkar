@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/theme.dart';
 import '../services/auth_service.dart';
+import '../services/sync_service.dart';
 import '../services/section_config.dart';
 import '../widgets/sign_in_buttons.dart';
 import 'admin_screen.dart';
@@ -108,6 +109,10 @@ class _AccountScreenState extends State<AccountScreen> {
             padding: const EdgeInsets.all(16),
             children: [
               _profileCard(user),
+              if (SyncService.available) ...[
+                const SizedBox(height: 12),
+                _syncCard(),
+              ],
               const SizedBox(height: 10),
               // The settings themselves, not a link to them: there is one
               // place the reader goes for anything about themselves or the
@@ -136,6 +141,76 @@ class _AccountScreenState extends State<AccountScreen> {
         ),
       ),
     );
+  }
+
+  /// Sync, said plainly: what travels, and when it last did.
+  Widget _syncCard() {
+    return ValueListenableBuilder<bool>(
+      valueListenable: SyncService.syncing,
+      builder: (context, busy, _) => ValueListenableBuilder<DateTime?>(
+        valueListenable: SyncService.lastSynced,
+        builder: (context, at, _) => Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: AppColors.blackCard,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.goldBorder),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.cloud_sync, color: AppColors.gold, size: 22),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('مزامنة علاماتك ومفضّلتك',
+                        style: TextStyle(
+                            color: AppColors.textPrimary, fontSize: 14)),
+                    const SizedBox(height: 2),
+                    Text(
+                      at == null
+                          ? 'لم تُزامَن بعد على هذا الجهاز'
+                          : 'آخر مزامنة ${_clock(at)}',
+                      style: const TextStyle(
+                          color: AppColors.textMuted, fontSize: 11),
+                    ),
+                  ],
+                ),
+              ),
+              busy
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: AppColors.gold),
+                    )
+                  : TextButton(
+                      onPressed: () async {
+                        final ok = await SyncService.sync();
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text(
+                              ok ? 'تمت المزامنة' : 'تعذّرت المزامنة الآن',
+                              textAlign: TextAlign.right),
+                          backgroundColor: AppColors.blackCard,
+                          behavior: SnackBarBehavior.floating,
+                        ));
+                      },
+                      child: const Text('زامن الآن',
+                          style: TextStyle(color: AppColors.gold)),
+                    ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  static String _clock(DateTime at) {
+    final h = at.hour % 12 == 0 ? 12 : at.hour % 12;
+    final m = at.minute.toString().padLeft(2, '0');
+    return '$h:$m ${at.hour >= 12 ? 'م' : 'ص'}';
   }
 
   Widget _profileCard(AppUser? user) {

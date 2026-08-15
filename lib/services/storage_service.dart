@@ -1,6 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'dart:async';
+
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'sync_service.dart';
 
 class StorageService {
   static const _favoritesKey = '@noor_favorites';
@@ -25,12 +29,17 @@ class StorageService {
     return prefs.getStringList(_favoritesKey) ?? [];
   }
 
+  /// Toggles, and tells the account when something was removed — a merge
+  /// unions the two sides, so a deletion left behind would simply return.
   static Future<bool> toggleFavorite(String id) async {
     final prefs = await SharedPreferences.getInstance();
     final favs = prefs.getStringList(_favoritesKey) ?? [];
     final added = !favs.contains(id);
     added ? favs.add(id) : favs.remove(id);
     await prefs.setStringList(_favoritesKey, favs);
+    if (!favs.contains(id)) {
+      unawaited(SyncService.forget(SyncKind.favourite, id));
+    }
     favouritesRevision.value++;
     return added;
   }

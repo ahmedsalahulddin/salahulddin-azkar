@@ -1,5 +1,9 @@
 import 'dart:convert';
+import 'dart:async';
+
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'sync_service.dart';
 
 enum BookmarkKind {
   reading('القراءة', '📖'),
@@ -97,7 +101,10 @@ class BookmarkService {
     return true;
   }
 
+  /// Removes locally and tells the account, for the same reason favourites do:
+  /// a merge unions, so a deletion that stays here comes back from there.
   static Future<void> remove(BookmarkKind kind, int surah, int ayah) async {
+    unawaited(SyncService.forget(SyncKind.bookmark, '${kind.name}:$surah:$ayah'));
     final list = await all()
       ..removeWhere(
         (b) => b.kind == kind && b.surah == surah && b.ayah == ayah,
