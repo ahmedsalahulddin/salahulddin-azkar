@@ -86,8 +86,8 @@ Future<void> _push(BuildContext context, Widget Function() build) =>
 /// The shelves, built fresh so the adhkar counts and book list are
 /// whatever they are now rather than whatever they were at startup.
 List<HomeShelf> buildShelves() => [
-      _adhkarShelf(),
       _quranShelf(),
+      _adhkarShelf(),
       _lessonsShelf(),
       _librarySheet(),
       _cardsShelf(),
@@ -144,21 +144,21 @@ HomeShelf _quranShelf() => HomeShelf(
       tint: AppColors.emeraldMuted,
       all: () => const QuranHomeScreen(),
       pinned: ShelfItem(
-        icon: '🕌',
-        title: 'تلاوة وتدبّر',
-        subtitle: 'آية آية مع التفسير',
-        open: (c) => _push(c, () => const QuranScreen()),
+        icon: '📖',
+        title: 'القرآن الكريم',
+        subtitle: 'صفحات',
+        open: (c) async {
+          final page = await StorageService.getLastMushafPage() ?? 1;
+          if (!c.mounted) return;
+          await _push(c, () => MushafScreen(initialPage: page));
+        },
       ),
       rest: [
         ShelfItem(
-          icon: '📖',
-          title: 'القرآن الكريم',
-          subtitle: 'صفحات',
-          open: (c) async {
-            final page = await StorageService.getLastMushafPage() ?? 1;
-            if (!c.mounted) return;
-            await _push(c, () => MushafScreen(initialPage: page));
-          },
+          icon: '🕌',
+          title: 'تلاوة وتدبّر',
+          subtitle: 'آية آية مع التفسير',
+          open: (c) => _push(c, () => const QuranScreen()),
         ),
         ShelfItem(
           icon: '🧠',

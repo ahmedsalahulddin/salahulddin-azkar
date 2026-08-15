@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../constants/theme.dart';
+import '../data/quran_data.dart';
+import '../services/prayer_alerts.dart';
 import '../services/prayer_settings.dart';
+import 'prayer_alerts_screen.dart';
 import '../services/storage_service.dart';
 import '../services/notification_service.dart';
 
@@ -87,6 +90,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _prayerMethod(),
                 const SizedBox(height: 10),
                 _asrSchool(),
+                const SizedBox(height: 10),
+                _alertsRow(),
 
                 // Notifications
                 _sectionTitle('التذكيرات'),
@@ -135,58 +140,74 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   /// Each authority sets its own twilight angles, so this is not a matter of
   /// taste: Makkah's method in Cairo gives the wrong Isha, by a quarter of an
-  /// hour or more.
+  /// hour or more. Left on automatic it follows the reader across borders.
   Widget _prayerMethod() {
     return ValueListenableBuilder<PrayerMethod>(
       valueListenable: PrayerSettings.method,
       builder: (context, chosen, _) => Container(
         margin: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
           color: AppColors.blackCard,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AppColors.goldBorder),
         ),
-        child: Column(
-          children: [
+        child: PopupMenuButton<PrayerMethod>(
+          onSelected: PrayerSettings.setMethod,
+          color: AppColors.blackSurface,
+          position: PopupMenuPosition.under,
+          itemBuilder: (context) => [
             for (final method in PrayerMethod.values)
-              InkWell(
-                onTap: () => PrayerSettings.setMethod(method),
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-                  child: Row(
-                    children: [
-                      Icon(
-                        method == chosen
-                            ? Icons.radio_button_checked
-                            : Icons.radio_button_unchecked,
-                        color: method == chosen
-                            ? AppColors.gold
-                            : AppColors.textMuted,
-                        size: 19,
+              PopupMenuItem(
+                value: method,
+                child: Row(
+                  children: [
+                    Icon(
+                      method == chosen
+                          ? Icons.radio_button_checked
+                          : Icons.radio_button_unchecked,
+                      size: 17,
+                      color: method == chosen
+                          ? AppColors.gold
+                          : AppColors.textMuted,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(method.label,
+                              style: const TextStyle(
+                                  color: AppColors.textPrimary, fontSize: 13)),
+                          Text(method.where,
+                              style: const TextStyle(
+                                  color: AppColors.textMuted, fontSize: 10)),
+                        ],
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(method.label,
-                                style: TextStyle(
-                                    color: method == chosen
-                                        ? AppColors.gold
-                                        : AppColors.textPrimary,
-                                    fontSize: 14)),
-                            Text(method.where,
-                                style: const TextStyle(
-                                    color: AppColors.textMuted, fontSize: 11)),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
           ],
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(chosen.label,
+                        style: const TextStyle(
+                            color: AppColors.gold, fontSize: 14)),
+                    Text(chosen.where,
+                        style: const TextStyle(
+                            color: AppColors.textMuted, fontSize: 11)),
+                  ],
+                ),
+              ),
+              const Icon(Icons.keyboard_arrow_down,
+                  color: AppColors.gold, size: 22),
+            ],
+          ),
         ),
       ),
     );
@@ -258,6 +279,62 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  /// Opens the grid where each prayer's two alerts are set.
+  Widget _alertsRow() {
+    return ValueListenableBuilder<Map<String, AlertMode>>(
+      valueListenable: PrayerAlerts.settings,
+      builder: (context, _, __) {
+        final on = AlertPrayer.values
+            .expand((p) => AlertWhen.values.map((w) => PrayerAlerts.modeFor(p, w)))
+            .where((m) => m != AlertMode.off)
+            .length;
+
+        return GestureDetector(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const PrayerAlertsScreen()),
+          ),
+          behavior: HitTestBehavior.opaque,
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+            decoration: BoxDecoration(
+              color: AppColors.blackCard,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.goldBorder),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.notifications_active,
+                    color: AppColors.gold, size: 20),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('تنبيهات المواقيت',
+                          style: TextStyle(
+                              color: AppColors.textPrimary, fontSize: 14)),
+                      Text(
+                        on == 0
+                            ? 'لا تنبيه مفعّل'
+                            : 'مفعّل لـ ${QuranService.toArabicDigits(on)} من عشرة',
+                        style: const TextStyle(
+                            color: AppColors.textMuted, fontSize: 11),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.chevron_left,
+                    color: AppColors.textMuted, size: 20),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 

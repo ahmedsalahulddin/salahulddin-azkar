@@ -3,6 +3,7 @@ import '../constants/theme.dart';
 import '../data/home_shelves.dart';
 import '../services/section_config.dart';
 import '../widgets/prayer_times_card.dart';
+import 'search_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -21,6 +22,8 @@ class HomeScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 10),
+                _searchBar(context),
+                const SizedBox(height: 12),
 
                 // The verse now turns under the arch, inside the card.
                 const PrayerTimesCard(),
@@ -47,6 +50,42 @@ class HomeScreen extends StatelessWidget {
                 const SizedBox(height: 24),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// The way into everything at once, across the full width.
+  Widget _searchBar(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: GestureDetector(
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const SearchScreen()),
+        ),
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            color: AppColors.blackCard,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppColors.goldBorder),
+          ),
+          child: const Row(
+            children: [
+              Icon(Icons.search, color: AppColors.gold, size: 20),
+              SizedBox(width: 10),
+              Text('بحث شامل',
+                  style: TextStyle(color: AppColors.gold, fontSize: 14)),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text('ابحث في كل أقسام التطبيق…',
+                    style: TextStyle(
+                        color: AppColors.textMuted, fontSize: 12.5)),
+              ),
+            ],
           ),
         ),
       ),

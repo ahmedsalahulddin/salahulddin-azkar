@@ -23,13 +23,13 @@ void main() {
   group('the shelves themselves', () {
     test('in the order they were asked for', () {
       expect(buildShelves().map((s) => s.key).toList(),
-          ['adhkar', 'quran', 'lessons', 'library', 'cards']);
+          ['quran', 'adhkar', 'lessons', 'library', 'cards']);
     });
 
     test('the pinned card is the one asked for on each shelf', () {
       final shelves = {for (final s in buildShelves()) s.key: s};
       expect(shelves['adhkar']!.pinned.title, 'صحيح الأذكار');
-      expect(shelves['quran']!.pinned.title, 'تلاوة وتدبّر');
+      expect(shelves['quran']!.pinned.title, 'القرآن الكريم');
       // The lessons shelf leads with a lesson that exists rather than one
       // waiting on a channel.
       expect(shelves['lessons']!.pinned.title, 'أركان الإسلام');
@@ -52,7 +52,7 @@ void main() {
     test('the Quran shelf: the ways to read, then the ways to listen', () {
       final quran = buildShelves().firstWhere((s) => s.key == 'quran');
       expect([quran.pinned.title, ...quran.rest.map((i) => i.title)],
-          ['تلاوة وتدبّر', 'القرآن الكريم', 'اختبار الحفظ', 'الإذاعة', 'الاستماع الدائم']);
+          ['القرآن الكريم', 'تلاوة وتدبّر', 'اختبار الحفظ', 'الإذاعة', 'الاستماع الدائم']);
     });
 
     test('the adhkar shelf gathers what used to be loose on the home screen',
@@ -95,10 +95,13 @@ void main() {
         (tester) async {
       await pumpHome(tester);
 
+      // By shelf, not by position: the order has changed once already and
+      // "the first row" quietly stopped meaning the adhkar.
+      final adhkar = buildShelves().indexWhere((s) => s.key == 'adhkar');
       final row = find
           .byWidgetPredicate(
               (w) => w is ListView && w.scrollDirection == Axis.horizontal)
-          .first;
+          .at(adhkar);
       // The tasbih sits at the end of the adhkar shelf.
       expect(find.text('عداد التسبيح'), findsNothing);
       await tester.drag(row, const Offset(900, 0));
@@ -111,10 +114,11 @@ void main() {
       await pumpHome(tester);
 
       final before = tester.getTopLeft(find.text('صحيح الأذكار'));
+      final adhkar = buildShelves().indexWhere((s) => s.key == 'adhkar');
       final row = find
           .byWidgetPredicate(
               (w) => w is ListView && w.scrollDirection == Axis.horizontal)
-          .first;
+          .at(adhkar);
       await tester.drag(row, const Offset(600, 0));
       await tester.pump();
 

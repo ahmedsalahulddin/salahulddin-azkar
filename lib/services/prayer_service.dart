@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:adhan/adhan.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'notification_service.dart';
+import 'prayer_alerts.dart';
 import 'prayer_settings.dart';
 
 /// Fallback location (Riyadh) used when GPS is unavailable or denied.
@@ -164,6 +168,18 @@ class PrayerService {
               isNext: p == next,
             ))
         .toList();
+
+    // The times move every day, so the alerts are laid down again on every
+    // load rather than once at install.
+    if (PrayerAlerts.anyOn) {
+      unawaited(NotificationService.schedulePrayerAlerts({
+        AlertPrayer.fajr: today.fajr,
+        AlertPrayer.dhuhr: today.dhuhr,
+        AlertPrayer.asr: today.asr,
+        AlertPrayer.maghrib: today.maghrib,
+        AlertPrayer.isha: today.isha,
+      }));
+    }
 
     return PrayerData(
       prayers: prayers,
