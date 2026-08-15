@@ -17,6 +17,7 @@ import '../screens/memorisation_test_screen.dart';
 import '../screens/mushaf_screen.dart';
 import '../screens/my_cards_screen.dart';
 import '../screens/quran_home_screen.dart';
+import '../screens/listening_screen.dart';
 import '../screens/radio_screen.dart';
 import '../screens/quran_screen.dart';
 import '../screens/sahih_adhkar_screen.dart';
@@ -175,7 +176,7 @@ HomeShelf _quranShelf() => HomeShelf(
         ShelfItem(
           icon: '🎧',
           title: 'الاستماع الدائم',
-          subtitle: 'مقرئون — يُضاف تباعاً',
+          subtitle: 'المصحف كاملاً بلا توقّف',
           open: (c) => _push(c, () => const ListeningScreen()),
         ),
       ],
