@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../constants/theme.dart';
 import '../data/quran_data.dart';
 import '../data/adhans.dart';
+import '../services/daily_reminders.dart';
 import '../services/dhikr_reminder.dart';
 import '../services/prayer_alerts.dart';
 import '../services/prayer_settings.dart';
@@ -101,6 +102,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 // Notifications
                 _sectionTitle('التذكيرات'),
                 _dhikrReminder(),
+                const SizedBox(height: 10),
+                _verseReminder(),
+                const SizedBox(height: 10),
+                _adhkarWindow(
+                  title: 'أذكار الصباح',
+                  note: 'من بعد الفجر وحتى ما قبل الظهر',
+                  on: DailyReminders.morningOn,
+                  at: DailyReminders.morningAt,
+                  window: DailyReminders.morningWindow,
+                  apply: (v, t) => DailyReminders.setMorning(on: v, at: t),
+                ),
+                const SizedBox(height: 10),
+                _adhkarWindow(
+                  title: 'أذكار المساء',
+                  note: 'من بعد العصر وحتى المغرب',
+                  on: DailyReminders.eveningOn,
+                  at: DailyReminders.eveningAt,
+                  window: DailyReminders.eveningWindow,
+                  apply: (v, t) => DailyReminders.setEvening(on: v, at: t),
+                ),
                 const SizedBox(height: 10),
                 _notifRow(
                   'أذكار الصباح',
@@ -534,6 +555,165 @@ class _SettingsScreenState extends State<SettingsScreen> {
             border: Border.all(color: AppColors.goldBorder),
           ),
           child: Text('${QuranService.toArabicDigits(value)}:٠٠',
+              style: const TextStyle(color: AppColors.gold, fontSize: 13)),
+        ),
+      ),
+    );
+  }
+
+  /// A verse with its place, twice a day.
+  Widget _verseReminder() {
+    return ValueListenableBuilder<bool>(
+      valueListenable: DailyReminders.verseOn,
+      builder: (context, on, _) => _card(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _switchRow(
+              title: 'آية وتفسيرها على شاشتك',
+              subtitle: on ? 'مرتين في اليوم' : 'مغلق',
+              value: on,
+              onChanged: (v) => DailyReminders.setVerse(on: v),
+            ),
+            if (on) ...[
+              const Divider(color: AppColors.goldBorder, height: 20),
+              Row(
+                children: [
+                  const Text('الأولى',
+                      style: TextStyle(
+                          color: AppColors.textSecondary, fontSize: 12)),
+                  const SizedBox(width: 8),
+                  _timePicker(DailyReminders.verseFirst, 0, 24 * 60 - 1,
+                      (t) => DailyReminders.setVerse(first: t)),
+                  const Spacer(),
+                  const Text('الثانية',
+                      style: TextStyle(
+                          color: AppColors.textSecondary, fontSize: 12)),
+                  const SizedBox(width: 8),
+                  _timePicker(DailyReminders.verseSecond, 0, 24 * 60 - 1,
+                      (t) => DailyReminders.setVerse(second: t)),
+                ],
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Morning or evening adhkar, each held inside the hours they belong to.
+  Widget _adhkarWindow({
+    required String title,
+    required String note,
+    required ValueNotifier<bool> on,
+    required ValueNotifier<DayTime> at,
+    required ({int earliest, int latest}) window,
+    required void Function(bool?, DayTime?) apply,
+  }) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: on,
+      builder: (context, enabled, _) => _card(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _switchRow(
+              title: title,
+              subtitle: enabled ? note : 'مغلق',
+              value: enabled,
+              onChanged: (v) => apply(v, null),
+            ),
+            if (enabled) ...[
+              const Divider(color: AppColors.goldBorder, height: 20),
+              Row(
+                children: [
+                  const Text('الوقت',
+                      style: TextStyle(
+                          color: AppColors.textSecondary, fontSize: 12)),
+                  const SizedBox(width: 10),
+                  _timePicker(at, window.earliest, window.latest,
+                      (t) => apply(null, t)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(note,
+                        style: const TextStyle(
+                            color: AppColors.textMuted, fontSize: 10)),
+                  ),
+                ],
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _card({required Widget child}) => Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppColors.blackCard,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.goldBorder),
+        ),
+        child: child,
+      );
+
+  Widget _switchRow({
+    required String title,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title,
+                  style: const TextStyle(
+                      color: AppColors.textPrimary, fontSize: 14)),
+              Text(subtitle,
+                  style: const TextStyle(
+                      color: AppColors.textMuted, fontSize: 11)),
+            ],
+          ),
+        ),
+        Switch(
+            value: value,
+            onChanged: onChanged,
+            activeThumbColor: AppColors.gold),
+      ],
+    );
+  }
+
+  /// Offers only the half-hours inside [earliest, latest] — a picker that
+  /// cannot express a time the adhkar are not said at.
+  Widget _timePicker(ValueNotifier<DayTime> notifier, int earliest, int latest,
+      ValueChanged<DayTime> onPick) {
+    return ValueListenableBuilder<DayTime>(
+      valueListenable: notifier,
+      builder: (context, value, _) => PopupMenuButton<int>(
+        onSelected: (m) => onPick(DayTime(m)),
+        color: AppColors.blackSurface,
+        position: PopupMenuPosition.under,
+        itemBuilder: (context) => [
+          for (var m = earliest; m <= latest; m += 30)
+            PopupMenuItem(
+              value: m,
+              child: Text(DayTime(m).label,
+                  style: const TextStyle(
+                      color: AppColors.textPrimary, fontSize: 13)),
+            ),
+        ],
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          decoration: BoxDecoration(
+            color: AppColors.goldMuted,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: AppColors.goldBorder),
+          ),
+          child: Text(value.label,
               style: const TextStyle(color: AppColors.gold, fontSize: 13)),
         ),
       ),

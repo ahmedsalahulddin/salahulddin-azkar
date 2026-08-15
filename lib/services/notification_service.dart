@@ -4,6 +4,8 @@ import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
 import '../data/adhkar_data.dart';
+import '../data/quran_data.dart';
+import 'daily_reminders.dart';
 import 'prayer_alerts.dart';
 
 class NotificationService {
@@ -198,6 +200,81 @@ class NotificationService {
         matchDateTimeComponents: DateTimeComponents.time,
       );
     }
+  }
+
+  /// The fixed-hour reminders: a verse with its meaning twice a day, and the
+  /// morning and evening adhkar at the hour the reader chose.
+  ///
+  /// Rebuilt whole every time, because the only correct way to change a
+  /// schedule is to lay it down again — patching it leaves yesterday's slots
+  /// firing beside today's.
+  static Future<void> scheduleDailyReminders() async {
+    for (final id in [400, 401, 410, 411]) {
+      await _plugin.cancel(id);
+    }
+
+    if (DailyReminders.verseOn.value) {
+      // Two different verses, so the second arrival is not the first repeated.
+      await _daily(400, 'آية وتفسيرها', await _verseLine(0),
+          DailyReminders.verseFirst.value);
+      await _daily(401, 'آية وتفسيرها', await _verseLine(1),
+          DailyReminders.verseSecond.value);
+    }
+    if (DailyReminders.morningOn.value) {
+      await _daily(410, 'أذكار الصباح', 'حان وقت أذكار الصباح',
+          DailyReminders.morningAt.value);
+    }
+    if (DailyReminders.eveningOn.value) {
+      await _daily(411, 'أذكار المساء', 'حان وقت أذكار المساء',
+          DailyReminders.eveningAt.value);
+    }
+  }
+
+  /// A verse and where it is from, read out of the bundled Mushaf rather than
+  /// written here — the same rule the rest of the app follows.
+  static Future<String> _verseLine(int offset) async {
+    const picks = [(13, 28), (2, 152), (94, 5), (33, 41)];
+    try {
+      final (surahNumber, ayahNumber) =
+          picks[(DateTime.now().day + offset) % picks.length];
+      final index = await QuranService.index();
+      final surah = await QuranService.surah(surahNumber);
+      final ayah = surah.ayahs.firstWhere((a) => a.number == ayahNumber);
+      final name = index.firstWhere((s) => s.number == surahNumber).name;
+      return '${ayah.text}\n[$name: ${QuranService.toArabicDigits(ayahNumber)}]';
+    } catch (_) {
+      return 'افتح التطبيق لقراءة آية اليوم';
+    }
+  }
+
+  static Future<void> _daily(
+      int id, String title, String body, DayTime at) async {
+    final now = tz.TZDateTime.now(tz.local);
+    var when = tz.TZDateTime(
+        tz.local, now.year, now.month, now.day, at.hour, at.minute);
+    if (when.isBefore(now)) when = when.add(const Duration(days: 1));
+
+    await _plugin.zonedSchedule(
+      id,
+      title,
+      body,
+      when,
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'salahulddin_daily',
+          'تذكيرات يومية',
+          channelDescription: 'آية اليوم وأذكار الصباح والمساء',
+          importance: Importance.defaultImportance,
+          priority: Priority.defaultPriority,
+          styleInformation: BigTextStyleInformation(''),
+        ),
+        iOS: DarwinNotificationDetails(),
+      ),
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+      matchDateTimeComponents: DateTimeComponents.time,
+    );
   }
 
   static Future<void> _scheduleDaily({

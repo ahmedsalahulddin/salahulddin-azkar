@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../constants/theme.dart';
 import '../data/adhans.dart';
 import '../data/quran_data.dart';
+import '../services/adhan_downloads.dart';
 import '../services/prayer_alerts.dart';
 
 /// The two moments a prayer announces itself, each with its own settings.
@@ -228,80 +229,146 @@ class PrayerAlertsScreen extends StatelessWidget {
     );
   }
 
+  /// The adhans, each with what it needs: a download for the ones that are not
+  /// on the device, and a note for the ones that cannot be a notification
+  /// sound even once they are.
   Widget _adhanPicker(BuildContext context) {
     return ValueListenableBuilder<String>(
       valueListenable: PrayerAlerts.adhan,
-      builder: (context, id, _) {
-        final chosen = Adhans.byId(id);
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-          decoration: BoxDecoration(
-            color: AppColors.blackCard,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.goldBorder),
-          ),
-          child: PopupMenuButton<String>(
-            onSelected: PrayerAlerts.setAdhan,
-            color: AppColors.blackSurface,
-            position: PopupMenuPosition.under,
-            itemBuilder: (context) => [
-              for (final adhan in Adhans.all)
-                PopupMenuItem(
-                  value: adhan.id,
-                  child: Row(
-                    children: [
-                      Icon(
-                        adhan.id == id
-                            ? Icons.radio_button_checked
-                            : Icons.radio_button_unchecked,
-                        size: 17,
-                        color: adhan.id == id
-                            ? AppColors.gold
-                            : AppColors.textMuted,
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(adhan.name,
-                                style: const TextStyle(
-                                    color: AppColors.textPrimary,
-                                    fontSize: 13)),
-                            Text(adhan.place,
-                                style: const TextStyle(
-                                    color: AppColors.textMuted, fontSize: 10)),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-            ],
-            child: Row(
+      builder: (context, chosenId, _) =>
+          ValueListenableBuilder<Set<String>>(
+        valueListenable: AdhanDownloads.ready,
+        builder: (context, ready, _) => ValueListenableBuilder<String?>(
+          valueListenable: AdhanDownloads.downloading,
+          builder: (context, busy, _) => Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.blackCard,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.goldBorder),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Icon(Icons.campaign, color: AppColors.gold, size: 20),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('الأذان',
-                          style: TextStyle(
-                              color: AppColors.textMuted, fontSize: 10.5)),
-                      Text(chosen.name,
-                          style: const TextStyle(
-                              color: AppColors.gold, fontSize: 14)),
-                    ],
-                  ),
+                const Text('الأذان',
+                    style: TextStyle(
+                        color: AppColors.gold,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold)),
+                const SizedBox(height: 2),
+                const Text(
+                  'المُرفقان يعملان في التنبيه. الباقي يُنزَّل للاستماع داخل '
+                  'التطبيق — أندرويد يقرأ صوت التنبيه من داخل التطبيق ولا '
+                  'يجلبه من التنزيلات.',
+                  style: TextStyle(
+                      color: AppColors.textMuted, fontSize: 10.5, height: 1.6),
                 ),
-                const Icon(Icons.keyboard_arrow_down,
-                    color: AppColors.gold, size: 22),
+                const SizedBox(height: 10),
+                for (final adhan in Adhans.all)
+                  _adhanRow(context, adhan, chosenId, ready, busy),
               ],
             ),
           ),
-        );
-      },
+        ),
+      ),
+    );
+  }
+
+  Widget _adhanRow(BuildContext context, Adhan adhan, String chosenId,
+      Set<String> ready, String? busy) {
+    final chosen = adhan.id == chosenId;
+    final here = adhan.isBundled || ready.contains(adhan.id);
+    final loading = busy == adhan.id;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: GestureDetector(
+        // Only a bundled adhan can be the alert's sound, so only it is
+        // selectable; the rest offer their download instead.
+        onTap: adhan.isBundled ? () => PrayerAlerts.setAdhan(adhan.id) : null,
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          decoration: BoxDecoration(
+            color: chosen ? AppColors.goldMuted : Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+                color: chosen ? AppColors.gold : AppColors.goldBorder),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                adhan.isBundled
+                    ? (chosen
+                        ? Icons.radio_button_checked
+                        : Icons.radio_button_unchecked)
+                    : (here ? Icons.check_circle_outline : Icons.cloud_outlined),
+                size: 17,
+                color: chosen ? AppColors.gold : AppColors.textMuted,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(adhan.name,
+                        style: TextStyle(
+                            color: chosen
+                                ? AppColors.gold
+                                : AppColors.textPrimary,
+                            fontSize: 13)),
+                    Text(
+                      adhan.isBundled
+                          ? adhan.place
+                          : here
+                              ? 'على جهازك — للاستماع'
+                              : adhan.place,
+                      style: const TextStyle(
+                          color: AppColors.textMuted, fontSize: 10),
+                    ),
+                  ],
+                ),
+              ),
+              if (!adhan.isBundled)
+                loading
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: AppColors.gold),
+                      )
+                    : TextButton(
+                        onPressed: busy != null
+                            ? null
+                            : () async {
+                                if (here) {
+                                  await AdhanDownloads.remove(adhan);
+                                  return;
+                                }
+                                final ok = await AdhanDownloads.fetch(adhan);
+                                if (!context.mounted) return;
+                                if (!ok) {
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(SnackBar(
+                                    content: Text(
+                                        'تعذّر تنزيل ${adhan.name}',
+                                        textAlign: TextAlign.right),
+                                    backgroundColor: AppColors.blackCard,
+                                    behavior: SnackBarBehavior.floating,
+                                  ));
+                                }
+                              },
+                        child: Text(here ? 'حذف' : 'تنزيل',
+                            style: TextStyle(
+                                color: here
+                                    ? AppColors.textMuted
+                                    : AppColors.gold,
+                                fontSize: 12)),
+                      ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

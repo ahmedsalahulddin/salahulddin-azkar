@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio_background/just_audio_background.dart';
@@ -7,6 +9,8 @@ import 'screens/favorites_screen.dart';
 import 'screens/account_screen.dart';
 import 'services/auth_service.dart';
 import 'services/notification_service.dart';
+import 'services/adhan_downloads.dart';
+import 'services/daily_reminders.dart';
 import 'services/dhikr_reminder.dart';
 import 'services/prayer_alerts.dart';
 import 'services/prayer_settings.dart';
@@ -54,6 +58,9 @@ void main() async {
   PrayerAlerts.onChanged = NotificationService.schedulePrayerAlerts;
   await PrayerAlerts.load();
   await DhikrReminder.load();
+  DailyReminders.onChanged = NotificationService.scheduleDailyReminders;
+  await DailyReminders.load();
+  unawaited(AdhanDownloads.refresh());
   await MushafFrames.load();
   await MushafPalettes.load();
 
@@ -65,6 +72,7 @@ void main() async {
     await NotificationService.scheduleMorning(morningOn);
     await NotificationService.scheduleEvening(eveningOn);
     await DhikrReminder.reschedule();
+    await NotificationService.scheduleDailyReminders();
   } catch (_) {}
   // Signing in on a second device should bring the reader's marks with it,
   // without them having to find a button first.
