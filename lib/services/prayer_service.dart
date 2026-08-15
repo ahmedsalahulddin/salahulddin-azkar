@@ -170,15 +170,18 @@ class PrayerService {
         .toList();
 
     // The times move every day, so the alerts are laid down again on every
-    // load rather than once at install.
+    // load rather than once at install — and remembered, so a setting changed
+    // in the meantime can rebuild them without waiting for another load.
+    PrayerAlerts.lastTimes = {
+      AlertPrayer.fajr: today.fajr,
+      AlertPrayer.dhuhr: today.dhuhr,
+      AlertPrayer.asr: today.asr,
+      AlertPrayer.maghrib: today.maghrib,
+      AlertPrayer.isha: today.isha,
+    };
     if (PrayerAlerts.anyOn) {
-      unawaited(NotificationService.schedulePrayerAlerts({
-        AlertPrayer.fajr: today.fajr,
-        AlertPrayer.dhuhr: today.dhuhr,
-        AlertPrayer.asr: today.asr,
-        AlertPrayer.maghrib: today.maghrib,
-        AlertPrayer.isha: today.isha,
-      }));
+      unawaited(
+          NotificationService.schedulePrayerAlerts(PrayerAlerts.lastTimes));
     }
 
     return PrayerData(

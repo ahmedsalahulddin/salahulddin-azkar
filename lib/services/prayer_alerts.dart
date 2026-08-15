@@ -67,6 +67,19 @@ class PrayerAlerts {
 
   static const leadChoices = [5, 10, 15, 20, 30];
 
+  /// The last computed prayer times, so a setting changed in the settings
+  /// screen can take effect at once instead of waiting for the next load.
+  static Map<AlertPrayer, DateTime> lastTimes = const {};
+
+  /// Set at startup. Kept as a hook rather than an import so this file stays
+  /// unaware of the notification plumbing.
+  static Future<void> Function(Map<AlertPrayer, DateTime>)? onChanged;
+
+  static Future<void> _reschedule() async {
+    if (lastTimes.isEmpty) return;
+    await onChanged?.call(lastTimes);
+  }
+
   static String keyFor(AlertPrayer prayer, AlertWhen when) =>
       '${prayer.id}_${when.id}';
 
@@ -78,7 +91,13 @@ class PrayerAlerts {
       final prefs = await SharedPreferences.getInstance();
       lead.value = prefs.getInt(_leadKey) ?? 15;
       final raw = prefs.getString(_key);
-      if (raw == null) return;
+      // Reset rather than return: loading must land on what is stored, and
+      // "nothing is stored" means nothing is set — not "keep whatever was
+      // already in memory".
+      if (raw == null) {
+        settings.value = const {};
+        return;
+      }
       final decoded = (jsonDecode(raw) as Map).cast<String, dynamic>();
       settings.value = {
         for (final entry in decoded.entries)
@@ -96,6 +115,9 @@ class PrayerAlerts {
       keyFor(prayer, when): mode,
     };
     await _persist();
+    // Without this a reader turns an alert on and nothing happens until the
+    // prayer times reload — which, if the app stays open, may be never.
+    await _reschedule();
   }
 
   static Future<void> setLead(int minutes) async {
@@ -106,6 +128,7 @@ class PrayerAlerts {
     } catch (_) {
       // Applies to this session regardless.
     }
+    await _reschedule();
   }
 
   static Future<void> _persist() async {

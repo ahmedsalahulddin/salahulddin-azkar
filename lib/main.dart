@@ -50,6 +50,7 @@ void main() async {
 
   // The chosen Mushaf border, so the first page opens already wearing it.
   await PrayerSettings.load();
+  PrayerAlerts.onChanged = NotificationService.schedulePrayerAlerts;
   await PrayerAlerts.load();
   await DhikrReminder.load();
   await MushafFrames.load();

@@ -40,6 +40,37 @@ void main() {
       expect(AlertMode.sound.plays, isTrue);
     });
 
+    test('changing a setting rebuilds the schedule at once', () async {
+      // Without this a reader turns an alert on and nothing happens until the
+      // prayer times reload — which, if the app stays open, may be never.
+      var rebuilds = 0;
+      PrayerAlerts.lastTimes = {
+        AlertPrayer.fajr: DateTime(2026, 8, 14, 4, 4),
+        AlertPrayer.isha: DateTime(2026, 8, 14, 19, 58),
+      };
+      PrayerAlerts.onChanged = (_) async => rebuilds++;
+      addTearDown(() => PrayerAlerts.onChanged = null);
+
+      await PrayerAlerts.setMode(
+          AlertPrayer.fajr, AlertWhen.onTime, AlertMode.sound);
+      expect(rebuilds, 1);
+
+      await PrayerAlerts.setLead(30);
+      expect(rebuilds, 2, reason: 'the lead time moves every early alert');
+    });
+
+    test('nothing is rebuilt before any times are known', () async {
+      var rebuilds = 0;
+      PrayerAlerts.lastTimes = const {};
+      PrayerAlerts.onChanged = (_) async => rebuilds++;
+      addTearDown(() => PrayerAlerts.onChanged = null);
+
+      await PrayerAlerts.setMode(
+          AlertPrayer.asr, AlertWhen.before, AlertMode.notify);
+      expect(rebuilds, 0,
+          reason: 'scheduling against times we do not have would be guessing');
+    });
+
     test('a setting survives the next run, and keys never collide', () async {
       await PrayerAlerts.setMode(
           AlertPrayer.fajr, AlertWhen.before, AlertMode.sound);
