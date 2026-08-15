@@ -24,6 +24,12 @@ class _ListeningScreenState extends State<ListeningScreen> {
   List<SurahInfo> _index = const [];
   bool _loading = true;
 
+  final _listController = ScrollController();
+
+  /// Every row is the same height, which is what lets the list be scrolled to
+  /// a surah by arithmetic rather than by rendering the 114 above it.
+  static const _rowHeight = 47.0;
+
   @override
   void initState() {
     super.initState();
@@ -33,11 +39,40 @@ class _ListeningScreenState extends State<ListeningScreen> {
   Future<void> _load() async {
     await ContinuousListening.load();
     final index = await QuranService.index();
-    if (mounted) {
-      setState(() {
-        _index = index;
-        _loading = false;
-      });
+    if (!mounted) return;
+    setState(() {
+      _index = index;
+      _loading = false;
+    });
+    // Opening at Yusuf and being shown Al-Fatiha means scrolling past eleven
+    // surahs to see where you are. The list follows the recitation instead,
+    // including when it moves on by itself.
+    ContinuousListening.surah.addListener(_followRecitation);
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => _followRecitation(animate: false));
+  }
+
+  @override
+  void dispose() {
+    ContinuousListening.surah.removeListener(_followRecitation);
+    _listController.dispose();
+    super.dispose();
+  }
+
+  void _followRecitation({bool animate = true}) {
+    if (!mounted || !_listController.hasClients) return;
+
+    // A third of a screen above it, so the surahs around it are visible and
+    // the current one is not pinned to the very top.
+    final target = ((ContinuousListening.surah.value - 1) * _rowHeight -
+            MediaQuery.of(context).size.height / 3)
+        .clamp(0.0, _listController.position.maxScrollExtent);
+
+    if (animate) {
+      _listController.animateTo(target,
+          duration: const Duration(milliseconds: 350), curve: Curves.easeOut);
+    } else {
+      _listController.jumpTo(target);
     }
   }
 
@@ -239,7 +274,9 @@ class _ListeningScreenState extends State<ListeningScreen> {
     return ValueListenableBuilder<int>(
       valueListenable: ContinuousListening.surah,
       builder: (context, current, _) => ListView.builder(
+        controller: _listController,
         padding: const EdgeInsets.fromLTRB(12, 0, 12, 24),
+        itemExtent: _rowHeight,
         itemCount: _index.length,
         itemBuilder: (context, i) {
           final info = _index[i];

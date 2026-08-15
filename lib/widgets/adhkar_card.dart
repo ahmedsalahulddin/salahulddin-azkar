@@ -8,7 +8,7 @@ import '../constants/theme.dart';
 import '../services/app_audio.dart';
 import '../services/playback_speed.dart';
 import '../data/adhkar_data.dart';
-import '../services/storage_service.dart';
+import 'favourite_star.dart';
 
 class AdhkarCard extends StatefulWidget {
   final Dhikr dhikr;
@@ -27,16 +27,9 @@ class AdhkarCard extends StatefulWidget {
 }
 
 class _AdhkarCardState extends State<AdhkarCard> {
-  bool _isFavorite = false;
   bool _showBenefit = false;
 
   bool _isPlaying = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadFavorite();
-  }
 
   StreamSubscription<PlayerState>? _stateSub;
 
@@ -87,17 +80,6 @@ class _AdhkarCardState extends State<AdhkarCard> {
     }
   }
 
-  Future<void> _loadFavorite() async {
-    final fav = await StorageService.isFavorite(widget.dhikr.id);
-    if (mounted) setState(() => _isFavorite = fav);
-  }
-
-  Future<void> _toggleFavorite() async {
-    HapticFeedback.lightImpact();
-    final added = await StorageService.toggleFavorite(widget.dhikr.id);
-    if (mounted) setState(() => _isFavorite = added);
-  }
-
   @override
   Widget build(BuildContext context) {
     final dhikr = widget.dhikr;
@@ -129,16 +111,13 @@ class _AdhkarCardState extends State<AdhkarCard> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    const SizedBox(height: 4),
+                    // The shared star, so a dhikr unstarred in أذكاري stops
+                    // being lit here too — the card used to read the list once
+                    // and then never look again.
+                    FavouriteStar(
+                        id: widget.dhikr.id, size: 22, announce: false),
                     const SizedBox(height: 8),
-                    GestureDetector(
-                      onTap: _toggleFavorite,
-                      child: Icon(
-                        _isFavorite ? Icons.star : Icons.star_border,
-                        color: _isFavorite ? AppColors.gold : AppColors.textMuted,
-                        size: 22,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
                     GestureDetector(
                       onTap: widget.onTasbih,
                       child: Text(

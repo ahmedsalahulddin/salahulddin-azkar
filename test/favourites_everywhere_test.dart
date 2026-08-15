@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:salahulddin_azkar/screens/favorites_screen.dart';
+import 'package:salahulddin_azkar/constants/theme.dart';
+import 'package:salahulddin_azkar/widgets/adhkar_card.dart';
 import 'package:salahulddin_azkar/data/adhkar_data.dart';
 import 'package:salahulddin_azkar/data/hisn_data.dart';
 import 'package:salahulddin_azkar/services/favourites.dart';
@@ -92,5 +94,31 @@ void main() {
     expect(find.text(chapter.items.first.text), findsOneWidget);
     expect(find.text(chapter.title), findsOneWidget,
         reason: 'a kept dhikr should say which chapter it came from');
+  });
+
+  testWidgets('the two views of one list never disagree', (tester) async {
+    // Starring in a category and unstarring in أذكاري left the category card
+    // still lit: it read the list once, in initState, and never looked again.
+    final dhikr = adhkar.firstWhere((d) => d.categoryId == 'morning');
+
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: AdhkarCard(dhikr: dhikr, fontSize: FontSizeOption.medium),
+      ),
+    ));
+    await tester.pump();
+    expect(find.byIcon(Icons.star_border), findsOneWidget);
+
+    // Starred from somewhere else entirely — the favourites tab, or a sync.
+    // Two pumps: the star re-reads the stored list, which is a round trip.
+    await StorageService.toggleFavorite(dhikr.id);
+    await tester.pump();
+    await tester.pump();
+    expect(find.byIcon(Icons.star), findsOneWidget);
+
+    await StorageService.toggleFavorite(dhikr.id);
+    await tester.pump();
+    await tester.pump();
+    expect(find.byIcon(Icons.star_border), findsOneWidget);
   });
 }
