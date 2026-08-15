@@ -3,29 +3,58 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// How loudly a prayer announces itself.
-enum AlertMode {
-  off('off', 'إقفال', '🚫'),
-  notify('notify', 'إشعار واهتزاز', '📳'),
-  sound('sound', 'صوت', '🔔');
+/// How an alert arrives.
+///
+/// Notification-and-vibration and sound are separate switches rather than
+/// three exclusive choices, because a reader may well want both — the phone in
+/// a pocket buzzing *and* the adhan playing — and forcing a pick between them
+/// makes the louder option quieter than the quiet one.
+class AlertMode {
+  final bool notify;
+  final bool sound;
 
-  const AlertMode(this.id, this.label, this.icon);
+  const AlertMode({this.notify = false, this.sound = false});
 
-  final String id;
-  final String label;
-  final String icon;
+  static const off = AlertMode();
 
-  static AlertMode byId(String? id) =>
-      values.firstWhere((m) => m.id == id, orElse: () => off);
+  bool get isOff => !notify && !sound;
 
-  bool get vibrates => this != AlertMode.off;
-  bool get plays => this == AlertMode.sound;
+  /// Something has to arrive for a sound to arrive with it, so choosing sound
+  /// implies the notification that carries it.
+  AlertMode withSound(bool on) =>
+      AlertMode(notify: on ? true : notify, sound: on);
+
+  AlertMode withNotify(bool on) =>
+      AlertMode(notify: on, sound: on ? sound : false);
+
+  String get label {
+    if (isOff) return 'مغلق';
+    if (notify && sound) return 'إشعار وصوت';
+    return sound ? 'صوت' : 'إشعار واهتزاز';
+  }
+
+  String encode() => '${notify ? 1 : 0}${sound ? 1 : 0}';
+
+  static AlertMode decode(String? raw) {
+    // The old format stored one of three names; a reader upgrading keeps what
+    // they had rather than being silently switched off.
+    switch (raw) {
+      case 'off':
+        return off;
+      case 'notify':
+        return const AlertMode(notify: true);
+      case 'sound':
+        return const AlertMode(notify: true, sound: true);
+    }
+    if (raw == null || raw.length != 2) return off;
+    return AlertMode(notify: raw[0] == '1', sound: raw[1] == '1');
+  }
 }
 
 /// The two moments a prayer can be announced at.
 enum AlertWhen {
-  before('before', 'تنبيه قبل الصلاة'),
-  onTime('on_time', 'وقت الصلاة');
+  before('before', 'التنبيه قبل الصلاة'),
+  onTime('on_time', 'التنبيه وقت الصلاة');
 
   const AlertWhen(this.id, this.label);
 
@@ -49,23 +78,23 @@ enum AlertPrayer {
   final String name;
 }
 
-/// Every prayer's two alerts, and how many minutes ahead the early one comes.
-///
-/// Ten rows of state, so it is stored as one JSON blob rather than twenty
-/// preference keys — a shape that survives adding a prayer or a moment later
-/// without a migration.
+/// Every prayer's two alerts, how far ahead the early one comes, and which
+/// adhan plays.
 class PrayerAlerts {
   static const _key = '@noor_prayer_alerts';
   static const _leadKey = '@noor_prayer_alert_lead';
+  static const _adhanKey = '@noor_prayer_adhan';
 
   /// Screens listen so a change shows without a reload.
-  static final settings =
-      ValueNotifier<Map<String, AlertMode>>(const {});
+  static final settings = ValueNotifier<Map<String, AlertMode>>(const {});
 
   /// Minutes before the prayer that the early alert fires.
   static final lead = ValueNotifier<int>(15);
 
-  static const leadChoices = [5, 10, 15, 20, 30];
+  /// Which adhan plays at prayer time, by [Adhan.id].
+  static final adhan = ValueNotifier<String>('makkah');
+
+  static const leadChoices = [5, 10, 15, 20, 30, 45];
 
   /// The last computed prayer times, so a setting changed in the settings
   /// screen can take effect at once instead of waiting for the next load.
@@ -90,10 +119,10 @@ class PrayerAlerts {
     try {
       final prefs = await SharedPreferences.getInstance();
       lead.value = prefs.getInt(_leadKey) ?? 15;
+      adhan.value = prefs.getString(_adhanKey) ?? 'makkah';
       final raw = prefs.getString(_key);
       // Reset rather than return: loading must land on what is stored, and
-      // "nothing is stored" means nothing is set — not "keep whatever was
-      // already in memory".
+      // "nothing is stored" means nothing is set.
       if (raw == null) {
         settings.value = const {};
         return;
@@ -101,7 +130,7 @@ class PrayerAlerts {
       final decoded = (jsonDecode(raw) as Map).cast<String, dynamic>();
       settings.value = {
         for (final entry in decoded.entries)
-          entry.key: AlertMode.byId(entry.value as String?),
+          entry.key: AlertMode.decode(entry.value as String?),
       };
     } catch (_) {
       // Silence is the safe default: nothing announces itself unasked.
@@ -110,43 +139,72 @@ class PrayerAlerts {
 
   static Future<void> setMode(
       AlertPrayer prayer, AlertWhen when, AlertMode mode) async {
+    settings.value = {...settings.value, keyFor(prayer, when): mode};
+    await _persist();
+    await _reschedule();
+  }
+
+  /// Applies one mode to all five prayers at a given moment — the row header
+  /// sets the column, since a reader almost always wants the same everywhere.
+  static Future<void> setAll(AlertWhen when, AlertMode mode) async {
     settings.value = {
       ...settings.value,
-      keyFor(prayer, when): mode,
+      for (final prayer in AlertPrayer.values) keyFor(prayer, when): mode,
     };
     await _persist();
-    // Without this a reader turns an alert on and nothing happens until the
-    // prayer times reload — which, if the app stays open, may be never.
     await _reschedule();
   }
 
   static Future<void> setLead(int minutes) async {
     lead.value = minutes;
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setInt(_leadKey, minutes);
-    } catch (_) {
-      // Applies to this session regardless.
-    }
+    await _save((p) => p.setInt(_leadKey, minutes));
     await _reschedule();
   }
 
-  static Future<void> _persist() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(
-        _key,
-        jsonEncode({
-          for (final entry in settings.value.entries) entry.key: entry.value.id,
-        }),
-      );
-    } catch (_) {
-      // Applies to this session regardless.
-    }
+  static Future<void> setAdhan(String id) async {
+    adhan.value = id;
+    await _save((p) => p.setString(_adhanKey, id));
+    await _reschedule();
   }
 
-  /// True when anything at all is set to announce itself — used to decide
-  /// whether the schedule is worth rebuilding.
-  static bool get anyOn =>
-      settings.value.values.any((m) => m != AlertMode.off);
+  /// Strips every sound everywhere, leaving the notifications in place — the
+  /// single switch at the top of settings.
+  static Future<void> muteEverything() async {
+    settings.value = {
+      for (final entry in settings.value.entries)
+        entry.key: entry.value.withSound(false),
+    };
+    await _persist();
+    await _reschedule();
+  }
+
+  /// The raw resource name for the chosen adhan, or null when it is one of
+  /// the downloadable ones — those cannot be a notification sound until they
+  /// are copied in, so until then the alert keeps the system tone rather than
+  /// falling silent.
+  static String? get bundledResource => switch (adhan.value) {
+        'makkah' => 'adhan_makkah',
+        'madinah' => 'adhan_madinah',
+        _ => null,
+      };
+
+  static bool get anySound =>
+      settings.value.values.any((m) => m.sound);
+
+  static bool get anyOn => settings.value.values.any((m) => !m.isOff);
+
+  static Future<void> _persist() => _save((prefs) => prefs.setString(
+        _key,
+        jsonEncode({
+          for (final e in settings.value.entries) e.key: e.value.encode(),
+        }),
+      ));
+
+  static Future<void> _save(Future<void> Function(SharedPreferences) write) async {
+    try {
+      await write(await SharedPreferences.getInstance());
+    } catch (_) {
+      // The change still applies to this session.
+    }
+  }
 }

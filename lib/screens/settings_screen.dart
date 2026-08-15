@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/theme.dart';
 import '../data/quran_data.dart';
+import '../data/adhans.dart';
 import '../services/dhikr_reminder.dart';
 import '../services/prayer_alerts.dart';
 import '../services/prayer_settings.dart';
@@ -85,6 +86,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     textAlign: TextAlign.center,
                   ),
                 ),
+
+                // Everything, quieted at once.
+                _muteAll(),
 
                 // Prayer times
                 _sectionTitle('حساب مواقيت الصلاة'),
@@ -285,6 +289,61 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  /// One switch that strips every sound and leaves the notifications.
+  ///
+  /// First thing in settings because it is what a reader reaches for in a
+  /// meeting or a mosque, and hunting through ten rows to silence them one by
+  /// one is not something anyone does twice.
+  Widget _muteAll() {
+    return ValueListenableBuilder<Map<String, AlertMode>>(
+      valueListenable: PrayerAlerts.settings,
+      builder: (context, _, _) {
+        final loud = PrayerAlerts.anySound;
+        return Container(
+          margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: loud ? AppColors.blackCard : AppColors.goldMuted,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+                color: loud ? AppColors.goldBorder : AppColors.gold),
+          ),
+          child: Row(
+            children: [
+              Icon(loud ? Icons.volume_up : Icons.notifications_off,
+                  color: AppColors.gold, size: 22),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('إشعارات بلا صوت',
+                        style: TextStyle(
+                            color: AppColors.textPrimary, fontSize: 14)),
+                    Text(
+                      loud
+                          ? 'بعض التنبيهات تصدر صوتاً'
+                          : 'كل التنبيهات صامتة الآن',
+                      style: const TextStyle(
+                          color: AppColors.textMuted, fontSize: 11),
+                    ),
+                  ],
+                ),
+              ),
+              Switch(
+                value: !loud,
+                onChanged: (quiet) {
+                  if (quiet) PrayerAlerts.muteEverything();
+                },
+                activeThumbColor: AppColors.gold,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   /// A short dhikr through the day.
   ///
   /// Not one dhikr repeated: the same words at the same hour become furniture
@@ -373,6 +432,51 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                       : FontWeight.normal,
                                 ),
                               ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+              const Text('نوع الذكر',
+                  style:
+                      TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+              const SizedBox(height: 6),
+              ValueListenableBuilder<DhikrFlavour>(
+                valueListenable: DhikrReminder.flavour,
+                builder: (context, kind, _) => Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: [
+                    for (final flavour in DhikrFlavour.values)
+                      GestureDetector(
+                        onTap: () => DhikrReminder.apply(kind: flavour),
+                        behavior: HitTestBehavior.opaque,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: flavour == kind
+                                ? AppColors.goldMuted
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                                color: flavour == kind
+                                    ? AppColors.gold
+                                    : AppColors.goldBorder),
+                          ),
+                          child: Text(
+                            flavour.label,
+                            style: TextStyle(
+                              color: flavour == kind
+                                  ? AppColors.gold
+                                  : AppColors.textMuted,
+                              fontSize: 11.5,
+                              fontWeight: flavour == kind
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
                             ),
                           ),
                         ),

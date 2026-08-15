@@ -83,7 +83,7 @@ class NotificationService {
         await _plugin.cancel(id);
 
         final mode = PrayerAlerts.modeFor(prayer, when);
-        if (mode == AlertMode.off || at == null) continue;
+        if (mode.isOff || at == null) continue;
 
         final moment = when == AlertWhen.before
             ? at.subtract(Duration(minutes: PrayerAlerts.lead.value))
@@ -100,6 +100,11 @@ class NotificationService {
               : 'أقم الصلاة لذكري',
           at: moment,
           mode: mode,
+          // The adhan belongs to the call to prayer, not to the warning before
+          // it: a full adhan fifteen minutes early would send people out.
+          soundResource: when == AlertWhen.onTime
+              ? PrayerAlerts.bundledResource
+              : null,
         );
       }
     }
@@ -111,20 +116,30 @@ class NotificationService {
     required String body,
     required DateTime at,
     required AlertMode mode,
+    String? soundResource,
   }) async {
+    // Android fixes sound and vibration to the channel, not the notification,
+    // so one channel could never be silent for one prayer and audible for the
+    // next — nor play a different adhan after the reader changes it. The
+    // channel id therefore carries both the mode and the chosen sound, and a
+    // new combination simply creates a new channel.
+    final channel = mode.sound
+        ? 'salahulddin_prayer_sound_${soundResource ?? 'default'}'
+        : 'salahulddin_prayer_silent';
+
     final androidDetails = AndroidNotificationDetails(
-      // A channel per mode: Android fixes sound and vibration to the channel,
-      // so one channel could never be silent for one prayer and audible for
-      // the next.
-      'salahulddin_prayer_${mode.id}',
-      'مواقيت الصلاة — ${mode.label}',
+      channel,
+      mode.sound ? 'مواقيت الصلاة — بالصوت' : 'مواقيت الصلاة — إشعار',
       channelDescription: 'تنبيهات الصلاة',
       importance: Importance.max,
       priority: Priority.high,
-      playSound: mode.plays,
-      enableVibration: mode.vibrates,
+      playSound: mode.sound,
+      enableVibration: mode.notify,
+      sound: mode.sound && soundResource != null
+          ? RawResourceAndroidNotificationSound(soundResource)
+          : null,
     );
-    final iosDetails = DarwinNotificationDetails(presentSound: mode.plays);
+    final iosDetails = DarwinNotificationDetails(presentSound: mode.sound);
 
     await _plugin.zonedSchedule(
       id,

@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:salahulddin_azkar/data/adhans.dart';
 import 'package:salahulddin_azkar/services/dhikr_reminder.dart';
 import 'package:salahulddin_azkar/services/prayer_alerts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -24,20 +25,67 @@ void main() {
       expect(PrayerAlerts.anyOn, isFalse);
     });
 
-    test('five prayers, two moments, three modes — and sunrise is not one', () {
+    test('five prayers, two moments — and sunrise is not one', () {
       expect(AlertPrayer.values.length, 5);
       expect(AlertWhen.values.length, 2);
-      expect(AlertMode.values.length, 3);
       // Sunrise is not a prayer; an alarm for it calls people to nothing.
       expect(AlertPrayer.values.map((p) => p.name), isNot(contains('الشروق')));
     });
 
-    test('each mode means something distinct to the system', () {
-      expect(AlertMode.off.vibrates, isFalse);
-      expect(AlertMode.off.plays, isFalse);
-      expect(AlertMode.notify.vibrates, isTrue);
-      expect(AlertMode.notify.plays, isFalse);
-      expect(AlertMode.sound.plays, isTrue);
+    test('notification and sound are independent, and both can be on', () {
+      // The point of the rewrite: a reader may want the phone buzzing in a
+      // pocket AND the adhan playing.
+      const both = AlertMode(notify: true, sound: true);
+      expect(both.isOff, isFalse);
+      expect(both.label, 'إشعار وصوت');
+    });
+
+    test('choosing sound brings its notification with it', () {
+      // A sound arrives on a notification; there is nothing for it to ride
+      // otherwise.
+      expect(AlertMode.off.withSound(true).notify, isTrue);
+      // And silencing the notification silences the sound with it.
+      const both = AlertMode(notify: true, sound: true);
+      expect(both.withNotify(false).sound, isFalse);
+    });
+
+    test('a setting written by the old three-mode build still means the same',
+        () {
+      // Upgrading must not switch anyone off without telling them.
+      expect(AlertMode.decode('off').isOff, isTrue);
+      expect(AlertMode.decode('notify').notify, isTrue);
+      expect(AlertMode.decode('notify').sound, isFalse);
+      expect(AlertMode.decode('sound').sound, isTrue);
+      expect(AlertMode.decode('sound').notify, isTrue);
+      // And the new format round-trips.
+      const both = AlertMode(notify: true, sound: true);
+      expect(AlertMode.decode(both.encode()).sound, isTrue);
+      expect(AlertMode.decode(null).isOff, isTrue);
+      expect(AlertMode.decode('rubbish').isOff, isTrue);
+    });
+
+    test('muting everything keeps the notifications and drops the sounds',
+        () async {
+      await PrayerAlerts.setAll(
+          AlertWhen.onTime, const AlertMode(notify: true, sound: true));
+      expect(PrayerAlerts.anySound, isTrue);
+
+      await PrayerAlerts.muteEverything();
+      expect(PrayerAlerts.anySound, isFalse);
+      expect(PrayerAlerts.anyOn, isTrue,
+          reason: 'muting is not turning off — the alerts still arrive');
+    });
+
+    test('only the call itself gets an adhan, never the early warning', () {
+      // A full adhan fifteen minutes early would send people out.
+      expect(PrayerAlerts.bundledResource, 'adhan_makkah');
+      expect(Adhans.byId('makkah').isBundled, isTrue);
+      expect(Adhans.byId('afasy').isBundled, isFalse);
+      // A downloadable adhan has no resource yet, so the alert keeps the
+      // system tone rather than falling silent.
+      PrayerAlerts.adhan.value = 'afasy';
+      expect(PrayerAlerts.bundledResource, isNull);
+      PrayerAlerts.adhan.value = 'makkah';
     });
 
     test('changing a setting rebuilds the schedule at once', () async {
@@ -51,8 +99,8 @@ void main() {
       PrayerAlerts.onChanged = (_) async => rebuilds++;
       addTearDown(() => PrayerAlerts.onChanged = null);
 
-      await PrayerAlerts.setMode(
-          AlertPrayer.fajr, AlertWhen.onTime, AlertMode.sound);
+      await PrayerAlerts.setMode(AlertPrayer.fajr, AlertWhen.onTime,
+          const AlertMode(notify: true, sound: true));
       expect(rebuilds, 1);
 
       await PrayerAlerts.setLead(30);
@@ -66,25 +114,26 @@ void main() {
       addTearDown(() => PrayerAlerts.onChanged = null);
 
       await PrayerAlerts.setMode(
-          AlertPrayer.asr, AlertWhen.before, AlertMode.notify);
+          AlertPrayer.asr, AlertWhen.before, const AlertMode(notify: true));
       expect(rebuilds, 0,
           reason: 'scheduling against times we do not have would be guessing');
     });
 
     test('a setting survives the next run, and keys never collide', () async {
+      await PrayerAlerts.setMode(AlertPrayer.fajr, AlertWhen.before,
+          const AlertMode(notify: true, sound: true));
       await PrayerAlerts.setMode(
-          AlertPrayer.fajr, AlertWhen.before, AlertMode.sound);
-      await PrayerAlerts.setMode(
-          AlertPrayer.fajr, AlertWhen.onTime, AlertMode.notify);
+          AlertPrayer.fajr, AlertWhen.onTime, const AlertMode(notify: true));
 
       await PrayerAlerts.load();
-      expect(PrayerAlerts.modeFor(AlertPrayer.fajr, AlertWhen.before),
-          AlertMode.sound);
-      expect(PrayerAlerts.modeFor(AlertPrayer.fajr, AlertWhen.onTime),
-          AlertMode.notify,
+      expect(PrayerAlerts.modeFor(AlertPrayer.fajr, AlertWhen.before).sound,
+          isTrue);
+      expect(PrayerAlerts.modeFor(AlertPrayer.fajr, AlertWhen.onTime).sound,
+          isFalse,
           reason: 'the two moments of one prayer must not share a key');
-      expect(PrayerAlerts.modeFor(AlertPrayer.asr, AlertWhen.before),
-          AlertMode.off);
+      expect(
+          PrayerAlerts.modeFor(AlertPrayer.asr, AlertWhen.before).isOff,
+          isTrue);
       expect(PrayerAlerts.anyOn, isTrue);
     });
   });
