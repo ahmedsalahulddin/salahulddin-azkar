@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../constants/theme.dart';
+import '../widgets/speed_button.dart';
 import '../widgets/speak_button.dart';
 import '../data/library_data.dart';
 import '../data/quran_data.dart' show QuranService;
@@ -127,6 +128,7 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
           title: Text(widget.book.title, style: const TextStyle(fontSize: 17)),
           backgroundColor: AppColors.black,
           foregroundColor: AppColors.gold,
+          actions: const [SpeedButton(showLabel: false)],
         ),
         body: _downloading
             ? _downloadProgress()

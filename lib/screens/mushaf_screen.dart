@@ -9,11 +9,13 @@ import '../data/quran_data.dart';
 import '../services/bookmark_service.dart';
 import '../services/app_audio.dart';
 import '../services/mushaf_image_service.dart';
+import '../services/playback_speed.dart';
 import '../services/recitation_service.dart';
 import '../services/repeat_settings.dart';
 import '../services/storage_service.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import '../widgets/mushaf_palettes.dart';
+import '../widgets/speed_button.dart';
 import '../widgets/tafsir_sheet.dart';
 import 'mushaf/navigation_drawer.dart';
 import 'mushaf/page_sheet.dart';
@@ -52,23 +54,6 @@ class _MushafScreenState extends State<MushafScreen> {
   Reciter _reciter = RecitationService.defaultReciter;
   RepeatSettings _repeat = const RepeatSettings();
   StreamSubscription<int?>? _indexSub;
-
-  /// Speeds offered in the picker, slowest first.
-  static const _speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0];
-  double _speed = 1.0;
-
-  /// Renders 1.0 as "١" and 0.75 as "٠٫٧٥" — trailing zeros read as noise.
-  static String _arabicSpeed(double speed) {
-    final text = speed == speed.roundToDouble()
-        ? speed.toInt().toString()
-        : speed.toString().replaceFirst('.', '٫');
-    return text.split('').map((c) {
-      final digit = int.tryParse(c);
-      return digit == null ? c : QuranService.toArabicDigits(digit);
-    }).join();
-  }
-
-  String get _speedLabel => _arabicSpeed(_speed);
 
   @override
   void initState() {
@@ -180,6 +165,7 @@ class _MushafScreenState extends State<MushafScreen> {
         ],
         initialIndex: 0,
       );
+      await PlaybackSpeed.apply();
 
       // Follow the recitation with the highlight.
       _indexSub?.cancel();
@@ -489,7 +475,7 @@ class _MushafScreenState extends State<MushafScreen> {
                     // Play leads the controls; repeat is a setting, so it sits
                     // at the far end rather than between the two.
                     _playButton(),
-                    _speedButton(),
+                    const SpeedButton(),
                     _barIcon(Icons.repeat, 'التكرار', _openRepeatSettings,
                         label: 'تـكرار',
                         active: _repeat.isActive,
@@ -617,92 +603,6 @@ class _MushafScreenState extends State<MushafScreen> {
     await _player.stop();
     if (!mounted) return;
     setState(() => _reciter = chosen);
-  }
-
-  /// Speeds are picked from a list under the badge rather than cycled: seven
-  /// steps meant up to six taps to reach the one you wanted.
-  Widget _speedButton() {
-    final changed = _speed != 1.0;
-    final tint = changed ? AppColors.gold : AppColors.textSecondary;
-
-    return PopupMenuButton<double>(
-      tooltip: 'سرعة التلاوة',
-      color: AppColors.blackCard,
-      position: PopupMenuPosition.under,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: AppColors.goldBorder),
-      ),
-      padding: EdgeInsets.zero,
-      onSelected: _applySpeed,
-      itemBuilder: (context) => [
-        for (final s in _speeds)
-          PopupMenuItem(
-            value: s,
-            height: 38,
-            child: Row(
-              children: [
-                if (s == _speed)
-                  const Icon(Icons.check, color: AppColors.gold, size: 15)
-                else
-                  const SizedBox(width: 15),
-                const SizedBox(width: 8),
-                Text(
-                  s == 1.0 ? 'الطبيعية' : '${_arabicSpeed(s)}×',
-                  style: TextStyle(
-                    color:
-                        s == _speed ? AppColors.gold : AppColors.textPrimary,
-                    fontSize: 13,
-                  ),
-                ),
-              ],
-            ),
-          ),
-      ],
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 5),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 30,
-              height: 30,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: changed ? AppColors.goldMuted : Colors.transparent,
-                border: Border.all(color: tint, width: 2),
-              ),
-              child: Center(
-                child: Text(
-                  _speedLabel,
-                  style: TextStyle(
-                    color: tint,
-                    fontSize: _speedLabel.length > 2 ? 9 : 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 3),
-            Text('سـرعة',
-                style: TextStyle(
-                  color: tint,
-                  fontSize: 11,
-                  fontWeight: changed ? FontWeight.bold : FontWeight.normal,
-                )),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _applySpeed(double speed) async {
-    setState(() => _speed = speed);
-    try {
-      await _player.setSpeed(speed);
-    } catch (_) {
-      // Speed is a convenience; failing to set it must not break playback.
-    }
   }
 
   Widget _playButton() {

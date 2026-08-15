@@ -3,7 +3,10 @@ import 'package:flutter/services.dart';
 import '../constants/theme.dart';
 import '../data/hisn_data.dart';
 import '../data/quran_data.dart' show QuranService;
+import '../services/favourites.dart';
 import '../widgets/dhikr_audio.dart';
+import '../widgets/favourite_star.dart';
+import '../widgets/speed_button.dart';
 
 /// Reads one chapter, with a tap-to-count tracker for adhkar said more than
 /// once so the reader does not have to keep count in their head.
@@ -74,6 +77,7 @@ class _HisnChapterScreenState extends State<HisnChapterScreen> {
           backgroundColor: AppColors.black,
           foregroundColor: AppColors.gold,
           actions: [
+            const SpeedButton(showLabel: false),
             if (_counts.isNotEmpty)
               IconButton(
                 icon: const Icon(Icons.refresh, size: 20),
@@ -189,7 +193,13 @@ class _HisnChapterScreenState extends State<HisnChapterScreen> {
                 ),
                 const Spacer(),
                 DhikrListenButton(dhikr: d, controller: _audio),
-                const SizedBox(width: 8),
+                const SizedBox(width: 4),
+                // Every dhikr in the section can be kept, not only the seven
+                // categories that once had the star to themselves.
+                FavouriteStar(
+                  id: Favourites.hisnId(widget.chapter.id, d.number),
+                  size: 19,
+                ),
                 GestureDetector(
                   onTap: () => _copy(d),
                   behavior: HitTestBehavior.opaque,

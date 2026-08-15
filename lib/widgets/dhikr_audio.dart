@@ -3,6 +3,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import '../constants/theme.dart';
 import '../services/app_audio.dart';
+import '../services/playback_speed.dart';
 import '../data/hisn_data.dart';
 
 /// Plays the published recitations for a list of adhkar.
@@ -59,6 +60,7 @@ class DhikrAudioController extends ChangeNotifier {
           album: 'الأذكار',
         ),
       ));
+      await PlaybackSpeed.apply();
       await _player.play();
     } catch (_) {
       _failed = true;

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../constants/theme.dart';
+import '../widgets/speed_button.dart';
 import '../data/lessons.dart';
 import '../widgets/speak_button.dart';
 
@@ -20,6 +21,8 @@ class LessonScreen extends StatelessWidget {
           title: Text(lesson.title),
           backgroundColor: AppColors.black,
           foregroundColor: AppColors.gold,
+          // The lesson is read aloud by the device's voice; this sets its pace.
+          actions: const [SpeedButton(showLabel: false)],
         ),
         body: ListView(
           padding: const EdgeInsets.all(16),

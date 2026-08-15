@@ -4,7 +4,9 @@ import '../constants/theme.dart';
 import '../data/hisn_data.dart';
 import '../data/quran_data.dart' show QuranService;
 import '../data/umrah_data.dart';
+import '../services/favourites.dart';
 import '../widgets/dhikr_audio.dart';
+import '../widgets/favourite_star.dart';
 
 /// The Umrah supplications, walked through in the order of the rites.
 ///
@@ -256,7 +258,11 @@ class _UmrahScreenState extends State<UmrahScreen> {
                     ),
                   const Spacer(),
                   DhikrListenButton(dhikr: dhikr, controller: _audio),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 4),
+                  FavouriteStar(
+                    id: Favourites.hisnId(chapter.id, dhikr.number),
+                    size: 18,
+                  ),
                   GestureDetector(
                     onTap: () => _copy(dhikr, chapter.title),
                     behavior: HitTestBehavior.opaque,

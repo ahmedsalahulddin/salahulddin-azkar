@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
 import '../constants/theme.dart';
+import '../services/playback_speed.dart';
 
 /// Reads a passage aloud with the device's own Arabic voice.
 ///
@@ -21,15 +22,22 @@ class Tts {
   static Future<void> _configure() async {
     if (_configured) return;
     await _tts.setLanguage('ar');
-    await _tts.setSpeechRate(0.45);
     _tts.setCompletionHandler(() => speaking.value = null);
     _tts.setCancelHandler(() => speaking.value = null);
     _tts.setErrorHandler((_) => speaking.value = null);
     _configured = true;
   }
 
+  /// The reading pace is the app's one playback speed, applied before each
+  /// passage: a voice already speaking cannot change its rate mid-sentence,
+  /// and a reader who slowed the recitation meant the lessons too.
   static Future<void> toggle(String id, String text) async {
     await _configure();
+    try {
+      await _tts.setSpeechRate(PlaybackSpeed.speechRate);
+    } catch (_) {
+      // Some engines refuse a rate; they simply read at their own.
+    }
     if (speaking.value == id) {
       await _tts.stop();
       speaking.value = null;

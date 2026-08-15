@@ -13,6 +13,7 @@ import 'services/adhan_downloads.dart';
 import 'services/daily_reminders.dart';
 import 'services/dhikr_reminder.dart';
 import 'services/prayer_alerts.dart';
+import 'services/playback_speed.dart';
 import 'services/prayer_settings.dart';
 import 'services/section_config.dart';
 import 'services/sync_service.dart';
@@ -52,7 +53,7 @@ void main() async {
     await SectionConfig.load();
   } catch (_) {}
 
-  // The chosen Mushaf border, so the first page opens already wearing it.
+  await PlaybackSpeed.load();
   await PrayerSettings.load();
   PrayerAlerts.onChanged = NotificationService.schedulePrayerAlerts;
   await PrayerAlerts.load();
@@ -60,6 +61,7 @@ void main() async {
   DailyReminders.onChanged = NotificationService.scheduleDailyReminders;
   await DailyReminders.load();
   unawaited(AdhanDownloads.refresh());
+  // The chosen Mushaf border, so the first page opens already wearing it.
   await MushafFrames.load();
   await MushafPalettes.load();
 

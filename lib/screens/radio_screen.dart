@@ -5,6 +5,7 @@ import 'package:just_audio_background/just_audio_background.dart';
 import '../services/app_audio.dart';
 
 import '../constants/theme.dart';
+import '../services/playback_speed.dart';
 
 /// A live Qur'an radio station.
 class RadioStation {
@@ -105,6 +106,9 @@ class _RadioScreenState extends State<RadioScreen> {
           album: 'الإذاعة',
         ),
       ));
+      // A live stream has no timeline to compress; asking for anything but
+      // normal speed only starves the buffer.
+      await PlaybackSpeed.apply(live: true);
       _player.play();
       if (mounted) setState(() => _playingId = station.id);
     } catch (_) {

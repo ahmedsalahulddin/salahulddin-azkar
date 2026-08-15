@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import '../constants/theme.dart';
 import '../data/adhkar_data.dart';
+import '../services/favourites.dart';
 import '../services/storage_service.dart';
 import '../widgets/adhkar_card.dart';
+import '../widgets/dhikr_audio.dart';
+import '../widgets/favourite_star.dart';
 import '../widgets/tasbih_counter.dart';
 
 class FavoritesScreen extends StatefulWidget {
@@ -13,7 +16,10 @@ class FavoritesScreen extends StatefulWidget {
 }
 
 class _FavoritesScreenState extends State<FavoritesScreen> {
-  List<Dhikr> _favorites = [];
+  List<FavouriteEntry> _favorites = [];
+
+  /// Shared by every Hisn dhikr on this screen, so starting one stops the last.
+  final _audio = DhikrAudioController();
 
   @override
   void initState() {
@@ -27,16 +33,65 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   @override
   void dispose() {
     StorageService.favouritesRevision.removeListener(_loadFavorites);
+    _audio.dispose();
     super.dispose();
   }
 
   Future<void> _loadFavorites() async {
-    final favIds = await StorageService.getFavorites();
-    if (mounted) {
-      setState(() {
-        _favorites = adhkar.where((d) => favIds.contains(d.id)).toList();
-      });
+    final entries = await Favourites.resolve();
+    if (mounted) setState(() => _favorites = entries);
+  }
+
+  /// A categorised dhikr keeps the card it always had; one from Hisn gets a
+  /// plainer card that still says where it came from and can be read aloud.
+  Widget _card(FavouriteEntry entry) {
+    final dhikr = entry.dhikr;
+    if (dhikr != null) {
+      return AdhkarCard(
+        dhikr: dhikr,
+        fontSize: FontSizeOption.medium,
+        onTasbih: () => _openTasbih(dhikr),
+      );
     }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      padding: const EdgeInsets.fromLTRB(14, 14, 14, 8),
+      decoration: BoxDecoration(
+        color: AppColors.blackCard,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.goldBorder),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            entry.text,
+            textAlign: TextAlign.justify,
+            textDirection: TextDirection.rtl,
+            style: const TextStyle(
+                color: AppColors.textPrimary, fontSize: 18, height: 1.9),
+          ),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  entry.origin,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                      color: AppColors.textMuted, fontSize: 11),
+                ),
+              ),
+              if (entry.hisn != null)
+                DhikrListenButton(dhikr: entry.hisn!, controller: _audio),
+              const SizedBox(width: 4),
+              FavouriteStar(id: entry.id, size: 19, announce: false),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 
   void _openTasbih(Dhikr dhikr) {
@@ -102,11 +157,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                         child: ListView.builder(
                           itemCount: _favorites.length,
                           padding: const EdgeInsets.only(bottom: 24, top: 8),
-                          itemBuilder: (context, index) => AdhkarCard(
-                            dhikr: _favorites[index],
-                            fontSize: FontSizeOption.medium,
-                            onTasbih: () => _openTasbih(_favorites[index]),
-                          ),
+                          itemBuilder: (context, index) =>
+                              _card(_favorites[index]),
                         ),
                       ),
               ),

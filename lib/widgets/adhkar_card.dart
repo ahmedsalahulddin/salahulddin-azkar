@@ -6,6 +6,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import '../constants/theme.dart';
 import '../services/app_audio.dart';
+import '../services/playback_speed.dart';
 import '../data/adhkar_data.dart';
 import '../services/storage_service.dart';
 
@@ -79,6 +80,7 @@ class _AdhkarCardState extends State<AdhkarCard> {
           tag: MediaItem(id: _tagId, title: 'ذكر', album: 'الأذكار'),
         ));
       }
+      await PlaybackSpeed.apply();
       await player.play();
     } catch (_) {
       if (mounted) setState(() => _isPlaying = false);

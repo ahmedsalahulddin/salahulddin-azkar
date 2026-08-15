@@ -7,8 +7,10 @@ import '../constants/theme.dart';
 import '../services/app_audio.dart';
 import '../data/quran_data.dart';
 import '../data/tafsir_data.dart';
+import '../services/playback_speed.dart';
 import '../services/recitation_service.dart';
 import '../services/storage_service.dart';
+import '../widgets/speed_button.dart';
 
 class SurahScreen extends StatefulWidget {
   final SurahInfo info;
@@ -126,6 +128,7 @@ class _SurahScreenState extends State<SurahScreen> {
         await _player.seek(Duration.zero, index: fromAyah - 1);
       }
       setState(() => _playingAyah = fromAyah);
+      await PlaybackSpeed.apply();
       await _player.play();
     } catch (_) {
       if (!mounted) return;
@@ -438,6 +441,7 @@ class _SurahScreenState extends State<SurahScreen> {
                 ),
               ),
               const Spacer(),
+              const SpeedButton(showLabel: false),
               if (_audioFailed)
                 const Padding(
                   padding: EdgeInsets.only(left: 8),
