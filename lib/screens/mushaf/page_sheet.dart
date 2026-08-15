@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../constants/theme.dart';
 import '../../data/ayah_boxes.dart';
@@ -68,9 +67,11 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
           child: LayoutBuilder(
             builder: (context, constraints) {
               final size = Size(constraints.maxWidth, constraints.maxHeight);
-              // Whatever ornament is chosen, each band still has to hold a
-              // line of text: the surah and juz above, the page number below.
-              final band = math.max(frame.insetFor(size), 27.0);
+              // Exactly what the ornament needs, and no more. Inflating this
+              // to fit the captions gave them a line of their own and pushed
+              // the page up off centre; they are drawn over the border now,
+              // on its own level, the way a printed page prints them.
+              final band = frame.insetFor(size);
 
               return Stack(
                 children: [
@@ -124,6 +125,9 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
   /// the image actually landed rather than from the space it was offered —
   /// otherwise the border would float somewhere above the text on a short page
   /// and the whole point of a border would be lost.
+  /// How tall a caption sits, independent of how deep the border is.
+  static const _captionHeight = 17.0;
+
   Widget _frame(
       MushafFrame frame, MushafPalette palette, double band, Size size) {
     final drawn = _drawn;
@@ -161,11 +165,14 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
             ),
             // Surah on the right, juz on the left — the printed page's header,
             // each set into the border in its own cartouche.
+            // Centred on the border rather than housed inside it: a thin
+            // keyline has no room to house anything, and the page's own
+            // margin behind it is blank.
             Positioned(
-              top: 0,
+              top: band / 2 - _captionHeight / 2,
               left: 0,
               right: 0,
-              height: band,
+              height: _captionHeight,
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: Row(
@@ -181,10 +188,10 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
               ),
             ),
             Positioned(
-              bottom: 0,
+              bottom: band / 2 - _captionHeight / 2,
               left: 0,
               right: 0,
-              height: band,
+              height: _captionHeight,
               child: Center(
                 child: _cartouche(
                     QuranService.toArabicDigits(widget.page.number),
