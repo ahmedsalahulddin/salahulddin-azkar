@@ -24,6 +24,22 @@ void main() {
     expect(total, 6236);
   });
 
+  // Ids and the fallback are covered in repeat_test.dart; these are the two
+  // that a newly added edition can break.
+  test('no two editions share a name or a source', () {
+    final editions = TafsirService.editions;
+    expect(editions.map((e) => e.name).toSet().length, editions.length,
+        reason: 'two editions are indistinguishable in the picker');
+
+    final slugs = editions.map((e) => e.remoteSlug).nonNulls;
+    expect(slugs.toSet().length, slugs.length,
+        reason: 'two editions would download into each other');
+  });
+
+  test('the reader always has a tafsir before downloading one', () {
+    expect(TafsirService.defaultEdition.isBundled, isTrue);
+  });
+
   test('tafsir is cached after the first read', () async {
     final first = await TafsirService.forSurah(112);
     final second = await TafsirService.forSurah(112);

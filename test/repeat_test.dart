@@ -58,12 +58,15 @@ void main() {
   });
 
   group('tafsir editions', () {
-    test('the registry offers two bundled and two downloadable works', () {
+    test('two works ship with the app, and the rest are fetched', () {
       final bundled = TafsirService.editions.where((e) => e.isBundled);
       final remote = TafsirService.editions.where((e) => !e.isBundled);
 
+      // The count of downloadable works grows as more public-domain tafsirs
+      // are added; what must hold is that two are always there to read with
+      // no connection at all.
       expect(bundled.length, 2);
-      expect(remote.length, 2);
+      expect(remote, isNotEmpty);
       // Downloadable editions must state a size before the reader commits.
       expect(remote.every((e) => e.downloadSize != null), isTrue);
       expect(remote.every((e) => e.remoteSlug != null), isTrue);

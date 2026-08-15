@@ -20,4 +20,14 @@ class AppAudio {
     if (tag == null) return null;
     return (tag as dynamic).id as String?;
   }
+
+  /// Whether what is loaded belongs to [owner].
+  ///
+  /// Since one player serves the whole app, "something is loaded" no longer
+  /// means "my playlist is loaded" — a screen that assumes so will seek into
+  /// whatever the last screen left behind, and play the radio while showing
+  /// its own reciter's name. Every screen asks this before reusing what is
+  /// there.
+  static bool ownsCurrent(String owner) =>
+      currentId()?.startsWith(owner) ?? false;
 }

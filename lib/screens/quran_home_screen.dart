@@ -84,7 +84,7 @@ class _QuranHomeScreenState extends State<QuranHomeScreen> {
               const SizedBox(height: 18),
 
               _modeCard(
-                icon: '🕮',
+                icon: '🕌',
                 title: 'تلاوة وتدبّر',
                 subtitle: 'آية آية، مع التفسير والتلاوة',
                 details: const [
@@ -101,8 +101,8 @@ class _QuranHomeScreenState extends State<QuranHomeScreen> {
 
               _modeCard(
                 icon: '📖',
-                title: 'قراءة',
-                subtitle: 'صفحة المصحف كاملة كما هي مطبوعة',
+                title: 'القرآن الكريم',
+                subtitle: 'صفحات',
                 details: const [
                   'الـ ٦٠٤ صفحة بترتيب مصحف المدينة',
                   'اسحب لتقليب الصفحات',

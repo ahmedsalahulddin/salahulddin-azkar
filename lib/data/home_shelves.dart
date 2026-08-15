@@ -144,7 +144,7 @@ HomeShelf _quranShelf() => HomeShelf(
       tint: AppColors.emeraldMuted,
       all: () => const QuranHomeScreen(),
       pinned: ShelfItem(
-        icon: '🕮',
+        icon: '🕌',
         title: 'تلاوة وتدبّر',
         subtitle: 'آية آية مع التفسير',
         open: (c) => _push(c, () => const QuranScreen()),
@@ -152,8 +152,8 @@ HomeShelf _quranShelf() => HomeShelf(
       rest: [
         ShelfItem(
           icon: '📖',
-          title: 'قراءة',
-          subtitle: 'المصحف كاملاً',
+          title: 'القرآن الكريم',
+          subtitle: 'صفحات',
           open: (c) async {
             final page = await StorageService.getLastMushafPage() ?? 1;
             if (!c.mounted) return;

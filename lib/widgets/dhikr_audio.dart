@@ -21,7 +21,11 @@ class DhikrAudioController extends ChangeNotifier {
 
   DhikrAudioController() {
     _player.playerStateStream.listen((state) {
-      if (state.processingState == ProcessingState.completed) {
+      if (_playingNumber == null) return;
+      // Finished, or another screen took the shared player: either way this
+      // controller is no longer the one sounding.
+      final mine = AppAudio.ownsCurrent('hisn:');
+      if (!mine || state.processingState == ProcessingState.completed) {
         _playingNumber = null;
         notifyListeners();
       }
@@ -46,6 +50,7 @@ class DhikrAudioController extends ChangeNotifier {
     notifyListeners();
 
     try {
+      await _player.stop();
       await _player.setAudioSource(AudioSource.uri(
         Uri.parse(url),
         tag: MediaItem(

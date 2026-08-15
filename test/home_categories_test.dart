@@ -52,7 +52,7 @@ void main() {
     test('the Quran shelf: the ways to read, then the ways to listen', () {
       final quran = buildShelves().firstWhere((s) => s.key == 'quran');
       expect([quran.pinned.title, ...quran.rest.map((i) => i.title)],
-          ['تلاوة وتدبّر', 'قراءة', 'اختبار الحفظ', 'الإذاعة', 'الاستماع الدائم']);
+          ['تلاوة وتدبّر', 'القرآن الكريم', 'اختبار الحفظ', 'الإذاعة', 'الاستماع الدائم']);
     });
 
     test('the adhkar shelf gathers what used to be loose on the home screen',
@@ -72,7 +72,9 @@ void main() {
       await pumpHome(tester);
 
       for (final shelf in buildShelves()) {
-        expect(find.text(shelf.title), findsOneWidget,
+        // Not exactly one: the Quran shelf's heading and the card that opens
+        // the Mushaf carry the same name by design.
+        expect(find.text(shelf.title), findsWidgets,
             reason: '${shelf.key} has no heading');
         expect(find.text(shelf.pinned.title), findsWidgets,
             reason: '${shelf.key} is missing its pinned card');

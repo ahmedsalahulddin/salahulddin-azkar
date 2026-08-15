@@ -42,6 +42,9 @@ class _SurahScreenState extends State<SurahScreen> {
     // Keep the highlight and scroll position in step with the playlist.
     _indexSub = _player.currentIndexStream.listen((i) {
       if (!mounted || i == null || !_player.playing) return;
+      // Only when the player is on this surah's playlist: the shared player
+      // reports the radio's track changes here too.
+      if (!AppAudio.ownsCurrent('${_reciter.id}:')) return;
       final ayah = i + 1;
       setState(() => _playingAyah = ayah);
       _scrollTo(ayah);
@@ -92,8 +95,13 @@ class _SurahScreenState extends State<SurahScreen> {
     if (surah == null) return;
 
     setState(() => _audioFailed = false);
+    // Whose playlist is loaded, not merely whether one is: the radio leaves
+    // its own source in place, and seeking into that plays the broadcast
+    // under this screen's reciter name.
+    final mine = '${_reciter.id}:${surah.number}:';
     try {
-      if (_player.audioSource == null) {
+      if (!AppAudio.ownsCurrent(mine)) {
+        await _player.stop();
         await _player.setAudioSources(
           [
             for (final a in surah.ayahs)
@@ -399,7 +407,10 @@ class _SurahScreenState extends State<SurahScreen> {
       stream: _player.playerStateStream,
       builder: (context, snapshot) {
         final state = snapshot.data;
-        final playing = state?.playing ?? false;
+        // Playing *this* surah, not merely playing: otherwise the bar offers
+        // to pause a broadcast it does not own, under this reciter's name.
+        final playing =
+            (state?.playing ?? false) && AppAudio.ownsCurrent('${_reciter.id}:');
         final loading = state?.processingState == ProcessingState.loading ||
             state?.processingState == ProcessingState.buffering;
 
