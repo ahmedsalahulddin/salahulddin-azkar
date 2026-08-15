@@ -24,8 +24,8 @@ class SkyArch extends StatelessWidget {
   /// Pinned to the panel's bottom centre, under the dome's drum.
   final Widget? footer;
 
-  /// Floated in the open sky above the dome — the verse lives here, between
-  /// the apex of the path and the dome's crescent.
+  /// Floated across the top of the panel, above the whole path — the verse
+  /// lives here, over everything.
   final Widget? aboveDome;
 
   const SkyArch(
@@ -68,12 +68,12 @@ class SkyArch extends StatelessWidget {
             ),
           if (aboveDome != null)
             Positioned(
-              top: 64,
+              top: 8,
               left: 0,
               right: 0,
               child: Center(
                 child: FractionallySizedBox(
-                  widthFactor: 0.56,
+                  widthFactor: 0.74,
                   child: aboveDome!,
                 ),
               ),
@@ -241,7 +241,8 @@ class SkyArchPainter extends CustomPainter {
   void _skyPath(Canvas canvas, Size size, double horizon) {
     final clock = SkyClock(data);
     final cx = size.width / 2;
-    final radius = math.min(size.width * 0.40, horizon - 26);
+    // Capped so the apex clears the verse floating across the top.
+    final radius = math.min(size.width * 0.40, horizon - 64);
     final dip = math.min(20.0, size.height - horizon - 18);
 
     Offset at(double f) {
