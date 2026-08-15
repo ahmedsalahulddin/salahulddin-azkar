@@ -30,7 +30,7 @@ class FrameTab extends StatelessWidget {
             const SizedBox(height: 12),
             SwatchGrid(
               children: [
-                for (final frame in MushafFrame.values)
+                for (final frame in MushafFrame.available)
                   Swatch(
                     label: frame.label,
                     active: frame == chosen,

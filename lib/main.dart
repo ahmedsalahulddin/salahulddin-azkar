@@ -41,6 +41,7 @@ void main() async {
 
   // Reads the cached layout and refreshes in the background. Never blocks the
   // first frame, and shows every section if it cannot reach the project.
+  SectionConfig.onApplied = MushafFrames.reconcile;
   try {
     await SectionConfig.load();
   } catch (_) {}

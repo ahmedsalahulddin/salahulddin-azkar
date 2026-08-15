@@ -3,6 +3,8 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../services/section_config.dart';
+
 /// Ornamental borders for a Mushaf page.
 ///
 /// Every one of these is drawn here in code rather than bundled as a picture,
@@ -38,6 +40,23 @@ enum MushafFrame {
   /// the Mushaf.
   static MushafFrame byId(String? id) =>
       values.firstWhere((f) => f.id == id, orElse: () => keyline);
+
+  /// The key this frame answers to in app_sections, so the dashboard can show,
+  /// hide and order the frames exactly as it does the shelves.
+  String get sectionKey => 'frame_$id';
+
+  /// The frames on offer, hidden ones dropped and the rest in the dashboard's
+  /// order. Fails open like everything else that reads the remote config: an
+  /// unreachable project leaves every frame on the list.
+  static List<MushafFrame> get available {
+    final shown = [
+      for (var i = 0; i < values.length; i++)
+        if (SectionConfig.isVisible(values[i].sectionKey)) (values[i], i),
+    ]..sort((a, b) => SectionConfig.orderOf(a.$1.sectionKey, a.$2)
+        .compareTo(SectionConfig.orderOf(b.$1.sectionKey, b.$2)));
+    // Never an empty picker: a page has to have some border, even none.
+    return shown.isEmpty ? [none, keyline] : [for (final (f, _) in shown) f];
+  }
 
   /// How far the page text must stay clear of the edge, in design units. The
   /// heavier the ornament, the more room it needs.
@@ -76,6 +95,18 @@ class MushafFrames {
     } catch (_) {
       // Keep the default; a frame is not worth failing a launch over.
     }
+    reconcile();
+  }
+
+  /// Moves a reader off a frame that has since been hidden.
+  ///
+  /// Their choice is respected until it stops being on offer; then they get
+  /// the first frame that is, rather than a page with an ornament nobody else
+  /// can see. Called on launch and whenever the dashboard's answer arrives.
+  static void reconcile() {
+    final available = MushafFrame.available;
+    if (available.contains(current.value)) return;
+    choose(available.first);
   }
 
   static Future<void> choose(MushafFrame frame) async {

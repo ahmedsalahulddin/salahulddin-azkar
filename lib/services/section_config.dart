@@ -105,7 +105,13 @@ class SectionConfig {
       for (final row in rows)
         row['key'] as String: SectionSetting.fromJson(row),
     };
+    // A frame the reader is using may have just been hidden.
+    onApplied?.call();
   }
+
+  /// Run after every successful config load. Set at startup rather than
+  /// imported, so this service keeps knowing nothing about what reads it.
+  static void Function()? onApplied;
 
   /// Whether [key] should appear. Unknown sections and an unloaded config both
   /// answer yes.
@@ -113,6 +119,10 @@ class SectionConfig {
     if (!_loaded) return true;
     return settings.value[key]?.enabled ?? true;
   }
+
+  /// Lets tests stand in for a config that has, or has not, arrived.
+  @visibleForTesting
+  static void debugSetLoaded(bool value) => _loaded = value;
 
   /// Sort position for [key]; unknown sections keep their built-in order by
   /// sorting last but stable.
