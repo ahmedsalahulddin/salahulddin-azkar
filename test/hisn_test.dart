@@ -15,6 +15,22 @@ void main() {
       expect(chapters.any((c) => c.title.trim().isEmpty), isFalse);
     });
 
+    test('no chapter carries the old Shamela encoding artifact', () async {
+      // The source text passed through an encoding that turned نزل منزلاً into
+      // نزل مترلا. One title still carried it. A reader who searches for
+      // منزل must find chapter 104, and nobody should be shown a word that is
+      // not a word.
+      final chapters = await HisnService.chapters();
+      for (final c in chapters) {
+        expect(c.title, isNot(contains('مترل')), reason: 'chapter ${c.id}');
+        for (final item in c.items) {
+          expect(item.text, isNot(contains('مترل')), reason: 'chapter ${c.id}');
+        }
+      }
+      expect(chapters.firstWhere((c) => c.id == 104).title,
+          contains('منزلاً'));
+    });
+
     test('every chapter has at least one dhikr and none are blank', () async {
       for (final c in await HisnService.chapters()) {
         expect(c.items, isNotEmpty, reason: 'chapter ${c.id} is empty');

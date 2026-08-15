@@ -56,8 +56,8 @@ grant insert, update, delete on public.app_sections to authenticated;
 
 -- Current sections, in the order the app ships with.
 insert into public.app_sections (key, title, sort_order) values
-  ('adhkar',    'الأذكار',        1),
-  ('quran',     'القرآن الكريم',  2),
+  ('quran',     'القرآن الكريم',  1),
+  ('adhkar',    'الأذكار',        2),
   ('library',   'المكتبة',        3),
   ('tasbih',    'عداد التسبيح',   4),
   ('deceased',  'الوفيات',        5),
