@@ -35,11 +35,14 @@ enum MushafFrame {
   /// Shown in the picker.
   final String label;
 
-  /// Unknown ids fall back to the plain keyline rather than throwing — a
-  /// setting written by a newer build must not stop an older one from opening
-  /// the Mushaf.
+  /// What a reader who has never chosen gets, and what an unreadable setting
+  /// falls back to.
+  static const fallback = illuminated;
+
+  /// Unknown ids fall back rather than throwing — a setting written by a newer
+  /// build must not stop an older one from opening the Mushaf.
   static MushafFrame byId(String? id) =>
-      values.firstWhere((f) => f.id == id, orElse: () => keyline);
+      values.firstWhere((f) => f.id == id, orElse: () => fallback);
 
   /// The key this frame answers to in app_sections, so the dashboard can show,
   /// hide and order the frames exactly as it does the shelves.
@@ -86,7 +89,7 @@ class MushafFrames {
 
   /// Every visible page listens, so a choice applies to all of them at once
   /// rather than only the one on screen.
-  static final current = ValueNotifier<MushafFrame>(MushafFrame.keyline);
+  static final current = ValueNotifier<MushafFrame>(MushafFrame.fallback);
 
   static Future<void> load() async {
     try {

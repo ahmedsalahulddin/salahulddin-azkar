@@ -55,8 +55,8 @@ void main() {
       }
       // A setting written by a newer build must not stop an older one opening
       // the Mushaf.
-      expect(MushafFrame.byId('a-frame-from-the-future'), MushafFrame.keyline);
-      expect(MushafFrame.byId(null), MushafFrame.keyline);
+      expect(MushafFrame.byId('a-frame-from-the-future'), MushafFrame.fallback);
+      expect(MushafFrame.byId(null), MushafFrame.fallback);
     });
 
     test('a heavier ornament reserves more of the page', () {
@@ -137,10 +137,12 @@ void main() {
       expect(MushafFrames.current.value, MushafFrame.arabesque);
     });
 
-    test('a reader who never chose gets the plain keyline', () async {
+    test('a reader who never chose gets the default border', () async {
       MushafFrames.current.value = MushafFrame.stars;
       await MushafFrames.load();
-      expect(MushafFrames.current.value, MushafFrame.keyline);
+      expect(MushafFrames.current.value, MushafFrame.fallback);
+      // Which is the illuminated Mushaf page, the one the app opens on.
+      expect(MushafFrame.fallback, MushafFrame.illuminated);
     });
   });
 
