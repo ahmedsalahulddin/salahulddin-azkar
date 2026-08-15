@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import '../constants/theme.dart';
 import '../data/adhkar_data.dart';
+import '../data/quran_data.dart' show QuranService;
 import '../services/favourites.dart';
 import '../services/storage_service.dart';
 import '../widgets/adhkar_card.dart';
 import '../widgets/dhikr_audio.dart';
 import '../widgets/favourite_star.dart';
+import '../widgets/speak_button.dart';
 import '../widgets/tasbih_counter.dart';
 
 class FavoritesScreen extends StatefulWidget {
@@ -34,6 +36,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   void dispose() {
     StorageService.favouritesRevision.removeListener(_loadFavorites);
     _audio.dispose();
+    // Leaving the tab ends the reading; a voice with no screen behind it has
+    // no way to be stopped.
+    Tts.stop();
     super.dispose();
   }
 
@@ -44,23 +49,92 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
   /// A categorised dhikr keeps the card it always had; one from Hisn gets a
   /// plainer card that still says where it came from and can be read aloud.
-  Widget _card(FavouriteEntry entry) {
+  /// Reads the whole list aloud, in order, text only.
+  ///
+  /// The recorded recitation belongs to one dhikr and names its chapter
+  /// first; going through twenty of them meant twenty announcements. This
+  /// reads the words themselves, once each, and moves on by itself.
+  Widget _readAllBar() {
+    return ValueListenableBuilder<int?>(
+      valueListenable: Tts.readingIndex,
+      builder: (context, at, _) {
+        if (at == null) {
+          return GestureDetector(
+            onTap: () =>
+                Tts.readAll([for (final e in _favorites) e.text]),
+            behavior: HitTestBehavior.opaque,
+            child: Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+              decoration: BoxDecoration(
+                color: AppColors.goldMuted,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: AppColors.goldBorder),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.play_arrow, color: AppColors.gold, size: 18),
+                  SizedBox(width: 6),
+                  Text('اقرأ الكل',
+                      style: TextStyle(
+                          color: AppColors.gold,
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold)),
+                ],
+              ),
+            ),
+          );
+        }
+
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.stop_circle_outlined,
+                  color: AppColors.gold, size: 24),
+              onPressed: Tts.stop,
+              tooltip: 'إيقاف',
+            ),
+            Text(
+              'يقرأ ${QuranService.toArabicDigits(at + 1)}'
+              ' من ${QuranService.toArabicDigits(_favorites.length)}',
+              style: const TextStyle(color: AppColors.textGold, fontSize: 12),
+            ),
+            IconButton(
+              icon: const Icon(Icons.skip_next,
+                  color: AppColors.textSecondary, size: 22),
+              onPressed: Tts.skip,
+              tooltip: 'التالي',
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _card(FavouriteEntry entry, {bool reading = false}) {
     final dhikr = entry.dhikr;
     if (dhikr != null) {
-      return AdhkarCard(
+      final card = AdhkarCard(
         dhikr: dhikr,
         fontSize: FontSizeOption.medium,
         onTasbih: () => _openTasbih(dhikr),
       );
+      // Marked while it is the one being read, so the reader can follow along
+      // a list of twenty without counting.
+      return reading ? _lit(card) : card;
     }
 
-    return Container(
+    final card = Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       padding: const EdgeInsets.fromLTRB(14, 14, 14, 8),
       decoration: BoxDecoration(
         color: AppColors.blackCard,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.goldBorder),
+        border: Border.all(
+            color: reading ? AppColors.gold : AppColors.goldBorder,
+            width: reading ? 2 : 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -92,7 +166,19 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         ],
       ),
     );
+    return card;
   }
+
+  /// A ring around whatever is being read, for cards that draw their own
+  /// border and cannot simply be told to light it.
+  Widget _lit(Widget card) => Container(
+        margin: const EdgeInsets.symmetric(horizontal: 10),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppColors.gold, width: 2),
+        ),
+        child: card,
+      );
 
   void _openTasbih(Dhikr dhikr) {
     Navigator.push(
@@ -125,6 +211,10 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                     const SizedBox(height: 4),
                     Text('${_favorites.length} أذكار محفوظة',
                         style: const TextStyle(color: AppColors.textMuted, fontSize: 13)),
+                    if (_favorites.isNotEmpty) ...[
+                      const SizedBox(height: 10),
+                      _readAllBar(),
+                    ],
                   ],
                 ),
               ),
@@ -158,7 +248,13 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                           itemCount: _favorites.length,
                           padding: const EdgeInsets.only(bottom: 24, top: 8),
                           itemBuilder: (context, index) =>
-                              _card(_favorites[index]),
+                              ValueListenableBuilder<int?>(
+                            valueListenable: Tts.readingIndex,
+                            builder: (context, at, _) => _card(
+                              _favorites[index],
+                              reading: at == index,
+                            ),
+                          ),
                         ),
                       ),
               ),
