@@ -70,6 +70,10 @@ class NoorAzkarApp extends StatelessWidget {
       title: 'salahulddin-AZKAR',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
+      // Every route ends above the phone's navigation bar — screens added
+      // later inherit this without having to remember it.
+      builder: (context, child) =>
+          SafeArea(top: false, left: false, right: false, child: child!),
       home: const MainNavigation(),
     );
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../constants/theme.dart';
+import '../widgets/speak_button.dart';
 import '../data/library_data.dart';
 import '../data/quran_data.dart' show QuranService;
 
@@ -300,10 +301,20 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(h.text,
-              textAlign: TextAlign.justify,
-              style: const TextStyle(
-                  color: AppColors.textPrimary, fontSize: 16, height: 1.9)),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(h.text,
+                    textAlign: TextAlign.justify,
+                    style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 16,
+                        height: 1.9)),
+              ),
+              SpeakButton(id: '${widget.book.id}:${h.number}', text: h.text),
+            ],
+          ),
           const SizedBox(height: 10),
           Row(
             children: [

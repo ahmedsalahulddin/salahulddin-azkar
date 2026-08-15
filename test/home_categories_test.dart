@@ -33,7 +33,7 @@ void main() {
       // The lessons shelf leads with a lesson that exists rather than one
       // waiting on a channel.
       expect(shelves['lessons']!.pinned.title, 'أركان الإسلام');
-      expect(shelves['cards']!.pinned.title, 'كروت يومية');
+      expect(shelves['cards']!.pinned.title, 'كروتي');
     });
 
     test('the pinned card is never repeated among the rest', () {
@@ -49,10 +49,10 @@ void main() {
       }
     });
 
-    test('the Quran shelf holds exactly the three ways to read', () {
+    test('the Quran shelf: the ways to read, then the ways to listen', () {
       final quran = buildShelves().firstWhere((s) => s.key == 'quran');
       expect([quran.pinned.title, ...quran.rest.map((i) => i.title)],
-          ['تلاوة وتدبّر', 'قراءة', 'اختبار الحفظ']);
+          ['تلاوة وتدبّر', 'قراءة', 'اختبار الحفظ', 'الإذاعة', 'الاستماع الدائم']);
     });
 
     test('the adhkar shelf gathers what used to be loose on the home screen',

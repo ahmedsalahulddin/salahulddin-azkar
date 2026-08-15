@@ -344,9 +344,9 @@ class SkyArchPainter extends CustomPainter {
       text: TextSpan(
         text: name,
         style: TextStyle(
-          color: marked ? _goldLight : Colors.white.withValues(alpha: 0.75),
-          fontSize: marked ? 12 : 11,
-          fontWeight: marked ? FontWeight.bold : FontWeight.normal,
+          color: marked ? _goldLight : Colors.white.withValues(alpha: 0.78),
+          fontSize: marked ? 13.2 : 12.1,
+          fontWeight: FontWeight.bold,
         ),
       ),
       textDirection: TextDirection.rtl,
@@ -361,7 +361,7 @@ class SkyArchPainter extends CustomPainter {
     // Hand-set nudges: the horizon pair ride two up and one in toward the
     // dome; Dhuhr steps two right so the verse floating below it has room.
     if (name == 'الشروق') {
-      anchor += Offset(unit.dx > 0 ? -1 : 1, -5);
+      anchor += Offset(-painter.width / 2 - 1, -8);
     } else if (name == 'المغرب') {
       anchor += const Offset(1, -9);
     } else if (name == 'الظهر') {

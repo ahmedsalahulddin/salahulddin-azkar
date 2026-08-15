@@ -97,7 +97,7 @@ class _RotatingVerseState extends State<RotatingVerse> {
           style: TextStyle(
             fontFamily: 'AmiriQuran',
             color: AppColors.textPrimary,
-            fontSize: widget.dense ? 17 : 15,
+            fontSize: widget.dense ? 19 : 15,
             height: widget.dense ? 1.6 : 1.9,
           ),
         );

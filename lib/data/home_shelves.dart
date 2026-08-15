@@ -15,7 +15,9 @@ import '../screens/lesson_screen.dart';
 import '../screens/lessons_screen.dart';
 import '../screens/memorisation_test_screen.dart';
 import '../screens/mushaf_screen.dart';
+import '../screens/my_cards_screen.dart';
 import '../screens/quran_home_screen.dart';
+import '../screens/radio_screen.dart';
 import '../screens/quran_screen.dart';
 import '../screens/sahih_adhkar_screen.dart';
 import '../screens/umrah_screen.dart';
@@ -164,6 +166,18 @@ HomeShelf _quranShelf() => HomeShelf(
           subtitle: 'أربع طرق للسؤال',
           open: openMemorisationPicker,
         ),
+        ShelfItem(
+          icon: '📻',
+          title: 'الإذاعة',
+          subtitle: 'القاهرة والسعودية وثلاث غيرها',
+          open: (c) => _push(c, () => const RadioScreen()),
+        ),
+        ShelfItem(
+          icon: '🎧',
+          title: 'الاستماع الدائم',
+          subtitle: 'مقرئون — يُضاف تباعاً',
+          open: (c) => _push(c, () => const ListeningScreen()),
+        ),
       ],
     );
 
@@ -209,12 +223,15 @@ HomeShelf _cardsShelf() {
     icon: '💌',
     title: 'كروت المعايدة',
     tint: AppColors.goldMuted,
-    all: () => const CardsScreen(shelf: CardShelf.daily),
-    pinned: card(CardShelf.daily),
-    rest: [
-      for (final shelf in CardShelf.values)
-        if (shelf != CardShelf.daily) card(shelf),
-    ],
+    all: () => const MyCardsScreen(),
+    // The reader's own cards lead; the ready-made shelves follow.
+    pinned: ShelfItem(
+      icon: '🖼️',
+      title: 'كروتي',
+      subtitle: 'أضف كروتك من الجوال',
+      open: (c) => _push(c, () => const MyCardsScreen()),
+    ),
+    rest: [for (final shelf in CardShelf.values) card(shelf)],
   );
 }
 

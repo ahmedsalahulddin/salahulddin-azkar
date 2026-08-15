@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../constants/theme.dart';
 import '../data/lessons.dart';
+import '../widgets/speak_button.dart';
 
 /// One lesson: an opening text, then the points, each with what it rests on.
 class LessonScreen extends StatelessWidget {
@@ -90,6 +91,10 @@ class LessonScreen extends StatelessWidget {
                           fontSize: 16,
                           fontWeight: FontWeight.bold)),
                 ),
+              ),
+              SpeakButton(
+                id: '${lesson.id}:$number',
+                text: '${point.title}. ${point.body}',
               ),
             ],
           ),
