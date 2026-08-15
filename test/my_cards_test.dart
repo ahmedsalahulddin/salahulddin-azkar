@@ -102,4 +102,34 @@ void main() {
       expect(MyCardsMeta.titleOf(MyCards.nameOf(older)), '');
     });
   });
+
+  group('how many across', () {
+    test('two by default, and the choice is remembered', () async {
+      expect(MyCardsMeta.columns.value, 2);
+
+      await MyCardsMeta.setColumns(4);
+      MyCardsMeta.debugReset();
+      expect(MyCardsMeta.columns.value, 2);
+
+      await MyCardsMeta.load();
+      expect(MyCardsMeta.columns.value, 4);
+    });
+
+    test('a count the grid does not offer is refused', () async {
+      await MyCardsMeta.setColumns(11);
+      expect(MyCardsMeta.columns.value, 2,
+          reason: 'eleven cards across a phone is not a grid');
+    });
+
+    test('a stored count outside the choices reads as the default', () async {
+      SharedPreferences.setMockInitialValues({'@noor_my_cards_columns': 40});
+      await MyCardsMeta.load();
+      expect(MyCardsMeta.columns.value, 2);
+    });
+
+    test('the choices run from a card you can see to a contact sheet', () {
+      expect(MyCardsMeta.columnChoices.first, 2);
+      expect(MyCardsMeta.columnChoices.last, greaterThan(2));
+    });
+  });
 }

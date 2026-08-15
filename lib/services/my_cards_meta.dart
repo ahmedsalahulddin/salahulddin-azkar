@@ -23,6 +23,27 @@ enum CardSort {
 /// simply shows its date and sits in "بلا مجموعة".
 class MyCardsMeta {
   static const _key = '@noor_my_cards_meta';
+  static const _columnsKey = '@noor_my_cards_columns';
+
+  /// How many cards sit across the screen.
+  ///
+  /// Two is a card big enough to recognise a photograph in; five is a
+  /// contact sheet for a folder that has grown past what any grid can show
+  /// comfortably. Remembered, because it is a preference and not a mood.
+  static final columns = ValueNotifier<int>(2);
+
+  static const columnChoices = [2, 3, 4, 5];
+
+  static Future<void> setColumns(int count) async {
+    if (!columnChoices.contains(count)) return;
+    columns.value = count;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt(_columnsKey, count);
+    } catch (_) {
+      // The choice still holds for this session.
+    }
+  }
 
   /// Bumped on every change, so an open screen re-reads without being told.
   static final revision = ValueNotifier<int>(0);
@@ -32,6 +53,11 @@ class MyCardsMeta {
   static Future<void> load() async {
     try {
       final prefs = await SharedPreferences.getInstance();
+      final stored = prefs.getInt(_columnsKey);
+      if (stored != null && columnChoices.contains(stored)) {
+        columns.value = stored;
+      }
+
       final raw = prefs.getString(_key);
       if (raw == null) return;
       final decoded = jsonDecode(raw) as Map<String, dynamic>;
@@ -97,6 +123,7 @@ class MyCardsMeta {
   static void debugReset() {
     _entries = {};
     revision.value = 0;
+    columns.value = 2;
   }
 }
 

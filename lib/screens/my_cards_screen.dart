@@ -32,17 +32,33 @@ class MyCards {
     return files;
   }
 
-  /// Copies a picked image into the folder. The copy is the point: the card
-  /// must survive the original being deleted from the gallery.
-  static Future<File?> add() async {
+  /// Copies picked images into the folder, and returns how many arrived.
+  ///
+  /// The copy is the point: a card must survive the original being deleted
+  /// from the gallery. Several at once, because nobody adds one card — a set
+  /// of Eid cards is a set, and picking them one at a time meant reopening the
+  /// gallery for each.
+  static Future<int> add() async {
     final picked = await ImagePicker()
-        .pickImage(source: ImageSource.gallery, imageQuality: 92);
-    if (picked == null) return null;
+        .pickMultiImage(imageQuality: 92);
+    if (picked.isEmpty) return 0;
 
     final dir = await _dir();
-    final stamp = DateTime.now().millisecondsSinceEpoch;
-    final extension = picked.path.split('.').last.toLowerCase();
-    return File(picked.path).copy('${dir.path}/card_$stamp.$extension');
+    var stamp = DateTime.now().millisecondsSinceEpoch;
+    var saved = 0;
+    for (final image in picked) {
+      final extension = image.path.split('.').last.toLowerCase();
+      try {
+        await File(image.path).copy('${dir.path}/card_$stamp.$extension');
+        saved++;
+      } catch (_) {
+        // One unreadable pick does not cost the reader the rest of the set.
+      }
+      // The name carries the order, so a set picked in one go keeps the order
+      // it was picked in rather than collapsing onto one millisecond.
+      stamp++;
+    }
+    return saved;
   }
 
   static Future<void> remove(File file) async {
@@ -179,9 +195,11 @@ class _MyCardsScreenState extends State<MyCardsScreen> {
   Future<void> _add() async {
     try {
       final added = await MyCards.add();
-      if (added != null) await _refresh();
+      if (added == 0) return;
+      await _refresh();
+      if (added > 1) _say('أُضيفت $added بطاقات');
     } catch (_) {
-      _say('تعذّر إضافة الصورة');
+      _say('تعذّر إضافة الصور');
     }
   }
 
@@ -432,8 +450,10 @@ class _MyCardsScreenState extends State<MyCardsScreen> {
                     .where((f) => _picked.contains(MyCards.nameOf(f)))
                     .toList()),
               )
-            else if (_cards.isNotEmpty)
+            else if (_cards.isNotEmpty) ...[
+              _zoomButton(),
               _sortButton(),
+            ],
           ],
         ),
         floatingActionButton: selecting
@@ -473,24 +493,59 @@ class _MyCardsScreenState extends State<MyCardsScreen> {
                           Expanded(
                             child: visible.isEmpty
                                 ? _nothingFound()
-                                : GridView.builder(
-                                    padding: const EdgeInsets.fromLTRB(
-                                        16, 12, 16, 90),
-                                    gridDelegate:
-                                        const SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisCount: 2,
-                                      mainAxisSpacing: 14,
-                                      crossAxisSpacing: 14,
-                                      childAspectRatio: 4 / 5,
-                                    ),
-                                    itemCount: visible.length,
-                                    itemBuilder: (context, i) =>
-                                        _tile(visible[i], selecting),
+                                : ValueListenableBuilder<int>(
+                                    valueListenable: MyCardsMeta.columns,
+                                    builder: (context, columns, _) {
+                                      // The gaps close as the cards shrink;
+                                      // a fourteen-pixel gutter between five
+                                      // columns is mostly gutter.
+                                      final gap = columns <= 2
+                                          ? 14.0
+                                          : columns == 3
+                                              ? 10.0
+                                              : 7.0;
+                                      return GridView.builder(
+                                        padding: const EdgeInsets.fromLTRB(
+                                            16, 12, 16, 90),
+                                        gridDelegate:
+                                            SliverGridDelegateWithFixedCrossAxisCount(
+                                          crossAxisCount: columns,
+                                          mainAxisSpacing: gap,
+                                          crossAxisSpacing: gap,
+                                          childAspectRatio: 4 / 5,
+                                        ),
+                                        itemCount: visible.length,
+                                        itemBuilder: (context, i) => _tile(
+                                            visible[i], selecting,
+                                            columns: columns),
+                                      );
+                                    },
                                   ),
                           ),
                         ],
                       ),
       ),
+    );
+  }
+
+  /// Fewer cards across, or more. A folder of sixty is a different thing to
+  /// look at than a folder of six, and one grid cannot serve both.
+  Widget _zoomButton() {
+    return ValueListenableBuilder<int>(
+      valueListenable: MyCardsMeta.columns,
+      builder: (context, columns, _) {
+        final choices = MyCardsMeta.columnChoices;
+        final next = choices[(choices.indexOf(columns) + 1) % choices.length];
+        return IconButton(
+          tooltip: 'حجم العرض',
+          icon: Icon(
+            // Points the way it will go: more across means smaller cards.
+            next > columns ? Icons.zoom_out_map : Icons.zoom_in_map,
+            size: 21,
+          ),
+          onPressed: () => MyCardsMeta.setColumns(next),
+        );
+      },
     );
   }
 
@@ -635,7 +690,7 @@ class _MyCardsScreenState extends State<MyCardsScreen> {
     );
   }
 
-  Widget _tile(File file, bool selecting) {
+  Widget _tile(File file, bool selecting, {int columns = 2}) {
     final name = MyCards.nameOf(file);
     final chosen = _picked.contains(name);
     final group = MyCardsMeta.groupOf(name);
@@ -680,10 +735,13 @@ class _MyCardsScreenState extends State<MyCardsScreen> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
-                          color: AppColors.textGold, fontSize: 11),
+                      style: TextStyle(
+                          color: AppColors.textGold,
+                          fontSize: columns >= 4 ? 8 : 11),
                     ),
-                    if (group.isNotEmpty)
+                    // The group is the first thing to go: at five across there
+                    // is room for a name or for nothing.
+                    if (group.isNotEmpty && columns <= 3)
                       Text(
                         group,
                         maxLines: 1,
