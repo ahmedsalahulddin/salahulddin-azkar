@@ -69,21 +69,23 @@ class SyncService {
               .eq('user_id', uid) as List)
           .cast<Map<String, dynamic>>();
 
-      final remote = <String, Set<String>>{
-        for (final kind in SyncKind.values) kind.id: {},
-      };
+      final favourites = <String>{};
+      final bookmarks = <String, Map<String, dynamic>>{};
       String? remotePosition;
       for (final row in rows) {
         final kind = row['kind'] as String;
         final key = row['key'] as String;
-        remote[kind]?.add(key);
+        if (kind == SyncKind.favourite.id) favourites.add(key);
+        if (kind == SyncKind.bookmark.id) {
+          bookmarks[key] = ((row['value'] as Map?) ?? {}).cast<String, dynamic>();
+        }
         if (kind == SyncKind.position.id) {
           remotePosition = (row['value'] as Map?)?['page']?.toString();
         }
       }
 
-      await _mergeFavourites(uid, remote[SyncKind.favourite.id]!);
-      await _mergeBookmarks(uid, remote[SyncKind.bookmark.id]!);
+      await _mergeFavourites(uid, favourites);
+      await _mergeBookmarks(uid, bookmarks);
       await _mergePosition(uid, remotePosition);
 
       lastSynced.value = DateTime.now();
@@ -106,17 +108,47 @@ class SyncService {
     await _upload(uid, SyncKind.favourite, local.difference(remote));
   }
 
-  static Future<void> _mergeBookmarks(String uid, Set<String> remote) async {
+  static Future<void> _mergeBookmarks(
+      String uid, Map<String, Map<String, dynamic>> remote) async {
     final local = await BookmarkService.all();
-    final localKeys = {
-      for (final b in local) '${b.kind.name}:${b.surah}:${b.ayah}',
-    };
+    final localKeys = {for (final b in local) b.key};
 
-    // Remote-only bookmarks are not restored here: a bookmark carries a kind
-    // and possibly a note, and rebuilding one from its key alone would invent
-    // the parts the key does not hold. Restoring them properly is the next
-    // step; uploading is what stops them being lost meanwhile.
-    await _upload(uid, SyncKind.bookmark, localKeys.difference(remote));
+    // Rebuilt from the row's own payload, not from its key: a bookmark carries
+    // a page and possibly a note, and a key holds neither. A row written by an
+    // older build has no payload — those stay uploaded but unrestored rather
+    // than being reconstructed out of guesses.
+    final restored = <Bookmark>[];
+    for (final entry in remote.entries) {
+      if (localKeys.contains(entry.key) || entry.value.isEmpty) continue;
+      try {
+        restored.add(Bookmark.fromJson(entry.value));
+      } catch (_) {
+        // A malformed row is skipped, never allowed to fail the whole sync.
+      }
+    }
+    if (restored.isNotEmpty) {
+      await BookmarkService.replaceAll([...local, ...restored]);
+    }
+
+    // Upload with the whole bookmark, so the device that reads this next can
+    // rebuild it properly.
+    await _uploadBookmarks(
+        uid, local.where((b) => !remote.containsKey(b.key)).toList());
+  }
+
+  static Future<void> _uploadBookmarks(
+      String uid, List<Bookmark> bookmarks) async {
+    if (bookmarks.isEmpty) return;
+    await _client.from(_table).upsert([
+      for (final bookmark in bookmarks)
+        {
+          'user_id': uid,
+          'kind': SyncKind.bookmark.id,
+          'key': bookmark.key,
+          'value': bookmark.toJson(),
+          'updated_at': DateTime.now().toIso8601String(),
+        },
+    ]);
   }
 
   static Future<void> _mergePosition(String uid, String? remotePage) async {

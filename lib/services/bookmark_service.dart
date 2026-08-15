@@ -89,6 +89,9 @@ class BookmarkService {
     if (index >= 0 && bookmark.note == null) {
       list.removeAt(index);
       await _save(list);
+      // Toggling off is a deletion like any other, and the action bar reaches
+      // it this way rather than through remove().
+      unawaited(SyncService.forget(SyncKind.bookmark, bookmark.key));
       return false;
     }
 
@@ -111,6 +114,10 @@ class BookmarkService {
       );
     await _save(list);
   }
+
+  /// Replaces the stored list wholesale. Used by sync after a merge, which is
+  /// the only caller that knows about bookmarks it did not create.
+  static Future<void> replaceAll(List<Bookmark> list) => _save(list);
 
   static Future<void> _save(List<Bookmark> list) async {
     final prefs = await SharedPreferences.getInstance();

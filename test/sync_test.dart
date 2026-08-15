@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:salahulddin_azkar/services/bookmark_service.dart';
 import 'package:salahulddin_azkar/services/sync_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -62,6 +63,50 @@ void main() {
     test('a guest is never left mid-sync', () async {
       await SyncService.sync();
       expect(SyncService.syncing.value, isFalse);
+    });
+  });
+
+  group('a bookmark survives the round trip', () {
+    test('everything it carries comes back, not just its key', () {
+      const original = Bookmark(
+        kind: BookmarkKind.memorising,
+        surah: 2,
+        ayah: 255,
+        page: 42,
+        note: 'آية الكرسي',
+      );
+
+      // This is the whole reason the row carries a payload: a key holds the
+      // kind and the position, and nothing else. Page and note would be
+      // invented if they were rebuilt from the key alone.
+      final restored = Bookmark.fromJson(original.toJson());
+      expect(restored.kind, original.kind);
+      expect(restored.surah, original.surah);
+      expect(restored.ayah, original.ayah);
+      expect(restored.page, original.page);
+      expect(restored.note, original.note);
+      expect(restored.key, original.key);
+    });
+
+    test('a bookmark without a note stays without one', () {
+      const plain =
+          Bookmark(kind: BookmarkKind.reading, surah: 18, ayah: 10, page: 294);
+      expect(Bookmark.fromJson(plain.toJson()).note, isNull);
+    });
+
+    test('an unknown kind falls back rather than throwing', () {
+      // A row written by a newer build must not break an older one's sync.
+      final odd = Bookmark.fromJson(
+          {'k': 'a-kind-from-the-future', 's': 1, 'a': 1, 'p': 1});
+      expect(odd.kind, BookmarkKind.reading);
+    });
+
+    test('the key is what the deletion path sends', () {
+      const bookmark =
+          Bookmark(kind: BookmarkKind.reading, surah: 3, ayah: 7, page: 50);
+      // forget() is called with exactly this string; if the two ever drift,
+      // deletions stop finding their rows and come back on the next merge.
+      expect(bookmark.key, 'reading:3:7');
     });
   });
 
