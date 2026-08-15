@@ -88,21 +88,27 @@ class _RotatingVerseState extends State<RotatingVerse> {
       valueListenable: VerseRotation.current,
       builder: (context, verse, _) {
         if (verse == null) return const SizedBox.shrink();
+        final text = Text(
+          verse.$1,
+          key: ValueKey(verse.$1),
+          textAlign: TextAlign.center,
+          maxLines: widget.dense ? 1 : 3,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontFamily: 'AmiriQuran',
+            color: AppColors.textPrimary,
+            fontSize: widget.dense ? 17 : 15,
+            height: widget.dense ? 1.6 : 1.9,
+          ),
+        );
         return AnimatedSwitcher(
           duration: const Duration(milliseconds: 700),
-          child: Text(
-            verse.$1,
-            key: ValueKey(verse.$1),
-            textAlign: TextAlign.center,
-            maxLines: widget.dense ? 2 : 3,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontFamily: 'AmiriQuran',
-              color: AppColors.textPrimary,
-              fontSize: widget.dense ? 14.5 : 15,
-              height: widget.dense ? 1.75 : 1.9,
-            ),
-          ),
+          // One line always: a short verse shows at full size, a long one
+          // scales down until it spans the panel instead of wrapping.
+          child: widget.dense
+              ? FittedBox(
+                  key: ValueKey(verse.$1), fit: BoxFit.scaleDown, child: text)
+              : text,
         );
       },
     );

@@ -91,6 +91,10 @@ class _CardViewerScreenState extends State<CardViewerScreen> {
   final _note = TextEditingController();
   bool _sending = false;
 
+  /// The signature's cell on the card's three-by-four grid.
+  int _signColumn = 1;
+  int _signRow = 3;
+
   @override
   void initState() {
     super.initState();
@@ -167,6 +171,58 @@ class _CardViewerScreenState extends State<CardViewerScreen> {
     }
   }
 
+  /// Twelve cells, three across and four down — tap one and the signature
+  /// moves to that part of the card, live in the preview above.
+  Widget _placementPicker() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Text('مكان التوقيع',
+            style: TextStyle(color: AppColors.textMuted, fontSize: 10)),
+        const SizedBox(height: 4),
+        Container(
+          padding: const EdgeInsets.all(3),
+          decoration: BoxDecoration(
+            color: AppColors.blackSurface,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: AppColors.goldBorder),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (var row = 0; row < 4; row++)
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (var column = 0; column < 3; column++)
+                      GestureDetector(
+                        onTap: () => setState(() {
+                          _signColumn = column;
+                          _signRow = row;
+                        }),
+                        child: Container(
+                          width: 16,
+                          height: 13,
+                          margin: const EdgeInsets.all(1.5),
+                          decoration: BoxDecoration(
+                            color: column == _signColumn && row == _signRow
+                                ? AppColors.gold
+                                : AppColors.blackCard,
+                            borderRadius: BorderRadius.circular(3),
+                            border: Border.all(
+                                color: AppColors.goldBorder, width: 0.5),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _field(TextEditingController controller, String hint,
       {int? maxLength}) {
     return TextField(
@@ -206,7 +262,9 @@ class _CardViewerScreenState extends State<CardViewerScreen> {
           backgroundColor: AppColors.black,
           foregroundColor: AppColors.gold,
         ),
-        body: Column(
+        body: SafeArea(
+          top: false,
+          child: Column(
           children: [
             Expanded(
               child: Center(
@@ -223,6 +281,8 @@ class _CardViewerScreenState extends State<CardViewerScreen> {
                         forSharing: true,
                         senderName: _name.text,
                         senderNote: _note.text,
+                        signColumn: _signColumn,
+                        signRow: _signRow,
                       ),
                     ),
                   ),
@@ -232,14 +292,18 @@ class _CardViewerScreenState extends State<CardViewerScreen> {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  _placementPicker(),
+                  const SizedBox(width: 10),
                   Expanded(
-                    child: _field(_name, 'اسمك على البطاقة', maxLength: 24),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    flex: 2,
-                    child: _field(_note, 'جملة منك (حتى ٧ كلمات)'),
+                    child: Column(
+                      children: [
+                        _field(_name, 'اسمك على البطاقة', maxLength: 24),
+                        const SizedBox(height: 6),
+                        _field(_note, 'جملة منك (حتى ٧ كلمات)'),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -267,6 +331,7 @@ class _CardViewerScreenState extends State<CardViewerScreen> {
               ),
             ),
           ],
+          ),
         ),
       ),
     );

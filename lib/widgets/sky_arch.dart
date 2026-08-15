@@ -73,7 +73,7 @@ class SkyArch extends StatelessWidget {
               right: 0,
               child: Center(
                 child: FractionallySizedBox(
-                  widthFactor: 0.78,
+                  widthFactor: 0.94,
                   child: aboveDome!,
                 ),
               ),
@@ -241,7 +241,7 @@ class SkyArchPainter extends CustomPainter {
     final clock = SkyClock(data);
     final cx = size.width / 2;
     // Capped so the apex clears the verse floating across the top.
-    final radius = math.min(size.width * 0.40, horizon - 84);
+    final radius = math.min(size.width * 0.40, horizon - 60);
     final dip = math.min(20.0, size.height - horizon - 18);
 
     Offset at(double f) {
@@ -360,14 +360,16 @@ class SkyArchPainter extends CustomPainter {
         : at - unit * 16;
     // Hand-set nudges: the horizon pair ride two up and one in toward the
     // dome; Dhuhr steps two right so the verse floating below it has room.
-    if (name == 'الشروق' || name == 'المغرب') {
+    if (name == 'الشروق') {
       anchor += Offset(unit.dx > 0 ? -1 : 1, -5);
+    } else if (name == 'المغرب') {
+      anchor += const Offset(1, -9);
     } else if (name == 'الظهر') {
-      anchor += const Offset(2, 5);
+      anchor += Offset(2 + painter.width, 5);
     } else if (name == 'الفجر') {
-      // Clear of the horizon line and the dotted night path both — above it
-      // sit the line and الشروق, so clear means down, not up.
-      anchor += const Offset(0, 6);
+      // The corner it sits in holds the line, sunrise and the moon all at
+      // once, so distance comes from moving inward as much as down.
+      anchor += Offset(-unit.dx * 14, 2);
     }
 
     painter.paint(canvas,

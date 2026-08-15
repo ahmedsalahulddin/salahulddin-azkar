@@ -19,6 +19,11 @@ class GreetingCardView extends StatelessWidget {
   /// A short personal line the sender may add over the signature.
   final String? senderNote;
 
+  /// Where the signature block sits, on a three-by-four grid over the card:
+  /// [signColumn] runs 0..2 from the right, [signRow] 0..3 from the top.
+  final int signColumn;
+  final int signRow;
+
   /// True when rendering for export rather than for the screen, which is the
   /// only difference the card makes between the two: the app's name is worth
   /// carrying on a card someone forwards, and is noise on the preview.
@@ -30,6 +35,8 @@ class GreetingCardView extends StatelessWidget {
     this.forSharing = false,
     this.senderName,
     this.senderNote,
+    this.signColumn = 1,
+    this.signRow = 3,
   });
 
   /// Four by five — the shape that survives a chat app without being cropped.
@@ -66,7 +73,22 @@ class GreetingCardView extends StatelessWidget {
                 padding: EdgeInsets.all(card.frame.insetFor(
                         Size(constraints.maxWidth, constraints.maxHeight)) +
                     10 * unit),
-                child: Column(
+                child: Stack(
+                  children: [
+                    if (forSharing)
+                      Align(
+                        alignment: Alignment.bottomCenter,
+                        child: Text(
+                          'islamic-azkar.yallanow.app',
+                          style: TextStyle(
+                            color: palette.muted,
+                            fontSize: 9 * unit,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
+                    _signature(palette, unit),
+                    Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
@@ -124,48 +146,60 @@ class GreetingCardView extends StatelessWidget {
                         fontSize: 11.5 * unit,
                       ),
                     ),
-                    if (senderNote != null && senderNote!.trim().isNotEmpty) ...[
-                      SizedBox(height: 14 * unit),
-                      Text(
-                        senderNote!.trim(),
-                        textAlign: TextAlign.center,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: palette.body,
-                          fontSize: 12.5 * unit,
-                          height: 1.6,
-                        ),
-                      ),
-                    ],
-                    if (senderName != null && senderName!.trim().isNotEmpty) ...[
-                      SizedBox(height: 6 * unit),
-                      Text(
-                        'المرسل: ${senderName!.trim()}',
-                        style: TextStyle(
-                          color: palette.muted,
-                          fontSize: 11 * unit,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                    if (forSharing) ...[
-                      SizedBox(height: 18 * unit),
-                      Text(
-                        'islamic-azkar.yallanow.app',
-                        style: TextStyle(
-                          color: palette.muted,
-                          fontSize: 9 * unit,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ],
+                  ],
+                    ),
                   ],
                 ),
               ),
             ),
           );
         },
+      ),
+    );
+  }
+
+  /// The sender's line and name, floated on the cell they chose. Rows run
+  /// top to bottom, columns right to left — the way the picker shows them.
+  Widget _signature(CardPalette palette, double unit) {
+    final name = senderName?.trim() ?? '';
+    final note = senderNote?.trim() ?? '';
+    if (name.isEmpty && note.isEmpty) return const SizedBox.shrink();
+
+    const xs = [1.0, 0.0, -1.0];
+    const ys = [-0.97, -0.35, 0.35, 0.97];
+    var y = ys[signRow.clamp(0, 3)];
+    // The bottom row would sit on the app's address when sharing.
+    if (forSharing && signRow == 3) y = 0.80;
+
+    return Align(
+      alignment: Alignment(xs[signColumn.clamp(0, 2)], y),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (note.isNotEmpty)
+            Text(
+              note,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: palette.body,
+                fontSize: 12.5 * unit,
+                height: 1.6,
+              ),
+            ),
+          if (name.isNotEmpty) ...[
+            SizedBox(height: 3 * unit),
+            Text(
+              'المرسل: $name',
+              style: TextStyle(
+                color: palette.muted,
+                fontSize: 11 * unit,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }
