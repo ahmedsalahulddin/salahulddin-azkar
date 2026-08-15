@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import '../constants/theme.dart';
+import '../services/app_audio.dart';
 import '../data/hisn_data.dart';
 
 /// Plays the published recitations for a list of adhkar.
@@ -9,7 +10,7 @@ import '../data/hisn_data.dart';
 /// One player is shared across a screen so that starting one dhikr stops the
 /// previous — two supplications talking over each other is worse than none.
 class DhikrAudioController extends ChangeNotifier {
-  final _player = AudioPlayer();
+  final _player = AppAudio.player;
 
   int? _playingNumber;
   bool _failed = false;
@@ -69,7 +70,7 @@ class DhikrAudioController extends ChangeNotifier {
 
   @override
   void dispose() {
-    _player.dispose();
+    _player.stop();
     super.dispose();
   }
 }

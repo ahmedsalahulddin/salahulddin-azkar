@@ -7,6 +7,7 @@ import '../constants/theme.dart';
 import '../data/ayah_boxes.dart';
 import '../data/quran_data.dart';
 import '../services/bookmark_service.dart';
+import '../services/app_audio.dart';
 import '../services/mushaf_image_service.dart';
 import '../services/recitation_service.dart';
 import '../services/repeat_settings.dart';
@@ -40,7 +41,7 @@ class _MushafScreenState extends State<MushafScreen> {
   late final PageController _controller =
       PageController(initialPage: widget.initialPage - 1);
   final _scaffoldKey = GlobalKey<ScaffoldState>();
-  final _player = AudioPlayer();
+  final _player = AppAudio.player;
 
   List<MushafPage>? _pages;
   List<SurahInfo>? _index;
@@ -78,7 +79,7 @@ class _MushafScreenState extends State<MushafScreen> {
   @override
   void dispose() {
     _indexSub?.cancel();
-    _player.dispose();
+    _player.stop();
     _controller.dispose();
     super.dispose();
   }

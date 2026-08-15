@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import '../constants/theme.dart';
+import '../services/app_audio.dart';
 import '../data/quran_data.dart';
 import '../data/tafsir_data.dart';
 import '../services/recitation_service.dart';
@@ -26,7 +27,7 @@ class _SurahScreenState extends State<SurahScreen> {
   Surah? _surah;
   double _fontSize = 24;
 
-  final _player = AudioPlayer();
+  final _player = AppAudio.player;
   final _itemKeys = <int, GlobalKey>{};
   Reciter _reciter = RecitationService.defaultReciter;
   StreamSubscription<int?>? _indexSub;
@@ -50,7 +51,7 @@ class _SurahScreenState extends State<SurahScreen> {
   @override
   void dispose() {
     _indexSub?.cancel();
-    _player.dispose();
+    _player.stop();
     super.dispose();
   }
 

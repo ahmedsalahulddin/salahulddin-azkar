@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 
+import '../services/app_audio.dart';
+
 import '../constants/theme.dart';
 
 /// A live Qur'an radio station.
@@ -66,14 +68,19 @@ class RadioScreen extends StatefulWidget {
 }
 
 class _RadioScreenState extends State<RadioScreen> {
-  final _player = AudioPlayer();
+  final _player = AppAudio.player;
   String? _playingId;
   String? _loadingId;
 
   @override
-  void dispose() {
-    _player.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    // The broadcast keeps playing when this screen closes — that is what a
+    // radio is for — so on return, find it and light its tile again.
+    final id = AppAudio.currentId();
+    if (id != null && id.startsWith('radio:') && _player.playing) {
+      _playingId = id.substring('radio:'.length);
+    }
   }
 
   Future<void> _toggle(RadioStation station) async {

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
+
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import '../constants/theme.dart';
+import '../services/app_audio.dart';
 import '../data/adhkar_data.dart';
 import '../services/storage_service.dart';
 
@@ -26,7 +29,6 @@ class _AdhkarCardState extends State<AdhkarCard> {
   bool _isFavorite = false;
   bool _showBenefit = false;
 
-  AudioPlayer? _player;
   bool _isPlaying = false;
 
   @override
@@ -35,26 +37,24 @@ class _AdhkarCardState extends State<AdhkarCard> {
     _loadFavorite();
   }
 
+  StreamSubscription<PlayerState>? _stateSub;
+
+  String get _tagId => 'dhikr:${widget.dhikr.categoryId}:${widget.dhikr.id}';
+
   @override
   void dispose() {
-    _player?.dispose();
+    _stateSub?.cancel();
     super.dispose();
   }
 
-  /// The player is created on first use — most cards never play anything, and
-  /// a list of them would otherwise hold dozens of idle players.
+  /// All cards share the app's one player; a card recognises its own sound by
+  /// the tag it loaded, so another card taking over simply unlights this one.
   Future<void> _toggleAudio() async {
     final url = widget.dhikr.audioUrl;
     if (url == null) return;
     HapticFeedback.lightImpact();
 
-    final player = _player ??= AudioPlayer()
-      ..playerStateStream.listen((state) {
-        if (!mounted) return;
-        if (state.processingState == ProcessingState.completed) {
-          setState(() => _isPlaying = false);
-        }
-      });
+    final player = AppAudio.player;
 
     if (_isPlaying) {
       await player.pause();
@@ -63,15 +63,20 @@ class _AdhkarCardState extends State<AdhkarCard> {
     }
 
     setState(() => _isPlaying = true);
+    _stateSub ??= player.playerStateStream.listen((state) {
+      if (!mounted) return;
+      final mine = AppAudio.currentId() == _tagId;
+      if (!mine || state.processingState == ProcessingState.completed) {
+        setState(() => _isPlaying = false);
+      }
+    });
+
     try {
-      if (player.audioSource == null) {
+      if (AppAudio.currentId() != _tagId) {
+        await player.stop();
         await player.setAudioSource(AudioSource.uri(
           Uri.parse(url),
-          tag: MediaItem(
-            id: 'dhikr:${widget.dhikr.categoryId}:${widget.dhikr.id}',
-            title: 'ذكر',
-            album: 'الأذكار',
-          ),
+          tag: MediaItem(id: _tagId, title: 'ذكر', album: 'الأذكار'),
         ));
       }
       await player.play();

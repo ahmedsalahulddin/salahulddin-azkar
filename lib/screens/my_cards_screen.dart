@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
@@ -61,7 +63,13 @@ class _MyCardsScreenState extends State<MyCardsScreen> {
   @override
   void initState() {
     super.initState();
-    _refresh();
+    // The web preview has no filesystem to keep cards in; say so instead of
+    // crashing on the first directory call.
+    if (!kIsWeb) {
+      _refresh();
+    } else {
+      _loaded = true;
+    }
   }
 
   Future<void> _refresh() async {
@@ -144,7 +152,21 @@ class _MyCardsScreenState extends State<MyCardsScreen> {
           icon: const Icon(Icons.add_photo_alternate),
           label: const Text('أضف كرتاً'),
         ),
-        body: !_loaded
+        body: kIsWeb
+            ? const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(28),
+                  child: Text(
+                    'كروتك تُحفظ على جوالك — هذا القسم يعمل في التطبيق لا في المتصفح.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 14,
+                        height: 1.7),
+                  ),
+                ),
+              )
+            : !_loaded
             ? const Center(
                 child: CircularProgressIndicator(color: AppColors.gold))
             : _cards.isEmpty
