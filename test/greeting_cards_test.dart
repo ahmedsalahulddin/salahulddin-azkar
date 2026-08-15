@@ -95,6 +95,38 @@ void main() {
           closeTo(GreetingCardView.aspectRatio, 0.01));
     });
 
+    testWidgets('the signature and note appear only when given',
+        (tester) async {
+      final resolved = await GreetingCards.resolve(GreetingCards.all.first);
+      await tester.pumpWidget(MaterialApp(
+        home: Center(
+          child: SizedBox(
+            width: 380,
+            child: GreetingCardView(
+              resolved: resolved,
+              senderName: 'أحمد صلاح الدين',
+              senderNote: 'كل عام وأنتم بخير يا غالي',
+            ),
+          ),
+        ),
+      ));
+      await tester.pump();
+      expect(find.text('المرسل: أحمد صلاح الدين'), findsOneWidget);
+      expect(find.text('كل عام وأنتم بخير يا غالي'), findsOneWidget);
+
+      // Left empty, no stray "المرسل:" label survives.
+      await tester.pumpWidget(MaterialApp(
+        home: Center(
+          child: SizedBox(
+            width: 380,
+            child: GreetingCardView(resolved: resolved, senderName: '  '),
+          ),
+        ),
+      ));
+      await tester.pump();
+      expect(find.textContaining('المرسل'), findsNothing);
+    });
+
     testWidgets('the app is named only on the copy that gets sent',
         (tester) async {
       final resolved = await GreetingCards.resolve(GreetingCards.all.first);

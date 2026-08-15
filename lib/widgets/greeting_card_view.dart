@@ -12,6 +12,13 @@ import 'mushaf_frames.dart';
 class GreetingCardView extends StatelessWidget {
   final ResolvedCard resolved;
 
+  /// Who is sending it, in their own hand — written onto the card itself, the
+  /// way a paper card is signed.
+  final String? senderName;
+
+  /// A short personal line the sender may add over the signature.
+  final String? senderNote;
+
   /// True when rendering for export rather than for the screen, which is the
   /// only difference the card makes between the two: the app's name is worth
   /// carrying on a card someone forwards, and is noise on the preview.
@@ -21,6 +28,8 @@ class GreetingCardView extends StatelessWidget {
     super.key,
     required this.resolved,
     this.forSharing = false,
+    this.senderName,
+    this.senderNote,
   });
 
   /// Four by five — the shape that survives a chat app without being cropped.
@@ -115,6 +124,31 @@ class GreetingCardView extends StatelessWidget {
                         fontSize: 11.5 * unit,
                       ),
                     ),
+                    if (senderNote != null && senderNote!.trim().isNotEmpty) ...[
+                      SizedBox(height: 14 * unit),
+                      Text(
+                        senderNote!.trim(),
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: palette.body,
+                          fontSize: 12.5 * unit,
+                          height: 1.6,
+                        ),
+                      ),
+                    ],
+                    if (senderName != null && senderName!.trim().isNotEmpty) ...[
+                      SizedBox(height: 6 * unit),
+                      Text(
+                        'المرسل: ${senderName!.trim()}',
+                        style: TextStyle(
+                          color: palette.muted,
+                          fontSize: 11 * unit,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                     if (forSharing) ...[
                       SizedBox(height: 18 * unit),
                       Text(

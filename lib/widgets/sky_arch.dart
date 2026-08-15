@@ -36,7 +36,7 @@ class SkyArch extends StatelessWidget {
       this.footer,
       this.aboveDome});
 
-  static const height = 253.0;
+  static const height = 282.0;
 
   /// Where the ground runs, as a fraction of the height. Shared with the
   /// painter so the widget laid inside the dome sits on the same floor the
@@ -68,12 +68,12 @@ class SkyArch extends StatelessWidget {
             ),
           if (aboveDome != null)
             Positioned(
-              top: 8,
+              top: 15,
               left: 0,
               right: 0,
               child: Center(
                 child: FractionallySizedBox(
-                  widthFactor: 0.74,
+                  widthFactor: 0.78,
                   child: aboveDome!,
                 ),
               ),
@@ -210,19 +210,18 @@ class SkyArchPainter extends CustomPainter {
     canvas.drawLine(drum.topLeft, drum.bottomLeft, edge);
     canvas.drawLine(drum.topRight, drum.bottomRight, edge);
 
-    // The onion bulb: out past the drum, then a long taper into the point.
-    // Kept squat so the verse floating above clears the crescent.
+    // The onion bulb: out past the drum, then the long taper into the point.
     final y0 = ground - 14;
     final bulb = Path()
       ..moveTo(cx - 78, y0)
-      ..cubicTo(cx - 102, y0 - 18, cx - 90, y0 - 42, cx - 20, y0 - 46)
-      ..quadraticBezierTo(cx, y0 - 52, cx + 20, y0 - 46)
-      ..cubicTo(cx + 90, y0 - 42, cx + 102, y0 - 18, cx + 78, y0);
+      ..cubicTo(cx - 100, y0 - 24, cx - 88, y0 - 70, cx - 16, y0 - 88)
+      ..quadraticBezierTo(cx, y0 - 96, cx + 16, y0 - 88)
+      ..cubicTo(cx + 88, y0 - 70, cx + 100, y0 - 24, cx + 78, y0);
     canvas.drawPath(bulb, fill);
     canvas.drawPath(bulb, edge);
 
     // Finial and crescent.
-    final tip = Offset(cx, y0 - 52);
+    final tip = Offset(cx, y0 - 96);
     canvas.drawLine(
         tip,
         tip - const Offset(0, 7),
@@ -242,7 +241,7 @@ class SkyArchPainter extends CustomPainter {
     final clock = SkyClock(data);
     final cx = size.width / 2;
     // Capped so the apex clears the verse floating across the top.
-    final radius = math.min(size.width * 0.40, horizon - 64);
+    final radius = math.min(size.width * 0.40, horizon - 84);
     final dip = math.min(20.0, size.height - horizon - 18);
 
     Offset at(double f) {
@@ -362,9 +361,13 @@ class SkyArchPainter extends CustomPainter {
     // Hand-set nudges: the horizon pair ride two up and one in toward the
     // dome; Dhuhr steps two right so the verse floating below it has room.
     if (name == 'الشروق' || name == 'المغرب') {
-      anchor += Offset(unit.dx > 0 ? -1 : 1, -2);
+      anchor += Offset(unit.dx > 0 ? -1 : 1, -5);
     } else if (name == 'الظهر') {
-      anchor += const Offset(2, 0);
+      anchor += const Offset(2, 5);
+    } else if (name == 'الفجر') {
+      // Clear of the horizon line and the dotted night path both — above it
+      // sit the line and الشروق, so clear means down, not up.
+      anchor += const Offset(0, 6);
     }
 
     painter.paint(canvas,

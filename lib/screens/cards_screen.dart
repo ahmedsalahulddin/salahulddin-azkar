@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../constants/theme.dart';
 import '../data/greeting_cards.dart';
@@ -80,8 +81,48 @@ class CardViewerScreen extends StatefulWidget {
 }
 
 class _CardViewerScreenState extends State<CardViewerScreen> {
+  static const _senderKey = '@noor_card_sender';
+
+  /// Seven words, as agreed — a line, not a letter.
+  static const _noteWordLimit = 7;
+
   final _exportKey = GlobalKey();
+  final _name = TextEditingController();
+  final _note = TextEditingController();
   bool _sending = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // The sender's name is theirs across every card; typing it once is enough.
+    SharedPreferences.getInstance().then((prefs) {
+      final saved = prefs.getString(_senderKey);
+      if (saved != null && mounted) _name.text = saved;
+    });
+    _name.addListener(() => setState(() {}));
+    _note.addListener(_capNote);
+  }
+
+  /// Holds the note to its word budget as it is typed, rather than rejecting
+  /// it later.
+  void _capNote() {
+    final words = _note.text.split(RegExp(r'\s+')).where((w) => w.isNotEmpty);
+    if (words.length > _noteWordLimit) {
+      final capped = words.take(_noteWordLimit).join(' ');
+      _note.value = TextEditingValue(
+        text: capped,
+        selection: TextSelection.collapsed(offset: capped.length),
+      );
+    }
+    setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _name.dispose();
+    _note.dispose();
+    super.dispose();
+  }
 
   /// Renders the card and hands it to the share sheet as a picture.
   ///
@@ -107,6 +148,12 @@ class _CardViewerScreenState extends State<CardViewerScreen> {
         files: [XFile(file.path)],
         text: widget.resolved.card.greeting,
       ));
+
+      // Remember the signature for the next card.
+      if (_name.text.trim().isNotEmpty) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(_senderKey, _name.text.trim());
+      }
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -120,12 +167,39 @@ class _CardViewerScreenState extends State<CardViewerScreen> {
     }
   }
 
+  Widget _field(TextEditingController controller, String hint,
+      {int? maxLength}) {
+    return TextField(
+      controller: controller,
+      maxLength: maxLength,
+      textAlign: TextAlign.right,
+      style: const TextStyle(color: AppColors.textPrimary, fontSize: 13),
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+        counterText: '',
+        filled: true,
+        fillColor: AppColors.blackSurface,
+        isDense: true,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.goldBorder),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.goldBorder),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
         backgroundColor: AppColors.black,
+        resizeToAvoidBottomInset: true,
         appBar: AppBar(
           title: Text(widget.resolved.card.greeting,
               style: const TextStyle(fontSize: 16)),
@@ -147,10 +221,27 @@ class _CardViewerScreenState extends State<CardViewerScreen> {
                       child: GreetingCardView(
                         resolved: widget.resolved,
                         forSharing: true,
+                        senderName: _name.text,
+                        senderNote: _note.text,
                       ),
                     ),
                   ),
                 ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _field(_name, 'اسمك على البطاقة', maxLength: 24),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    flex: 2,
+                    child: _field(_note, 'جملة منك (حتى ٧ كلمات)'),
+                  ),
+                ],
               ),
             ),
             Padding(
