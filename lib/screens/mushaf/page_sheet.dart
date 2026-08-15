@@ -4,6 +4,7 @@ import '../../constants/theme.dart';
 import '../../data/ayah_boxes.dart';
 import '../../data/quran_data.dart';
 import '../../services/mushaf_image_service.dart';
+import '../../widgets/frame_tuning.dart';
 import '../../widgets/mushaf_frames.dart';
 import '../../widgets/mushaf_palettes.dart';
 import '../../widgets/mushaf_page_view.dart';
@@ -53,11 +54,15 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
     // colour so changing the theme carries the ornament with it. The page
     // images are text on a transparent ground with no printed border of their
     // own, so nothing is being drawn over.
-    return ValueListenableBuilder<MushafPalette>(
-      valueListenable: MushafPalettes.current,
-      builder: (context, palette, _) => ValueListenableBuilder<MushafFrame>(
-        valueListenable: MushafFrames.current,
-        builder: (context, frame, _) => Container(
+    return ValueListenableBuilder<int>(
+      // Redraws while the tuning panel is open, so a drag is seen as it
+      // happens rather than after the page is left and come back to.
+      valueListenable: FrameTuning.revision,
+      builder: (context, tuning, _) => ValueListenableBuilder<MushafPalette>(
+        valueListenable: MushafPalettes.current,
+        builder: (context, palette, _) => ValueListenableBuilder<MushafFrame>(
+          valueListenable: MushafFrames.current,
+          builder: (context, frame, _) => Container(
           margin: const EdgeInsets.all(3),
           decoration: BoxDecoration(
             color: palette.paper,
@@ -71,7 +76,7 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
               // to fit the captions gave them a line of their own and pushed
               // the page up off centre; they are drawn over the border now,
               // on its own level, the way a printed page prints them.
-              final band = frame.insetFor(size);
+              final band = frame.insetFor(size) * FrameTuning.of('scale');
 
               // The page sits a line lower than centred: it cleared the border
               // above but sat against the chrome below.
@@ -84,14 +89,24 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
                 fit: StackFit.expand,
                 children: [
                   Padding(
+                    // Named so a test can read where the page actually landed
+                    // rather than assume the knobs reached it.
+                    key: const Key('mushaf-page-inset'),
                     padding: EdgeInsets.fromLTRB(
-                        0, band + _lineHeight, 0, band - _lineHeight / 2),
+                      0,
+                      (band + _lineHeight + FrameTuning.of('top'))
+                          .clamp(0.0, size.height / 3),
+                      0,
+                      (band - _lineHeight / 2 + FrameTuning.of('bottom'))
+                          .clamp(0.0, size.height / 3),
+                    ),
                     child: _page(palette),
                   ),
                   _frame(frame, palette, band, size),
                 ],
-              );
-            },
+                );
+              },
+            ),
           ),
         ),
       ),
@@ -141,6 +156,11 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
   /// the type below rather than guessed at, or the taller face is clipped.
   static const _captionHeight = 26.0;
 
+  /// The caption box grows with the type inside it, or a larger face is
+  /// clipped by a box sized for the default one.
+  double get _captionBox =>
+      _captionHeight + (FrameTuning.of('caption') - 16).clamp(0.0, 14.0);
+
   /// A line of Mushaf text, which is what the whole page drops by so the
   /// border clears the phone's chrome above and below.
   static const _lineHeight = 22.0;
@@ -158,7 +178,7 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
     final caption = TextStyle(
       fontFamily: _mushafFont,
       color: palette.onPaperMuted,
-      fontSize: 16,
+      fontSize: FrameTuning.of('caption'),
       height: 1.15,
     );
 
@@ -175,15 +195,20 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
             // Painted wider than the page so the ornament's flanks fall out of
             // view; a Mushaf page cannot spare width from its ayahs.
             Positioned(
-              left: -band,
-              right: -band,
+              // How far the ornament hangs off each side. Painted wider than
+              // the page by default so its flanks fall out of view — a Mushaf
+              // page cannot spare width from its ayahs — but a reader who
+              // wants the sides shown pulls it back in.
+              left: -band + FrameTuning.of('side'),
+              right: -band + FrameTuning.of('side'),
               top: 0,
               bottom: 0,
               child: CustomPaint(
+                key: const Key('mushaf-frame-paint'),
                 painter: MushafFramePainter(
                   frame: frame,
                   color: palette.ink,
-                  scale: frame.scaleFor(size),
+                  scale: frame.scaleFor(size) * FrameTuning.of('scale'),
                 ),
               ),
             ),
@@ -193,10 +218,10 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
             // keyline has no room to house anything, and the page's own
             // margin behind it is blank.
             Positioned(
-              top: band / 2 - _captionHeight / 2,
+              top: band / 2 - _captionBox / 2 + FrameTuning.of('header'),
               left: 0,
               right: 0,
-              height: _captionHeight,
+              height: _captionBox,
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 // Flexible, not fixed: surah names run from الفيل to
@@ -221,10 +246,10 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
             Positioned(
               // Half a caption lower than centred: the border's own line is
               // where a printed page sets its number, not above it.
-              bottom: band / 2 - _captionHeight,
+              bottom: band / 2 - _captionBox - FrameTuning.of('number'),
               left: 0,
               right: 0,
-              height: _captionHeight,
+              height: _captionBox,
               child: Center(
                 child: _cartouche(
                     QuranService.toArabicDigits(widget.page.number),

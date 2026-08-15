@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../constants/theme.dart';
+import '../../widgets/frame_tuning.dart';
 import '../../widgets/mushaf_frames.dart';
 import '../../widgets/mushaf_palettes.dart';
 
@@ -40,8 +41,110 @@ class FrameTab extends StatelessWidget {
                   ),
               ],
             ),
+            const SizedBox(height: 16),
+            const FrameTuningPanel(),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Where the border sits, set by dragging rather than described.
+///
+/// Screens differ — in how tall they are, in where the system bars end, in how
+/// much of the printed page the image covers — so a border placed by numbers
+/// chosen once will sit wrong somewhere. These are the numbers themselves. The
+/// page is a finger's width away behind the drawer, so a drag is judged by
+/// looking at it.
+class FrameTuningPanel extends StatelessWidget {
+  const FrameTuningPanel({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<int>(
+      valueListenable: FrameTuning.revision,
+      builder: (context, tuning, _) => Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              const Expanded(
+                child: Text('ضبط الإطار',
+                    style: TextStyle(
+                        color: AppColors.gold,
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold)),
+              ),
+              if (!FrameTuning.isDefault)
+                GestureDetector(
+                  onTap: FrameTuning.reset,
+                  behavior: HitTestBehavior.opaque,
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                    child: Text('إعادة الضبط',
+                        style: TextStyle(
+                            color: AppColors.textGold, fontSize: 11.5)),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 2),
+          const Text(
+            'حرّك وأنت تنظر إلى الصفحة خلف هذه القائمة — يتغيّر فوراً ويُحفظ.',
+            style: TextStyle(color: AppColors.textMuted, fontSize: 11),
+          ),
+          const SizedBox(height: 6),
+          for (final knob in FrameTuning.knobs) _slider(context, knob),
+        ],
+      ),
+    );
+  }
+
+  Widget _slider(BuildContext context, FrameKnob knob) {
+    final value = FrameTuning.of(knob.id);
+    final off = (value - knob.normal).abs() > 0.001;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 2),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(knob.label,
+                    style: TextStyle(
+                        color: off ? AppColors.gold : AppColors.textSecondary,
+                        fontSize: 12.5)),
+              ),
+              Text(
+                value.toStringAsFixed(value == value.roundToDouble() ? 0 : 1),
+                style: TextStyle(
+                    color: off ? AppColors.gold : AppColors.textMuted,
+                    fontSize: 11),
+              ),
+            ],
+          ),
+          Text(knob.note,
+              style: const TextStyle(color: AppColors.textMuted, fontSize: 9.5)),
+          SliderTheme(
+            data: SliderTheme.of(context).copyWith(
+              trackHeight: 2,
+              activeTrackColor: AppColors.gold,
+              inactiveTrackColor: AppColors.goldBorder,
+              thumbColor: AppColors.gold,
+              overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
+              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7),
+            ),
+            child: Slider(
+              value: value,
+              min: knob.min,
+              max: knob.max,
+              onChanged: (v) => FrameTuning.set(knob.id, v),
+            ),
+          ),
+        ],
       ),
     );
   }

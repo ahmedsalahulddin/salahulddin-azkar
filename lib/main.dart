@@ -17,6 +17,7 @@ import 'services/playback_speed.dart';
 import 'services/prayer_settings.dart';
 import 'services/section_config.dart';
 import 'services/sync_service.dart';
+import 'widgets/frame_tuning.dart';
 import 'widgets/mushaf_frames.dart';
 import 'widgets/mushaf_palettes.dart';
 
@@ -61,8 +62,10 @@ void main() async {
   DailyReminders.onChanged = NotificationService.scheduleDailyReminders;
   await DailyReminders.load();
   unawaited(AdhanDownloads.refresh());
-  // The chosen Mushaf border, so the first page opens already wearing it.
+  // The chosen Mushaf border, so the first page opens already wearing it —
+  // and where the reader has placed it.
   await MushafFrames.load();
+  await FrameTuning.load();
   await MushafPalettes.load();
 
   try {
