@@ -53,6 +53,21 @@ void main() {
     }
   });
 
+  test('the radio and the speech engine survive a release build', () {
+    // Radiojar redirects https to a plain-http media node; without the
+    // security config Android refuses the stream, and without the TTS_SERVICE
+    // query Android 11+ hides every speech engine. Both fail only on a real
+    // phone, which is exactly why they are pinned here.
+    expect(manifest, contains('android:networkSecurityConfig'));
+    expect(manifest, contains('android.intent.action.TTS_SERVICE'));
+    final config = File('android/app/src/main/res/xml/network_security_config.xml')
+        .readAsStringSync();
+    expect(config, contains('radiojar.com'));
+    expect(config,
+        contains('<base-config cleartextTrafficPermitted="false"/>'),
+        reason: 'cleartext must stay off for everything except the radio');
+  });
+
   test('the background service is started before any player is built', () {
     final main = File('lib/main.dart').readAsStringSync();
     expect(main, contains('JustAudioBackground.init('));

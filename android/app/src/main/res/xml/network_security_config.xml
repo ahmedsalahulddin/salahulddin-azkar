@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Radiojar answers an https request with a redirect to a plain-http media
+     node, and Android release builds refuse cleartext outright. This permits
+     it for radiojar's domains alone; everything else the app talks to stays
+     https-only. -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false"/>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">radiojar.com</domain>
+    </domain-config>
+</network-security-config>
