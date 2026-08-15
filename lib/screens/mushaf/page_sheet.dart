@@ -73,6 +73,8 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
               // on its own level, the way a printed page prints them.
               final band = frame.insetFor(size);
 
+              // The page sits a line lower than centred: it cleared the border
+              // above but sat against the chrome below.
               return Stack(
                 // Expand, or the page is handed loose constraints and sizes
                 // itself to the image's own thousand-odd pixels. It then lays
@@ -82,7 +84,8 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
                 fit: StackFit.expand,
                 children: [
                   Padding(
-                    padding: EdgeInsets.symmetric(vertical: band),
+                    padding: EdgeInsets.fromLTRB(
+                        0, band + _lineHeight, 0, band - _lineHeight / 2),
                     child: _page(palette),
                   ),
                   _frame(frame, palette, band, size),
@@ -131,8 +134,16 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
   /// the image actually landed rather than from the space it was offered —
   /// otherwise the border would float somewhere above the text on a short page
   /// and the whole point of a border would be lost.
-  /// How tall a caption sits, independent of how deep the border is.
-  static const _captionHeight = 17.0;
+  /// The Uthmanic face the page itself is set in.
+  static const _mushafFont = 'AmiriQuran';
+
+  /// How tall a caption sits, independent of how deep the border is. Sized to
+  /// the type below rather than guessed at, or the taller face is clipped.
+  static const _captionHeight = 26.0;
+
+  /// A line of Mushaf text, which is what the whole page drops by so the
+  /// border clears the phone's chrome above and below.
+  static const _lineHeight = 22.0;
 
   Widget _frame(
       MushafFrame frame, MushafPalette palette, double band, Size size) {
@@ -141,8 +152,15 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
     final bottom = (drawn?.bottom ?? size.height - band * 2) + band;
 
     final surah = widget.surahInfo(widget.page.runs.first.surah);
+    // The Mushaf's own face, a size above the ayah text: these are the page's
+    // own markings, and setting them in the interface font made them read as
+    // labels stuck onto the sheet rather than printed with it.
     final caption = TextStyle(
-        color: palette.onPaperMuted, fontSize: 11.5, height: 1.1);
+      fontFamily: _mushafFont,
+      color: palette.onPaperMuted,
+      fontSize: 16,
+      height: 1.15,
+    );
 
     return Positioned(
       left: 0,

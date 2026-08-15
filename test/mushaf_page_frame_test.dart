@@ -53,6 +53,22 @@ void main() {
     expect(centre.dy, greaterThan(screen.height / 2));
   });
 
+  testWidgets('the page markings are set in the Mushaf face, not the UI one',
+      (tester) async {
+    // These are the page's own markings. Set in the interface font they read
+    // as labels stuck onto the sheet rather than printed with it.
+    await pumpPage(tester, 582);
+
+    final pages = await QuranService.pages();
+    final page = pages.firstWhere((p) => p.number == 582);
+    final juz = 'الجزء ${QuranService.toArabicDigits(page.juz)}';
+
+    final marking = tester.widget<Text>(find.text(juz));
+    expect(marking.style?.fontFamily, 'AmiriQuran');
+    expect(marking.style?.fontSize, greaterThan(14),
+        reason: 'the markings were too small to read on a phone');
+  });
+
   testWidgets('the page fills the sheet it was given', (tester) async {
     // The sheet's Stack once handed the page loose constraints, so it sized
     // itself to the image's own thousand-odd pixels, laid out against a box
