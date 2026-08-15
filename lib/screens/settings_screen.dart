@@ -8,7 +8,6 @@ import '../services/prayer_alerts.dart';
 import '../services/prayer_settings.dart';
 import 'prayer_alerts_screen.dart';
 import '../services/storage_service.dart';
-import '../services/notification_service.dart';
 
 class SettingsScreen extends StatefulWidget {
   /// True when the settings sit inside another screen's scroll view, which is
@@ -23,8 +22,6 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   String _fontSize = 'medium';
-  bool _morningNotif = true;
-  bool _eveningNotif = true;
 
   @override
   void initState() {
@@ -34,15 +31,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _load() async {
     final fs = await StorageService.getFontSize();
-    final mn = await StorageService.getMorningNotif();
-    final en = await StorageService.getEveningNotif();
-    if (mounted) {
-      setState(() {
-        _fontSize = fs;
-        _morningNotif = mn;
-        _eveningNotif = en;
-      });
-    }
+    if (mounted) setState(() => _fontSize = fs);
   }
 
   Future<void> _setFontSize(String size) async {
@@ -122,29 +111,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   window: DailyReminders.eveningWindow,
                   apply: (v, t) => DailyReminders.setEvening(on: v, at: t),
                 ),
-                const SizedBox(height: 10),
-                _notifRow(
-                  'أذكار الصباح',
-                  'تذكير يومي الساعة 06:00',
-                  _morningNotif,
-                  (val) async {
-                    setState(() => _morningNotif = val);
-                    await StorageService.setMorningNotif(val);
-                    await NotificationService.scheduleMorning(val);
-                  },
-                ),
-                const SizedBox(height: 6),
-                _notifRow(
-                  'أذكار المساء',
-                  'تذكير يومي الساعة 17:00',
-                  _eveningNotif,
-                  (val) async {
-                    setState(() => _eveningNotif = val);
-                    await StorageService.setEveningNotif(val);
-                    await NotificationService.scheduleEvening(val);
-                  },
-                ),
-
       ],
     );
 
@@ -806,39 +772,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _notifRow(String title, String desc, bool value, ValueChanged<bool> onChanged) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.blackCard,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.goldBorder),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: const TextStyle(color: AppColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w600)),
-                const SizedBox(height: 2),
-                Text(desc, style: const TextStyle(color: AppColors.textMuted, fontSize: 12)),
-              ],
-            ),
-          ),
-          Switch(
-            value: value,
-            onChanged: onChanged,
-            activeThumbColor: AppColors.gold,
-            activeTrackColor: AppColors.emerald,
-            inactiveTrackColor: AppColors.blackSurface,
-          ),
-        ],
       ),
     );
   }

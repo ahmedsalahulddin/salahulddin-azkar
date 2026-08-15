@@ -15,7 +15,6 @@ import 'services/dhikr_reminder.dart';
 import 'services/prayer_alerts.dart';
 import 'services/prayer_settings.dart';
 import 'services/section_config.dart';
-import 'services/storage_service.dart';
 import 'services/sync_service.dart';
 import 'widgets/mushaf_frames.dart';
 import 'widgets/mushaf_palettes.dart';
@@ -67,10 +66,10 @@ void main() async {
   try {
     await NotificationService.init();
     await NotificationService.requestPermission();
-    final morningOn = await StorageService.getMorningNotif();
-    final eveningOn = await StorageService.getEveningNotif();
-    await NotificationService.scheduleMorning(morningOn);
-    await NotificationService.scheduleEvening(eveningOn);
+    // The morning and evening adhkar are laid down by DailyReminders now, at
+    // the hour the reader chose. This clears the old fixed-hour pair, which is
+    // still sitting in Android's alarm manager on phones that once had it on.
+    await NotificationService.clearLegacyAdhkarAlerts();
     await DhikrReminder.reschedule();
     await NotificationService.scheduleDailyReminders();
   } catch (_) {}

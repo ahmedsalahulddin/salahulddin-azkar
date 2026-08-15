@@ -10,8 +10,6 @@ class StorageService {
   static const _favoritesKey = '@noor_favorites';
   static const _fontSizeKey = '@noor_font_size';
   static const _tasbihKey = '@noor_tasbih';
-  static const _morningNotifKey = '@noor_morning_notif';
-  static const _eveningNotifKey = '@noor_evening_notif';
   static const _lastSurahKey = '@noor_last_surah';
   static const _lastMushafPageKey = '@noor_last_mushaf_page';
 
@@ -75,27 +73,6 @@ class StorageService {
     final counts = data != null ? jsonDecode(data) as Map<String, dynamic> : <String, dynamic>{};
     counts[dhikrId] = count;
     await prefs.setString(_tasbihKey, jsonEncode(counts));
-  }
-
-  // ===== الإشعارات =====
-  static Future<bool> getMorningNotif() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_morningNotifKey) ?? true;
-  }
-
-  static Future<void> setMorningNotif(bool val) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_morningNotifKey, val);
-  }
-
-  static Future<bool> getEveningNotif() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_eveningNotifKey) ?? true;
-  }
-
-  static Future<void> setEveningNotif(bool val) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_eveningNotifKey, val);
   }
 
   // ===== آخر سورة مقروءة =====

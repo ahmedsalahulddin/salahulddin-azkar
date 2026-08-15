@@ -41,34 +41,17 @@ class NotificationService {
         ?.requestPermissions(alert: true, badge: true, sound: true);
   }
 
-  static Future<void> scheduleMorning(bool enable) async {
+  /// Cancels the adhkar reminders that older versions laid down at a fixed
+  /// six and five o'clock.
+  ///
+  /// The reader now chooses the hour, and those reminders are ids 410 and 411.
+  /// Deleting the old code is not enough on a phone that already had them on:
+  /// the schedule lives in Android, not in the app, so it would keep arriving
+  /// beside the new one — which is exactly the doubling that was reported.
+  static Future<void> clearLegacyAdhkarAlerts() async {
     if (kIsWeb) return;
-    if (!enable) {
-      await _plugin.cancel(_morningId);
-      return;
-    }
-    await _scheduleDaily(
-      id: _morningId,
-      title: '🌅 أذكار الصباح',
-      body: 'حصّن يومك — اقرأ أذكار الصباح الآن',
-      hour: 6,
-      minute: 0,
-    );
-  }
-
-  static Future<void> scheduleEvening(bool enable) async {
-    if (kIsWeb) return;
-    if (!enable) {
-      await _plugin.cancel(_eveningId);
-      return;
-    }
-    await _scheduleDaily(
-      id: _eveningId,
-      title: '🌙 أذكار المساء',
-      body: 'حصّن ليلتك — اقرأ أذكار المساء الآن',
-      hour: 17,
-      minute: 0,
-    );
+    await _plugin.cancel(_morningId);
+    await _plugin.cancel(_eveningId);
   }
 
   /// Rebuilds tomorrow's prayer alerts from the reader's settings.
@@ -273,40 +256,6 @@ class NotificationService {
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
-      matchDateTimeComponents: DateTimeComponents.time,
-    );
-  }
-
-  static Future<void> _scheduleDaily({
-    required int id,
-    required String title,
-    required String body,
-    required int hour,
-    required int minute,
-  }) async {
-    final now = tz.TZDateTime.now(tz.local);
-    var scheduled = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
-    if (scheduled.isBefore(now)) {
-      scheduled = scheduled.add(const Duration(days: 1));
-    }
-
-    const androidDetails = AndroidNotificationDetails(
-      'salahulddin_azkar_channel',
-      'أذكار salahulddin-AZKAR',
-      channelDescription: 'تذكيرات يومية بأذكار الصباح والمساء',
-      importance: Importance.high,
-      priority: Priority.high,
-    );
-    const iosDetails = DarwinNotificationDetails();
-
-    await _plugin.zonedSchedule(
-      id,
-      title,
-      body,
-      scheduled,
-      const NotificationDetails(android: androidDetails, iOS: iosDetails),
-      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: DateTimeComponents.time,
     );
   }

@@ -1,5 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:salahulddin_azkar/data/adhans.dart';
+import 'package:salahulddin_azkar/screens/settings_screen.dart';
 import 'package:salahulddin_azkar/services/daily_reminders.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -101,6 +103,24 @@ void main() {
 
     test('an unknown id falls back rather than throwing', () {
       expect(Adhans.byId('nothing-like-this').isBundled, isTrue);
+    });
+  });
+
+  group('one card each', () {
+    testWidgets('the morning and evening adhkar are offered once, not twice',
+        (tester) async {
+      // They were offered twice for a while: the old fixed-hour pair sat in
+      // the settings beside the new one the reader sets the time on, and both
+      // scheduled a reminder. Two cards meant two notifications a day.
+      await tester.pumpWidget(const MaterialApp(
+        home: Scaffold(
+          body: SingleChildScrollView(child: SettingsScreen(embedded: true)),
+        ),
+      ));
+      await tester.pump();
+
+      expect(find.text('أذكار الصباح'), findsOneWidget);
+      expect(find.text('أذكار المساء'), findsOneWidget);
     });
   });
 }
