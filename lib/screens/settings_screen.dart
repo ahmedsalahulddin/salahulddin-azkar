@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/theme.dart';
 import '../data/quran_data.dart';
+import '../services/dhikr_reminder.dart';
 import '../services/prayer_alerts.dart';
 import '../services/prayer_settings.dart';
 import 'prayer_alerts_screen.dart';
@@ -95,6 +96,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                 // Notifications
                 _sectionTitle('التذكيرات'),
+                _dhikrReminder(),
+                const SizedBox(height: 10),
                 _notifRow(
                   'أذكار الصباح',
                   'تذكير يومي الساعة 06:00',
@@ -282,11 +285,162 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  /// A short dhikr through the day.
+  ///
+  /// Not one dhikr repeated: the same words at the same hour become furniture
+  /// within a week, and a reminder nobody reads is worse than none. The app
+  /// rotates the short adhkar so each arrival says something.
+  Widget _dhikrReminder() {
+    return ValueListenableBuilder<bool>(
+      valueListenable: DhikrReminder.enabled,
+      builder: (context, on, _) => Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppColors.blackCard,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.goldBorder),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('ذكر على شاشتك',
+                          style: TextStyle(
+                              color: AppColors.textPrimary, fontSize: 14)),
+                      Text(
+                        on
+                            ? 'يصلك خلال اليوم، ويتبدّل في كل مرة'
+                            : 'مغلق',
+                        style: const TextStyle(
+                            color: AppColors.textMuted, fontSize: 11),
+                      ),
+                    ],
+                  ),
+                ),
+                Switch(
+                  value: on,
+                  onChanged: (v) => DhikrReminder.apply(on: v),
+                  activeThumbColor: AppColors.gold,
+                ),
+              ],
+            ),
+            if (on) ...[
+              const Divider(color: AppColors.goldBorder, height: 20),
+              const Text('كم مرة في اليوم',
+                  style:
+                      TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+              const SizedBox(height: 6),
+              ValueListenableBuilder<int>(
+                valueListenable: DhikrReminder.perDay,
+                builder: (context, count, _) => Row(
+                  children: [
+                    for (final choice in DhikrReminder.countChoices)
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 3),
+                          child: GestureDetector(
+                            onTap: () => DhikrReminder.apply(count: choice),
+                            behavior: HitTestBehavior.opaque,
+                            child: Container(
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 8),
+                              decoration: BoxDecoration(
+                                color: choice == count
+                                    ? AppColors.goldMuted
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                    color: choice == count
+                                        ? AppColors.gold
+                                        : AppColors.goldBorder),
+                              ),
+                              child: Text(
+                                QuranService.toArabicDigits(choice),
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: choice == count
+                                      ? AppColors.gold
+                                      : AppColors.textMuted,
+                                  fontSize: 13,
+                                  fontWeight: choice == count
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+              // Nobody wants a buzz at three in the morning.
+              Row(
+                children: [
+                  const Text('بين الساعة',
+                      style: TextStyle(
+                          color: AppColors.textSecondary, fontSize: 12)),
+                  const SizedBox(width: 8),
+                  _hourPicker(DhikrReminder.fromHour,
+                      (h) => DhikrReminder.apply(from: h)),
+                  const SizedBox(width: 8),
+                  const Text('و',
+                      style: TextStyle(
+                          color: AppColors.textSecondary, fontSize: 12)),
+                  const SizedBox(width: 8),
+                  _hourPicker(DhikrReminder.toHour,
+                      (h) => DhikrReminder.apply(to: h)),
+                ],
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _hourPicker(ValueNotifier<int> hour, ValueChanged<int> onPick) {
+    return ValueListenableBuilder<int>(
+      valueListenable: hour,
+      builder: (context, value, _) => PopupMenuButton<int>(
+        onSelected: onPick,
+        color: AppColors.blackSurface,
+        position: PopupMenuPosition.under,
+        itemBuilder: (context) => [
+          for (var h = 0; h < 24; h++)
+            PopupMenuItem(
+              value: h,
+              child: Text('${QuranService.toArabicDigits(h)}:٠٠',
+                  style: const TextStyle(
+                      color: AppColors.textPrimary, fontSize: 13)),
+            ),
+        ],
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          decoration: BoxDecoration(
+            color: AppColors.goldMuted,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: AppColors.goldBorder),
+          ),
+          child: Text('${QuranService.toArabicDigits(value)}:٠٠',
+              style: const TextStyle(color: AppColors.gold, fontSize: 13)),
+        ),
+      ),
+    );
+  }
+
   /// Opens the grid where each prayer's two alerts are set.
   Widget _alertsRow() {
     return ValueListenableBuilder<Map<String, AlertMode>>(
       valueListenable: PrayerAlerts.settings,
-      builder: (context, _, __) {
+      builder: (context, _, _) {
         final on = AlertPrayer.values
             .expand((p) => AlertWhen.values.map((w) => PrayerAlerts.modeFor(p, w)))
             .where((m) => m != AlertMode.off)

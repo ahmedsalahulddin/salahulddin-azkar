@@ -25,7 +25,7 @@ class PrayerAlertsScreen extends StatelessWidget {
         ),
         body: ValueListenableBuilder<Map<String, AlertMode>>(
           valueListenable: PrayerAlerts.settings,
-          builder: (context, _, __) => ListView(
+          builder: (context, _, _) => ListView(
             padding: const EdgeInsets.all(16),
             children: [
               _leadPicker(),

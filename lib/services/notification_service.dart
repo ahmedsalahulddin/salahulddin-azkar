@@ -3,6 +3,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
+import '../data/adhkar_data.dart';
 import 'prayer_alerts.dart';
 
 class NotificationService {
@@ -135,6 +136,53 @@ class NotificationService {
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
     );
+  }
+
+  /// Lays down the day's dhikr reminders, one per slot, each carrying a
+  /// different dhikr so the rotation is visible rather than a single line
+  /// repeating until it stops being read.
+  static Future<void> scheduleDhikrReminders({
+    required bool enabled,
+    required List<int> minutes,
+    required List<Dhikr> pool,
+  }) async {
+    // Clear the whole block first: the count can shrink, and yesterday's
+    // extra slots would otherwise keep firing forever.
+    for (var i = 0; i < 24; i++) {
+      await _plugin.cancel(300 + i);
+    }
+    if (!enabled || pool.isEmpty) return;
+
+    const details = NotificationDetails(
+      android: AndroidNotificationDetails(
+        'salahulddin_dhikr_reminder',
+        'تذكير بالذكر',
+        channelDescription: 'ذكر قصير يصلك خلال اليوم',
+        importance: Importance.defaultImportance,
+        priority: Priority.defaultPriority,
+      ),
+      iOS: DarwinNotificationDetails(),
+    );
+
+    for (var i = 0; i < minutes.length && i < 24; i++) {
+      final dhikr = pool[i % pool.length];
+      final now = tz.TZDateTime.now(tz.local);
+      var at = tz.TZDateTime(tz.local, now.year, now.month, now.day,
+          minutes[i] ~/ 60, minutes[i] % 60);
+      if (at.isBefore(now)) at = at.add(const Duration(days: 1));
+
+      await _plugin.zonedSchedule(
+        300 + i,
+        'ذكر',
+        dhikr.text,
+        at,
+        details,
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+        matchDateTimeComponents: DateTimeComponents.time,
+      );
+    }
   }
 
   static Future<void> _scheduleDaily({

@@ -7,6 +7,7 @@ import 'screens/favorites_screen.dart';
 import 'screens/account_screen.dart';
 import 'services/auth_service.dart';
 import 'services/notification_service.dart';
+import 'services/dhikr_reminder.dart';
 import 'services/prayer_alerts.dart';
 import 'services/prayer_settings.dart';
 import 'services/section_config.dart';
@@ -50,6 +51,7 @@ void main() async {
   // The chosen Mushaf border, so the first page opens already wearing it.
   await PrayerSettings.load();
   await PrayerAlerts.load();
+  await DhikrReminder.load();
   await MushafFrames.load();
   await MushafPalettes.load();
 
@@ -60,6 +62,7 @@ void main() async {
     final eveningOn = await StorageService.getEveningNotif();
     await NotificationService.scheduleMorning(morningOn);
     await NotificationService.scheduleEvening(eveningOn);
+    await DhikrReminder.reschedule();
   } catch (_) {}
   runApp(const NoorAzkarApp());
 }

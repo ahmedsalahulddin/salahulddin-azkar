@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../services/section_config.dart';
 import '../widgets/mushaf_frames.dart';
 import 'quran_data.dart';
 
@@ -64,6 +65,9 @@ class GreetingCard {
 
   final CardPalette palette;
   final MushafFrame frame;
+
+  /// The key this card answers to in app_sections.
+  String get sectionKey => 'card_$id';
 
   const GreetingCard({
     required this.id,
@@ -274,8 +278,23 @@ class GreetingCards {
     ),
   ];
 
-  static List<GreetingCard> of(CardShelf shelf) =>
-      all.where((c) => c.shelf == shelf).toList();
+  /// The cards on [shelf] that the dashboard leaves showing, in the order it
+  /// sets. Fails open like every other reader of that config: an unreachable
+  /// project shows every card rather than an empty shelf.
+  static List<GreetingCard> of(CardShelf shelf) {
+    final shown = [
+      for (var i = 0; i < all.length; i++)
+        if (all[i].shelf == shelf && SectionConfig.isVisible(all[i].sectionKey))
+          (all[i], i),
+    ]..sort((a, b) => SectionConfig.orderOf(a.$1.sectionKey, a.$2)
+        .compareTo(SectionConfig.orderOf(b.$1.sectionKey, b.$2)));
+    return [for (final (card, _) in shown) card];
+  }
+
+  /// Shelves with nothing left on them drop out of the home row, so a reader
+  /// never opens onto an empty grid.
+  static List<CardShelf> get shelvesInUse =>
+      [for (final shelf in CardShelf.values) if (of(shelf).isNotEmpty) shelf];
 
   /// Fills in the verse text and its citation from the bundled Mushaf.
   static Future<ResolvedCard> resolve(GreetingCard card) async {

@@ -231,7 +231,7 @@ HomeShelf _cardsShelf() {
       subtitle: 'أضف كروتك من الجوال',
       open: (c) => _push(c, () => const MyCardsScreen()),
     ),
-    rest: [for (final shelf in CardShelf.values) card(shelf)],
+    rest: [for (final shelf in GreetingCards.shelvesInUse) card(shelf)],
   );
 }
 
