@@ -29,13 +29,34 @@ void main() {
     });
   });
 
+  group('the alef the Mushaf writes and the reader does not', () {
+    test('a word spelled with a superscript alef is still found', () async {
+      // ٱلْعَٰلَمِينَ is printed with the vowel as a mark, so stripping the marks
+      // left العلمين — and a reader typing العالمين was told the word is not in
+      // the Mushaf. It is in the second ayah of the first surah.
+      final hits = await QuranService.search('العالمين');
+      expect(hits, isNotEmpty);
+      expect(hits.first.surah, 1);
+    });
+
+    test('and the plain spelling still finds it too', () async {
+      expect(await QuranService.search('العلمين'), isNotEmpty);
+    });
+
+    test('الرحمن is not turned into الرحمان on the way', () async {
+      // The other repair — writing the mark out as a letter — would have made
+      // the Mushaf spell a word nobody types.
+      expect(await QuranService.search('الرحمن'), isNotEmpty);
+    });
+  });
+
   group('searching the Mushaf', () {
     test('a plainly typed word finds marked-up verses', () async {
       final hits = await QuranService.search('الرحمن');
       expect(hits, isNotEmpty);
       // Every hit really does contain it once folded.
-      final needle = QuranService.searchKey('الرحمن');
-      expect(hits.every((h) => QuranService.searchKey(h.text).contains(needle)),
+      final needle = QuranService.matchKey('الرحمن');
+      expect(hits.every((h) => QuranService.matchKey(h.text).contains(needle)),
           isTrue);
     });
 

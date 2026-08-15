@@ -170,6 +170,21 @@ class QuranService {
     return 1;
   }
 
+  /// The page a particular ayah is printed on, for jumping to a search hit.
+  ///
+  /// Falls back to where the surah opens: a page that exists and is close is a
+  /// better answer than the first page of the Mushaf.
+  static Future<int> pageOfAyah(int surah, int ayah) async {
+    for (final page in await pages()) {
+      for (final run in page.runs) {
+        if (run.surah == surah && ayah >= run.first && ayah <= run.last) {
+          return page.number;
+        }
+      }
+    }
+    return pageOfSurah(surah);
+  }
+
   /// One ayah matching a search, with enough context to jump to it.
   static List<AyahHit>? _searchIndex;
 
@@ -205,6 +220,16 @@ class QuranService {
     return buffer.toString();
   }
 
+  /// [searchKey], with every alef dropped as well.
+  ///
+  /// The Mushaf spells the long vowel with a superscript alef the reader will
+  /// never type — ٱلْعَٰلَمِينَ against the العالمين they write — and stripping that
+  /// mark leaves العلمين, which their query does not match. Turning it into a
+  /// plain alef only moves the problem: ٱلرَّحۡمَٰن would become الرحمان, which
+  /// nobody types either. Dropping the letter on both sides settles it, since
+  /// the two spellings differ in nothing else.
+  static String matchKey(String text) => searchKey(text).replaceAll('ا', '');
+
   /// Every ayah, keyed for searching. Built once — 6236 ayahs is small enough
   /// to hold, and rebuilding it per keystroke would make search unusable.
   static Future<List<AyahHit>> _buildSearchIndex() async {
@@ -220,7 +245,7 @@ class QuranService {
           surahName: info.name,
           ayah: ayah.number,
           text: ayah.text,
-          key: searchKey(ayah.text),
+          key: matchKey(ayah.text),
         ));
       }
     }
@@ -229,7 +254,7 @@ class QuranService {
 
   /// Ayahs containing [query], in Mushaf order.
   static Future<List<AyahHit>> search(String query) async {
-    final needle = searchKey(query.trim());
+    final needle = matchKey(query.trim());
     if (needle.isEmpty) return const [];
     return (await _buildSearchIndex())
         .where((hit) => hit.key.contains(needle))
@@ -239,7 +264,7 @@ class QuranService {
   /// Total occurrences of [query], counting a verse more than once when it
   /// repeats the word.
   static Future<int> countOccurrences(String query) async {
-    final needle = searchKey(query.trim());
+    final needle = matchKey(query.trim());
     if (needle.isEmpty) return 0;
     var total = 0;
     for (final hit in await _buildSearchIndex()) {

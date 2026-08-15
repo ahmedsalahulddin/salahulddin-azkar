@@ -14,6 +14,7 @@ import 'cards_screen.dart';
 import 'category_screen.dart';
 import 'hisn_chapter_screen.dart';
 import 'lesson_screen.dart';
+import 'mushaf_screen.dart';
 import 'surah_screen.dart';
 
 /// One hit: what was found, where it lives, and how to get there.
@@ -154,6 +155,91 @@ class AppSearch {
           ),
     ];
   }
+
+  /// The words themselves, not only the names of the things holding them.
+  ///
+  /// A reader searching for a half-remembered phrase — a line of an ayah, the
+  /// opening of a dua — was told there were no results, because the search
+  /// read titles and nothing else. This pass reads the text.
+  ///
+  /// It runs last and separately: the ayah index is 6,236 verses read from 114
+  /// files, and building it on the first keystroke would freeze the field. The
+  /// titles are already on screen by the time this answers.
+  static Future<List<SearchHit>> deep(String query) async {
+    final trimmed = query.trim();
+    // Three letters, not two: two letters of scripture match a thousand verses
+    // and answer nothing. Counted before the alefs are dropped, or "الله"
+    // would be two.
+    if (QuranService.searchKey(trimmed).length < 3) return const [];
+    final needle = QuranService.matchKey(trimmed);
+    if (needle.isEmpty) return const [];
+    bool hit(String text) => QuranService.matchKey(text).contains(needle);
+
+    final hits = <SearchHit>[];
+
+    for (final dhikr in adhkar) {
+      if (!hit(dhikr.text)) continue;
+      final category = categories.where((c) => c.id == dhikr.categoryId);
+      if (category.isEmpty) continue;
+      hits.add(SearchHit(
+        section: 'نصّ الأذكار',
+        title: _excerpt(dhikr.text),
+        subtitle: category.first.name,
+        open: (c) => _push(c, () => CategoryScreen(category: category.first)),
+      ));
+    }
+
+    for (final chapter in await HisnService.chapters()) {
+      for (final item in chapter.items) {
+        if (!hit(item.text)) continue;
+        hits.add(SearchHit(
+          section: 'نصّ حصن المسلم',
+          title: _excerpt(item.text),
+          subtitle: chapter.title,
+          open: (c) => _push(c, () => HisnChapterScreen(chapter: chapter)),
+        ));
+      }
+    }
+
+    // Capped, and the cap is said out loud rather than passed off as the whole
+    // answer — "الله" alone is in more than two thousand verses.
+    final ayat = await QuranService.search(trimmed);
+    for (final ayah in ayat.take(_ayahCap)) {
+      hits.add(SearchHit(
+        section: 'آيات القرآن',
+        title: _excerpt(ayah.text),
+        subtitle:
+            '${ayah.surahName} — الآية ${QuranService.toArabicDigits(ayah.ayah)}',
+        open: (c) async {
+          final page = await QuranService.pageOfAyah(ayah.surah, ayah.ayah);
+          if (c.mounted) {
+            await _push(c, () => MushafScreen(initialPage: page));
+          }
+        },
+      ));
+    }
+    if (ayat.length > _ayahCap) {
+      hits.add(SearchHit(
+        section: 'آيات القرآن',
+        title: 'وأكثر — ${QuranService.toArabicDigits(ayat.length)} آية',
+        subtitle: 'افتح البحث داخل المصحف لتصفّحها كلها',
+        open: (c) => _push(c, () => const MushafScreen(initialPage: 1)),
+      ));
+    }
+
+    return hits;
+  }
+
+  static const _ayahCap = 25;
+
+  /// Enough of the line to recognise it, cut on a word rather than mid-letter.
+  static String _excerpt(String text, {int limit = 60}) {
+    final clean = text.replaceAll('\n', ' ').trim();
+    if (clean.length <= limit) return clean;
+    final cut = clean.substring(0, limit);
+    final space = cut.lastIndexOf(' ');
+    return '${space > 20 ? cut.substring(0, space) : cut}…';
+  }
 }
 
 class SearchScreen extends StatefulWidget {
@@ -166,6 +252,13 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   final _controller = TextEditingController();
   List<SearchHit> _hits = const [];
+
+  /// The query each set of results answers. Without it a slow pass over the
+  /// scripture could land after the reader has typed on, and replace the
+  /// answers to the word they are looking at with answers to the one before.
+  String _for = '';
+
+  bool _reading = false;
 
   @override
   void initState() {
@@ -181,9 +274,28 @@ class _SearchScreenState extends State<SearchScreen> {
 
   Future<void> _search() async {
     final query = _controller.text;
-    final hits = AppSearch.run(query);
+    _for = query;
+
+    // The titles answer at once; the text of the scripture takes longer and
+    // arrives after, rather than holding everything back.
+    final titles = AppSearch.run(query);
+    if (mounted) {
+      setState(() {
+        _hits = titles;
+        _reading = query.trim().length >= 3;
+      });
+    }
+
     final loaded = await AppSearch.loaded(query);
-    if (mounted) setState(() => _hits = [...hits, ...loaded]);
+    if (!mounted || _for != query) return;
+    setState(() => _hits = [...titles, ...loaded]);
+
+    final deep = await AppSearch.deep(query);
+    if (!mounted || _for != query) return;
+    setState(() {
+      _hits = [...titles, ...loaded, ...deep];
+      _reading = false;
+    });
   }
 
   @override
@@ -217,7 +329,7 @@ class _SearchScreenState extends State<SearchScreen> {
         body: _controller.text.trim().length < 2
             ? _hint()
             : _hits.isEmpty
-                ? _nothing()
+                ? (_reading ? _stillReading() : _nothing())
                 : ListView(
                     padding: const EdgeInsets.all(16),
                     children: [
@@ -241,11 +353,25 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
+  /// Shown only while nothing has matched yet: an empty screen that is about
+  /// to fill is not the same as a search that found nothing.
+  Widget _stillReading() => const Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(color: AppColors.gold, strokeWidth: 2),
+            SizedBox(height: 14),
+            Text('يبحث في نصّ القرآن والأذكار…',
+                style: TextStyle(color: AppColors.textMuted, fontSize: 13)),
+          ],
+        ),
+      );
+
   Widget _hint() => const Center(
         child: Padding(
           padding: EdgeInsets.all(30),
           child: Text(
-            'اكتب حرفين على الأقل.\nالبحث يشمل الأذكار والسور والدروس والكتب والكروت.',
+            'اكتب حرفين على الأقل.\nالبحث يشمل الأذكار والسور والدروس والكتب والكروت،\nوثلاثة أحرف تبحث داخل نصّ الآيات والأدعية نفسها.',
             textAlign: TextAlign.center,
             style: TextStyle(
                 color: AppColors.textMuted, fontSize: 13, height: 1.9),
