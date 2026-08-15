@@ -53,6 +53,29 @@ void main() {
     expect(centre.dy, greaterThan(screen.height / 2));
   });
 
+  testWidgets('the page fills the sheet it was given', (tester) async {
+    // The sheet's Stack once handed the page loose constraints, so it sized
+    // itself to the image's own thousand-odd pixels, laid out against a box
+    // that was not the one on screen, and mapped every tap to the wrong ayah.
+    // The action bar, which only lights up once an ayah is selected, went
+    // dead with it.
+    await pumpPage(tester, 582);
+
+    final screen = tester.getSize(find.byType(MushafScreen));
+    final pages = tester.widgetList<PageView>(find.byType(PageView));
+    expect(pages, isNotEmpty);
+
+    // Whatever the page renders as, it must not be wider than the phone.
+    for (final box in tester.widgetList<SizedBox>(find.byType(SizedBox))) {
+      final width = box.width;
+      if (width != null && width.isFinite) {
+        expect(width, lessThanOrEqualTo(screen.width + 1),
+            reason: 'something inside the page is wider than the screen');
+      }
+    }
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('the surah sits right of the juz, as on the printed page',
       (tester) async {
     await pumpPage(tester, 582);

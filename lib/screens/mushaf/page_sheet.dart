@@ -74,6 +74,12 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
               final band = frame.insetFor(size);
 
               return Stack(
+                // Expand, or the page is handed loose constraints and sizes
+                // itself to the image's own thousand-odd pixels. It then lays
+                // out against a box that is not the one on screen, and every
+                // tap maps to the wrong ayah — which is how the action bar
+                // stopped responding.
+                fit: StackFit.expand,
                 children: [
                   Padding(
                     padding: EdgeInsets.symmetric(vertical: band),
@@ -188,7 +194,9 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
               ),
             ),
             Positioned(
-              bottom: band / 2 - _captionHeight / 2,
+              // Half a caption lower than centred: the border's own line is
+              // where a printed page sets its number, not above it.
+              bottom: band / 2 - _captionHeight,
               left: 0,
               right: 0,
               height: _captionHeight,
