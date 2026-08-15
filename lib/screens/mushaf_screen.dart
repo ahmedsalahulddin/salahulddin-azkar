@@ -756,8 +756,10 @@ class _MushafScreenState extends State<MushafScreen> {
       left: 0,
       right: 0,
       child: Container(
+        // Half a line of Mushaf text lower, so the page clears it above and
+        // below rather than sitting against it.
         padding: EdgeInsets.fromLTRB(
-            8, 6, 8, 6 + (inset > 0 ? inset : 8)),
+            8, 6, 8, 6 + (inset > 0 ? inset : 8) - 11),
         decoration: BoxDecoration(
           color: AppColors.blackCard.withValues(alpha: 0.97),
           border: const Border(top: BorderSide(color: AppColors.goldBorder)),

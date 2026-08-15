@@ -12,6 +12,7 @@ import 'services/prayer_alerts.dart';
 import 'services/prayer_settings.dart';
 import 'services/section_config.dart';
 import 'services/storage_service.dart';
+import 'services/sync_service.dart';
 import 'widgets/mushaf_frames.dart';
 import 'widgets/mushaf_palettes.dart';
 
@@ -65,6 +66,10 @@ void main() async {
     await NotificationService.scheduleEvening(eveningOn);
     await DhikrReminder.reschedule();
   } catch (_) {}
+  // Signing in on a second device should bring the reader's marks with it,
+  // without them having to find a button first.
+  SyncService.watch();
+
   runApp(const NoorAzkarApp());
 }
 

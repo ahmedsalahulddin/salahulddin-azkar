@@ -110,6 +110,16 @@ void main() {
     });
   });
 
+  test('signing in starts a sync without anyone pressing anything', () {
+    // A reader signed in on a second phone, saw no bookmarks, and reasonably
+    // concluded sync did not work — because the only caller was a button.
+    expect(SyncService.watch, isNotNull);
+    // Safe to arm with no account: it listens, and does nothing until one
+    // appears.
+    expect(SyncService.watch, returnsNormally);
+    expect(SyncService.syncing.value, isFalse);
+  });
+
   test('the three kinds are distinct and stable', () {
     // These strings are written into rows; changing one orphans real data.
     expect(SyncKind.bookmark.id, 'bookmark');

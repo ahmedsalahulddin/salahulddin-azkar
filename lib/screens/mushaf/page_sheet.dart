@@ -181,10 +181,17 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
               height: _captionHeight,
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
+                // Flexible, not fixed: surah names run from الفيل to
+                // المطففين, and a box sized for the short one truncates the
+                // long one. Each takes what it needs and the row shares out
+                // the rest.
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _cartouche(surah.name, palette, caption),
-                    const Spacer(),
+                    Flexible(
+                      child: _cartouche(surah.name, palette, caption),
+                    ),
+                    const SizedBox(width: 8),
                     _cartouche(
                         'الجزء ${QuranService.toArabicDigits(widget.page.juz)}',
                         palette,
@@ -234,7 +241,12 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
           borderRadius: BorderRadius.circular(3),
           border: Border.all(color: palette.ink.withValues(alpha: 0.28)),
         ),
-        child: Text(text, style: caption, textAlign: TextAlign.center),
+        // Shrinks its own type before it clips: a surah's name is not a
+        // detail worth losing the end of.
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(text, style: caption, textAlign: TextAlign.center),
+        ),
       ),
     );
   }

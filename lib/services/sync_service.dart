@@ -50,6 +50,18 @@ class SyncService {
   static SupabaseClient get _client => Supabase.instance.client;
   static String? get _uid => Supabase.instance.client.auth.currentUser?.id;
 
+  /// Starts syncing whenever an account appears, and once at launch.
+  ///
+  /// Waiting for a button meant a reader could sign in on a second phone, see
+  /// none of their bookmarks, and reasonably conclude the feature did not
+  /// work — which is what happened.
+  static void watch() {
+    AuthService.user.addListener(() {
+      if (AuthService.user.value != null) sync();
+    });
+    if (available) sync();
+  }
+
   /// Pulls the account's state, merges it into this device, and pushes back
   /// whatever the account was missing.
   ///
