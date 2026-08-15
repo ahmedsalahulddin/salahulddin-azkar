@@ -159,20 +159,23 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
                 ),
               ),
             ),
-            // Surah on the right, juz on the left — the printed page's header.
+            // Surah on the right, juz on the left — the printed page's header,
+            // each set into the border in its own cartouche.
             Positioned(
               top: 0,
               left: 0,
               right: 0,
               height: band,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: Row(
                   children: [
-                    Text(surah.name, style: caption),
+                    _cartouche(surah.name, palette, caption),
                     const Spacer(),
-                    Text('الجزء ${QuranService.toArabicDigits(widget.page.juz)}',
-                        style: caption),
+                    _cartouche(
+                        'الجزء ${QuranService.toArabicDigits(widget.page.juz)}',
+                        palette,
+                        caption),
                   ],
                 ),
               ),
@@ -183,12 +186,40 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
               right: 0,
               height: band,
               child: Center(
-                child: Text(QuranService.toArabicDigits(widget.page.number),
-                    style: caption),
+                child: _cartouche(
+                    QuranService.toArabicDigits(widget.page.number),
+                    palette,
+                    caption),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// A label set into the border, the way the printed page carries its surah
+  /// name and its page number.
+  ///
+  /// The box is filled with the paper rather than left transparent: that is
+  /// what breaks the ornament behind it and makes the label read as part of
+  /// the border instead of as writing laid over it. The double rule is the
+  /// printed convention — a single line looks like a text field.
+  Widget _cartouche(String text, MushafPalette palette, TextStyle caption) {
+    return Container(
+      padding: const EdgeInsets.all(1.5),
+      decoration: BoxDecoration(
+        color: palette.paper,
+        borderRadius: BorderRadius.circular(5),
+        border: Border.all(color: palette.ink.withValues(alpha: 0.55)),
+      ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 1.5),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(3),
+          border: Border.all(color: palette.ink.withValues(alpha: 0.28)),
+        ),
+        child: Text(text, style: caption, textAlign: TextAlign.center),
       ),
     );
   }

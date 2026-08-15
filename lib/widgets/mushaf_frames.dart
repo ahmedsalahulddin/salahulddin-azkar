@@ -23,7 +23,8 @@ enum MushafFrame {
   arabesque('arabesque', 'أرابيسك'),
   stars('stars', 'نجوم ثمانية'),
   rosette('rosette', 'شمسات مذهّبة'),
-  filigree('filigree', 'تذهيب مورّق');
+  filigree('filigree', 'تذهيب مورّق'),
+  illuminated('illuminated', 'تذهيب المصحف');
 
   const MushafFrame(this.id, this.label);
 
@@ -50,6 +51,7 @@ enum MushafFrame {
         MushafFrame.stars => 34,
         MushafFrame.rosette => 33,
         MushafFrame.filigree => 46,
+        MushafFrame.illuminated => 50,
       };
 
   /// The ornament is drawn at a size that suits a phone page, then scaled, so
@@ -175,11 +177,27 @@ class MushafFramePainter extends CustomPainter {
       case MushafFrame.filigree:
         _banded(canvas, size, s, _filigreeStrip,
             corner: _scrollCorner, thickness: 34);
+      case MushafFrame.illuminated:
+        _banded(canvas, size, s, _scrollStrip,
+            corner: _rosetteCorner, thickness: 38);
+        _cartouche(canvas, size, s);
     }
   }
 
   Color get _soft => color.withValues(alpha: 0.55);
   Color get _faint => color.withValues(alpha: 0.28);
+
+  /// The second colour classical illumination sets against the gold — the
+  /// violet in the jewels. Taken by rotating the theme's own hue rather than
+  /// fixed, so it still belongs whatever colour the page is wearing.
+  Color get _jewel {
+    final hsl = HSLColor.fromColor(color);
+    return hsl
+        .withHue((hsl.hue + 205) % 360)
+        .withSaturation((hsl.saturation * 0.9).clamp(0.25, 1.0))
+        .withLightness((hsl.lightness * 0.85).clamp(0.2, 0.7))
+        .toColor();
+  }
 
   Paint _stroke(double width, Color c) => Paint()
     ..style = PaintingStyle.stroke
@@ -367,6 +385,71 @@ class MushafFramePainter extends CustomPainter {
 
     canvas.drawLine(Offset(0, base * 1.03), Offset(length, base * 1.03),
         _stroke(0.8 * s, _faint));
+  }
+
+  /// Facing C-scrolls with a jewel at every joint — the running ornament of an
+  /// illuminated Mushaf border.
+  void _scrollStrip(Canvas canvas, double length, double s, double t) {
+    final (n, p) = _repeats(length, t * 0.86);
+    final spine = t * 0.52;
+
+    // The rails the scrollwork runs between.
+    canvas.drawLine(Offset(0, t * 0.1), Offset(length, t * 0.1),
+        _stroke(1.0 * s, _soft));
+    canvas.drawLine(Offset(0, t * 0.93), Offset(length, t * 0.93),
+        _stroke(1.3 * s, color));
+
+    final vine = _stroke(1.5 * s, color);
+    final fine = _stroke(0.9 * s, _soft);
+
+    for (var i = 0; i < n; i++) {
+      final x0 = i * p;
+      final cx = x0 + p / 2;
+
+      // Two scrolls curling away from the centre of each unit.
+      for (final dir in [-1.0, 1.0]) {
+        final scroll = Path()
+          ..moveTo(cx, t * 0.16)
+          ..cubicTo(cx + dir * p * 0.34, t * 0.18, cx + dir * p * 0.46,
+              spine * 1.15, cx + dir * p * 0.16, t * 0.82)
+          ..cubicTo(cx + dir * p * 0.06, t * 0.9, cx + dir * p * 0.2,
+              t * 0.92, cx + dir * p * 0.3, t * 0.84);
+        canvas.drawPath(scroll, vine);
+
+        // The inner curl that fills the eye of the scroll.
+        final eye = Path()
+          ..moveTo(cx + dir * p * 0.12, t * 0.36)
+          ..quadraticBezierTo(cx + dir * p * 0.3, spine,
+              cx + dir * p * 0.12, t * 0.68);
+        canvas.drawPath(eye, fine);
+      }
+
+      // A bud on the axis of the unit, and the jewel at the joint between
+      // units — the violet accent of the original.
+      canvas.drawCircle(Offset(cx, t * 0.3), 2.2 * s, _fill(_soft));
+      _star(canvas, Offset(x0, spine), 4.6 * s, 4, _fill(_jewel),
+          innerRatio: 0.42);
+      _star(canvas, Offset(x0, spine), 4.6 * s, 4, _stroke(0.8 * s, color),
+          innerRatio: 0.42);
+    }
+  }
+
+  /// The little tablet at the foot of an illuminated page, where the page
+  /// number is written. The frame leaves the number itself to the page.
+  void _cartouche(Canvas canvas, Size size, double s) {
+    final w = 46.0 * s;
+    final h = 15.0 * s;
+    final centre = Offset(size.width / 2, size.height - 21 * s);
+    final box = RRect.fromRectAndRadius(
+      Rect.fromCenter(center: centre, width: w, height: h),
+      Radius.circular(h / 2),
+    );
+    canvas.drawRRect(box, Paint()..color = const Color(0xFFF7F1E1));
+    canvas.drawRRect(box, _stroke(1.2 * s, color));
+    for (final dir in [-1.0, 1.0]) {
+      _star(canvas, centre + Offset(dir * (w / 2 + 5 * s), 0), 3.4 * s, 4,
+          _fill(_jewel), innerRatio: 0.4);
+    }
   }
 
   // ---- corner medallions -------------------------------------------------
