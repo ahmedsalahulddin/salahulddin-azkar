@@ -7,8 +7,12 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <!-- Only up to Android 12: past that this app schedules inexactly, which
+         is right for a reminder that may drift a minute. USE_EXACT_ALARM is
+         deliberately not declared — Play restricts it to alarm clocks and
+         calendars, and declaring a permission the code never exercises invites
+         a review the app cannot pass and does not need. -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" android:maxSdkVersion="32"/>
-    <uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
     <!-- Recitation keeps playing when the app is not in front: a foreground
          media service is the only way Android allows that, and it is what puts
          the player in the notification shade. -->

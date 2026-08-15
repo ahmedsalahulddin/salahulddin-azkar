@@ -68,6 +68,24 @@ void main() {
         reason: 'cleartext must stay off for everything except the radio');
   });
 
+  test('no restricted permission is declared that the code never uses', () {
+    // USE_EXACT_ALARM is restricted by Play to alarm clocks and calendars.
+    // Every schedule this app writes is inexact, so declaring it would invite
+    // a policy review the app cannot pass and does not need.
+    expect(manifest,
+        isNot(contains('android:name="android.permission.USE_EXACT_ALARM"')));
+    for (final source in Directory('lib').listSync(recursive: true)) {
+      if (source is! File || !source.path.endsWith('.dart')) continue;
+      // 'ScheduleMode.exact', not 'exactAllowWhileIdle' — the inexact name
+      // contains the exact one, so the looser pattern matches everything.
+      final code = source.readAsStringSync();
+      expect(code, isNot(contains('ScheduleMode.exact')),
+          reason: '${source.path} schedules exactly; the permission is gone');
+      expect(code, isNot(contains('ScheduleMode.alarmClock')),
+          reason: '${source.path} uses an alarm clock; Play restricts those');
+    }
+  });
+
   test('the background service is started before any player is built', () {
     final main = File('lib/main.dart').readAsStringSync();
     expect(main, contains('JustAudioBackground.init('));
