@@ -4,6 +4,20 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../data/adhans.dart';
 import '../data/adhkar_data.dart';
 import 'notification_service.dart';
+import 'prayer_alerts.dart';
+
+/// When the reminders arrive: on a rhythm of their own, or before the prayers.
+enum DhikrRhythm {
+  spread('موزّعة على اليوم', 'عدد ثابت، بمسافات متساوية'),
+  beforePrayer('قبل كل صلاة', 'ذكر يسبق الأذان بوقت تختاره');
+
+  final String label;
+  final String note;
+  const DhikrRhythm(this.label, this.note);
+
+  static DhikrRhythm byId(String? id) =>
+      values.where((r) => r.name == id).firstOrNull ?? spread;
+}
 
 /// A short dhikr that arrives on the phone through the day.
 ///
@@ -17,6 +31,8 @@ class DhikrReminder {
   static const _fromKey = '@noor_dhikr_reminder_from';
   static const _toKey = '@noor_dhikr_reminder_to';
   static const _flavourKey = '@noor_dhikr_reminder_flavour';
+  static const _rhythmKey = '@noor_dhikr_reminder_rhythm';
+  static const _leadKey = '@noor_dhikr_reminder_lead';
 
   static final enabled = ValueNotifier<bool>(false);
 
@@ -34,6 +50,14 @@ class DhikrReminder {
 
   static const countChoices = [3, 5, 8, 12];
 
+  /// Spread through the day, or tied to the prayers.
+  static final rhythm = ValueNotifier<DhikrRhythm>(DhikrRhythm.spread);
+
+  /// How long before the adhan the dhikr arrives.
+  static final lead = ValueNotifier<int>(45);
+
+  static const leadChoices = [15, 30, 45, 60];
+
   static Future<void> load() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -42,6 +66,9 @@ class DhikrReminder {
       fromHour.value = prefs.getInt(_fromKey) ?? 8;
       toHour.value = prefs.getInt(_toKey) ?? 22;
       flavour.value = DhikrFlavour.byId(prefs.getString(_flavourKey));
+      rhythm.value = DhikrRhythm.byId(prefs.getString(_rhythmKey));
+      final storedLead = prefs.getInt(_leadKey) ?? 45;
+      lead.value = leadChoices.contains(storedLead) ? storedLead : 45;
     } catch (_) {
       // Off is the safe default: nothing arrives unasked.
     }
@@ -53,12 +80,16 @@ class DhikrReminder {
     int? from,
     int? to,
     DhikrFlavour? kind,
+    DhikrRhythm? beat,
+    int? minutesBefore,
   }) async {
     if (on != null) enabled.value = on;
     if (count != null) perDay.value = count;
     if (from != null) fromHour.value = from;
     if (to != null) toHour.value = to;
     if (kind != null) flavour.value = kind;
+    if (beat != null) rhythm.value = beat;
+    if (minutesBefore != null) lead.value = minutesBefore;
 
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -67,22 +98,51 @@ class DhikrReminder {
       await prefs.setInt(_fromKey, fromHour.value);
       await prefs.setInt(_toKey, toHour.value);
       await prefs.setString(_flavourKey, flavour.value.id);
+      await prefs.setString(_rhythmKey, rhythm.value.name);
+      await prefs.setInt(_leadKey, lead.value);
     } catch (_) {
       // The schedule below still reflects the choice for this session.
     }
     await reschedule();
   }
 
-  /// The times reminders land, spread evenly through the waking window.
+  /// The times reminders land.
   ///
-  /// Evenly rather than randomly: a reader who knows roughly when one is due
-  /// can be ready for it, and randomness only ever looks like a fault.
+  /// Spread evenly rather than randomly: a reader who knows roughly when one
+  /// is due can be ready for it, and randomness only ever looks like a fault.
   static List<int> slotMinutes() {
+    if (rhythm.value == DhikrRhythm.beforePrayer) {
+      final anchored = _beforePrayers();
+      // Until the prayer times are known — a first run, or a reader who never
+      // granted the location — the reminders keep the even rhythm rather than
+      // stopping. Silence would look like the setting did nothing.
+      if (anchored.isNotEmpty) return anchored;
+    }
+
     final start = fromHour.value * 60;
     final end = toHour.value * 60;
     if (end <= start || perDay.value < 1) return const [];
     final step = (end - start) ~/ perDay.value;
     return [for (var i = 0; i < perDay.value; i++) start + step ~/ 2 + i * step];
+  }
+
+  /// A slot [lead] minutes before each of the five prayers, as minutes past
+  /// midnight.
+  ///
+  /// Sunrise is not among them, since it is not a prayer. A prayer close
+  /// enough to midnight that the lead crosses it — Isha in a northern summer —
+  /// wraps to the same clock time on the previous day, which is where the
+  /// reader would expect the reminder to arrive.
+  static List<int> _beforePrayers() {
+    final times = PrayerAlerts.lastTimes;
+    if (times.isEmpty) return const [];
+
+    final slots = <int>{};
+    for (final at in times.values) {
+      final minutes = at.hour * 60 + at.minute - lead.value;
+      slots.add(minutes < 0 ? minutes + 24 * 60 : minutes);
+    }
+    return slots.toList()..sort();
   }
 
   /// The adhkar short enough to read at a glance on a lock screen, of the kind
@@ -111,10 +171,25 @@ class DhikrReminder {
     return rest.isEmpty ? short : rest;
   }
 
-  static Future<void> reschedule() =>
-      NotificationService.scheduleDhikrReminders(
+  /// Lays the reminders down again.
+  ///
+  /// A failure here — the plugin unavailable, the system refusing an alarm —
+  /// must not throw out of the settings tap that caused it: the reader's
+  /// choice is already saved, and losing the screen over a schedule that can
+  /// be rebuilt on the next launch would be the worse trade.
+  static Future<void> reschedule() async {
+    try {
+      await NotificationService.scheduleDhikrReminders(
         enabled: enabled.value,
         minutes: slotMinutes(),
         pool: pool,
       );
+    } catch (_) {
+      // Rebuilt at the next launch, and at the next prayer-times load.
+    }
+  }
+}
+
+extension _FirstOrNull<T> on Iterable<T> {
+  T? get firstOrNull => isEmpty ? null : first;
 }

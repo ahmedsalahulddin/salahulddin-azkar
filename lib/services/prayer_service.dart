@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'dhikr_reminder.dart';
 import 'notification_service.dart';
 import 'prayer_alerts.dart';
 import 'prayer_settings.dart';
@@ -182,6 +183,12 @@ class PrayerService {
     if (PrayerAlerts.anyOn) {
       unawaited(
           NotificationService.schedulePrayerAlerts(PrayerAlerts.lastTimes));
+    }
+    // Reminders tied to the prayers move with them, so they are laid down
+    // again here rather than once when the setting was made.
+    if (DhikrReminder.enabled.value &&
+        DhikrReminder.rhythm.value == DhikrRhythm.beforePrayer) {
+      unawaited(DhikrReminder.reschedule());
     }
 
     return PrayerData(

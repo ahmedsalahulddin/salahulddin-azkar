@@ -378,121 +378,206 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             if (on) ...[
               const Divider(color: AppColors.goldBorder, height: 20),
-              const Text('كم مرة في اليوم',
+              const Text('متى يصلك',
                   style:
                       TextStyle(color: AppColors.textSecondary, fontSize: 12)),
               const SizedBox(height: 6),
-              ValueListenableBuilder<int>(
-                valueListenable: DhikrReminder.perDay,
-                builder: (context, count, _) => Row(
+              ValueListenableBuilder<DhikrRhythm>(
+                valueListenable: DhikrReminder.rhythm,
+                builder: (context, beat, _) => Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    for (final choice in DhikrReminder.countChoices)
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 3),
-                          child: GestureDetector(
-                            onTap: () => DhikrReminder.apply(count: choice),
-                            behavior: HitTestBehavior.opaque,
-                            child: Container(
+                    Row(
+                      children: [
+                        for (final choice in DhikrRhythm.values)
+                          Expanded(
+                            child: Padding(
                               padding:
-                                  const EdgeInsets.symmetric(vertical: 8),
-                              decoration: BoxDecoration(
-                                color: choice == count
-                                    ? AppColors.goldMuted
-                                    : Colors.transparent,
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
-                                    color: choice == count
-                                        ? AppColors.gold
-                                        : AppColors.goldBorder),
-                              ),
-                              child: Text(
-                                QuranService.toArabicDigits(choice),
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: choice == count
-                                      ? AppColors.gold
-                                      : AppColors.textMuted,
-                                  fontSize: 13,
-                                  fontWeight: choice == count
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
-                                ),
+                                  const EdgeInsets.symmetric(horizontal: 3),
+                              child: _pill(
+                                label: choice.label,
+                                on: choice == beat,
+                                onTap: () =>
+                                    DhikrReminder.apply(beat: choice),
                               ),
                             ),
                           ),
-                        ),
-                      ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(beat.note,
+                        style: const TextStyle(
+                            color: AppColors.textMuted, fontSize: 10)),
                   ],
                 ),
+              ),
+              const SizedBox(height: 10),
+              ValueListenableBuilder<DhikrRhythm>(
+                valueListenable: DhikrReminder.rhythm,
+                builder: (context, beat, _) =>
+                    beat == DhikrRhythm.beforePrayer
+                        ? _dhikrLead()
+                        : _dhikrCount(),
               ),
               const SizedBox(height: 10),
               const Text('نوع الذكر',
                   style:
                       TextStyle(color: AppColors.textSecondary, fontSize: 12)),
               const SizedBox(height: 6),
-              ValueListenableBuilder<DhikrFlavour>(
-                valueListenable: DhikrReminder.flavour,
-                builder: (context, kind, _) => Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: [
-                    for (final flavour in DhikrFlavour.values)
-                      GestureDetector(
-                        onTap: () => DhikrReminder.apply(kind: flavour),
-                        behavior: HitTestBehavior.opaque,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: flavour == kind
-                                ? AppColors.goldMuted
-                                : Colors.transparent,
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                                color: flavour == kind
-                                    ? AppColors.gold
-                                    : AppColors.goldBorder),
-                          ),
-                          child: Text(
-                            flavour.label,
-                            style: TextStyle(
-                              color: flavour == kind
-                                  ? AppColors.gold
-                                  : AppColors.textMuted,
-                              fontSize: 11.5,
-                              fontWeight: flavour == kind
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 10),
-              // Nobody wants a buzz at three in the morning.
-              Row(
-                children: [
-                  const Text('بين الساعة',
-                      style: TextStyle(
-                          color: AppColors.textSecondary, fontSize: 12)),
-                  const SizedBox(width: 8),
-                  _hourPicker(DhikrReminder.fromHour,
-                      (h) => DhikrReminder.apply(from: h)),
-                  const SizedBox(width: 8),
-                  const Text('و',
-                      style: TextStyle(
-                          color: AppColors.textSecondary, fontSize: 12)),
-                  const SizedBox(width: 8),
-                  _hourPicker(DhikrReminder.toHour,
-                      (h) => DhikrReminder.apply(to: h)),
-                ],
-              ),
+              _dhikrFlavour(),
             ],
           ],
         ),
+      ),
+    );
+  }
+
+  /// One choice in a strip: the same shape for the count, the lead and the
+  /// rhythm, so the card reads as one control rather than three.
+  Widget _pill({
+    required String label,
+    required bool on,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        decoration: BoxDecoration(
+          color: on ? AppColors.goldMuted : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+          border:
+              Border.all(color: on ? AppColors.gold : AppColors.goldBorder),
+        ),
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: on ? AppColors.gold : AppColors.textMuted,
+            fontSize: 12,
+            fontWeight: on ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// How long before the adhan the dhikr arrives — five reminders a day, one
+  /// per prayer, so the count strip has nothing to say here.
+  Widget _dhikrLead() {
+    return ValueListenableBuilder<int>(
+      valueListenable: DhikrReminder.lead,
+      builder: (context, lead, _) => Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text('قبل الأذان بـ',
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              for (final choice in DhikrReminder.leadChoices)
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 3),
+                    child: _pill(
+                      label: '${QuranService.toArabicDigits(choice)} د',
+                      on: choice == lead,
+                      onTap: () =>
+                          DhikrReminder.apply(minutesBefore: choice),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _dhikrCount() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Text('كم مرة في اليوم',
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+        const SizedBox(height: 6),
+        ValueListenableBuilder<int>(
+          valueListenable: DhikrReminder.perDay,
+          builder: (context, count, _) => Row(
+            children: [
+              for (final choice in DhikrReminder.countChoices)
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 3),
+                    child: _pill(
+                      label: QuranService.toArabicDigits(choice),
+                      on: choice == count,
+                      onTap: () => DhikrReminder.apply(count: choice),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 10),
+        // Nobody wants a buzz at three in the morning.
+        Row(
+          children: [
+            const Text('بين الساعة',
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+            const SizedBox(width: 8),
+            _hourPicker(
+                DhikrReminder.fromHour, (h) => DhikrReminder.apply(from: h)),
+            const SizedBox(width: 8),
+            const Text('و',
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+            const SizedBox(width: 8),
+            _hourPicker(
+                DhikrReminder.toHour, (h) => DhikrReminder.apply(to: h)),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _dhikrFlavour() {
+    return ValueListenableBuilder<DhikrFlavour>(
+      valueListenable: DhikrReminder.flavour,
+      builder: (context, kind, _) => Wrap(
+        spacing: 6,
+        runSpacing: 6,
+        children: [
+          for (final flavour in DhikrFlavour.values)
+            GestureDetector(
+              onTap: () => DhikrReminder.apply(kind: flavour),
+              behavior: HitTestBehavior.opaque,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: flavour == kind
+                      ? AppColors.goldMuted
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                      color: flavour == kind
+                          ? AppColors.gold
+                          : AppColors.goldBorder),
+                ),
+                child: Text(
+                  flavour.label,
+                  style: TextStyle(
+                    color:
+                        flavour == kind ? AppColors.gold : AppColors.textMuted,
+                    fontSize: 11.5,
+                    fontWeight:
+                        flavour == kind ? FontWeight.bold : FontWeight.normal,
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
