@@ -8,16 +8,24 @@ import '../data/home_shelves.dart';
 import '../data/lessons.dart';
 import '../data/library_data.dart';
 import '../data/quran_data.dart';
+import 'book_reader_screen.dart';
+import 'books_screen.dart';
+import 'cards_screen.dart';
 import 'category_screen.dart';
+import 'hisn_chapter_screen.dart';
 import 'lesson_screen.dart';
-import 'quran_screen.dart';
+import 'surah_screen.dart';
 
 /// One hit: what was found, where it lives, and how to get there.
+///
+/// The opener takes a context rather than returning a widget, because some
+/// destinations ask a question first — and because shelf items already open
+/// that way, so their taps forward instead of being reinvented here.
 class SearchHit {
   final String section;
   final String title;
   final String subtitle;
-  final Widget Function() open;
+  final Future<void> Function(BuildContext) open;
 
   const SearchHit({
     required this.section,
@@ -26,6 +34,9 @@ class SearchHit {
     required this.open,
   });
 }
+
+Future<void> _push(BuildContext context, Widget Function() build) =>
+    Navigator.push(context, MaterialPageRoute(builder: (_) => build()));
 
 /// Searches every corner of the app at once.
 ///
@@ -50,9 +61,7 @@ class AppSearch {
             section: shelf.title,
             title: item.title,
             subtitle: item.subtitle,
-            // Shelf items open through a context, so the tap is forwarded
-            // rather than wrapped in a widget here.
-            open: () => const SizedBox.shrink(),
+            open: item.open,
           ));
         }
       }
@@ -64,7 +73,7 @@ class AppSearch {
           section: 'الأذكار',
           title: category.name,
           subtitle: '${category.count} ذكر',
-          open: () => CategoryScreen(category: category),
+          open: (c) => _push(c, () => CategoryScreen(category: category)),
         ));
       }
     }
@@ -75,7 +84,7 @@ class AppSearch {
           section: 'الدروس',
           title: lesson.title,
           subtitle: lesson.summary,
-          open: () => LessonScreen(lesson: lesson),
+          open: (c) => _push(c, () => LessonScreen(lesson: lesson)),
         ));
       }
     }
@@ -86,7 +95,13 @@ class AppSearch {
           section: 'الكتب والأحاديث',
           title: book.title,
           subtitle: book.author,
-          open: () => const QuranScreen(),
+          // A book on the device opens straight into the reader; one that is
+          // not goes to the shelf, which knows how to fetch it.
+          open: (c) => _push(
+              c,
+              () => book.isBundled
+                  ? BookReaderScreen(book: book)
+                  : const BooksScreen()),
         ));
       }
     }
@@ -97,7 +112,12 @@ class AppSearch {
           section: 'كروت المعايدة',
           title: card.greeting,
           subtitle: card.shelf.title,
-          open: () => const QuranScreen(),
+          open: (c) async {
+            final resolved = await GreetingCards.resolve(card);
+            if (c.mounted) {
+              await _push(c, () => CardViewerScreen(resolved: resolved));
+            }
+          },
         ));
       }
     }
@@ -122,7 +142,7 @@ class AppSearch {
             section: 'القرآن الكريم',
             title: 'سورة ${surah.name}',
             subtitle: '${surah.ayahCount} آية — ${surah.type}',
-            open: () => const QuranScreen(),
+            open: (c) => _push(c, () => SurahScreen(info: surah)),
           ),
       for (final chapter in chapters)
         if (hit(chapter.title))
@@ -130,7 +150,7 @@ class AppSearch {
             section: 'حصن المسلم',
             title: chapter.title,
             subtitle: 'باب من صحيح الأذكار',
-            open: () => const QuranScreen(),
+            open: (c) => _push(c, () => HisnChapterScreen(chapter: chapter)),
           ),
     ];
   }
@@ -246,10 +266,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
   Widget _tile(SearchHit hit) {
     return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => hit.open()),
-      ),
+      onTap: () => hit.open(context),
       behavior: HitTestBehavior.opaque,
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),

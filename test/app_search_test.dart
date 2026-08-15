@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:salahulddin_azkar/data/quran_data.dart';
 import 'package:salahulddin_azkar/screens/search_screen.dart';
@@ -52,6 +53,39 @@ void main() {
         hits.map((h) => QuranService.searchKey(h.title)),
         contains(QuranService.searchKey('سورة الإخلاص')));
     expect(hits.first.section, 'القرآن الكريم');
+  });
+
+  testWidgets('a hit opens what it names, not a blank screen', (tester) async {
+    // The first version returned a widget per hit, and most of them returned
+    // the wrong screen — or an empty one. A result that lies about where it
+    // leads is worse than no result.
+    late BuildContext ctx;
+    await tester.pumpWidget(MaterialApp(
+      home: Builder(builder: (c) {
+        ctx = c;
+        return const SizedBox.shrink();
+      }),
+    ));
+
+    final hits = [...AppSearch.run('اذكار'), ...await AppSearch.loaded('اخلاص')];
+    expect(hits, isNotEmpty);
+
+    for (final hit in hits.take(4)) {
+      hit.open(ctx);
+      // Fixed pumps, not pumpAndSettle: several destinations show a spinner
+      // while they load, and a spinner never settles.
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+
+      expect(tester.takeException(), isNull,
+          reason: '${hit.title} threw on the way to its screen');
+      // A real screen arrived — the placeholder had no Scaffold of its own.
+      expect(find.byType(Scaffold), findsWidgets,
+          reason: '${hit.title} led nowhere');
+
+      Navigator.of(ctx).popUntil((r) => r.isFirst);
+      await tester.pump(const Duration(milliseconds: 400));
+    }
   });
 
   test('a word in nothing finds nothing', () async {
