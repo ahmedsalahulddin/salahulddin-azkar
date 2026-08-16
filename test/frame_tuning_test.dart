@@ -239,10 +239,10 @@ void main() {
   });
 
   group('the three markings', () {
-    testWidgets('sit clear of the bars, and where the reader placed them',
+    testWidgets('sit centred in the band, and in the reader\'s own order',
         (tester) async {
-      // Tucking the ornament into the bars had taken these behind them, and a
-      // marking nobody can see is not a marking.
+      // Centred in the depth of the ornament, the way a printed page sets
+      // them — not resting on the band's edge.
       MushafChrome.debugSet(top: 90, bottom: 70);
       await tester.pumpWidget(MaterialApp(
         home: Directionality(
@@ -271,15 +271,19 @@ void main() {
       await tester.pump();
 
       final screen = tester.getRect(find.byType(MushafPageSheet));
+      final border = tester.getRect(find.byKey(const Key('mushaf-frame-box')));
       final surah = tester.getRect(find.text('البقرة'));
       final juz = tester.getRect(find.text('الجزء ٣'));
       final number = tester.getRect(find.text('٢٩٣'));
 
-      // Below the top bar, not behind it.
-      expect(surah.top, greaterThanOrEqualTo(screen.top + 90 - 0.5));
-      expect(juz.top, greaterThanOrEqualTo(screen.top + 90 - 0.5));
-      // Above the bottom bar.
-      expect(number.bottom, lessThanOrEqualTo(screen.bottom - 70 + 0.5));
+      // Each sits within the depth of its own band — between where the
+      // ornament starts and where the bar it is tucked into leaves off.
+      for (final marking in [surah, juz]) {
+        expect(marking.center.dy, greaterThanOrEqualTo(border.top));
+        expect(marking.center.dy, lessThanOrEqualTo(screen.top + 90));
+      }
+      expect(number.center.dy, lessThanOrEqualTo(border.bottom));
+      expect(number.center.dy, greaterThanOrEqualTo(screen.bottom - 70));
 
       // The surah to the right of the juz — this is an Arabic page.
       expect(surah.center.dx, greaterThan(juz.center.dx));

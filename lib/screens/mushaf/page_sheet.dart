@@ -194,14 +194,16 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
     final bottom = (chromeBottom - band).clamp(0.0, size.height);
     final height = (size.height - top - bottom).clamp(0.0, size.height);
 
-    // The markings do not ride with the ornament any more.
+    // Where the markings sit on the band.
     //
-    // Tucking the band into the bars took the surah, the juz and the page
-    // number behind them with it, and a marking nobody can see is not a
-    // marking. They sit against the inner edge of each bar instead — the
-    // surah at the top right, the juz at the top left, the number centred
-    // below — laid over the page's own margin, so the reading area gives up
-    // nothing for them. The two sliders still move them from there.
+    // Centred in the depth of the ornament, the way a printed page sets them:
+    // the surah at the top right, the juz at the top left, the number centred
+    // below. Since the band is tucked into the bars, so are these while the
+    // chrome is up — and they read as part of the border the moment it is
+    // tapped away, which is when the border is there to be looked at. Nothing
+    // is lost meanwhile: the top bar carries the same three.
+    final headerCentre = chromeTop - band / 2;
+    final numberCentre = chromeBottom - band / 2;
     return Positioned.fill(
       // Decoration only. Without this the border sits over the page and eats
       // the taps that select an ayah.
@@ -240,7 +242,7 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
             // Surah on the right, juz on the left — the printed page's own
             // header, each in its own cartouche.
             Positioned(
-              top: chromeTop + FrameTuning.of('header'),
+              top: headerCentre - _captionBox / 2 + FrameTuning.of('header'),
               left: 0,
               right: 0,
               height: _captionBox,
@@ -266,7 +268,8 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
               ),
             ),
             Positioned(
-              bottom: chromeBottom - FrameTuning.of('number'),
+              bottom:
+                  numberCentre - _captionBox / 2 - FrameTuning.of('number'),
               left: 0,
               right: 0,
               height: _captionBox,
