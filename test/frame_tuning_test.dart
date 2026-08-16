@@ -4,6 +4,7 @@ import 'package:salahulddin_azkar/data/quran_data.dart';
 import 'package:salahulddin_azkar/screens/mushaf/appearance_tabs.dart';
 import 'package:salahulddin_azkar/screens/mushaf/page_sheet.dart';
 import 'package:salahulddin_azkar/widgets/frame_tuning.dart';
+import 'package:salahulddin_azkar/widgets/mushaf_chrome.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Where the border sits could only be changed by editing the app and
@@ -15,6 +16,7 @@ void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues({});
     FrameTuning.debugReset();
+    MushafChrome.debugSet(top: 0, bottom: 0);
   });
 
   group('the numbers', () {
@@ -163,7 +165,27 @@ void main() {
           reason: 'the knob has to reach the page, not only the panel');
     });
 
-    testWidgets('the page already clears both bars', (tester) async {
+    testWidgets('the border spans exactly the gap between the two bars',
+        (tester) async {
+      // The reader's own words: the top bar, the page, and the bottom bar
+      // fill the screen — the border meeting the bottom edge of one and the
+      // top edge of the other, with nothing left over.
+      MushafChrome.debugSet(top: 90, bottom: 70);
+      await tester.pumpWidget(sheet());
+      await tester.pump();
+
+      final screen = tester.getRect(find.byType(MushafPageSheet));
+      final border = tester.getRect(find.byKey(const Key('mushaf-frame-box')));
+
+      expect(border.top - screen.top, closeTo(90, 0.5),
+          reason: 'the border starts where the top bar ends');
+      expect(screen.bottom - border.bottom, closeTo(70, 0.5),
+          reason: 'and ends where the bottom bar begins');
+    });
+
+    testWidgets('the page starts inside the border, not under the bar',
+        (tester) async {
+      MushafChrome.debugSet(top: 90, bottom: 70);
       await tester.pumpWidget(sheet());
       await tester.pump();
 
@@ -172,17 +194,13 @@ void main() {
           .padding
           .resolve(TextDirection.rtl);
 
-      // Each bar covered the border by the difference between its own height
-      // and where the border begins — 32 above, 18 below. The page gives up
-      // that much at each end on its own, so the sliders are for taste rather
-      // than for undoing a fault.
-      expect(inset.top, greaterThanOrEqualTo(32),
-          reason: 'the border has to come out from under the top bar');
-      expect(inset.bottom, greaterThanOrEqualTo(18),
-          reason: 'and from under the bottom bar');
+      // Each bar's height, plus the band the ornament itself occupies.
+      expect(inset.top, greaterThan(90));
+      expect(inset.bottom, greaterThan(70));
     });
 
     testWidgets('"من تحت" still moves the page from there', (tester) async {
+      MushafChrome.debugSet(top: 90, bottom: 70);
       await tester.pumpWidget(sheet());
       await tester.pump();
 
@@ -196,7 +214,7 @@ void main() {
       await FrameTuning.set('bottom', -18);
       await tester.pump();
       expect(bottom(), closeTo(before - 18, 0.01),
-          reason: 'the slider is an offset from the built-in clearance');
+          reason: 'the slider is an offset from where the bar leaves off');
     });
 
     testWidgets('dragging "الجانبان" pulls the ornament in from the sides',

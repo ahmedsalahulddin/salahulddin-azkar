@@ -5,6 +5,7 @@ import '../../data/ayah_boxes.dart';
 import '../../data/quran_data.dart';
 import '../../services/mushaf_image_service.dart';
 import '../../widgets/frame_tuning.dart';
+import '../../widgets/mushaf_chrome.dart';
 import '../../widgets/mushaf_frames.dart';
 import '../../widgets/mushaf_palettes.dart';
 import '../../widgets/mushaf_page_view.dart';
@@ -32,12 +33,11 @@ class MushafPageSheet extends StatefulWidget {
 }
 
 class _MushafPageSheetState extends State<MushafPageSheet> {
+  /// The paper's own inset, which rounds its corners away from the screen.
+  static const _sheetMargin = 3.0;
+
   late Future<File?> _image;
   List<AyahBoxes> _boxes = const [];
-
-  /// Where the printed page landed, so the border can sit on its first and
-  /// last lines instead of on the edges of the screen.
-  Rect? _drawn;
 
   @override
   void initState() {
@@ -63,7 +63,7 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
         builder: (context, palette, _) => ValueListenableBuilder<MushafFrame>(
           valueListenable: MushafFrames.current,
           builder: (context, frame, _) => Container(
-          margin: const EdgeInsets.all(3),
+          margin: const EdgeInsets.all(_sheetMargin),
           decoration: BoxDecoration(
             color: palette.paper,
             borderRadius: BorderRadius.circular(6),
@@ -78,8 +78,20 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
               // on its own level, the way a printed page prints them.
               final band = frame.insetFor(size) * FrameTuning.of('scale');
 
-              // The page sits a line lower than centred: it cleared the border
-              // above but sat against the chrome below.
+              // The screen is three parts and nothing else: the top bar, the
+              // page, the bottom bar. The border sits on the bottom edge of
+              // one and the top edge of the other, and the ayat fill
+              // everything between — so the bars are not covering the border,
+              // they are where it begins and ends.
+              // Both bars are measured from the edge of the screen, while
+              // everything here is laid out inside the sheet's own margin —
+              // so that margin comes off, or the border sits three low.
+              MushafChrome.seed(MediaQuery.viewPaddingOf(context));
+              final chromeTop =
+                  (MushafChrome.topHeight.value - _sheetMargin).clamp(0.0, size.height);
+              final chromeBottom =
+                  (MushafChrome.bottomHeight.value - _sheetMargin).clamp(0.0, size.height);
+
               return Stack(
                 // Expand, or the page is handed loose constraints and sizes
                 // itself to the image's own thousand-odd pixels. It then lays
@@ -94,19 +106,15 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
                     key: const Key('mushaf-page-inset'),
                     padding: EdgeInsets.fromLTRB(
                       0,
-                      (band + _lineHeight + _topBarClearance +
-                              FrameTuning.of('top'))
+                      (chromeTop + band + FrameTuning.of('top'))
                           .clamp(0.0, size.height / 3),
                       0,
-                      (band -
-                              _lineHeight / 2 +
-                              _bottomBarClearance +
-                              FrameTuning.of('bottom'))
+                      (chromeBottom + band + FrameTuning.of('bottom'))
                           .clamp(0.0, size.height / 3),
                     ),
                     child: _page(palette),
                   ),
-                  _frame(frame, palette, band, size),
+                  _frame(frame, palette, band, size, chromeTop, chromeBottom),
                 ],
                 );
               },
@@ -138,21 +146,14 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
             selected: widget.selected,
             onAyahTapped: widget.onAyahTapped,
             onBackgroundTapped: widget.onBackgroundTapped,
-            onDrawn: (rect) {
-              if (mounted && rect != _drawn) setState(() => _drawn = rect);
-            },
           ),
         );
       },
     );
   }
 
-  /// The border, sitting directly on the first and last lines of the page.
+  /// The border, drawn between the two bars.
   ///
-  /// Published pages differ in height, so the band positions come from where
-  /// the image actually landed rather than from the space it was offered —
-  /// otherwise the border would float somewhere above the text on a short page
-  /// and the whole point of a border would be lost.
   /// The Uthmanic face the page itself is set in.
   static const _mushafFont = 'AmiriQuran';
 
@@ -165,27 +166,8 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
   double get _captionBox =>
       _captionHeight + (FrameTuning.of('caption') - 16).clamp(0.0, 14.0);
 
-  /// A line of Mushaf text, which is what the whole page drops by so the
-  /// border clears the phone's chrome above and below.
-  static const _lineHeight = 22.0;
-
-  /// How much of the page each bar covers once it is showing.
-  ///
-  /// The top bar stands 85 from the top of the screen — the system bar it sits
-  /// under, then its two rows — while the border begins at 53. The bottom bar
-  /// stands 71 and meets the same 53. Each difference is border the bar was
-  /// hiding, and the page gives up exactly that much at each end so the border
-  /// comes out from under both. Measured rather than guessed: every number
-  /// here is the sum of the paddings that bar is built from.
-  static const _topBarClearance = 32.0;
-  static const _bottomBarClearance = 18.0;
-
-  Widget _frame(
-      MushafFrame frame, MushafPalette palette, double band, Size size) {
-    final drawn = _drawn;
-    final top = (drawn?.top ?? 0) + band;
-    final bottom = (drawn?.bottom ?? size.height - band * 2) + band;
-
+  Widget _frame(MushafFrame frame, MushafPalette palette, double band,
+      Size size, double chromeTop, double chromeBottom) {
     final surah = widget.surahInfo(widget.page.runs.first.surah);
     // The Mushaf's own face, a size above the ayah text: these are the page's
     // own markings, and setting them in the interface font made them read as
@@ -197,11 +179,18 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
       height: 1.15,
     );
 
+    // Pinned to the bars rather than to where the printed image happened to
+    // land: the reader asked for the border to meet the chrome exactly, and a
+    // border that follows the image lands somewhere different on every page.
+    final height =
+        (size.height - chromeTop - chromeBottom).clamp(0.0, size.height);
+
     return Positioned(
+      key: const Key('mushaf-frame-box'),
       left: 0,
       right: 0,
-      top: (top - band).clamp(0.0, size.height),
-      height: (bottom - top + band * 2).clamp(0.0, size.height),
+      top: chromeTop.clamp(0.0, size.height),
+      height: height,
       // Decoration only. Without this the border sits over the page and eats
       // the taps that select an ayah.
       child: IgnorePointer(

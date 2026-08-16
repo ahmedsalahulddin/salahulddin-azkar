@@ -14,6 +14,7 @@ import '../services/recitation_service.dart';
 import '../services/repeat_settings.dart';
 import '../services/storage_service.dart';
 import 'package:just_audio_background/just_audio_background.dart';
+import '../widgets/mushaf_chrome.dart';
 import '../widgets/mushaf_palettes.dart';
 import '../widgets/speed_button.dart';
 import '../widgets/tafsir_sheet.dart';
@@ -420,71 +421,75 @@ class _MushafScreenState extends State<MushafScreen> {
       top: 0,
       left: 0,
       right: 0,
-      child: Container(
-        padding: EdgeInsets.fromLTRB(
-            4, MediaQuery.viewPaddingOf(context).top + 2, 4, 3),
-        decoration: BoxDecoration(
-          color: AppColors.blackCard.withValues(alpha: 0.97),
-          border: const Border(bottom: BorderSide(color: AppColors.goldBorder)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Where you are: surah leads, position trails it.
-            Row(
-              children: [
-                _barIcon(Icons.menu, 'التصفّح',
-                    () => _scaffoldKey.currentState?.openDrawer()),
-                Flexible(
-                  child: Text(
-                    surahLine,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                        color: AppColors.gold,
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold),
+      // Reports its height, so the page can be laid out to exactly clear it.
+      child: MeasuredBar(
+        into: MushafChrome.topHeight,
+        child: Container(
+          padding: EdgeInsets.fromLTRB(
+              4, MediaQuery.viewPaddingOf(context).top + 2, 4, 3),
+          decoration: BoxDecoration(
+            color: AppColors.blackCard.withValues(alpha: 0.97),
+            border: const Border(bottom: BorderSide(color: AppColors.goldBorder)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Where you are: surah leads, position trails it.
+              Row(
+                children: [
+                  _barIcon(Icons.menu, 'التصفّح',
+                      () => _scaffoldKey.currentState?.openDrawer()),
+                  Flexible(
+                    child: Text(
+                      surahLine,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          color: AppColors.gold,
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold),
+                    ),
                   ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    'الجزء ${QuranService.toArabicDigits(page.juz)} · صفحة ${QuranService.toArabicDigits(page.number)}',
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                        color: AppColors.textMuted, fontSize: 12),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'الجزء ${QuranService.toArabicDigits(page.juz)} · صفحة ${QuranService.toArabicDigits(page.number)}',
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          color: AppColors.textMuted, fontSize: 12),
+                    ),
                   ),
-                ),
-                _barIcon(Icons.close, 'رجوع', () => Navigator.pop(context)),
-              ],
-            ),
-            // Who is reciting, then the controls.
-            Padding(
-              padding: const EdgeInsets.only(right: 8, bottom: 2, top: 1),
-              // Fixed height so a larger icon cannot push the bar down over
-              // the page. Everything inside centres within it.
-              child: SizedBox(
-                height: 34,
-                child: Row(
-                  children: [
-                    // Takes whatever the controls leave. The controls set
-                    // their own width, so widening a label narrows this rather
-                    // than growing the row.
-                    Expanded(child: _reciterChip()),
-                    const SizedBox(width: 4),
-                    _reciterMenu(),
-                    // Play leads the controls; repeat is a setting, so it sits
-                    // at the far end rather than between the two.
-                    _playButton(),
-                    const SpeedButton(),
-                    _barIcon(Icons.repeat, 'التكرار', _openRepeatSettings,
-                        label: 'تـكرار',
-                        active: _repeat.isActive,
-                        iconSize: 23),
-                  ],
+                  _barIcon(Icons.close, 'رجوع', () => Navigator.pop(context)),
+                ],
+              ),
+              // Who is reciting, then the controls.
+              Padding(
+                padding: const EdgeInsets.only(right: 8, bottom: 2, top: 1),
+                // Fixed height so a larger icon cannot push the bar down over
+                // the page. Everything inside centres within it.
+                child: SizedBox(
+                  height: 34,
+                  child: Row(
+                    children: [
+                      // Takes whatever the controls leave. The controls set
+                      // their own width, so widening a label narrows this rather
+                      // than growing the row.
+                      Expanded(child: _reciterChip()),
+                      const SizedBox(width: 4),
+                      _reciterMenu(),
+                      // Play leads the controls; repeat is a setting, so it sits
+                      // at the far end rather than between the two.
+                      _playButton(),
+                      const SpeedButton(),
+                      _barIcon(Icons.repeat, 'التكرار', _openRepeatSettings,
+                          label: 'تـكرار',
+                          active: _repeat.isActive,
+                          iconSize: 23),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -655,26 +660,29 @@ class _MushafScreenState extends State<MushafScreen> {
       bottom: 0,
       left: 0,
       right: 0,
-      child: Container(
-        // Half a line of Mushaf text lower, so the page clears it above and
-        // below rather than sitting against it.
-        padding: EdgeInsets.fromLTRB(
-            8, 6, 8, 6 + (inset > 0 ? inset : 8) - 11),
-        decoration: BoxDecoration(
-          color: AppColors.blackCard.withValues(alpha: 0.97),
-          border: const Border(top: BorderSide(color: AppColors.goldBorder)),
-        ),
-        child: Row(
-          children: [
-            _action(Icons.bookmark_border, 'علامة',
-                selected == null ? null : () => _markAyah(selected)),
-            _action(Icons.menu_book, 'التفسير',
-                selected == null ? null : () => _showTafsir(selected)),
-            _action(Icons.copy, 'نسخ',
-                selected == null ? null : () => _copyAyah(selected)),
-            _action(Icons.share, 'مشاركة',
-                selected == null ? null : () => _shareAyah(selected)),
-          ],
+      child: MeasuredBar(
+        into: MushafChrome.bottomHeight,
+        child: Container(
+          // Half a line of Mushaf text lower, so the page clears it above and
+          // below rather than sitting against it.
+          padding: EdgeInsets.fromLTRB(
+              8, 6, 8, 6 + (inset > 0 ? inset : 8) - 11),
+          decoration: BoxDecoration(
+            color: AppColors.blackCard.withValues(alpha: 0.97),
+            border: const Border(top: BorderSide(color: AppColors.goldBorder)),
+          ),
+          child: Row(
+            children: [
+              _action(Icons.bookmark_border, 'علامة',
+                  selected == null ? null : () => _markAyah(selected)),
+              _action(Icons.menu_book, 'التفسير',
+                  selected == null ? null : () => _showTafsir(selected)),
+              _action(Icons.copy, 'نسخ',
+                  selected == null ? null : () => _copyAyah(selected)),
+              _action(Icons.share, 'مشاركة',
+                  selected == null ? null : () => _shareAyah(selected)),
+            ],
+          ),
         ),
       ),
     );
