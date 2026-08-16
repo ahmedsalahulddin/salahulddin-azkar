@@ -163,22 +163,40 @@ void main() {
           reason: 'the knob has to reach the page, not only the panel');
     });
 
-    testWidgets('the page already starts below where the top bar reaches',
-        (tester) async {
+    testWidgets('the page already clears both bars', (tester) async {
       await tester.pumpWidget(sheet());
       await tester.pump();
 
-      final top = tester
+      final inset = tester
+          .widget<Padding>(find.byKey(const Key('mushaf-page-inset')))
+          .padding
+          .resolve(TextDirection.rtl);
+
+      // Each bar covered the border by the difference between its own height
+      // and where the border begins — 32 above, 18 below. The page gives up
+      // that much at each end on its own, so the sliders are for taste rather
+      // than for undoing a fault.
+      expect(inset.top, greaterThanOrEqualTo(32),
+          reason: 'the border has to come out from under the top bar');
+      expect(inset.bottom, greaterThanOrEqualTo(18),
+          reason: 'and from under the bottom bar');
+    });
+
+    testWidgets('"من تحت" still moves the page from there', (tester) async {
+      await tester.pumpWidget(sheet());
+      await tester.pump();
+
+      double bottom() => tester
           .widget<Padding>(find.byKey(const Key('mushaf-page-inset')))
           .padding
           .resolve(TextDirection.rtl)
-          .top;
+          .bottom;
 
-      // The bar covered the top of the border by 32 whenever it was showing.
-      // The page drops by that much on its own, so the sliders are for taste
-      // rather than for undoing a fault.
-      expect(top, greaterThanOrEqualTo(32),
-          reason: 'the border has to come out from under the bar');
+      final before = bottom();
+      await FrameTuning.set('bottom', -18);
+      await tester.pump();
+      expect(bottom(), closeTo(before - 18, 0.01),
+          reason: 'the slider is an offset from the built-in clearance');
     });
 
     testWidgets('dragging "الجانبان" pulls the ornament in from the sides',

@@ -98,7 +98,10 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
                               FrameTuning.of('top'))
                           .clamp(0.0, size.height / 3),
                       0,
-                      (band - _lineHeight / 2 + FrameTuning.of('bottom'))
+                      (band -
+                              _lineHeight / 2 +
+                              _bottomBarClearance +
+                              FrameTuning.of('bottom'))
                           .clamp(0.0, size.height / 3),
                     ),
                     child: _page(palette),
@@ -166,14 +169,16 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
   /// border clears the phone's chrome above and below.
   static const _lineHeight = 22.0;
 
-  /// How much of the page the top bar covers once it is showing.
+  /// How much of the page each bar covers once it is showing.
   ///
-  /// The bar stands 85 above the top of the screen — the system bar it sits
-  /// under, then its two rows — while the border begins at 53. The difference
-  /// is what the bar was hiding, and the page drops by exactly that so the
-  /// border comes out from under it. Measured rather than guessed: both
-  /// numbers are the sums of the paddings each is built from.
+  /// The top bar stands 85 from the top of the screen — the system bar it sits
+  /// under, then its two rows — while the border begins at 53. The bottom bar
+  /// stands 71 and meets the same 53. Each difference is border the bar was
+  /// hiding, and the page gives up exactly that much at each end so the border
+  /// comes out from under both. Measured rather than guessed: every number
+  /// here is the sum of the paddings that bar is built from.
   static const _topBarClearance = 32.0;
+  static const _bottomBarClearance = 18.0;
 
   Widget _frame(
       MushafFrame frame, MushafPalette palette, double band, Size size) {
