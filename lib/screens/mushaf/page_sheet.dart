@@ -94,7 +94,8 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
                     key: const Key('mushaf-page-inset'),
                     padding: EdgeInsets.fromLTRB(
                       0,
-                      (band + _lineHeight + FrameTuning.of('top'))
+                      (band + _lineHeight + _topBarClearance +
+                              FrameTuning.of('top'))
                           .clamp(0.0, size.height / 3),
                       0,
                       (band - _lineHeight / 2 + FrameTuning.of('bottom'))
@@ -164,6 +165,15 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
   /// A line of Mushaf text, which is what the whole page drops by so the
   /// border clears the phone's chrome above and below.
   static const _lineHeight = 22.0;
+
+  /// How much of the page the top bar covers once it is showing.
+  ///
+  /// The bar stands 85 above the top of the screen — the system bar it sits
+  /// under, then its two rows — while the border begins at 53. The difference
+  /// is what the bar was hiding, and the page drops by exactly that so the
+  /// border comes out from under it. Measured rather than guessed: both
+  /// numbers are the sums of the paddings each is built from.
+  static const _topBarClearance = 32.0;
 
   Widget _frame(
       MushafFrame frame, MushafPalette palette, double band, Size size) {

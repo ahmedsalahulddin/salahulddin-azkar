@@ -163,6 +163,24 @@ void main() {
           reason: 'the knob has to reach the page, not only the panel');
     });
 
+    testWidgets('the page already starts below where the top bar reaches',
+        (tester) async {
+      await tester.pumpWidget(sheet());
+      await tester.pump();
+
+      final top = tester
+          .widget<Padding>(find.byKey(const Key('mushaf-page-inset')))
+          .padding
+          .resolve(TextDirection.rtl)
+          .top;
+
+      // The bar covered the top of the border by 32 whenever it was showing.
+      // The page drops by that much on its own, so the sliders are for taste
+      // rather than for undoing a fault.
+      expect(top, greaterThanOrEqualTo(32),
+          reason: 'the border has to come out from under the bar');
+    });
+
     testWidgets('dragging "الجانبان" pulls the ornament in from the sides',
         (tester) async {
       await tester.pumpWidget(sheet());
