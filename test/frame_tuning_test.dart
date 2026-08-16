@@ -237,4 +237,54 @@ void main() {
           reason: 'the flanks were hanging off the page; this brings them in');
     });
   });
+
+  group('the three markings', () {
+    testWidgets('sit clear of the bars, and where the reader placed them',
+        (tester) async {
+      // Tucking the ornament into the bars had taken these behind them, and a
+      // marking nobody can see is not a marking.
+      MushafChrome.debugSet(top: 90, bottom: 70);
+      await tester.pumpWidget(MaterialApp(
+        home: Directionality(
+          textDirection: TextDirection.rtl,
+          child: Scaffold(
+            body: MushafPageSheet(
+              page: const MushafPage(
+                number: 293,
+                juz: 3,
+                runs: [AyahRun(surah: 2, first: 1, last: 5)],
+              ),
+              surahInfo: (n) => const SurahInfo(
+                number: 2,
+                name: 'البقرة',
+                nameEn: 'Al-Baqara',
+                ayahCount: 286,
+                type: 'مدنية',
+              ),
+              selected: null,
+              onAyahTapped: (_) {},
+              onBackgroundTapped: () {},
+            ),
+          ),
+        ),
+      ));
+      await tester.pump();
+
+      final screen = tester.getRect(find.byType(MushafPageSheet));
+      final surah = tester.getRect(find.text('البقرة'));
+      final juz = tester.getRect(find.text('الجزء ٣'));
+      final number = tester.getRect(find.text('٢٩٣'));
+
+      // Below the top bar, not behind it.
+      expect(surah.top, greaterThanOrEqualTo(screen.top + 90 - 0.5));
+      expect(juz.top, greaterThanOrEqualTo(screen.top + 90 - 0.5));
+      // Above the bottom bar.
+      expect(number.bottom, lessThanOrEqualTo(screen.bottom - 70 + 0.5));
+
+      // The surah to the right of the juz — this is an Arabic page.
+      expect(surah.center.dx, greaterThan(juz.center.dx));
+      // And the number centred between them.
+      expect(number.center.dx, closeTo(screen.center.dx, 1));
+    });
+  });
 }
