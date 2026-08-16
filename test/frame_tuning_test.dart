@@ -165,11 +165,11 @@ void main() {
           reason: 'the knob has to reach the page, not only the panel');
     });
 
-    testWidgets('the border spans exactly the gap between the two bars',
-        (tester) async {
-      // The reader's own words: the top bar, the page, and the bottom bar
-      // fill the screen — the border meeting the bottom edge of one and the
-      // top edge of the other, with nothing left over.
+    testWidgets('each band ends where its bar ends', (tester) async {
+      // The reader's own words: the lowest point of the upper ornament sits
+      // on the lowest point of the top bar, and the highest point of the
+      // lower one on the highest point of the bottom bar. So the border box
+      // reaches past each bar's inner edge by exactly the ornament's depth.
       MushafChrome.debugSet(top: 90, bottom: 70);
       await tester.pumpWidget(sheet());
       await tester.pump();
@@ -177,14 +177,13 @@ void main() {
       final screen = tester.getRect(find.byType(MushafPageSheet));
       final border = tester.getRect(find.byKey(const Key('mushaf-frame-box')));
 
-      expect(border.top - screen.top, closeTo(90, 0.5),
-          reason: 'the border starts where the top bar ends');
-      expect(screen.bottom - border.bottom, closeTo(70, 0.5),
-          reason: 'and ends where the bottom bar begins');
+      expect(border.top - screen.top, lessThan(90),
+          reason: 'the upper band is tucked up into the top bar');
+      expect(screen.bottom - border.bottom, lessThan(70),
+          reason: 'and the lower one down into the bottom bar');
     });
 
-    testWidgets('the page starts inside the border, not under the bar',
-        (tester) async {
+    testWidgets('the page fills everything the bars leave', (tester) async {
       MushafChrome.debugSet(top: 90, bottom: 70);
       await tester.pumpWidget(sheet());
       await tester.pump();
@@ -194,9 +193,12 @@ void main() {
           .padding
           .resolve(TextDirection.rtl);
 
-      // Each bar's height, plus the band the ornament itself occupies.
-      expect(inset.top, greaterThan(90));
-      expect(inset.bottom, greaterThan(70));
+      // Exactly the bars and nothing more: the ornament no longer stands
+      // between the bar and the first line, so the ayat start where the bar
+      // leaves off. Three parts, filling the screen.
+      const margin = 3.0;
+      expect(inset.top, closeTo(90 - margin, 0.01));
+      expect(inset.bottom, closeTo(70 - margin, 0.01));
     });
 
     testWidgets('"من تحت" still moves the page from there', (tester) async {

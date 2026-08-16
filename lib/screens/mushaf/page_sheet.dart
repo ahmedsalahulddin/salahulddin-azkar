@@ -106,10 +106,10 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
                     key: const Key('mushaf-page-inset'),
                     padding: EdgeInsets.fromLTRB(
                       0,
-                      (chromeTop + band + FrameTuning.of('top'))
+                      (chromeTop + FrameTuning.of('top'))
                           .clamp(0.0, size.height / 3),
                       0,
-                      (chromeBottom + band + FrameTuning.of('bottom'))
+                      (chromeBottom + FrameTuning.of('bottom'))
                           .clamp(0.0, size.height / 3),
                     ),
                     child: _page(palette),
@@ -180,16 +180,25 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
     );
 
     // Pinned to the bars rather than to where the printed image happened to
-    // land: the reader asked for the border to meet the chrome exactly, and a
-    // border that follows the image lands somewhere different on every page.
-    final height =
-        (size.height - chromeTop - chromeBottom).clamp(0.0, size.height);
+    // land: a border that follows the image sits somewhere different on every
+    // page.
+    //
+    // And tucked into them by its own depth: the ornament ends where the top
+    // bar ends and begins where the bottom bar begins, rather than starting
+    // below one and finishing above the other. So the band lies behind the
+    // bars while they are up — which costs nothing, since the bar already
+    // carries the surah, the juz and the page number the band would repeat —
+    // and the whole ornament comes into view the moment the chrome is tapped
+    // away.
+    final top = (chromeTop - band).clamp(0.0, size.height);
+    final bottom = (chromeBottom - band).clamp(0.0, size.height);
+    final height = (size.height - top - bottom).clamp(0.0, size.height);
 
     return Positioned(
       key: const Key('mushaf-frame-box'),
       left: 0,
       right: 0,
-      top: chromeTop.clamp(0.0, size.height),
+      top: top,
       height: height,
       // Decoration only. Without this the border sits over the page and eats
       // the taps that select an ayah.
