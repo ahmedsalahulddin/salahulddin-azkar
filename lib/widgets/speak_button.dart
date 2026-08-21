@@ -94,7 +94,6 @@ class Tts {
     await _configure();
     // Without this, speak() returns as soon as the words are handed over and
     // the whole list would be spoken at once, on top of itself.
-    // Without this, speak() returns as soon as the words are handed over.
     await _ask(() => _tts.awaitSpeakCompletion(true));
 
     final mine = ++_run;

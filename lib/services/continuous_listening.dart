@@ -101,7 +101,6 @@ class ContinuousListening {
     _wire();
     surah.value = number;
     ayah.value = fromAyah.clamp(1, info.ayahCount);
-    active.value = true;
     await _remember();
 
     try {
@@ -126,6 +125,13 @@ class ContinuousListening {
         ],
         initialIndex: ayah.value - 1,
       );
+      // Only now. Claiming it before the playlist is loaded left a window —
+      // across the awaits above — where the listener saw the previous owner's
+      // tag still on the player (the Mushaf's, the radio's, or none at all on
+      // a first run), read that as "somebody else took it", and switched this
+      // off again. The first surah still played, and then nothing followed it,
+      // which is the one thing this file exists to prevent.
+      active.value = true;
       await PlaybackSpeed.apply();
       await AppAudio.player.play();
     } catch (_) {

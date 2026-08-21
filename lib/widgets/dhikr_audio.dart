@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
@@ -13,41 +15,64 @@ import '../data/hisn_data.dart';
 class DhikrAudioController extends ChangeNotifier {
   final _player = AppAudio.player;
 
-  int? _playingNumber;
+  StreamSubscription<PlayerState>? _stateSub;
+
+  /// Which dhikr is sounding, by its recitation id.
+  ///
+  /// Not by [HisnDhikr.number], which is the item's place *within its
+  /// chapter* — and every one of the 132 chapters starts at 1. That was fine
+  /// while only the chapter screen used this, since numbers are unique inside
+  /// one chapter. It stopped being fine the moment a screen put several
+  /// chapters in front of the reader at once: the Umrah stages, where every
+  /// chapter holds a single dhikr numbered 1, and the favourites tab, which
+  /// gathers adhkar from wherever they were starred. The recitation id is
+  /// unique across the whole book.
+  int? _playingAudioId;
   bool _failed = false;
 
-  /// Which dhikr is sounding, by its number within the chapter.
-  int? get playingNumber => _playingNumber;
+  int? get playingAudioId => _playingAudioId;
   bool get failed => _failed;
 
   DhikrAudioController() {
-    _player.playerStateStream.listen((state) {
-      if (_playingNumber == null) return;
+    // A phone with no working audio still has to be able to open the chapter
+    // and read it. Failing here would take the whole screen down over a
+    // listener whose only job is to un-light a button.
+    try {
+      _watch();
+    } catch (_) {
+      // No player to follow; the text is the point.
+    }
+  }
+
+  void _watch() {
+    _stateSub = _player.playerStateStream.listen((state) {
+      if (_playingAudioId == null) return;
       // Finished, or another screen took the shared player: either way this
       // controller is no longer the one sounding.
       final mine = AppAudio.ownsCurrent('hisn:');
       if (!mine || state.processingState == ProcessingState.completed) {
-        _playingNumber = null;
+        _playingAudioId = null;
         notifyListeners();
       }
     });
   }
 
-  bool isPlaying(HisnDhikr dhikr) => _playingNumber == dhikr.number;
+  bool isPlaying(HisnDhikr dhikr) =>
+      dhikr.audioId != null && _playingAudioId == dhikr.audioId;
 
   Future<void> toggle(HisnDhikr dhikr) async {
     final url = dhikr.audioUrl;
     if (url == null) return;
 
-    if (_playingNumber == dhikr.number) {
+    if (_playingAudioId == dhikr.audioId) {
       await _player.pause();
-      _playingNumber = null;
+      _playingAudioId = null;
       notifyListeners();
       return;
     }
 
     _failed = false;
-    _playingNumber = dhikr.number;
+    _playingAudioId = dhikr.audioId;
     notifyListeners();
 
     try {
@@ -55,7 +80,7 @@ class DhikrAudioController extends ChangeNotifier {
       await _player.setAudioSource(AudioSource.uri(
         Uri.parse(url),
         tag: MediaItem(
-          id: 'hisn:${dhikr.number}',
+          id: 'hisn:${dhikr.audioId}',
           title: 'ذكر ${dhikr.number}',
           album: 'الأذكار',
         ),
@@ -64,19 +89,33 @@ class DhikrAudioController extends ChangeNotifier {
       await _player.play();
     } catch (_) {
       _failed = true;
-      _playingNumber = null;
+      _playingAudioId = null;
       notifyListeners();
     }
   }
 
   Future<void> stop() async {
     await _player.stop();
-    _playingNumber = null;
+    _playingAudioId = null;
+    notifyListeners();
+  }
+
+  /// Stands in for the engine, which has no sound in a test.
+  @visibleForTesting
+  void debugSetPlaying(int? audioId) {
+    _playingAudioId = audioId;
     notifyListeners();
   }
 
   @override
   void dispose() {
+    // Cancel before anything else. The player outlives this controller — it is
+    // the app's single shared one — so a subscription left attached goes on
+    // firing into a disposed notifier, which throws in debug and leaks for the
+    // rest of the run in release. Every screen that shows a dhikr builds one
+    // of these, so that is a subscription per visit.
+    _stateSub?.cancel();
+    _stateSub = null;
     _player.stop();
     super.dispose();
   }
