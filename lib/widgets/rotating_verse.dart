@@ -61,6 +61,18 @@ class VerseRotation {
       current.value = _verses[_index];
     });
   }
+
+  /// The rotation is meant to run for as long as the app does — one timer,
+  /// started once, shared by every screen that shows a verse. A test that
+  /// builds one of those screens has to be able to put it down again.
+  @visibleForTesting
+  static void debugStop() {
+    _timer?.cancel();
+    _timer = null;
+    _verses = const [];
+    _index = 0;
+    current.value = null;
+  }
 }
 
 /// The verse alone. Its citation is [VerseCitation], shown elsewhere.

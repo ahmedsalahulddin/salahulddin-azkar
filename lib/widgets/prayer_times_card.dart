@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../constants/theme.dart';
 import '../services/prayer_service.dart';
+import '../services/prayer_settings.dart';
 import 'rotating_verse.dart';
 import 'sky_arch.dart';
 
@@ -23,13 +24,24 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> {
   void initState() {
     super.initState();
     _load();
+    // The method and the Asr school change the times themselves, and the card
+    // is kept alive by the IndexedStack behind the tabs — so without this it
+    // goes on showing whatever it worked out when the app started. The school
+    // moves Asr and nothing else, which is why the fault looked like "Asr is
+    // wrong" rather than "the settings do nothing".
+    PrayerSettings.method.addListener(_reload);
+    PrayerSettings.school.addListener(_reload);
   }
 
   @override
   void dispose() {
+    PrayerSettings.method.removeListener(_reload);
+    PrayerSettings.school.removeListener(_reload);
     _ticker?.cancel();
     super.dispose();
   }
+
+  void _reload() => _load();
 
   Future<void> _load({bool ask = false}) async {
     try {
