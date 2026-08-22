@@ -6,6 +6,7 @@ import '../services/section_config.dart';
 import '../widgets/sign_in_buttons.dart';
 import 'admin_screen.dart';
 import 'settings_screen.dart';
+import 'sources_screen.dart';
 
 /// The account and settings entry point behind the avatar.
 ///
@@ -136,8 +137,54 @@ class _AccountScreenState extends State<AccountScreen> {
               const SizedBox(height: 20),
               _sectionTitle('عن التطبيق'),
               _aboutCard(),
+              const SizedBox(height: 10),
+              _sourcesLink(),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  /// Whose work the app is carrying, one tap from where anyone would look.
+  ///
+  /// Not buried at the bottom of a legal page: the reader trusting a text has
+  /// a right to see whose text it is.
+  Widget _sourcesLink() {
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const SourcesScreen()),
+      ),
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+        decoration: BoxDecoration(
+          color: AppColors.blackCard,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.goldBorder),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.menu_book_outlined,
+                color: AppColors.gold, size: 20),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('المصادر والحقوق',
+                      style: TextStyle(
+                          color: AppColors.textPrimary, fontSize: 14)),
+                  Text('من أين جاء كل نصّ وصوت وخطّ في التطبيق',
+                      style: TextStyle(
+                          color: AppColors.textMuted, fontSize: 11)),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_left,
+                color: AppColors.textMuted, size: 20),
+          ],
         ),
       ),
     );
