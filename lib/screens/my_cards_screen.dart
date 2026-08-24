@@ -61,6 +61,35 @@ class MyCards {
     return saved;
   }
 
+  /// Copies picked images onto one of the greeting shelves, and returns how
+  /// many arrived.
+  ///
+  /// The same folder holds them all — a picture is a picture — and the record
+  /// beside it says which shelf it was filed on and whether the app writes
+  /// over it. That way the reader's own cards live alongside the built-in
+  /// ones rather than in a place of their own they have to remember.
+  static Future<int> addTo(String shelf, CardStyle style) async {
+    final picked = await ImagePicker().pickMultiImage(imageQuality: 100);
+    if (picked.isEmpty) return 0;
+
+    final dir = await _dir();
+    var stamp = DateTime.now().millisecondsSinceEpoch;
+    var saved = 0;
+    for (final image in picked) {
+      final extension = image.path.split('.').last.toLowerCase();
+      try {
+        final file =
+            await File(image.path).copy('${dir.path}/card_$stamp.$extension');
+        await MyCardsMeta.set(nameOf(file), shelf: shelf, style: style);
+        saved++;
+      } catch (_) {
+        // One unreadable pick does not cost the reader the rest of the set.
+      }
+      stamp++;
+    }
+    return saved;
+  }
+
   static Future<void> remove(File file) async {
     if (await file.exists()) await file.delete();
     await MyCardsMeta.forget(nameOf(file));

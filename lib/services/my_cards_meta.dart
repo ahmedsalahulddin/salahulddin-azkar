@@ -3,6 +3,26 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// What the app does with a picture the reader added.
+enum CardStyle {
+  /// The app writes over it: the greeting, the verse, and the signature. The
+  /// picture is the paper.
+  background('background', 'خلفية يُكتب عليها',
+      'التهنئة والآية والتوقيع فوق صورتك'),
+
+  /// The picture as it is. Only the signature, and only if one is written —
+  /// a card that already says everything should not be written on twice.
+  asIs('as_is', 'جاهزة كما هي', 'تُرسل كما هي، ويمكن إضافة توقيعك فقط');
+
+  final String id;
+  final String label;
+  final String note;
+  const CardStyle(this.id, this.label, this.note);
+
+  static CardStyle byId(String? id) =>
+      values.where((s) => s.id == id).firstOrNull ?? background;
+}
+
 /// How the cards are laid out and sorted.
 enum CardSort {
   newest('الأحدث أولاً'),
@@ -75,6 +95,13 @@ class MyCardsMeta {
 
   static String groupOf(String fileName) => _entries[fileName]?.group ?? '';
 
+  /// Which shelf a picture belongs to. Empty means the reader's own folder,
+  /// which is where everything added before the shelves existed still sits.
+  static String shelfOf(String fileName) => _entries[fileName]?.shelf ?? '';
+
+  static CardStyle styleOf(String fileName) =>
+      _entries[fileName]?.style ?? CardStyle.background;
+
   /// Every group in use, sorted, so the filter row and the picker offer what
   /// the reader has already created rather than a list written here.
   static List<String> groups() {
@@ -88,11 +115,13 @@ class MyCardsMeta {
   }
 
   static Future<void> set(String fileName,
-      {String? title, String? group}) async {
+      {String? title, String? group, String? shelf, CardStyle? style}) async {
     final current = _entries[fileName] ?? const _Entry(title: '', group: '');
     _entries[fileName] = _Entry(
       title: (title ?? current.title).trim(),
       group: (group ?? current.group).trim(),
+      shelf: (shelf ?? current.shelf).trim(),
+      style: style ?? current.style,
     );
     await _save();
   }
@@ -131,10 +160,29 @@ class _Entry {
   final String title;
   final String group;
 
-  const _Entry({required this.title, required this.group});
+  /// Which shelf it was added to, or empty for the reader's own folder.
+  final String shelf;
 
-  Map<String, dynamic> toJson() => {'t': title, 'g': group};
+  final CardStyle style;
 
-  factory _Entry.fromJson(Map<String, dynamic> j) =>
-      _Entry(title: j['t'] as String? ?? '', group: j['g'] as String? ?? '');
+  const _Entry({
+    required this.title,
+    required this.group,
+    this.shelf = '',
+    this.style = CardStyle.background,
+  });
+
+  Map<String, dynamic> toJson() =>
+      {'t': title, 'g': group, 's': shelf, 'm': style.id};
+
+  factory _Entry.fromJson(Map<String, dynamic> j) => _Entry(
+        title: j['t'] as String? ?? '',
+        group: j['g'] as String? ?? '',
+        shelf: j['s'] as String? ?? '',
+        style: CardStyle.byId(j['m'] as String?),
+      );
+}
+
+extension _FirstOrNull<T> on Iterable<T> {
+  T? get firstOrNull => isEmpty ? null : first;
 }

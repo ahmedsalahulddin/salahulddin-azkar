@@ -7,41 +7,248 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
+
 import '../constants/theme.dart';
 import '../data/greeting_cards.dart';
+import '../services/my_cards_meta.dart';
 import '../widgets/greeting_card_view.dart';
+import 'my_cards_screen.dart';
 
 /// The cards on one shelf.
-class CardsScreen extends StatelessWidget {
+class CardsScreen extends StatefulWidget {
   final CardShelf shelf;
 
   const CardsScreen({super.key, required this.shelf});
 
   @override
+  State<CardsScreen> createState() => _CardsScreenState();
+}
+
+class _CardsScreenState extends State<CardsScreen> {
+  /// The reader's own pictures filed on this shelf, newest first.
+  List<File> _mine = const [];
+
+  @override
+  void initState() {
+    super.initState();
+    if (!kIsWeb) _refresh();
+  }
+
+  Future<void> _refresh() async {
+    await MyCardsMeta.load();
+    final all = await MyCards.list();
+    final mine = all
+        .where((f) => MyCardsMeta.shelfOf(MyCards.nameOf(f)) == widget.shelf.id)
+        .toList();
+    if (mounted) setState(() => _mine = mine);
+  }
+
+  /// Adds pictures to this shelf, asking once what they are.
+  ///
+  /// The question is asked before the gallery rather than after, because it
+  /// decides what the reader is about to look for: a plain photograph to be
+  /// written on, or a card someone already made.
+  Future<void> _add() async {
+    final style = await _askStyle();
+    if (style == null) return;
+
+    try {
+      final files = await MyCards.addTo(widget.shelf.id, style);
+      if (files == 0) return;
+      await _refresh();
+      if (mounted && files > 1) _toast('أُضيفت $files صور');
+    } catch (_) {
+      if (mounted) _toast('تعذّر إضافة الصور');
+    }
+  }
+
+  Future<CardStyle?> _askStyle() {
+    return showModalBottomSheet<CardStyle>(
+      context: context,
+      backgroundColor: AppColors.blackCard,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+      ),
+      builder: (ctx) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Padding(
+                padding: EdgeInsets.fromLTRB(20, 16, 20, 2),
+                child: Text('الصورة التي ستضيفها',
+                    style: TextStyle(color: AppColors.gold, fontSize: 15)),
+              ),
+              for (final style in CardStyle.values)
+                ListTile(
+                  leading: Icon(
+                    style == CardStyle.background
+                        ? Icons.edit_note
+                        : Icons.image_outlined,
+                    color: AppColors.gold,
+                    size: 21,
+                  ),
+                  title: Text(style.label,
+                      style: const TextStyle(
+                          color: AppColors.textPrimary, fontSize: 14)),
+                  subtitle: Text(style.note,
+                      style: const TextStyle(
+                          color: AppColors.textMuted, fontSize: 11)),
+                  onTap: () => Navigator.pop(ctx, style),
+                ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _toast(String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(
+        content: Text(message, textAlign: TextAlign.right),
+        backgroundColor: AppColors.blackCard,
+        behavior: SnackBarBehavior.floating,
+      ));
+  }
+
+  /// Removing one of the reader's own pictures. The built-in cards cannot be
+  /// removed, so this is only ever offered on theirs.
+  Future<void> _confirmDelete(File file) async {
+    final yes = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          backgroundColor: AppColors.blackCard,
+          title: const Text('حذف الصورة؟',
+              style: TextStyle(color: AppColors.gold, fontSize: 17)),
+          content: const Text('تُحذف من هذا الرفّ نهائياً.',
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('إبقاء',
+                  style: TextStyle(color: AppColors.textMuted)),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child:
+                  const Text('حذف', style: TextStyle(color: AppColors.error)),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (yes != true) return;
+    await MyCards.remove(file);
+    await _refresh();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final cards = GreetingCards.of(shelf);
+    final cards = GreetingCards.of(widget.shelf);
+    // The reader's own come first: they are the ones being looked for.
+    final total = _mine.length + cards.length;
 
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
-          title: Text(shelf.title),
+          title: Text(widget.shelf.title),
           backgroundColor: AppColors.black,
           foregroundColor: AppColors.gold,
         ),
+        floatingActionButton: kIsWeb
+            ? null
+            : FloatingActionButton.extended(
+                onPressed: _add,
+                backgroundColor: AppColors.goldDark,
+                foregroundColor: AppColors.white,
+                icon: const Icon(Icons.add_photo_alternate),
+                label: const Text('أضف صورة'),
+              ),
         body: GridView.builder(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 90),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
             mainAxisSpacing: 14,
             crossAxisSpacing: 14,
             childAspectRatio: GreetingCardView.aspectRatio,
           ),
-          itemCount: cards.length,
-          itemBuilder: (context, i) => _preview(context, cards[i]),
+          itemCount: total,
+          itemBuilder: (context, i) => i < _mine.length
+              ? _ownCard(context, _mine[i])
+              : _preview(context, cards[i - _mine.length]),
         ),
       ),
+    );
+  }
+
+  /// One of the reader's own pictures, opened as a card and held to delete.
+  Widget _ownCard(BuildContext context, File file) {
+    final style = MyCardsMeta.styleOf(MyCards.nameOf(file));
+
+    return FutureBuilder<ResolvedCard>(
+      // Its greeting and verse come from the shelf's first card: a picture
+      // being written on still needs words, and these are the shelf's own.
+      future: GreetingCards.resolve(GreetingCards.of(widget.shelf).first),
+      builder: (context, snapshot) {
+        final resolved = snapshot.data;
+        return GestureDetector(
+          onTap: resolved == null
+              ? null
+              : () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => CardViewerScreen(
+                        resolved: resolved,
+                        background: file,
+                        bare: style == CardStyle.asIs,
+                      ),
+                    ),
+                  ),
+          onLongPress: () => _confirmDelete(file),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(14),
+                child: resolved == null
+                    ? Image.file(file, fit: BoxFit.cover)
+                    : GreetingCardView(
+                        resolved: resolved,
+                        background: file,
+                        bare: style == CardStyle.asIs,
+                      ),
+              ),
+              // Marked as the reader's own, and how it behaves.
+              Positioned(
+                top: 6,
+                right: 6,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.55),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    style == CardStyle.asIs ? 'صورتك' : 'صورتك · يُكتب عليها',
+                    style: const TextStyle(
+                        color: AppColors.textGold, fontSize: 8.5),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -89,7 +296,19 @@ class CardViewerScreen extends StatefulWidget {
 
   final ResolvedCard resolved;
 
-  const CardViewerScreen({super.key, required this.resolved});
+  /// A picture the reader added, standing in for the drawn ground.
+  final File? background;
+
+  /// True when that picture is a finished card: it is sent as it is, and only
+  /// the signature is laid over it.
+  final bool bare;
+
+  const CardViewerScreen({
+    super.key,
+    required this.resolved,
+    this.background,
+    this.bare = false,
+  });
 
   @override
   State<CardViewerScreen> createState() => _CardViewerScreenState();
@@ -172,7 +391,10 @@ class _CardViewerScreenState extends State<CardViewerScreen> {
       if (bytes == null) throw StateError('empty image');
 
       final dir = await getTemporaryDirectory();
-      final file = File('${dir.path}/${widget.resolved.card.id}.png');
+      final name = widget.background == null
+          ? widget.resolved.card.id
+          : widget.background!.path.split('/').last.split('.').first;
+      final file = File('${dir.path}/$name.png');
       await file.writeAsBytes(bytes.buffer.asUint8List());
 
       await SharePlus.instance.share(ShareParams(
@@ -305,6 +527,8 @@ class _CardViewerScreenState extends State<CardViewerScreen> {
                       key: _exportKey,
                       child: GreetingCardView(
                         resolved: widget.resolved,
+                        background: widget.background,
+                        bare: widget.bare,
                         forSharing: true,
                         senderName: _name.text,
                         senderNote: _note.text,

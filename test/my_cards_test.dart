@@ -132,4 +132,45 @@ void main() {
       expect(MyCardsMeta.columnChoices.last, greaterThan(2));
     });
   });
+
+  group('pictures filed on a shelf', () {
+    test('a picture remembers its shelf and what the app does with it',
+        () async {
+      final name = MyCards.nameOf(older);
+
+      await MyCardsMeta.set(name, shelf: 'seasonal', style: CardStyle.asIs);
+      expect(MyCardsMeta.shelfOf(name), 'seasonal');
+      expect(MyCardsMeta.styleOf(name), CardStyle.asIs);
+
+      await MyCardsMeta.load();
+      expect(MyCardsMeta.shelfOf(name), 'seasonal',
+          reason: 'it must still be on that shelf next time');
+      expect(MyCardsMeta.styleOf(name), CardStyle.asIs);
+    });
+
+    test('a picture with no shelf belongs to the reader\'s own folder', () {
+      expect(MyCardsMeta.shelfOf(MyCards.nameOf(newest)), '');
+      expect(MyCardsMeta.styleOf(MyCards.nameOf(newest)), CardStyle.background,
+          reason: 'written on is the sane default for a plain photograph');
+    });
+
+    test('the two styles are distinct and each explains itself', () {
+      expect(CardStyle.values, hasLength(2));
+      for (final style in CardStyle.values) {
+        expect(style.label.trim(), isNotEmpty);
+        expect(style.note.trim(), isNotEmpty);
+      }
+      expect(CardStyle.byId('nothing-like-this'), CardStyle.background);
+    });
+
+    test('deleting a picture forgets its shelf too', () async {
+      final name = MyCards.nameOf(middle);
+      await MyCardsMeta.set(name, shelf: 'daily', style: CardStyle.asIs);
+      await MyCardsMeta.forget(name);
+
+      expect(MyCardsMeta.shelfOf(name), '');
+      expect(MyCardsMeta.styleOf(name), CardStyle.background,
+          reason: 'a deleted picture must not leave a style behind');
+    });
+  });
 }

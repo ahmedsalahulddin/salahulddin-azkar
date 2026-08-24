@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import '../data/greeting_cards.dart';
@@ -20,6 +22,14 @@ class GreetingCardView extends StatelessWidget {
   final String? senderNote;
 
   /// Where the signature block sits, on a three-by-four grid over the card:
+  /// A picture the reader added, standing in for the drawn ground.
+  ///
+  /// When one is given the card is that photograph; when [bare] is also set
+  /// nothing is written on it but the signature, because a card that already
+  /// says everything should not be written on twice.
+  final File? background;
+  final bool bare;
+
   /// [signColumn] runs 0..2 from the right, [signRow] 0..3 from the top.
   final int signColumn;
   final int signRow;
@@ -35,6 +45,8 @@ class GreetingCardView extends StatelessWidget {
     this.forSharing = false,
     this.senderName,
     this.senderNote,
+    this.background,
+    this.bare = false,
     this.signColumn = 1,
     this.signRow = 3,
   });
@@ -55,6 +67,8 @@ class GreetingCardView extends StatelessWidget {
           // screen and the exported image are the same drawing at two scales.
           final unit = constraints.maxWidth / 400;
 
+          final photo = background;
+
           return DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -62,10 +76,18 @@ class GreetingCardView extends StatelessWidget {
                 end: Alignment.bottomCenter,
                 colors: [palette.top, palette.bottom],
               ),
+              // The reader's own picture fills the card, cropped to its shape
+              // rather than squeezed into it — a face stretched to fit is
+              // worse than a face with its edges outside the frame.
+              image: photo == null
+                  ? null
+                  : DecorationImage(image: FileImage(photo), fit: BoxFit.cover),
             ),
             child: CustomPaint(
               painter: MushafFramePainter(
-                frame: card.frame,
+                // A photograph brings its own edges; an ornament drawn over
+                // them fights the picture instead of framing it.
+                frame: bare ? MushafFrame.none : card.frame,
                 color: palette.ink,
                 scale: unit,
               ),
@@ -88,7 +110,9 @@ class GreetingCardView extends StatelessWidget {
                         ),
                       ),
                     _signature(palette, unit),
-                    Column(
+                    // A ready-made card already says what it came to say.
+                    if (!bare)
+                      Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
@@ -171,9 +195,32 @@ class GreetingCardView extends StatelessWidget {
     // The bottom row would sit on the app's address when sharing.
     if (forSharing && signRow == 3) y = 0.80;
 
+    // Over a photograph the signature has no ground of its own: pale ink can
+    // land on pale sky, and the sender's name disappears into whatever
+    // happens to be behind it. A soft plate is laid under it — enough to read
+    // through, not enough to cover the picture. A drawn card needs none: its
+    // ground was chosen for its ink.
+    final overPhoto = background != null;
+
+    // The plate is dark, so the ink on it must be light — whatever the card's
+    // own palette would have used. A sand card writes in near-black, which on
+    // that plate would be black on black.
+    final noteInk = overPhoto ? const Color(0xFFF6F1E6) : palette.body;
+    final nameInk = overPhoto ? const Color(0xFFD9CFBB) : palette.muted;
+
     return Align(
       alignment: Alignment(xs[signColumn.clamp(0, 2)], y),
-      child: Column(
+      child: Container(
+        padding: overPhoto
+            ? EdgeInsets.symmetric(horizontal: 12 * unit, vertical: 7 * unit)
+            : EdgeInsets.zero,
+        decoration: overPhoto
+            ? BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.42),
+                borderRadius: BorderRadius.circular(10 * unit),
+              )
+            : null,
+        child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (note.isNotEmpty)
@@ -183,7 +230,7 @@ class GreetingCardView extends StatelessWidget {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                color: palette.body,
+                color: noteInk,
                 fontSize: 12.5 * unit,
                 height: 1.6,
               ),
@@ -193,13 +240,14 @@ class GreetingCardView extends StatelessWidget {
             Text(
               'المرسل: $name',
               style: TextStyle(
-                color: palette.muted,
+                color: nameInk,
                 fontSize: 11 * unit,
                 fontWeight: FontWeight.bold,
               ),
             ),
           ],
-        ],
+          ],
+        ),
       ),
     );
   }
