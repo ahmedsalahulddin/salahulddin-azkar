@@ -248,4 +248,55 @@ void main() {
           reason: 'asking for supplications used to send tasbih');
     });
   });
+
+  group('silencing, and unsilencing', () {
+    test('the silence can be lifted, and puts back exactly what it took',
+        () async {
+      // It used to act one way only: the sound flags were overwritten with
+      // false and what had been on was gone, so the switch had nothing to
+      // return to and did nothing when moved back.
+      const loud = AlertMode(notify: true, sound: true);
+      await PrayerAlerts.setAll(AlertWhen.onTime, loud);
+      await PrayerAlerts.setAll(
+          AlertWhen.before, const AlertMode(notify: true));
+      expect(PrayerAlerts.anySound, isTrue);
+
+      await PrayerAlerts.muteEverything();
+      expect(PrayerAlerts.anySound, isFalse);
+      // Silencing takes the sound and nothing else — the alerts still arrive.
+      expect(PrayerAlerts.anyOn, isTrue);
+
+      await PrayerAlerts.restoreSound();
+      expect(PrayerAlerts.anySound, isTrue);
+      for (final prayer in AlertPrayer.values) {
+        expect(PrayerAlerts.modeFor(prayer, AlertWhen.onTime), loud);
+        expect(PrayerAlerts.modeFor(prayer, AlertWhen.before).sound, isFalse,
+            reason: 'what was silent before must stay silent');
+      }
+    });
+
+    test('silencing twice does not forget what the first one saved', () async {
+      const loud = AlertMode(notify: true, sound: true);
+      await PrayerAlerts.setAll(AlertWhen.onTime, loud);
+
+      await PrayerAlerts.muteEverything();
+      await PrayerAlerts.muteEverything();
+
+      await PrayerAlerts.restoreSound();
+      expect(PrayerAlerts.anySound, isTrue,
+          reason: 'the second mute must not overwrite the memory');
+    });
+
+    test('with nothing remembered it still does something', () async {
+      // A reader who silenced the alerts before any of this existed. A switch
+      // that moves and changes nothing is a switch nobody can trust.
+      await PrayerAlerts.setAll(
+          AlertWhen.onTime, const AlertMode(notify: true));
+      expect(PrayerAlerts.anySound, isFalse);
+
+      await PrayerAlerts.restoreSound();
+      expect(PrayerAlerts.anySound, isTrue,
+          reason: 'the adhan goes back on the call to prayer');
+    });
+  });
 }

@@ -152,14 +152,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
         // rather than alarming anyone over a question that was not answered.
         final blocked = snapshot.data == false;
 
-        return Container(
+        // Rebuilt whenever an alert changes, so the card can say what is
+        // currently on. It used to be an action and nothing more: it fired,
+        // said so once in a passing message, and then looked exactly as it
+        // had before — leaving no way to tell whether it had worked.
+        return ValueListenableBuilder<Map<String, AlertMode>>(
+          valueListenable: PrayerAlerts.settings,
+          builder: (context, _, _) => ValueListenableBuilder<bool>(
+            valueListenable: DhikrReminder.enabled,
+            builder: (context, dhikrOn, _) =>
+                _healthCard(blocked: blocked, dhikrOn: dhikrOn),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _healthCard({required bool blocked, required bool dhikrOn}) {
+    final prayersOn = PrayerAlerts.anyOn;
+    final allOn = prayersOn && dhikrOn;
+
+    return Container(
           margin: const EdgeInsets.symmetric(horizontal: 16),
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: AppColors.blackCard,
+            color: allOn && !blocked ? AppColors.goldMuted : AppColors.blackCard,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-                color: blocked ? AppColors.error : AppColors.goldBorder),
+                color: blocked
+                    ? AppColors.error
+                    : allOn
+                        ? AppColors.gold
+                        : AppColors.goldBorder),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -169,7 +193,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   Icon(
                     blocked
                         ? Icons.notifications_off_outlined
-                        : Icons.notifications_active_outlined,
+                        : allOn
+                            ? Icons.check_circle
+                            : Icons.notifications_active_outlined,
                     color: blocked ? AppColors.error : AppColors.gold,
                     size: 20,
                   ),
@@ -178,7 +204,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     child: Text(
                       blocked
                           ? 'الجوال يمنع إشعارات التطبيق'
-                          : 'تنبيهات الصلاة والأذكار',
+                          : allOn
+                              ? 'التنبيهات مُشغّلة'
+                              : 'تنبيهات الصلاة والأذكار',
                       style: TextStyle(
                           color: blocked
                               ? AppColors.error
@@ -192,8 +220,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Text(
                 blocked
                     ? 'لن يصل شيء حتى تسمح بها من إعدادات الجوال.'
-                    : 'شغّلها كلها بضغطة: مواقيت الصلاة، وتنبيه قبلها، وذكر أو '
-                        'دعاء يصلك خلال اليوم.',
+                    : allOn
+                        ? 'مواقيت الصلاة، وتنبيه قبلها بـ'
+                            '${QuranService.toArabicDigits(PrayerAlerts.lead.value)}'
+                            ' دقيقة، وذكر خلال اليوم.'
+                        : prayersOn || dhikrOn
+                            ? 'بعضها مُشغّل. اضغط لتشغيل الباقي.'
+                            : 'شغّلها كلها بضغطة: مواقيت الصلاة، وتنبيه قبلها، '
+                                'وذكر أو دعاء يصلك خلال اليوم.',
                 style: const TextStyle(
                     color: AppColors.textMuted, fontSize: 11, height: 1.7),
               ),
@@ -215,7 +249,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   else ...[
                     Expanded(
                       child: _healthButton(
-                          'شغّل التنبيهات', Icons.play_arrow, _turnOnAlerts),
+                        allOn ? 'أوقف التنبيهات' : 'شغّل التنبيهات',
+                        allOn ? Icons.stop : Icons.play_arrow,
+                        allOn ? _turnOffAlerts : _turnOnAlerts,
+                      ),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
@@ -227,8 +264,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ],
           ),
-        );
-      },
     );
   }
 
@@ -284,7 +319,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await DhikrReminder.apply(on: true);
     if (!mounted) return;
     _say('شُغّلت تنبيهات الصلاة وقبلها، وتذكير الذكر.');
-    setState(() {});
+  }
+
+  /// The same three, off again — so the button is a switch and not a one-way
+  /// door. The alert settings themselves are left alone below; this only puts
+  /// down what it picked up.
+  Future<void> _turnOffAlerts() async {
+    await PrayerAlerts.setAll(AlertWhen.before, AlertMode.off);
+    await PrayerAlerts.setAll(AlertWhen.onTime, AlertMode.off);
+    await DhikrReminder.apply(on: false);
+    if (!mounted) return;
+    _say('أُوقفت التنبيهات.');
   }
 
   void _say(String message) {
@@ -484,9 +529,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               Switch(
                 value: !loud,
-                onChanged: (quiet) {
-                  if (quiet) PrayerAlerts.muteEverything();
-                },
+                // Both ways. It used to act only on the way in, so switching
+                // the silence off did nothing and the switch sprang back —
+                // which reads as a broken control, and was one.
+                onChanged: (quiet) => quiet
+                    ? PrayerAlerts.muteEverything()
+                    : PrayerAlerts.restoreSound(),
                 activeThumbColor: AppColors.gold,
               ),
             ],

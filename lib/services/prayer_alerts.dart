@@ -35,6 +35,19 @@ class AlertMode {
 
   String encode() => '${notify ? 1 : 0}${sound ? 1 : 0}';
 
+  // A value, so two of them holding the same two answers are the same thing.
+  // Without this the class was compared by identity, and any check that two
+  // alerts matched was quietly always false.
+  @override
+  bool operator ==(Object other) =>
+      other is AlertMode && other.notify == notify && other.sound == sound;
+
+  @override
+  int get hashCode => Object.hash(notify, sound);
+
+  @override
+  String toString() => 'AlertMode(notify: $notify, sound: $sound)';
+
   static AlertMode decode(String? raw) {
     // The old format stored one of three names; a reader upgrading keeps what
     // they had rather than being silently switched off.
@@ -84,6 +97,10 @@ class PrayerAlerts {
   static const _key = '@noor_prayer_alerts';
   static const _leadKey = '@noor_prayer_alert_lead';
   static const _adhanKey = '@noor_prayer_adhan';
+
+  /// What the alerts sounded like before they were silenced, so that turning
+  /// the silence off is a return rather than a guess.
+  static const _beforeMuteKey = '@noor_prayer_alerts_premute';
 
   /// Screens listen so a change shows without a reload.
   static final settings = ValueNotifier<Map<String, AlertMode>>(const {});
@@ -169,12 +186,66 @@ class PrayerAlerts {
 
   /// Strips every sound everywhere, leaving the notifications in place — the
   /// single switch at the top of settings.
+  /// Silences every alert, and remembers what it silenced.
+  ///
+  /// Muting used to be one-way: the sound flags were overwritten with false
+  /// and what had been on was gone, so there was nothing to switch back to
+  /// and the switch did nothing in the other direction. What was on is kept
+  /// aside first, and [restoreSound] puts it back exactly.
   static Future<void> muteEverything() async {
+    // Only on the way in, and only from a state that had sound: muting twice
+    // must not overwrite the memory with an already-silent one.
+    if (anySound) {
+      await _save((prefs) => prefs.setString(
+            _beforeMuteKey,
+            jsonEncode({
+              for (final e in settings.value.entries) e.key: e.value.encode(),
+            }),
+          ));
+    }
+
     settings.value = {
       for (final entry in settings.value.entries)
         entry.key: entry.value.withSound(false),
     };
     await _persist();
+    await _reschedule();
+  }
+
+  /// Puts the sound back the way it was before the silence.
+  ///
+  /// With nothing remembered — a reader who silenced the alerts before this
+  /// existed, or who never had a sound on — the adhan goes back on the call
+  /// to prayer itself and nothing else. Doing nothing at all is the one
+  /// answer that must not happen: a switch that moves and changes nothing is
+  /// a switch nobody can trust.
+  static Future<void> restoreSound() async {
+    Map<String, AlertMode>? before;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_beforeMuteKey);
+      if (raw != null) {
+        final decoded = (jsonDecode(raw) as Map).cast<String, dynamic>();
+        before = {
+          for (final e in decoded.entries)
+            e.key: AlertMode.decode(e.value as String?),
+        };
+      }
+    } catch (_) {
+      // Fall through to the sensible default below.
+    }
+
+    settings.value = before ??
+        {
+          for (final prayer in AlertPrayer.values)
+            for (final when in AlertWhen.values)
+              keyFor(prayer, when): when == AlertWhen.onTime
+                  ? const AlertMode(notify: true, sound: true)
+                  : modeFor(prayer, when),
+        };
+
+    await _persist();
+    await _save((prefs) => prefs.remove(_beforeMuteKey));
     await _reschedule();
   }
 
