@@ -72,6 +72,21 @@ class CardsScreen extends StatelessWidget {
 
 /// One card, full size, with the button that sends it.
 class CardViewerScreen extends StatefulWidget {
+  /// How wide the shared card is, in pixels. At the card's four-by-five that
+  /// is 2048 × 2560 — comfortably above what a messaging app downscales to,
+  /// so its own pass still leaves the writing sharp.
+  static const exportWidth = 2048.0;
+
+  /// The multiple of the on-screen card that reaches [exportWidth].
+  ///
+  /// Floored at three so a large tablet still exports better than the layout,
+  /// and capped at eight so a small one cannot ask for an image too big to
+  /// hold in memory.
+  static double exportRatio(double layoutWidth) {
+    if (layoutWidth <= 0) return 3;
+    return (exportWidth / layoutWidth).clamp(3.0, 8.0).toDouble();
+  }
+
   final ResolvedCard resolved;
 
   const CardViewerScreen({super.key, required this.resolved});
@@ -138,9 +153,21 @@ class _CardViewerScreenState extends State<CardViewerScreen> {
     try {
       final boundary = _exportKey.currentContext!.findRenderObject()
           as RenderRepaintBoundary;
-      // Three times the layout size: sharp on any phone the card lands on,
-      // without making a file too large to send.
-      final image = await boundary.toImage(pixelRatio: 3);
+
+      // Sized to a fixed width rather than to a multiple of the screen.
+      //
+      // Three times the layout size meant the card came out at whatever the
+      // phone happened to be: about 1080 across on a wide handset, under 900
+      // on a small one. Then the messaging app re-encodes what it is sent —
+      // downscaling and compressing it as a photograph — and Arabic at that
+      // size does not survive the second pass: the letters blur and the
+      // vowels go first.
+      //
+      // Handing it a much larger original leaves the text legible after that
+      // pass. The ratio is capped so an unusually large screen cannot ask for
+      // an image too big to hold.
+      final image =
+          await boundary.toImage(pixelRatio: CardViewerScreen.exportRatio(boundary.size.width));
       final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
       if (bytes == null) throw StateError('empty image');
 

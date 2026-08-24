@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:salahulddin_azkar/screens/cards_screen.dart';
 import 'package:salahulddin_azkar/data/greeting_cards.dart';
 import 'package:salahulddin_azkar/data/quran_data.dart';
 import 'package:salahulddin_azkar/widgets/greeting_card_view.dart';
@@ -143,6 +144,34 @@ void main() {
         expect(find.text('islamic-azkar.yallanow.app'),
             sharing ? findsOneWidget : findsNothing);
       }
+    });
+  });
+
+  group('the card that gets sent', () {
+    test('comes out at a fixed width, whatever phone drew it', () {
+      // It used to be three times the layout, so the card was whatever the
+      // screen happened to be — about 1080 across on a wide handset, under
+      // 900 on a small one. Then the messaging app re-encodes it as a
+      // photograph, and Arabic at that size does not survive the second pass.
+      for (final layout in [280.0, 320.0, 360.0, 420.0]) {
+        final out = layout * CardViewerScreen.exportRatio(layout);
+        expect(out, closeTo(CardViewerScreen.exportWidth, 1),
+            reason: '$layout across should still export at one width');
+      }
+    });
+
+    test('never exports smaller than it used to', () {
+      // Three times the layout was the old floor; nothing should regress
+      // below it, however wide the screen.
+      for (final layout in [280.0, 700.0, 1200.0]) {
+        expect(CardViewerScreen.exportRatio(layout),
+            greaterThanOrEqualTo(3.0));
+      }
+    });
+
+    test('a tiny screen cannot ask for an image too big to hold', () {
+      expect(CardViewerScreen.exportRatio(10), lessThanOrEqualTo(8.0));
+      expect(CardViewerScreen.exportRatio(0), 3);
     });
   });
 }
