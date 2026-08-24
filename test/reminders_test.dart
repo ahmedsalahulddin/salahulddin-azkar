@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:salahulddin_azkar/data/adhans.dart';
+import 'package:salahulddin_azkar/data/quran_data.dart';
 import 'package:salahulddin_azkar/services/dhikr_reminder.dart';
 import 'package:salahulddin_azkar/services/prayer_alerts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -183,6 +184,68 @@ void main() {
             reason: 'a long supplication truncated by the system is worse '
                 'than not sending it');
       }
+    });
+  });
+
+  group('turning them on together', () {
+    test('one action covers the call, the warning before it, and the dhikr',
+        () async {
+      // Twelve switches is a wall, not a choice. The card offers the three
+      // that are asked for most as one tap — and this holds what that tap
+      // actually leaves switched on.
+      expect(PrayerAlerts.anyOn, isFalse, reason: 'nothing arrives unasked');
+
+      const notify = AlertMode(notify: true);
+      await PrayerAlerts.setAll(AlertWhen.before, notify);
+      await PrayerAlerts.setAll(AlertWhen.onTime, notify);
+      await DhikrReminder.apply(on: true);
+
+      for (final prayer in AlertPrayer.values) {
+        for (final when in AlertWhen.values) {
+          expect(PrayerAlerts.modeFor(prayer, when).notify, isTrue,
+              reason: '${prayer.name} — ${when.id}');
+        }
+      }
+      expect(DhikrReminder.enabled.value, isTrue);
+    });
+
+    test('it does not switch a sound on for anyone', () async {
+      // An adhan is chosen deliberately. Waking a household with one because
+      // a button said "turn on notifications" is not a favour.
+      const notify = AlertMode(notify: true);
+      await PrayerAlerts.setAll(AlertWhen.onTime, notify);
+
+      for (final prayer in AlertPrayer.values) {
+        expect(PrayerAlerts.modeFor(prayer, AlertWhen.onTime).sound, isFalse);
+      }
+    });
+
+    test('random duas are among the kinds the dhikr reminder can send', () {
+      // "أدعية متنوعة" is picked out by the supplication opening اللهم.
+      final duas =
+          DhikrFlavour.values.firstWhere((f) => f.id == 'duas');
+      expect(duas.marker, isNotNull);
+
+      DhikrReminder.flavour.value = duas;
+      final chosen = DhikrReminder.pool;
+
+      expect(chosen, isNotEmpty,
+          reason: 'a kind that sends nothing would silence the reminder');
+      expect(chosen.length, lessThan(DhikrReminder.pool.length + 1));
+
+      // Folded on both sides, the way the filter itself matches: the adhkar
+      // are stored fully vowelled and the marker is written plainly.
+      for (final dhikr in chosen) {
+        expect(QuranService.searchKey(dhikr.text),
+            contains(QuranService.searchKey(duas.marker!)),
+            reason: 'a kind must send only its own kind');
+      }
+
+      // And it is a real narrowing, not the fallback quietly handing back
+      // everything — which is what happened while the filter matched nothing.
+      DhikrReminder.flavour.value = DhikrFlavour.all;
+      expect(chosen.length, lessThan(DhikrReminder.pool.length),
+          reason: 'asking for supplications used to send tasbih');
     });
   });
 }

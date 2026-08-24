@@ -4,7 +4,9 @@ import '../data/quran_data.dart';
 import '../data/adhans.dart';
 import '../services/daily_reminders.dart';
 import '../services/dhikr_reminder.dart';
+import '../services/notification_service.dart';
 import '../services/prayer_alerts.dart';
+import '../services/prayer_service.dart';
 import '../services/prayer_settings.dart';
 import 'prayer_alerts_screen.dart';
 import '../services/storage_service.dart';
@@ -90,6 +92,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                 // Notifications
                 _sectionTitle('التذكيرات'),
+                _notificationHealth(),
+                const SizedBox(height: 10),
                 _dhikrReminder(),
                 const SizedBox(height: 10),
                 _verseReminder(),
@@ -130,6 +134,167 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
       ),
     );
+  }
+
+  /// Whether anything will actually arrive, and one tap to make it.
+  ///
+  /// The reminders are the only part of the app whose working cannot be seen
+  /// by looking: a prayer alert set for tomorrow's Fajr proves nothing today,
+  /// and every switch below can be on while the phone quietly refuses the lot.
+  /// So this says what the phone allows, offers to prove it with one that
+  /// arrives now, and turns the three the reader asks for most on together —
+  /// twelve switches is a wall, not a choice.
+  Widget _notificationHealth() {
+    return FutureBuilder<bool?>(
+      future: NotificationService.allowed(),
+      builder: (context, snapshot) {
+        // Null means the platform would not say. Treated as probably fine
+        // rather than alarming anyone over a question that was not answered.
+        final blocked = snapshot.data == false;
+
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: AppColors.blackCard,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+                color: blocked ? AppColors.error : AppColors.goldBorder),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    blocked
+                        ? Icons.notifications_off_outlined
+                        : Icons.notifications_active_outlined,
+                    color: blocked ? AppColors.error : AppColors.gold,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      blocked
+                          ? 'الجوال يمنع إشعارات التطبيق'
+                          : 'تنبيهات الصلاة والأذكار',
+                      style: TextStyle(
+                          color: blocked
+                              ? AppColors.error
+                              : AppColors.textPrimary,
+                          fontSize: 14),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                blocked
+                    ? 'لن يصل شيء حتى تسمح بها من إعدادات الجوال.'
+                    : 'شغّلها كلها بضغطة: مواقيت الصلاة، وتنبيه قبلها، وذكر أو '
+                        'دعاء يصلك خلال اليوم.',
+                style: const TextStyle(
+                    color: AppColors.textMuted, fontSize: 11, height: 1.7),
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  if (blocked)
+                    Expanded(
+                      child: _healthButton(
+                        'افتح إعدادات التطبيق',
+                        Icons.settings,
+                        // The app has no notification-settings opener of its
+                        // own; geolocator's lands on the app's own page in the
+                        // system settings, which is where the switch lives.
+                        () => PrayerService.openSettingsFor(
+                            LocationStatus.denied),
+                      ),
+                    )
+                  else ...[
+                    Expanded(
+                      child: _healthButton(
+                          'شغّل التنبيهات', Icons.play_arrow, _turnOnAlerts),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _healthButton(
+                          'جرّب الآن', Icons.notifications, _tryNow),
+                    ),
+                  ],
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _healthButton(String label, IconData icon, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 9),
+        decoration: BoxDecoration(
+          color: AppColors.goldMuted,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: AppColors.goldBorder),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: AppColors.gold, size: 16),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                      color: AppColors.gold,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _tryNow() async {
+    await NotificationService.requestPermission();
+    final sent = await NotificationService.sendTest();
+    if (!mounted) return;
+    _say(sent
+        ? 'أُرسل إشعار تجريبي — إن لم يصلك فالجوال يمنعه.'
+        : 'تعذّر إرسال الإشعار.');
+    setState(() {});
+  }
+
+  /// The three the reader asked for, together: the call to prayer, the warning
+  /// before it, and a dhikr through the day. Sound is left off — an adhan is
+  /// chosen deliberately, not switched on for someone.
+  Future<void> _turnOnAlerts() async {
+    await NotificationService.requestPermission();
+    const notify = AlertMode(notify: true);
+    await PrayerAlerts.setAll(AlertWhen.before, notify);
+    await PrayerAlerts.setAll(AlertWhen.onTime, notify);
+    await DhikrReminder.apply(on: true);
+    if (!mounted) return;
+    _say('شُغّلت تنبيهات الصلاة وقبلها، وتذكير الذكر.');
+    setState(() {});
+  }
+
+  void _say(String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(
+        content: Text(message, textAlign: TextAlign.right),
+        backgroundColor: AppColors.blackCard,
+        behavior: SnackBarBehavior.floating,
+      ));
   }
 
   /// Each authority sets its own twilight angles, so this is not a matter of

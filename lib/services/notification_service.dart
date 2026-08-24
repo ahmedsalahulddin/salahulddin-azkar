@@ -15,6 +15,9 @@ class NotificationService {
   static const _morningId = 1;
   static const _eveningId = 2;
 
+  /// Its own id, so trying it twice replaces rather than stacks.
+  static const _testId = 900;
+
   static Future<void> init() async {
     if (kIsWeb || _initialized) return;
     tz.initializeTimeZones();
@@ -29,6 +32,64 @@ class NotificationService {
       const InitializationSettings(android: android, iOS: ios),
     );
     _initialized = true;
+  }
+
+  /// Whether the phone will actually show anything.
+  ///
+  /// Every switch in the settings can be on and every reminder scheduled, and
+  /// still nothing arrives — because the reader said no to the permission
+  /// once, or Android put the app to sleep. The app used to have no way to
+  /// know that, and no way to tell them. Null means the platform would not
+  /// say, which is treated as "probably yes" rather than alarming anyone.
+  static Future<bool?> allowed() async {
+    if (kIsWeb) return false;
+    try {
+      final android = _plugin.resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>();
+      if (android != null) return android.areNotificationsEnabled();
+
+      final ios = _plugin.resolvePlatformSpecificImplementation<
+          IOSFlutterLocalNotificationsPlugin>();
+      if (ios != null) {
+        final granted = await ios.requestPermissions(alert: true);
+        return granted;
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// One notification, now.
+  ///
+  /// The reminders are the only part of the app whose working cannot be seen
+  /// by looking: a prayer alert set for tomorrow's Fajr proves nothing today.
+  /// This turns "did I set it up right?" into a question the reader can answer
+  /// in a second, and separates a permission the phone is refusing from a
+  /// schedule that simply has not come round yet.
+  static Future<bool> sendTest() async {
+    if (kIsWeb) return false;
+    try {
+      await init();
+      await _plugin.show(
+        _testId,
+        'التنبيهات تعمل',
+        'هكذا سيصلك الذكر والتذكير بمواقيت الصلاة.',
+        const NotificationDetails(
+          android: AndroidNotificationDetails(
+            'salahulddin_test',
+            'تجربة التنبيهات',
+            channelDescription: 'إشعار واحد للتأكد من وصول التنبيهات',
+            importance: Importance.high,
+            priority: Priority.high,
+          ),
+          iOS: DarwinNotificationDetails(),
+        ),
+      );
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   static Future<void> requestPermission() async {

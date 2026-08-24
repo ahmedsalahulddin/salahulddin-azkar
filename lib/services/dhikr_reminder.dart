@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/adhans.dart';
 import '../data/adhkar_data.dart';
+import '../data/quran_data.dart';
 import 'notification_service.dart';
 import 'prayer_alerts.dart';
 
@@ -148,6 +149,18 @@ class DhikrReminder {
   /// The adhkar short enough to read at a glance on a lock screen, of the kind
   /// the reader asked for. A long supplication truncated by the system is
   /// worse than not sending it.
+  /// Matches a kind against a dhikr with both sides stripped of what the
+  /// reader never sees as a difference.
+  ///
+  /// The adhkar are stored fully vowelled — اللَّهُمَّ — and every marker here is
+  /// written plainly — اللهم. So a raw `contains` matched nothing at all, for
+  /// any kind, and the "never return an empty pool" fallback quietly handed
+  /// back every short dhikr instead. The chips looked like they worked and
+  /// none of them did: asking for supplications sent tasbih.
+  static bool _carries(Dhikr dhikr, String marker) =>
+      QuranService.searchKey(dhikr.text)
+          .contains(QuranService.searchKey(marker));
+
   static List<Dhikr> get pool {
     final short = adhkar.where((d) => d.text.length <= 90).toList();
     final marker = flavour.value.marker;
@@ -155,7 +168,7 @@ class DhikrReminder {
     if (flavour.value == DhikrFlavour.all) return short;
 
     if (marker != null) {
-      final matched = short.where((d) => d.text.contains(marker)).toList();
+      final matched = short.where((d) => _carries(d, marker)).toList();
       // Never return nothing: a filter that empties the pool would silence
       // the reminder without saying so.
       return matched.isEmpty ? short : matched;
@@ -167,7 +180,7 @@ class DhikrReminder {
         if (f.marker != null) f.marker!,
     ];
     final rest =
-        short.where((d) => !named.any((m) => d.text.contains(m))).toList();
+        short.where((d) => !named.any((m) => _carries(d, m))).toList();
     return rest.isEmpty ? short : rest;
   }
 
