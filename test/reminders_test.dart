@@ -299,4 +299,44 @@ void main() {
           reason: 'the adhan goes back on the call to prayer');
     });
   });
+
+  group('a schedule that will not be written', () {
+    tearDown(() {
+      PrayerAlerts.onChanged = null;
+      PrayerAlerts.lastTimes = const {};
+    });
+
+    test('the setting still applies when laying it down fails', () async {
+      // What was reported: "أوقف التنبيهات" pressed once, stuck saying that
+      // for ever, and doing nothing on every press after. Turning them off is
+      // two calls, and the first threw on its way to the schedule — so the
+      // second never ran, the alerts stayed on, and the button kept offering
+      // to turn off what it had already failed to turn off.
+      PrayerAlerts.lastTimes = {AlertPrayer.fajr: DateTime(2026, 8, 25, 4)};
+      PrayerAlerts.onChanged = (_) async => throw StateError('no channel');
+
+      await PrayerAlerts.setAll(
+          AlertWhen.onTime, const AlertMode(notify: true));
+      expect(PrayerAlerts.anyOn, isTrue,
+          reason: 'switching on must survive a schedule that fails');
+
+      await PrayerAlerts.setAll(AlertWhen.before, AlertMode.off);
+      await PrayerAlerts.setAll(AlertWhen.onTime, AlertMode.off);
+      expect(PrayerAlerts.anyOn, isFalse,
+          reason: 'and so must switching off — both calls have to run');
+    });
+
+    test('silencing survives it too', () async {
+      PrayerAlerts.lastTimes = {AlertPrayer.fajr: DateTime(2026, 8, 25, 4)};
+      PrayerAlerts.onChanged = (_) async => throw StateError('no channel');
+
+      await PrayerAlerts.setAll(
+          AlertWhen.onTime, const AlertMode(notify: true, sound: true));
+      await PrayerAlerts.muteEverything();
+      expect(PrayerAlerts.anySound, isFalse);
+
+      await PrayerAlerts.restoreSound();
+      expect(PrayerAlerts.anySound, isTrue);
+    });
+  });
 }

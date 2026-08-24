@@ -121,9 +121,22 @@ class PrayerAlerts {
   /// unaware of the notification plumbing.
   static Future<void> Function(Map<AlertPrayer, DateTime>)? onChanged;
 
+  /// Lays the alerts down again after a change.
+  ///
+  /// Never throws. Every setter runs through here, so a schedule that cannot
+  /// be written — a channel the system refuses, a sound that has gone missing
+  /// — used to abort the setter that called it and leave the change half
+  /// applied. Turning the alerts off did the first half, threw on the way to
+  /// the second, and left them on: the button then said "turn off" for ever
+  /// and did nothing more, because every press failed at the same step.
   static Future<void> _reschedule() async {
     if (lastTimes.isEmpty) return;
-    await onChanged?.call(lastTimes);
+    try {
+      await onChanged?.call(lastTimes);
+    } catch (_) {
+      // The setting stands. The schedule is rebuilt at the next launch and
+      // on every prayer-times load.
+    }
   }
 
   static String keyFor(AlertPrayer prayer, AlertWhen when) =>

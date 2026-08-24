@@ -126,7 +126,11 @@ class NotificationService {
       final at = times[prayer];
       for (final when in AlertWhen.values) {
         final id = 100 + prayer.index * 10 + when.index;
-        await _plugin.cancel(id);
+        try {
+          await _plugin.cancel(id);
+        } catch (_) {
+          // Nothing to cancel, or the system would not; either way carry on.
+        }
 
         final mode = PrayerAlerts.modeFor(prayer, when);
         if (mode.isOff || at == null) continue;
@@ -136,22 +140,29 @@ class NotificationService {
             : at;
         if (moment.isBefore(DateTime.now())) continue;
 
-        await _scheduleAt(
-          id: id,
-          title: when == AlertWhen.before
-              ? 'اقتربت صلاة ${prayer.name}'
-              : 'حان الآن وقت صلاة ${prayer.name}',
-          body: when == AlertWhen.before
-              ? 'بقيت ${PrayerAlerts.lead.value} دقيقة'
-              : 'أقم الصلاة لذكري',
-          at: moment,
-          mode: mode,
-          // The adhan belongs to the call to prayer, not to the warning before
-          // it: a full adhan fifteen minutes early would send people out.
-          soundResource: when == AlertWhen.onTime
-              ? PrayerAlerts.bundledResource
-              : null,
-        );
+        // Each on its own. One alert the system will not take — a sound it
+        // cannot find, a channel it refuses — must not cost the other nine.
+        try {
+          await _scheduleAt(
+            id: id,
+            title: when == AlertWhen.before
+                ? 'اقتربت صلاة ${prayer.name}'
+                : 'حان الآن وقت صلاة ${prayer.name}',
+            body: when == AlertWhen.before
+                ? 'بقيت ${PrayerAlerts.lead.value} دقيقة'
+                : 'أقم الصلاة لذكري',
+            at: moment,
+            mode: mode,
+            // The adhan belongs to the call to prayer, not to the warning
+            // before it: a full adhan fifteen minutes early would send
+            // people out.
+            soundResource: when == AlertWhen.onTime
+                ? PrayerAlerts.bundledResource
+                : null,
+          );
+        } catch (_) {
+          // Rebuilt at the next launch and at the next prayer-times load.
+        }
       }
     }
   }

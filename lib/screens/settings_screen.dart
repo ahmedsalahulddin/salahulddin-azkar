@@ -144,9 +144,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
   /// So this says what the phone allows, offers to prove it with one that
   /// arrives now, and turns the three the reader asks for most on together —
   /// twelve switches is a wall, not a choice.
+  /// Asked once, not on every frame.
+  ///
+  /// Built inline, this re-queried the system on every rebuild — and each new
+  /// future started as "no answer yet", so the card's reading of whether the
+  /// phone allows notifications flickered every time anything else changed.
+  Future<bool?>? _allowed;
+
   Widget _notificationHealth() {
+    _allowed ??= NotificationService.allowed();
+
     return FutureBuilder<bool?>(
-      future: NotificationService.allowed(),
+      future: _allowed,
       builder: (context, snapshot) {
         // Null means the platform would not say. Treated as probably fine
         // rather than alarming anyone over a question that was not answered.
@@ -305,7 +314,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _say(sent
         ? 'أُرسل إشعار تجريبي — إن لم يصلك فالجوال يمنعه.'
         : 'تعذّر إرسال الإشعار.');
-    setState(() {});
+    // The reader may have just granted the permission, so ask again.
+    setState(() => _allowed = NotificationService.allowed());
   }
 
   /// The three the reader asked for, together: the call to prayer, the warning
