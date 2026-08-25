@@ -675,6 +675,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ? _dhikrLead()
                         : _dhikrCount(),
               ),
+              const SizedBox(height: 8),
+              _whenTheyArrive(),
               const SizedBox(height: 10),
               const Text('نوع الذكر',
                   style:
@@ -748,6 +750,50 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  /// The hours the reminders will actually land on.
+  ///
+  /// A count and a window are two numbers whose result nobody can hold in
+  /// their head — twelve between three and four is one every five minutes,
+  /// all before dawn, which reads on the phone as no reminders at all. The
+  /// times are worked out here anyway; showing them costs nothing and makes
+  /// that impossible to set by accident.
+  Widget _whenTheyArrive() {
+    final slots = DhikrReminder.slotMinutes();
+    if (slots.isEmpty) {
+      return const Text('لا يصلك شيء بهذه الإعدادات',
+          style: TextStyle(color: AppColors.error, fontSize: 11));
+    }
+
+    String clock(int m) {
+      final h = m ~/ 60;
+      final hour = h % 12 == 0 ? 12 : h % 12;
+      return '${QuranService.toArabicDigits(hour)}:'
+          '${QuranService.toArabicDigits(m % 60).padLeft(2, '٠')}'
+          '${h >= 12 ? 'م' : 'ص'}';
+    }
+
+    final crowded = DhikrReminder.isCrowded;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          'يصلك: ${slots.map(clock).join(' · ')}',
+          style: const TextStyle(
+              color: AppColors.textMuted, fontSize: 10.5, height: 1.7),
+        ),
+        if (crowded) ...[
+          const SizedBox(height: 3),
+          Text(
+            'بينها ${QuranService.toArabicDigits(DhikrReminder.spacing)} دقائق '
+            'فقط — وسّع الساعات أو أنقص العدد.',
+            style: const TextStyle(color: AppColors.error, fontSize: 10.5),
+          ),
+        ],
+      ],
     );
   }
 

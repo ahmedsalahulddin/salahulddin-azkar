@@ -190,6 +190,20 @@ class DhikrReminder {
   /// must not throw out of the settings tap that caused it: the reader's
   /// choice is already saved, and losing the screen over a schedule that can
   /// be rebuilt on the next launch would be the worse trade.
+  /// The gap between one reminder and the next, in minutes.
+  ///
+  /// Twelve reminders inside a one-hour window is one every five minutes, all
+  /// of them before dawn. The setting allowed it and said nothing, so the
+  /// reader saw no reminders and reasonably concluded they were broken.
+  static int get spacing {
+    final slots = slotMinutes();
+    if (slots.length < 2) return 0;
+    return slots[1] - slots[0];
+  }
+
+  /// True when the window cannot hold the count without crowding them.
+  static bool get isCrowded => spacing > 0 && spacing < 20;
+
   static Future<void> reschedule() async {
     try {
       await NotificationService.scheduleDhikrReminders(

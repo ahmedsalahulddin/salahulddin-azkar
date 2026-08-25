@@ -373,4 +373,37 @@ void main() {
           reason: 'and it is its own time, not a copy of today');
     });
   });
+
+  group('a window too narrow for the count', () {
+    test('twelve inside one hour land five minutes apart, before dawn',
+        () async {
+      // Exactly what was set on the phone, and why nothing seemed to arrive:
+      // the reminders were working and coming at three in the morning.
+      await DhikrReminder.apply(on: true, count: 12, from: 3, to: 4);
+
+      final slots = DhikrReminder.slotMinutes();
+      expect(slots, hasLength(12));
+      expect(DhikrReminder.spacing, 5);
+      for (final minutes in slots) {
+        expect(minutes ~/ 60, 3, reason: 'all of them in the same hour');
+      }
+    });
+
+    test('the app can now say the window is too narrow', () async {
+      await DhikrReminder.apply(on: true, count: 12, from: 3, to: 4);
+      expect(DhikrReminder.isCrowded, isTrue);
+
+      await DhikrReminder.apply(count: 5, from: 8, to: 22);
+      expect(DhikrReminder.isCrowded, isFalse,
+          reason: 'five across the waking day is nearly three hours apart');
+      expect(DhikrReminder.spacing, greaterThan(120));
+    });
+
+    test('a window that cannot hold anything sends nothing, and says so',
+        () async {
+      await DhikrReminder.apply(on: true, count: 5, from: 20, to: 8);
+      expect(DhikrReminder.slotMinutes(), isEmpty,
+          reason: 'an end before its start is not a window');
+    });
+  });
 }
