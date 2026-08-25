@@ -117,9 +117,13 @@ class PrayerAlerts {
   /// screen can take effect at once instead of waiting for the next load.
   static Map<AlertPrayer, DateTime> lastTimes = const {};
 
+  /// And the day after, so a setting changed now reaches both.
+  static Map<AlertPrayer, DateTime> tomorrow = const {};
+
   /// Set at startup. Kept as a hook rather than an import so this file stays
   /// unaware of the notification plumbing.
-  static Future<void> Function(Map<AlertPrayer, DateTime>)? onChanged;
+  static Future<void> Function(
+      Map<AlertPrayer, DateTime>, Map<AlertPrayer, DateTime>)? onChanged;
 
   /// Lays the alerts down again after a change.
   ///
@@ -132,7 +136,7 @@ class PrayerAlerts {
   static Future<void> _reschedule() async {
     if (lastTimes.isEmpty) return;
     try {
-      await onChanged?.call(lastTimes);
+      await onChanged?.call(lastTimes, tomorrow);
     } catch (_) {
       // The setting stands. The schedule is rebuilt at the next launch and
       // on every prayer-times load.

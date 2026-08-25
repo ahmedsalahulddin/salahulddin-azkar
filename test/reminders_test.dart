@@ -97,7 +97,7 @@ void main() {
         AlertPrayer.fajr: DateTime(2026, 8, 14, 4, 4),
         AlertPrayer.isha: DateTime(2026, 8, 14, 19, 58),
       };
-      PrayerAlerts.onChanged = (_) async => rebuilds++;
+      PrayerAlerts.onChanged = (_, _) async => rebuilds++;
       addTearDown(() => PrayerAlerts.onChanged = null);
 
       await PrayerAlerts.setMode(AlertPrayer.fajr, AlertWhen.onTime,
@@ -111,7 +111,7 @@ void main() {
     test('nothing is rebuilt before any times are known', () async {
       var rebuilds = 0;
       PrayerAlerts.lastTimes = const {};
-      PrayerAlerts.onChanged = (_) async => rebuilds++;
+      PrayerAlerts.onChanged = (_, _) async => rebuilds++;
       addTearDown(() => PrayerAlerts.onChanged = null);
 
       await PrayerAlerts.setMode(
@@ -313,7 +313,7 @@ void main() {
       // second never ran, the alerts stayed on, and the button kept offering
       // to turn off what it had already failed to turn off.
       PrayerAlerts.lastTimes = {AlertPrayer.fajr: DateTime(2026, 8, 25, 4)};
-      PrayerAlerts.onChanged = (_) async => throw StateError('no channel');
+      PrayerAlerts.onChanged = (_, _) async => throw StateError('no channel');
 
       await PrayerAlerts.setAll(
           AlertWhen.onTime, const AlertMode(notify: true));
@@ -328,7 +328,7 @@ void main() {
 
     test('silencing survives it too', () async {
       PrayerAlerts.lastTimes = {AlertPrayer.fajr: DateTime(2026, 8, 25, 4)};
-      PrayerAlerts.onChanged = (_) async => throw StateError('no channel');
+      PrayerAlerts.onChanged = (_, _) async => throw StateError('no channel');
 
       await PrayerAlerts.setAll(
           AlertWhen.onTime, const AlertMode(notify: true, sound: true));
@@ -337,6 +337,40 @@ void main() {
 
       await PrayerAlerts.restoreSound();
       expect(PrayerAlerts.anySound, isTrue);
+    });
+  });
+
+  group('two days of prayer alerts', () {
+    tearDown(() {
+      PrayerAlerts.onChanged = null;
+      PrayerAlerts.lastTimes = const {};
+      PrayerAlerts.tomorrow = const {};
+    });
+
+    test('both days reach the scheduler', () async {
+      // A prayer time cannot repeat daily — it moves by a minute or two each
+      // morning — so each alert is set for its own moment and re-laid when
+      // the app opens. That left a reader who did not open it for a day with
+      // nothing waiting the next.
+      Map<AlertPrayer, DateTime>? sawToday;
+      Map<AlertPrayer, DateTime>? sawTomorrow;
+
+      PrayerAlerts.lastTimes = {AlertPrayer.fajr: DateTime(2026, 8, 25, 4, 8)};
+      PrayerAlerts.tomorrow = {AlertPrayer.fajr: DateTime(2026, 8, 26, 4, 9)};
+      PrayerAlerts.onChanged = (today, ahead) async {
+        sawToday = today;
+        sawTomorrow = ahead;
+      };
+
+      await PrayerAlerts.setAll(
+          AlertWhen.onTime, const AlertMode(notify: true));
+
+      expect(sawToday, isNotEmpty);
+      expect(sawTomorrow, isNotEmpty,
+          reason: 'the day after has to be laid down too');
+      expect(sawTomorrow![AlertPrayer.fajr],
+          isNot(sawToday![AlertPrayer.fajr]),
+          reason: 'and it is its own time, not a copy of today');
     });
   });
 }

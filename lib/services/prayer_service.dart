@@ -181,8 +181,22 @@ class PrayerService {
       AlertPrayer.isha: today.isha,
     };
     if (PrayerAlerts.anyOn) {
-      unawaited(
-          NotificationService.schedulePrayerAlerts(PrayerAlerts.lastTimes));
+      // Tomorrow's as well, so a day of not opening the app does not leave
+      // the reader with nothing waiting for them.
+      final ahead = PrayerTimes(
+        coords,
+        DateComponents.from(DateTime.now().add(const Duration(days: 1))),
+        params,
+      );
+      PrayerAlerts.tomorrow = {
+        AlertPrayer.fajr: ahead.fajr,
+        AlertPrayer.dhuhr: ahead.dhuhr,
+        AlertPrayer.asr: ahead.asr,
+        AlertPrayer.maghrib: ahead.maghrib,
+        AlertPrayer.isha: ahead.isha,
+      };
+      unawaited(NotificationService.schedulePrayerAlerts(
+          PrayerAlerts.lastTimes, PrayerAlerts.tomorrow));
     }
     // Reminders tied to the prayers move with them, so they are laid down
     // again here rather than once when the setting was made.

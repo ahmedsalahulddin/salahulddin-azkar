@@ -92,6 +92,25 @@ class NotificationService {
     }
   }
 
+  /// How many notifications the system is actually holding for this app.
+  ///
+  /// The ground truth, and the one thing the app could not see. Every switch
+  /// can be on, the permission granted, and still nothing arrives — because
+  /// the schedule was never written. Laying it down is deliberately non-fatal
+  /// so a failure cannot lose the reader's setting, which also means a
+  /// failure leaves no trace. This is the trace: zero here says the alarms
+  /// were never set, and any other number says they were and the question is
+  /// delivery instead.
+  static Future<int?> pending() async {
+    if (kIsWeb) return null;
+    try {
+      final list = await _plugin.pendingNotificationRequests();
+      return list.length;
+    } catch (_) {
+      return null;
+    }
+  }
+
   static Future<void> requestPermission() async {
     if (kIsWeb) return;
     await _plugin
@@ -115,17 +134,34 @@ class NotificationService {
     await _plugin.cancel(_eveningId);
   }
 
-  /// Rebuilds tomorrow's prayer alerts from the reader's settings.
+  /// Lays down the prayer alerts from the reader's settings.
   ///
   /// Called after every prayer-times load, because the times move each day and
-  /// a schedule laid down once would drift. Ids are derived from the prayer
-  /// and moment, so rescheduling replaces rather than piles up.
+  /// a schedule laid down once would drift. Ids are derived from the prayer,
+  /// the moment and the day, so rescheduling replaces rather than piles up.
+  ///
+  /// Two days, not one. A prayer time cannot simply repeat daily — it moves
+  /// by a minute or two each morning — so each alert is set for its own
+  /// moment, and the app re-lays them whenever it is opened. That left a gap:
+  /// a reader who did not open the app for a day had nothing waiting for
+  /// them the next. Tomorrow's are set too, so the alerts survive a day of
+  /// not opening it.
   static Future<void> schedulePrayerAlerts(
-      Map<AlertPrayer, DateTime> times) async {
+    Map<AlertPrayer, DateTime> times, [
+    Map<AlertPrayer, DateTime> tomorrow = const {},
+  ]) async {
+    await _layDown(times, dayOffset: 0);
+    await _layDown(tomorrow, dayOffset: 1);
+  }
+
+  static Future<void> _layDown(
+    Map<AlertPrayer, DateTime> times, {
+    required int dayOffset,
+  }) async {
     for (final prayer in AlertPrayer.values) {
       final at = times[prayer];
       for (final when in AlertWhen.values) {
-        final id = 100 + prayer.index * 10 + when.index;
+        final id = 100 + dayOffset * 100 + prayer.index * 10 + when.index;
         try {
           await _plugin.cancel(id);
         } catch (_) {

@@ -151,8 +151,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
   /// phone allows notifications flickered every time anything else changed.
   Future<bool?>? _allowed;
 
+  /// How many alarms the system is holding for us. Null until asked.
+  int? _pending;
+
   Widget _notificationHealth() {
     _allowed ??= NotificationService.allowed();
+    if (_pending == null) _countPending();
 
     return FutureBuilder<bool?>(
       future: _allowed,
@@ -175,6 +179,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         );
       },
     );
+  }
+
+  Future<void> _countPending() async {
+    final count = await NotificationService.pending();
+    if (mounted && count != _pending) setState(() => _pending = count);
   }
 
   Widget _healthCard({required bool blocked, required bool dhikrOn}) {
@@ -229,7 +238,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Text(
                 blocked
                     ? 'لن يصل شيء حتى تسمح بها من إعدادات الجوال.'
-                    : allOn
+                    : (prayersOn || dhikrOn) && _pending == 0
+                        ? 'الإعدادات مُشغّلة لكن النظام لا يحمل أي تنبيه '
+                            'مجدول. افتح الرئيسية مرة ليُعاد ضبطها.'
+                        : allOn
                         ? 'مواقيت الصلاة، وتنبيه قبلها بـ'
                             '${QuranService.toArabicDigits(PrayerAlerts.lead.value)}'
                             ' دقيقة، وذكر خلال اليوم.'
@@ -240,6 +252,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 style: const TextStyle(
                     color: AppColors.textMuted, fontSize: 11, height: 1.7),
               ),
+              if (!blocked && _pending != null) ...[
+                const SizedBox(height: 6),
+                Text(
+                  // The ground truth, plainly. Every switch can be on and
+                  // nothing scheduled, and until now there was no way to see
+                  // which of the two was wrong.
+                  _pending == 0
+                      ? 'لا يوجد تنبيه مجدول الآن'
+                      : 'مجدول في النظام: '
+                          '${QuranService.toArabicDigits(_pending!)} تنبيه',
+                  style: TextStyle(
+                    color: _pending == 0 && (prayersOn || dhikrOn)
+                        ? AppColors.error
+                        : AppColors.textMuted,
+                    fontSize: 10.5,
+                  ),
+                ),
+              ],
               const SizedBox(height: 10),
               Row(
                 children: [
@@ -316,6 +346,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         : 'تعذّر إرسال الإشعار.');
     // The reader may have just granted the permission, so ask again.
     setState(() => _allowed = NotificationService.allowed());
+    await _countPending();
   }
 
   /// The three the reader asked for, together: the call to prayer, the warning
@@ -329,6 +360,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await DhikrReminder.apply(on: true);
     if (!mounted) return;
     _say('شُغّلت تنبيهات الصلاة وقبلها، وتذكير الذكر.');
+    await _countPending();
   }
 
   /// The same three, off again — so the button is a switch and not a one-way
@@ -340,6 +372,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await DhikrReminder.apply(on: false);
     if (!mounted) return;
     _say('أُوقفت التنبيهات.');
+    await _countPending();
   }
 
   void _say(String message) {
