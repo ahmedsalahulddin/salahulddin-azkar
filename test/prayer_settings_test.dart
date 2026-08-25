@@ -1,5 +1,6 @@
 import 'package:adhan/adhan.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:salahulddin_azkar/data/adhans.dart';
 import 'package:salahulddin_azkar/services/prayer_settings.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -123,6 +124,26 @@ void main() {
         expect(times.dhuhr.isBefore(times.asr), isTrue, reason: method.id);
         expect(times.maghrib.isBefore(times.isha), isTrue, reason: method.id);
       }
+    });
+  });
+
+  group('the adhan a notification can actually use', () {
+    test('only a bundled voice can be the alert sound', () {
+      // Android reads a notification sound from inside the app and cannot
+      // reach a file the app downloaded. The picker offers the rest for
+      // listening, and must never let one of them become the alert.
+      final bundled = Adhans.all.where((a) => a.isBundled).toList();
+      expect(bundled, isNotEmpty,
+          reason: 'with none bundled there would be no alert sound at all');
+
+      for (final adhan in Adhans.all.where((a) => !a.isBundled)) {
+        expect(adhan.url, isNotNull,
+            reason: '${adhan.name} is offered for download, so it needs one');
+      }
+    });
+
+    test('the default adhan is one the system can play', () {
+      expect(Adhans.byId('makkah').isBundled, isTrue);
     });
   });
 }

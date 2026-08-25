@@ -274,6 +274,23 @@ class PrayerAlertsScreen extends StatelessWidget {
     );
   }
 
+  /// Why a downloaded adhan can be heard but not set.
+  void _sayDownloadOnly(BuildContext context, Adhan adhan) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(
+        content: Text(
+          '${adhan.name} للاستماع داخل التطبيق فقط. '
+          'أصوات التنبيه يقرأها النظام من داخل التطبيق نفسه، '
+          'فاختر أذان مكة أو المدينة.',
+          textAlign: TextAlign.right,
+        ),
+        backgroundColor: AppColors.blackCard,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 4),
+      ));
+  }
+
   Widget _adhanRow(BuildContext context, Adhan adhan, String chosenId,
       Set<String> ready, String? busy) {
     final chosen = adhan.id == chosenId;
@@ -283,9 +300,14 @@ class PrayerAlertsScreen extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),
       child: GestureDetector(
-        // Only a bundled adhan can be the alert's sound, so only it is
-        // selectable; the rest offer their download instead.
-        onTap: adhan.isBundled ? () => PrayerAlerts.setAdhan(adhan.id) : null,
+        // Only a bundled adhan can be the alert's sound — Android reads that
+        // from inside the app and cannot reach a file the app downloaded. The
+        // row still answers a tap, and says so: one that looks exactly like
+        // its neighbours and does nothing when pressed reads as broken, which
+        // is worse than a refusal that explains itself.
+        onTap: () => adhan.isBundled
+            ? PrayerAlerts.setAdhan(adhan.id)
+            : _sayDownloadOnly(context, adhan),
         behavior: HitTestBehavior.opaque,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
