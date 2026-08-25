@@ -17,6 +17,7 @@ class NotificationService {
 
   /// Its own id, so trying it twice replaces rather than stacks.
   static const _testId = 900;
+  static const _scheduledTestId = 901;
 
   /// How loudly every channel the app schedules on is allowed to speak.
   ///
@@ -105,6 +106,53 @@ class NotificationService {
           ),
           iOS: DarwinNotificationDetails(),
         ),
+      );
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// One notification, a minute from now, down the exact path the reminders
+  /// take.
+  ///
+  /// The immediate test proves the permission and nothing else: it calls
+  /// show(), which hands the notification straight to the system, while every
+  /// real reminder goes through zonedSchedule() — a different mechanism, an
+  /// alarm the system holds and may defer, drop while dozing, or refuse to a
+  /// battery-optimised app. A test that skips all of that answers a question
+  /// nobody asked.
+  ///
+  /// This one takes the reminders' own road: their channel, their schedule
+  /// mode, one minute out. If it arrives, scheduling and delivery both work
+  /// and any remaining fault is in the settings. If it does not, while the
+  /// immediate one does, the phone is holding the alarm back — and that is
+  /// the phone's battery settings, not the app's.
+  static Future<bool> sendScheduledTest() async {
+    if (kIsWeb) return false;
+    try {
+      await init();
+      final at = tz.TZDateTime.now(tz.local).add(const Duration(minutes: 1));
+
+      await _plugin.zonedSchedule(
+        _scheduledTestId,
+        'التنبيه المجدول وصل',
+        'أُرسل قبل دقيقة بنفس طريقة تنبيهات الصلاة والأذكار.',
+        at,
+        const NotificationDetails(
+          android: AndroidNotificationDetails(
+            'salahulddin_dhikr_v2',
+            'تذكير بالذكر',
+            channelDescription: 'ذكر قصير يصلك خلال اليوم',
+            importance: reminderImportance,
+            priority: reminderPriority,
+            visibility: NotificationVisibility.public,
+          ),
+          iOS: DarwinNotificationDetails(),
+        ),
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
       );
       return true;
     } catch (_) {

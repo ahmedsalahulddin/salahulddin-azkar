@@ -39,4 +39,11 @@ void main() {
         reason: 'one channel for two kinds means one switch for both');
     expect(NotificationService.channels, isNotEmpty);
   });
+
+  test('the scheduled test goes out on a real reminder channel', () {
+    // The point of it: an immediate notification proves the permission and
+    // nothing else, because it skips the alarm the system holds. A test that
+    // borrows its own private channel would skip just as much.
+    expect(NotificationService.channels, contains('salahulddin_dhikr_v2'));
+  });
 }

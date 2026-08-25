@@ -298,6 +298,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       child: _healthButton(
                           'جرّب الآن', Icons.notifications, _tryNow),
                     ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _healthButton('بعد دقيقة', Icons.schedule,
+                          _trySchedule),
+                    ),
                   ],
                 ],
               ),
@@ -346,6 +351,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
         : 'تعذّر إرسال الإشعار.');
     // The reader may have just granted the permission, so ask again.
     setState(() => _allowed = NotificationService.allowed());
+    await _countPending();
+  }
+
+  /// The test that actually proves the reminders work.
+  ///
+  /// "جرّب الآن" hands a notification straight to the system and so proves
+  /// only the permission. Every real reminder is an alarm the system holds
+  /// for hours — a different road, with its own ways of failing. This takes
+  /// that road, one minute out.
+  Future<void> _trySchedule() async {
+    await NotificationService.requestPermission();
+    final set = await NotificationService.sendScheduledTest();
+    if (!mounted) return;
+    _say(set
+        ? 'سيصلك تنبيه بعد دقيقة. أغلق الشاشة وانتظره.'
+        : 'تعذّر جدولة الإشعار.');
     await _countPending();
   }
 
