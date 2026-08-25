@@ -23,6 +23,12 @@ class MushafPageImage extends StatefulWidget {
   /// hugs the text is to be told where the text ended up.
   final ValueChanged<Rect>? onDrawn;
 
+  /// The hizb marks that fall on this page: what to write, whether it opens a
+  /// hizb, and the box of the ayah it belongs beside. The printed Mushaf sets
+  /// these down its margin; these images carry the text block alone, with the
+  /// margins cropped away, so the marks have to be drawn back on.
+  final List<({String label, bool strong, Rect box})> marks;
+
   const MushafPageImage({
     super.key,
     required this.file,
@@ -31,6 +37,7 @@ class MushafPageImage extends StatefulWidget {
     required this.onAyahTapped,
     required this.onBackgroundTapped,
     this.onDrawn,
+    this.marks = const [],
   });
 
   @override
@@ -165,6 +172,14 @@ class _MushafPageImageState extends State<MushafPageImage> {
                     imageWidth: image.width,
                   ),
                 ),
+              if (image != null && widget.marks.isNotEmpty)
+                CustomPaint(
+                  painter: _HizbPainter(
+                    marks: widget.marks,
+                    drawn: _drawnRect(box, image),
+                    referenceWidth: AyahBoxService.referenceWidth,
+                  ),
+                ),
             ],
           ),
         );
@@ -213,4 +228,70 @@ class _HighlightPainter extends CustomPainter {
   @override
   bool shouldRepaint(_HighlightPainter old) =>
       old.rects != rects || old.drawn != drawn;
+}
+
+/// The hizb marks, set in the margin beside the line they open.
+///
+/// A small ring with the part inside it — the hizb's own opening filled, its
+/// quarters left open — which is how the printed page distinguishes them at a
+/// glance without reading the number.
+class _HizbPainter extends CustomPainter {
+  final List<({String label, bool strong, Rect box})> marks;
+  final Rect drawn;
+  final double referenceWidth;
+
+  const _HizbPainter({
+    required this.marks,
+    required this.drawn,
+    required this.referenceWidth,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final scale = drawn.width / referenceWidth;
+    // Sized to the page rather than fixed, so it holds on a small phone and
+    // on a tablet alike.
+    final radius = (10 * scale).clamp(7.0, 16.0);
+
+    for (final mark in marks) {
+      // Beside the line, at the page's right edge — where the Mushaf sets it.
+      final y = drawn.top + (mark.box.top + mark.box.height / 2) * scale;
+      final centre = Offset(drawn.right - radius - 2, y);
+
+      canvas.drawCircle(
+        centre,
+        radius,
+        Paint()
+          ..color = mark.strong ? const Color(0xE6B8860B) : const Color(0x00000000)
+          ..style = PaintingStyle.fill,
+      );
+      canvas.drawCircle(
+        centre,
+        radius,
+        Paint()
+          ..color = const Color(0xCCB8860B)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.3,
+      );
+
+      final text = TextPainter(
+        text: TextSpan(
+          text: mark.label,
+          style: TextStyle(
+            color: mark.strong
+                ? const Color(0xFFFFF8E7)
+                : const Color(0xFFB8860B),
+            fontSize: radius * (mark.label.length > 2 ? 0.72 : 1.0),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        textDirection: TextDirection.rtl,
+      )..layout();
+      text.paint(canvas, centre - Offset(text.width / 2, text.height / 2));
+    }
+  }
+
+  @override
+  bool shouldRepaint(_HizbPainter old) =>
+      old.drawn != drawn || old.marks.length != marks.length;
 }

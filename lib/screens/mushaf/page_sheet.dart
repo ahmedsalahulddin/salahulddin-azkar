@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../constants/theme.dart';
 import '../../data/ayah_boxes.dart';
+import '../../data/hizb_data.dart';
 import '../../data/quran_data.dart';
 import '../../services/mushaf_image_service.dart';
 import '../../widgets/frame_tuning.dart';
@@ -39,13 +40,48 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
   late Future<File?> _image;
   List<AyahBoxes> _boxes = const [];
 
+  /// The hizb marks that belong on this page, each paired with the box of the
+  /// ayah it opens, so the painter knows which line to sit beside.
+  List<({String label, bool strong, Rect box})> _marks = const [];
+
   @override
   void initState() {
     super.initState();
     _image = MushafImageService.fetch(widget.page.number);
     AyahBoxService.forPage(widget.page.number).then((b) {
       if (mounted) setState(() => _boxes = b);
+      _loadMarks(b);
     });
+  }
+
+  /// Matches the page's hizb marks to the ayat that carry them.
+  ///
+  /// A mark whose ayah has no box — a page the boxes do not cover — is
+  /// dropped rather than drawn at the top corner, where it would point at the
+  /// wrong line and be worse than absent.
+  Future<void> _loadMarks(List<AyahBoxes> boxes) async {
+    try {
+      final marks = await HizbService.onPage([
+        for (final run in widget.page.runs)
+          (surah: run.surah, first: run.first, last: run.last),
+      ]);
+
+      final placed = <({String label, bool strong, Rect box})>[];
+      for (final mark in marks) {
+        final box = boxes
+            .where((b) => b.surah == mark.surah && b.ayah == mark.ayah)
+            .firstOrNull;
+        if (box == null || box.rects.isEmpty) continue;
+        placed.add((
+          label: mark.label,
+          strong: mark.startsHizb,
+          box: box.rects.first,
+        ));
+      }
+      if (mounted) setState(() => _marks = placed);
+    } catch (_) {
+      // The page reads perfectly well without its margin marks.
+    }
   }
 
   @override
@@ -146,6 +182,7 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
             selected: widget.selected,
             onAyahTapped: widget.onAyahTapped,
             onBackgroundTapped: widget.onBackgroundTapped,
+            marks: _marks,
           ),
         );
       },
