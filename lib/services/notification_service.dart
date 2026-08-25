@@ -18,6 +18,25 @@ class NotificationService {
   /// Its own id, so trying it twice replaces rather than stacks.
   static const _testId = 900;
 
+  /// How loudly every channel the app schedules on is allowed to speak.
+  ///
+  /// Named once and used everywhere, because the value is the whole
+  /// difference between a notification that appears on the screen and one
+  /// that only ever reaches the shade — and because Android fixes it when the
+  /// channel is created, so getting it wrong cannot be corrected later under
+  /// the same id.
+  static const reminderImportance = Importance.max;
+  static const reminderPriority = Priority.high;
+
+  /// Every channel a scheduled notification goes out on.
+  @visibleForTesting
+  static const channels = <String>[
+    'salahulddin_dhikr_v2',
+    'salahulddin_daily_v2',
+    'salahulddin_prayer_silent_v2',
+    'salahulddin_test',
+  ];
+
   static Future<void> init() async {
     if (kIsWeb || _initialized) return;
     tz.initializeTimeZones();
@@ -80,8 +99,9 @@ class NotificationService {
             'salahulddin_test',
             'تجربة التنبيهات',
             channelDescription: 'إشعار واحد للتأكد من وصول التنبيهات',
-            importance: Importance.high,
-            priority: Priority.high,
+            importance: reminderImportance,
+            priority: reminderPriority,
+            visibility: NotificationVisibility.public,
           ),
           iOS: DarwinNotificationDetails(),
         ),
@@ -132,6 +152,32 @@ class NotificationService {
     if (kIsWeb) return;
     await _plugin.cancel(_morningId);
     await _plugin.cancel(_eveningId);
+    await _dropQuietChannels();
+  }
+
+  /// Removes the channels that could never appear on screen.
+  ///
+  /// They were created at default importance, which Android reads as "put it
+  /// in the shade and say nothing" — no banner, nothing on the lock screen.
+  /// A channel's importance is fixed when it is made and an app may only
+  /// lower it, so the replacements carry new ids and these are deleted rather
+  /// than left sitting in the phone's settings under the same names.
+  static Future<void> _dropQuietChannels() async {
+    const gone = [
+      'salahulddin_dhikr_reminder',
+      'salahulddin_daily',
+      'salahulddin_prayer_silent',
+    ];
+    try {
+      final android = _plugin.resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>();
+      if (android == null) return;
+      for (final id in gone) {
+        await android.deleteNotificationChannel(id);
+      }
+    } catch (_) {
+      // An old channel left behind is untidy, never harmful.
+    }
   }
 
   /// Lays down the prayer alerts from the reader's settings.
@@ -217,20 +263,21 @@ class NotificationService {
     // channel id therefore carries both the mode and the chosen sound, and a
     // new combination simply creates a new channel.
     final channel = mode.sound
-        ? 'salahulddin_prayer_sound_${soundResource ?? 'default'}'
-        : 'salahulddin_prayer_silent';
+        ? 'salahulddin_prayer_sound_v2_${soundResource ?? 'default'}'
+        : 'salahulddin_prayer_silent_v2';
 
     final androidDetails = AndroidNotificationDetails(
       channel,
       mode.sound ? 'مواقيت الصلاة — بالصوت' : 'مواقيت الصلاة — إشعار',
       channelDescription: 'تنبيهات الصلاة',
-      importance: Importance.max,
-      priority: Priority.high,
+      importance: reminderImportance,
+      priority: reminderPriority,
       playSound: mode.sound,
       enableVibration: mode.notify,
       sound: mode.sound && soundResource != null
           ? RawResourceAndroidNotificationSound(soundResource)
           : null,
+      visibility: NotificationVisibility.public,
     );
     final iosDetails = DarwinNotificationDetails(presentSound: mode.sound);
 
@@ -263,11 +310,18 @@ class NotificationService {
 
     const details = NotificationDetails(
       android: AndroidNotificationDetails(
-        'salahulddin_dhikr_reminder',
+        // v2, and it has to be: Android fixes a channel's importance when it
+        // is created and an app may only ever lower it. The first id was made
+        // at default importance, which puts a notification in the shade but
+        // never on the screen — so these arrived and were never seen. Raising
+        // the value alone would have changed nothing on a phone that already
+        // had the app; only a new channel is created afresh.
+        'salahulddin_dhikr_v2',
         'تذكير بالذكر',
         channelDescription: 'ذكر قصير يصلك خلال اليوم',
-        importance: Importance.defaultImportance,
-        priority: Priority.defaultPriority,
+        importance: reminderImportance,
+        priority: reminderPriority,
+        visibility: NotificationVisibility.public,
       ),
       iOS: DarwinNotificationDetails(),
     );
@@ -352,11 +406,12 @@ class NotificationService {
       when,
       const NotificationDetails(
         android: AndroidNotificationDetails(
-          'salahulddin_daily',
+          'salahulddin_daily_v2',
           'تذكيرات يومية',
           channelDescription: 'آية اليوم وأذكار الصباح والمساء',
-          importance: Importance.defaultImportance,
-          priority: Priority.defaultPriority,
+          importance: reminderImportance,
+          priority: reminderPriority,
+          visibility: NotificationVisibility.public,
           styleInformation: BigTextStyleInformation(''),
         ),
         iOS: DarwinNotificationDetails(),
