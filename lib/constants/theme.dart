@@ -68,6 +68,21 @@ class AppTheme {
           type: BottomNavigationBarType.fixed,
           elevation: 0,
         ),
+        // Every message the app answers a tap with is a SnackBar, and each one
+        // sets its own dark background without setting a text colour. Material
+        // then supplies onInverseSurface — which in a dark theme is itself
+        // dark, so the message arrived as an empty black box: the reader saw
+        // that something had been said and could not read a word of it. Named
+        // here rather than at the forty-four call sites.
+        snackBarTheme: const SnackBarThemeData(
+          backgroundColor: AppColors.blackCard,
+          contentTextStyle: TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 14,
+          ),
+          actionTextColor: AppColors.gold,
+          behavior: SnackBarBehavior.floating,
+        ),
       );
 }
 

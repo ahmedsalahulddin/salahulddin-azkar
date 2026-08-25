@@ -26,6 +26,7 @@ dependencies:
   just_audio_background: ^0.0.1-beta.17
   image_picker: ^1.2.3
   flutter_tts: ^4.2.5
+  flutter_timezone: ^5.1.0
 
 dev_dependencies:
   flutter_test:

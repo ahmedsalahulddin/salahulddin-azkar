@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -40,7 +41,7 @@ class NotificationService {
 
   static Future<void> init() async {
     if (kIsWeb || _initialized) return;
-    tz.initializeTimeZones();
+    await _ensureZone();
 
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
     const ios = DarwinInitializationSettings(
@@ -52,6 +53,79 @@ class NotificationService {
       const InitializationSettings(android: android, iOS: ios),
     );
     _initialized = true;
+  }
+
+  /// The clock, and only the clock.
+  ///
+  /// Every scheduler needs this before it writes a time, but none of them
+  /// needs the notification plugin itself — and reaching for it is not free:
+  /// initialize() waits on a platform channel, which inside a widget test
+  /// waits on a message loop the test clock never turns. Full init() here
+  /// hung the suite for ten minutes rather than failing.
+  static bool _zoneKnown = false;
+
+  static Future<void> _ensureZone() async {
+    if (kIsWeb || _zoneKnown) return;
+    tz.initializeTimeZones();
+    await syncTimeZone();
+    _zoneKnown = true;
+  }
+
+  /// Teaches the schedule which clock the reader is actually reading.
+  ///
+  /// initializeTimeZones() loads the world's zones; it does not say which one
+  /// we are in, and until told, tz.local is UTC. Nothing warns you: every call
+  /// succeeds, every notification is scheduled, and pendingNotificationRequests
+  /// counts them all. But a reminder built from an hour and a minute — "3:55"
+  /// — is then built at 3:55 UTC, and a reader in the Kingdom is handed it at
+  /// 6:55. The app says one time and the phone does another, which reads
+  /// exactly like reminders that never arrive.
+  ///
+  /// The named zone is asked for first, because only a name carries the
+  /// summer-time rules. If the platform will not give one, a fixed offset from
+  /// the device clock is still right today and every day the app is opened,
+  /// and is in every case better than standing in Greenwich.
+  static Future<void> syncTimeZone() async {
+    try {
+      final name = (await FlutterTimezone.getLocalTimezone()).identifier;
+      tz.setLocalLocation(tz.getLocation(name));
+      return;
+    } catch (_) {
+      // No name, or a name this build of the database does not carry.
+    }
+    try {
+      final offset = DateTime.now().timeZoneOffset;
+      tz.setLocalLocation(tz.Location(
+        'local',
+        const [tz.minTime],
+        const [0],
+        [
+          tz.TimeZone(offset.inMilliseconds,
+              isDst: false, abbreviation: DateTime.now().timeZoneName),
+        ],
+      ));
+    } catch (_) {
+      // UTC, and the times will be wrong — but nothing here may throw and
+      // take the whole notification system down with it.
+    }
+  }
+
+  /// The clock the reminders are being written against, for the reader to
+  /// see. A wrong zone is otherwise completely silent: it schedules, it
+  /// counts, and it delivers — at the wrong hour.
+  static String get zoneName {
+    try {
+      final offset = tz.TZDateTime.now(tz.local).timeZoneOffset;
+      final sign = offset.isNegative ? '-' : '+';
+      final hours = offset.abs().inHours;
+      final minutes = offset.abs().inMinutes % 60;
+      final clock = minutes == 0
+          ? '$sign$hours'
+          : '$sign$hours:${minutes.toString().padLeft(2, '0')}';
+      return '${tz.local.name} (UTC$clock)';
+    } catch (_) {
+      return '';
+    }
   }
 
   /// Whether the phone will actually show anything.
@@ -128,11 +202,20 @@ class NotificationService {
   /// and any remaining fault is in the settings. If it does not, while the
   /// immediate one does, the phone is holding the alarm back — and that is
   /// the phone's battery settings, not the app's.
+  ///
+  /// And it is built the way a reminder is built — from an hour and a minute
+  /// on the reader's clock, not from "now plus a duration". The difference
+  /// looks like nothing and is the whole point: an offset is right in any
+  /// timezone, including the wrong one, so a test written that way passed
+  /// happily while every real reminder was hours out. This one is wrong
+  /// exactly when the reminders are wrong.
   static Future<bool> sendScheduledTest() async {
     if (kIsWeb) return false;
     try {
       await init();
-      final at = tz.TZDateTime.now(tz.local).add(const Duration(minutes: 1));
+      final soon = tz.TZDateTime.now(tz.local).add(const Duration(minutes: 1));
+      final at = tz.TZDateTime(tz.local, soon.year, soon.month, soon.day,
+          soon.hour, soon.minute, soon.second);
 
       await _plugin.zonedSchedule(
         _scheduledTestId,
@@ -244,6 +327,7 @@ class NotificationService {
     Map<AlertPrayer, DateTime> times, [
     Map<AlertPrayer, DateTime> tomorrow = const {},
   ]) async {
+    await _ensureZone();
     await _layDown(times, dayOffset: 0);
     await _layDown(tomorrow, dayOffset: 1);
   }
@@ -349,6 +433,7 @@ class NotificationService {
     required List<int> minutes,
     required List<Dhikr> pool,
   }) async {
+    await _ensureZone();
     // Clear the whole block first: the count can shrink, and yesterday's
     // extra slots would otherwise keep firing forever.
     for (var i = 0; i < 24; i++) {
@@ -402,6 +487,7 @@ class NotificationService {
   /// schedule is to lay it down again — patching it leaves yesterday's slots
   /// firing beside today's.
   static Future<void> scheduleDailyReminders() async {
+    await _ensureZone();
     for (final id in [400, 401, 410, 411]) {
       await _plugin.cancel(id);
     }

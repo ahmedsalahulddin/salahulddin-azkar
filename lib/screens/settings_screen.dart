@@ -269,6 +269,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     fontSize: 10.5,
                   ),
                 ),
+                // Which clock those times were written against. It reads like
+                // a detail until it is wrong, and then it is the whole fault:
+                // the app announces a reminder for 3:55 and the phone rings at
+                // 6:55, with nothing anywhere saying why.
+                if (NotificationService.zoneName.isNotEmpty)
+                  Text(
+                    'التوقيت المعتمد: ${NotificationService.zoneName}',
+                    style: const TextStyle(
+                        color: AppColors.textMuted, fontSize: 10.5),
+                  ),
               ],
               const SizedBox(height: 10),
               Row(
@@ -366,7 +376,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (!mounted) return;
     _say(set
         ? 'سيصلك تنبيه بعد دقيقة. أغلق الشاشة وانتظره.'
-        : 'تعذّر جدولة الإشعار.');
+        : 'تعذّر جدولة الإشعار — النظام رفض الموعد.');
     await _countPending();
   }
 
