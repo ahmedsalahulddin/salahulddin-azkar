@@ -376,7 +376,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (!mounted) return;
     _say(set
         ? 'سيصلك تنبيه بعد دقيقة. أغلق الشاشة وانتظره.'
-        : 'تعذّر جدولة الإشعار — النظام رفض الموعد.');
+        : 'تعذّر جدولة الإشعار: ${NotificationService.lastScheduleError}');
     await _countPending();
   }
 
@@ -410,9 +410,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(
-        content: Text(message, textAlign: TextAlign.right),
+        // A failure now carries the system's own words, which run long and are
+        // the whole point of showing it — four seconds and one line would hide
+        // exactly the part worth reading.
+        content: Text(message, textAlign: TextAlign.right, maxLines: 6),
         backgroundColor: AppColors.blackCard,
         behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 10),
       ));
   }
 

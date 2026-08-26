@@ -71,6 +71,31 @@
                 <action android:name="android.intent.action.MEDIA_BUTTON"/>
             </intent-filter>
         </receiver>
+        <!-- Where a scheduled notification actually lands.
+             The plugin's own manifest declares permissions and nothing else,
+             so these two are the app's to declare — and without the first one
+             every zonedSchedule() went to a component that does not exist:
+             AlarmManager held the alarm, fired it on time, and there was
+             nothing there to receive it. show() never touches AlarmManager,
+             which is why the immediate test passed for weeks while not one
+             prayer alert, dhikr reminder or morning adhkar ever arrived. -->
+        <receiver
+            android:exported="false"
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver" />
+        <!-- And this one re-lays them after a restart. Android drops every
+             alarm on reboot; RECEIVE_BOOT_COMPLETED was already declared above
+             with nothing listening for it. -->
+        <receiver
+            android:exported="false"
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
+                <action android:name="android.intent.action.QUICKBOOT_POWERON"/>
+                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON"/>
+            </intent-filter>
+        </receiver>
+
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

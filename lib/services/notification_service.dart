@@ -209,8 +209,17 @@ class NotificationService {
   /// timezone, including the wrong one, so a test written that way passed
   /// happily while every real reminder was hours out. This one is wrong
   /// exactly when the reminders are wrong.
+  /// Empty when the alarm was accepted, and otherwise why it was not.
+  ///
+  /// It said only "تعذر" before, which is the least useful thing a failure can
+  /// say: it cost a round trip through a build, a deploy and the reader's own
+  /// phone to learn nothing but that something went wrong. The reason was
+  /// sitting in a caught exception the whole time.
+  static String lastScheduleError = '';
+
   static Future<bool> sendScheduledTest() async {
     if (kIsWeb) return false;
+    lastScheduleError = '';
     try {
       await init();
       final soon = tz.TZDateTime.now(tz.local).add(const Duration(minutes: 1));
@@ -238,7 +247,8 @@ class NotificationService {
             UILocalNotificationDateInterpretation.absoluteTime,
       );
       return true;
-    } catch (_) {
+    } catch (e) {
+      lastScheduleError = e.toString();
       return false;
     }
   }
