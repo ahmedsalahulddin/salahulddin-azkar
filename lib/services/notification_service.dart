@@ -272,14 +272,28 @@ class NotificationService {
     }
   }
 
+  /// Asks for the permission, and never throws for asking.
+  ///
+  /// Startup lays the plugin down inside a catch-all, which is right — a
+  /// notification system that will not start must not stop the app opening.
+  /// But it leaves a state where the plugin was never initialised, and this
+  /// method reached straight into it: the three buttons on the settings card
+  /// that call it would then throw where they were pressed, with nothing to
+  /// catch them. Every other entry point here already guards itself; this one
+  /// was the exception.
   static Future<void> requestPermission() async {
     if (kIsWeb) return;
-    await _plugin
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
-        ?.requestNotificationsPermission();
-    await _plugin
-        .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>()
-        ?.requestPermissions(alert: true, badge: true, sound: true);
+    try {
+      await _plugin
+          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+          ?.requestNotificationsPermission();
+      await _plugin
+          .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>()
+          ?.requestPermissions(alert: true, badge: true, sound: true);
+    } catch (_) {
+      // Refused, or the plugin never started. Either way the reader is told
+      // by the card above, which reads the permission rather than assuming.
+    }
   }
 
   /// Cancels the adhkar reminders that older versions laid down at a fixed

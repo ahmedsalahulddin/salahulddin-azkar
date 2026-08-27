@@ -571,6 +571,10 @@ class _MushafScreenState extends State<MushafScreen> {
         side: const BorderSide(color: AppColors.goldBorder),
       ),
       padding: EdgeInsets.zero,
+      // Wide enough for the longest name. Material's default cap is narrower
+      // than "عبد الباسط عبد الصمد", so the list overflowed and clipped the
+      // end of the very names it exists to let the reader choose between.
+      constraints: const BoxConstraints(minWidth: 220, maxWidth: 340),
       onSelected: _applyReciter,
       itemBuilder: (context) => [
         for (final r in RecitationService.reciters)
@@ -586,13 +590,19 @@ class _MushafScreenState extends State<MushafScreen> {
                   else
                     const SizedBox(width: 16),
                   const SizedBox(width: 8),
-                  Text(r.name,
-                      style: TextStyle(
-                        color: r.id == _reciter.id
-                            ? AppColors.gold
-                            : AppColors.textPrimary,
-                        fontSize: 13,
-                      )),
+                  // Flexible as well as roomy: a name is only ever going to
+                  // be trimmed here, never allowed to overflow the row it
+                  // sits in and paint over what is beside it.
+                  Flexible(
+                    child: Text(r.name,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: r.id == _reciter.id
+                              ? AppColors.gold
+                              : AppColors.textPrimary,
+                          fontSize: 13,
+                        )),
+                  ),
                 ],
               ),
             ),

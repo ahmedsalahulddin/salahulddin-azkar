@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/theme.dart';
 import '../data/adhkar_data.dart';
 import '../widgets/adhkar_card.dart';
+import '../widgets/tasbih_counter.dart';
 
 class DeceasedPerson {
   final String id;
@@ -250,7 +251,18 @@ class _DeceasedScreenState extends State<DeceasedScreen> {
                 padding: EdgeInsets.fromLTRB(16, 20, 16, 8),
                 child: Text('أدعية للمتوفى', style: TextStyle(color: AppColors.textGold, fontSize: 16, fontWeight: FontWeight.bold)),
               ),
-              ...duas.map((d) => AdhkarCard(dhikr: d, fontSize: FontSizeOption.medium)),
+              // onTasbih was left off here and nowhere else, so the counter
+              // button on every dua for the deceased drew itself, took the
+              // press, buzzed — and did nothing. A dead control that looks
+              // exactly like a live one.
+              ...duas.map((d) => AdhkarCard(
+                    dhikr: d,
+                    fontSize: FontSizeOption.medium,
+                    onTasbih: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => TasbihCounter(dhikr: d)),
+                    ),
+                  )),
             ],
           ),
         ),
