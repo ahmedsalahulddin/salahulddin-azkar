@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:salahulddin_azkar/widgets/rotating_verse.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:salahulddin_azkar/screens/account_screen.dart';
+import 'package:salahulddin_azkar/screens/admin_screen.dart';
 import 'package:salahulddin_azkar/screens/adhkar_home_screen.dart';
 import 'package:salahulddin_azkar/screens/books_screen.dart';
 import 'package:salahulddin_azkar/data/adhkar_data.dart';
@@ -25,7 +28,12 @@ import 'package:salahulddin_azkar/screens/search_screen.dart';
 import 'package:salahulddin_azkar/screens/settings_screen.dart';
 import 'package:salahulddin_azkar/screens/umrah_screen.dart';
 import 'package:salahulddin_azkar/screens/home_screen.dart';
+import 'package:salahulddin_azkar/data/lessons.dart';
+import 'package:salahulddin_azkar/screens/lesson_screen.dart';
 import 'package:salahulddin_azkar/screens/lessons_screen.dart';
+import 'package:salahulddin_azkar/screens/memorisation_test_screen.dart';
+import 'package:salahulddin_azkar/screens/mushaf_screen.dart';
+import 'package:salahulddin_azkar/screens/listening_screen.dart';
 import 'package:salahulddin_azkar/screens/prayer_alerts_screen.dart';
 import 'package:salahulddin_azkar/screens/quran_home_screen.dart';
 import 'package:salahulddin_azkar/screens/sources_screen.dart';
@@ -80,6 +88,37 @@ void main() {
     final root = find.byType(MaterialApp).evaluate();
     if (root.isEmpty) return '';
     return root.first.toStringDeep();
+  }
+
+  /// Puts the last screen down and lets what it started finish.
+  ///
+  /// Every press but the final one is cleaned up by the next one tearing the
+  /// tree down. The last one is not, so whatever it left running — the timer
+  /// behind a message that is still on screen, most often — was still pending
+  /// when the test ended, and the binding reports that as a leak. It reads
+  /// exactly like a screen that forgot to cancel something.
+  Future<void> settle(WidgetTester tester) async {
+    // The rotating verse is deliberately app-lifetime: one timer, started by
+    // the first screen that shows a verse and shared by all of them. It
+    // belongs to no widget, so disposing the tree does not stop it, and the
+    // invariant check runs before tearDown — which is why it surfaced against
+    // whichever screen happened to be swept last rather than the one that
+    // started it.
+    VerseRotation.debugStop();
+    // Supabase's auth client starts a token refresh on a ten-second period
+    // the moment it is initialised, and keeps it for the life of the app —
+    // correct in the app, and a pending timer here. The admin screen loads
+    // its config in initState, which is enough to bring it up.
+    try {
+      Supabase.instance.client.auth.stopAutoRefresh();
+    } catch (_) {
+      // Never initialised, which is the usual case.
+    }
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+    // Fake time, so this is free: long enough for the longest message in the
+    // app to take itself away.
+    await tester.pump(const Duration(seconds: 12));
   }
 
   /// Presses control [index] on a freshly built [screen] and says what came
@@ -171,6 +210,7 @@ void main() {
       }
       if (outcome != 'ok') trouble.add('[$i] $outcome');
     }
+    await settle(tester);
     return trouble;
   }
 
@@ -193,6 +233,7 @@ void main() {
     'البحث': () => const SearchScreen(),
     'الإعدادات': () => const SettingsScreen(),
     'العمرة': () => const UmrahScreen(),
+    'الإدارة': () => const AdminScreen(),
   };
 
   /// The screens that cannot be built without something to show.
@@ -218,6 +259,7 @@ void main() {
       if (outcome == null) break;
       if (outcome != 'ok') trouble.add('$name [$i] $outcome');
     }
+    await settle(tester);
     expect(trouble, isEmpty, reason: trouble.join('\n'));
   }
 
@@ -243,10 +285,29 @@ void main() {
     await sweepOne(tester, 'سورة', () => SurahScreen(info: surahs.first));
   });
 
-  // Not swept: ListeningScreen. Every route into it reaches the audio engine,
-  // which in the test harness hangs rather than failing — a ten-minute stall
-  // instead of a red line. It is covered by continuous_listening_test.dart
-  // instead, and by hand on the phone.
+  testWidgets('every control in the Mushaf answers a press', (tester) async {
+    await sweepOne(tester, 'المصحف', () => const MushafScreen());
+  });
+
+  testWidgets('every control in the memorisation test answers a press',
+      (tester) async {
+    await sweepOne(
+        tester, 'اختبار الحفظ', () => MemorisationTestScreen(info: surahs.first));
+  });
+
+  testWidgets('every control in a lesson answers a press', (tester) async {
+    await sweepOne(tester, 'درس', () => LessonScreen(lesson: Lessons.all.first));
+  });
+
+  testWidgets('every control on الاستماع answers a press', (tester) async {
+    await sweepOne(tester, 'الاستماع', () => const ListeningScreen());
+  });
+
+  // Nothing is left out. ListeningScreen was written off here as unsweepable
+  // — every route into it reaches the audio engine, so it hung — and that was
+  // wrong twice over: the hang was an await in the test, not the engine, and
+  // the note would have kept a screen out of the sweep for good on the
+  // strength of a guess nobody would have gone back to check.
 
   for (final entry in screens.entries) {
     testWidgets('every control on ${entry.key} answers a press',
