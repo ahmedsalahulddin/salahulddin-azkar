@@ -44,6 +44,18 @@ void main() {
 
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
+  // Loaded out here, deliberately. Awaiting an asset inside testWidgets waits
+  // on a message loop the test clock never turns, so the test does not fail —
+  // it stops, past its own timeout, and looks exactly like the screen under
+  // test hanging. Two screens were written off as untestable on that evidence
+  // before it turned out to be these two lines.
+  late final List<HisnChapter> chapters;
+  late final List<SurahInfo> surahs;
+  setUpAll(() async {
+    chapters = await HisnService.chapters();
+    surahs = await QuranService.index();
+  });
+
   /// Everything on screen that claims to respond to a touch.
   Finder tappables() => find.byWidgetPredicate((w) =>
       (w is GestureDetector && w.onTap != null) ||
@@ -186,33 +198,49 @@ void main() {
   /// The screens that cannot be built without something to show.
   ///
   /// Each is handed real data out of the app's own files rather than a
-  /// hand-made stand-in, so what is pressed is what the reader presses.
-  testWidgets('every control on the screens that carry data answers a press',
-      (tester) async {
+  /// hand-made stand-in, so what is pressed is what the reader presses. One
+  /// test each: a screen that reaches the audio engine does not fail here, it
+  /// stops dead — past its own timeout, because the harness is blocked on a
+  /// channel the test clock cannot turn — and sharing a test would take the
+  /// others down with it.
+  Future<void> sweepOne(
+    WidgetTester tester,
+    String name,
+    Widget Function() screen,
+  ) async {
     tester.view.physicalSize = const Size(1200, 5000);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
 
-    final chapters = await HisnService.chapters();
-    final surahs = await QuranService.index();
-    final categories = getCategoriesWithCount();
-
-    final withData = <String, Widget Function()>{
-      'باب من حصن المسلم': () => HisnChapterScreen(chapter: chapters.first),
-      'سورة': () => SurahScreen(info: surahs.first),
-      'قسم من الأذكار': () => CategoryScreen(category: categories.first),
-      'كتاب': () => BookReaderScreen(book: LibraryService.books.first),
-    };
-
     final trouble = <String>[];
-    for (final entry in withData.entries) {
-      for (var i = 0; i < 60; i++) {
-        final outcome = await press(tester, entry.value, i);
-        if (outcome == null) break;
-        if (outcome != 'ok') trouble.add('${entry.key} [$i] $outcome');
-      }
+    for (var i = 0; i < 60; i++) {
+      final outcome = await press(tester, screen, i);
+      if (outcome == null) break;
+      if (outcome != 'ok') trouble.add('$name [$i] $outcome');
     }
     expect(trouble, isEmpty, reason: trouble.join('\n'));
+  }
+
+  testWidgets('every control in a chapter of حصن المسلم answers a press',
+      (tester) async {
+    await sweepOne(tester, 'حصن المسلم',
+        () => HisnChapterScreen(chapter: chapters.first));
+  });
+
+  testWidgets('every control in a section of the adhkar answers a press',
+      (tester) async {
+    final categories = getCategoriesWithCount();
+    await sweepOne(
+        tester, 'قسم الأذكار', () => CategoryScreen(category: categories.first));
+  });
+
+  testWidgets('every control in a book answers a press', (tester) async {
+    await sweepOne(tester, 'كتاب',
+        () => BookReaderScreen(book: LibraryService.books.first));
+  });
+
+  testWidgets('every control in a surah answers a press', (tester) async {
+    await sweepOne(tester, 'سورة', () => SurahScreen(info: surahs.first));
   });
 
   // Not swept: ListeningScreen. Every route into it reaches the audio engine,

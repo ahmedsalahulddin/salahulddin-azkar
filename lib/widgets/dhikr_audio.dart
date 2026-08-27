@@ -30,6 +30,20 @@ class DhikrAudioController extends ChangeNotifier {
   int? _playingAudioId;
   bool _failed = false;
 
+  /// Whether this controller has been thrown away.
+  ///
+  /// Every method here that reaches the player is async, and the reader is
+  /// under no obligation to wait: tapping listen and going straight back
+  /// leaves a request in flight against a controller that no longer exists.
+  /// Whatever it does when it lands must not be to notify.
+  bool _disposed = false;
+
+  /// notifyListeners, unless there is no longer anyone to notify.
+  void _tell() {
+    if (_disposed) return;
+    notifyListeners();
+  }
+
   int? get playingAudioId => _playingAudioId;
   bool get failed => _failed;
 
@@ -52,7 +66,7 @@ class DhikrAudioController extends ChangeNotifier {
       final mine = AppAudio.ownsCurrent('hisn:');
       if (!mine || state.processingState == ProcessingState.completed) {
         _playingAudioId = null;
-        notifyListeners();
+        _tell();
       }
     });
   }
@@ -67,13 +81,13 @@ class DhikrAudioController extends ChangeNotifier {
     if (_playingAudioId == dhikr.audioId) {
       await _player.pause();
       _playingAudioId = null;
-      notifyListeners();
+      _tell();
       return;
     }
 
     _failed = false;
     _playingAudioId = dhikr.audioId;
-    notifyListeners();
+    _tell();
 
     try {
       await _player.stop();
@@ -90,21 +104,21 @@ class DhikrAudioController extends ChangeNotifier {
     } catch (_) {
       _failed = true;
       _playingAudioId = null;
-      notifyListeners();
+      _tell();
     }
   }
 
   Future<void> stop() async {
     await _player.stop();
     _playingAudioId = null;
-    notifyListeners();
+    _tell();
   }
 
   /// Stands in for the engine, which has no sound in a test.
   @visibleForTesting
   void debugSetPlaying(int? audioId) {
     _playingAudioId = audioId;
-    notifyListeners();
+    _tell();
   }
 
   @override
@@ -114,6 +128,7 @@ class DhikrAudioController extends ChangeNotifier {
     // firing into a disposed notifier, which throws in debug and leaks for the
     // rest of the run in release. Every screen that shows a dhikr builds one
     // of these, so that is a subscription per visit.
+    _disposed = true;
     _stateSub?.cancel();
     _stateSub = null;
     _player.stop();
