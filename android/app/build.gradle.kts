@@ -52,6 +52,14 @@ android {
 
     buildTypes {
         release {
+            // R8 strips generic type signatures by default, breaking Gson's
+            // TypeToken inside flutter_local_notifications ("Missing type
+            // parameter."). The rules file keeps Signature attributes and all
+            // plugin model classes so serialisation round-trips correctly.
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
             if (hasReleaseKey) {
                 signingConfig = signingConfigs.getByName("release")
             } else {
