@@ -194,6 +194,22 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
   /// The Uthmanic face the page itself is set in.
   static const _mushafFont = 'AmiriQuran';
 
+  /// How far the writing sits above the middle of its own cartouche.
+  ///
+  /// The box is padded evenly, but the face carries more space above its
+  /// glyphs than below it, so an evenly padded box reads bottom-heavy. This
+  /// moves the glyphs only — the box keeps its size and its place.
+  static const _labelLift = 2.0;
+
+  /// And how far the surah and juz cartouches themselves sit above the middle
+  /// of the band. Separate from [_labelLift]: where the writing sits inside
+  /// its box and where the box sits inside the border are two different
+  /// things, and both were low.
+  static const _headerLift = 2.0;
+
+  /// The page number wanted the opposite, by half as much.
+  static const _numberDrop = 1.0;
+
   /// How tall a caption sits, independent of how deep the border is. Sized to
   /// the type below rather than guessed at, or the taller face is clipped.
   static const _captionHeight = 26.0;
@@ -279,7 +295,10 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
             // Surah on the right, juz on the left — the printed page's own
             // header, each in its own cartouche.
             Positioned(
-              top: headerCentre - _captionBox / 2 + FrameTuning.of('header'),
+              top: headerCentre -
+                  _captionBox / 2 +
+                  FrameTuning.of('header') -
+                  _headerLift,
               left: 0,
               right: 0,
               height: _captionBox,
@@ -305,8 +324,10 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
               ),
             ),
             Positioned(
-              bottom:
-                  numberCentre - _captionBox / 2 - FrameTuning.of('number'),
+              bottom: numberCentre -
+                  _captionBox / 2 -
+                  FrameTuning.of('number') -
+                  _numberDrop,
               left: 0,
               right: 0,
               height: _captionBox,
@@ -346,9 +367,15 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
         ),
         // Shrinks its own type before it clips: a surah's name is not a
         // detail worth losing the end of.
-        child: FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Text(text, style: caption, textAlign: TextAlign.center),
+        // Translated rather than padded: padding would grow the box and move
+        // the border with it, and it is the border that is already where it
+        // should be. This shifts the glyphs alone.
+        child: Transform.translate(
+          offset: const Offset(0, -_labelLift),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(text, style: caption, textAlign: TextAlign.center),
+          ),
         ),
       ),
     );
