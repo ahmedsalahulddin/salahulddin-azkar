@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -54,16 +55,18 @@ class NotificationService {
     );
     _initialized = true;
 
-    // An older version of the plugin (or the app) may have stored scheduled
-    // notifications whose serialised form is missing a field the current
-    // plugin expects — "Missing type parameter". If loading them fails, the
-    // stored list is corrupt and every future zonedSchedule() will fail too,
-    // because it reads the list before appending. Clearing it once lets
-    // scheduling resume; the reminders are rebuilt moments later in main().
-    try {
-      await _plugin.pendingNotificationRequests();
-    } catch (_) {
+    // The plugin's SharedPreferences store carries a JSON list that older
+    // versions serialised differently. When the format changes between plugin
+    // versions, every future zonedSchedule() fails with "Missing type
+    // parameter" because it reads the old list before appending. cancelAll()
+    // writes an empty list in the current format, clearing the corruption.
+    // We do this once per plugin version by stamping a migration key; the
+    // reminders are rebuilt immediately after in main().
+    const migrationKey = 'flln_migration_v18';
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getBool(migrationKey) != true) {
       await _plugin.cancelAll();
+      await prefs.setBool(migrationKey, true);
     }
   }
 
