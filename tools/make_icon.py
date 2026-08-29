@@ -1,108 +1,88 @@
 """
-Draws the launcher icon: a rub' el hizb — the eight-pointed star that marks
-divisions in the Mushaf — in the app's gold on its near-black.
+Derives the launcher icons from the supplied artwork.
 
-Two files are produced:
-  icon_master.png      full-bleed, for legacy launchers, iOS and the web
-  icon_foreground.png  transparent, for Android's adaptive icon
+Two files are produced, and they are not the same picture:
 
-The adaptive foreground is drawn smaller on purpose: launchers crop that layer
-to a circle, a squircle or a rounded square depending on the device, and only
-the middle two-thirds is guaranteed to survive.
+  assets/icon/icon.png        the artwork whole, for iOS, the web and older
+                              Android launchers, which show a square
+  assets/icon/foreground.png  the medallion alone on transparency, for
+                              Android's adaptive icon
+
+The split is forced by how Android draws an icon. The launcher crops the
+foreground layer to whatever shape the device uses — a circle, a squircle, a
+rounded square — and only the middle two-thirds of the canvas is guaranteed to
+survive. Handing it the whole artwork would cut the ornamented border and bite
+into the gold ring, which is the part that makes the mark recognisable. So the
+medallion is cut out, dropped to the safe size, and left to sit on the app's
+black.
+
+Regenerate with:
+    python3 tools/make_icon.py && dart run flutter_launcher_icons
 """
-import math
 from PIL import Image, ImageDraw
 
 SIZE = 1024
-GOLD = (212, 168, 67)
-GOLD_DEEP = (184, 134, 11)
-INK = (13, 13, 13)
-NAVY = (22, 35, 61)
+
+# The medallion, measured off the artwork by walking in from each edge until
+# the bright gold of the ring gives way to the dark scene inside it.
+CENTRE = (512, 512)
+RADIUS = 460
+
+# How much of the adaptive canvas the medallion may fill. Android guarantees
+# the middle 66%; a little under that keeps the ring clear of every mask.
+SAFE = 0.68
+
+SOURCE = "assets/icon/artwork.jpg"
+MASTER = "assets/icon/icon.png"
+FOREGROUND = "assets/icon/foreground.png"
+STORE = "assets/icon/play-store-512.png"
 
 
-def star_points(cx, cy, outer, inner, points=8, rotation=0.0):
-    """Alternating outer/inner vertices — an eight-pointed star."""
-    verts = []
-    for i in range(points * 2):
-        r = outer if i % 2 == 0 else inner
-        a = rotation + i * math.pi / points
-        verts.append((cx + r * math.sin(a), cy - r * math.cos(a)))
-    return verts
+def main() -> None:
+    art = Image.open(SOURCE).convert("RGB")
+    if art.size != (SIZE, SIZE):
+        art = art.resize((SIZE, SIZE), Image.LANCZOS)
 
+    # Whole, and flat: iOS refuses an icon carrying an alpha channel.
+    art.save(MASTER)
+    art.resize((512, 512), Image.LANCZOS).save(STORE)
 
-def vertical_gradient(size, top, bottom):
-    grad = Image.new("RGB", (1, size))
-    for y in range(size):
-        t = y / (size - 1)
-        grad.putpixel(
-            (0, y),
-            tuple(round(top[i] + (bottom[i] - top[i]) * t) for i in range(3)),
-        )
-    return grad.resize((size, size))
+    # The medallion, cut to its circle. Masked at four times the size and then
+    # brought down, which is what keeps the cut edge smooth rather than
+    # stepped.
+    scale = 4
+    mask = Image.new("L", (SIZE * scale, SIZE * scale), 0)
+    ImageDraw.Draw(mask).ellipse(
+        [
+            (CENTRE[0] - RADIUS) * scale,
+            (CENTRE[1] - RADIUS) * scale,
+            (CENTRE[0] + RADIUS) * scale,
+            (CENTRE[1] + RADIUS) * scale,
+        ],
+        fill=255,
+    )
+    mask = mask.resize((SIZE, SIZE), Image.LANCZOS)
 
-
-def square(cx, cy, half_diagonal, rotation):
-    """A square given by its centre and the distance to a corner."""
-    return [
+    cut = art.copy()
+    cut.putalpha(mask)
+    cut = cut.crop(
         (
-            cx + half_diagonal * math.sin(rotation + i * math.pi / 2),
-            cy - half_diagonal * math.cos(rotation + i * math.pi / 2),
+            CENTRE[0] - RADIUS,
+            CENTRE[1] - RADIUS,
+            CENTRE[0] + RADIUS,
+            CENTRE[1] + RADIUS,
         )
-        for i in range(4)
-    ]
+    )
+
+    inner = round(SIZE * SAFE)
+    cut = cut.resize((inner, inner), Image.LANCZOS)
+
+    canvas = Image.new("RGBA", (SIZE, SIZE), (0, 0, 0, 0))
+    canvas.paste(cut, ((SIZE - inner) // 2, (SIZE - inner) // 2), cut)
+    canvas.save(FOREGROUND)
+
+    print(f"wrote {MASTER}, {FOREGROUND}, {STORE}")
 
 
-def draw_star(draw, cx, cy, outer, stroke_ratio=0.075):
-    """The rub' el hizb: two squares crossed at 45°, as printed in the Mushaf.
-
-    An eight-pointed star with spikes was tried first and read as a sun or a
-    compass rose. The two-square construction is the actual Mushaf mark, and
-    stays legible when a launcher shrinks it to a few dozen pixels.
-    """
-    stroke = max(2, int(outer * stroke_ratio))
-
-    for rotation in (0.0, math.pi / 4):
-        draw.polygon(
-            square(cx, cy, outer, rotation),
-            outline=GOLD,
-            width=stroke,
-        )
-
-    # The disc that sits at the centre of the printed mark.
-    r = outer * 0.17
-    draw.ellipse([cx - r, cy - r, cx + r, cy + r], fill=GOLD)
-
-
-def build(path, *, background, scale, border):
-    if background:
-        img = vertical_gradient(SIZE, NAVY, INK).convert("RGBA")
-    else:
-        img = Image.new("RGBA", (SIZE, SIZE), (0, 0, 0, 0))
-
-    # Draw oversampled, then downsample: PIL has no anti-aliasing for polygons.
-    ss = 4
-    layer = Image.new("RGBA", (SIZE * ss, SIZE * ss), (0, 0, 0, 0))
-    d = ImageDraw.Draw(layer)
-    c = SIZE * ss / 2
-    draw_star(d, c, c, SIZE * ss * scale / 2)
-
-    if border:
-        inset = SIZE * ss * 0.055
-        d.rounded_rectangle(
-            [inset, inset, SIZE * ss - inset, SIZE * ss - inset],
-            radius=SIZE * ss * 0.14,
-            outline=GOLD_DEEP,
-            width=int(SIZE * ss * 0.012),
-        )
-
-    layer = layer.resize((SIZE, SIZE), Image.LANCZOS)
-    img.alpha_composite(layer)
-    img.save(path)
-    print(f"wrote {path}")
-
-
-# Full bleed for legacy launchers, iOS and the web.
-build("icon_master.png", background=True, scale=0.56, border=True)
-
-# Adaptive foreground: no background, and small enough to survive cropping.
-build("icon_foreground.png", background=False, scale=0.42, border=False)
+if __name__ == "__main__":
+    main()

@@ -1,8 +1,11 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:just_audio_background/just_audio_background.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'constants/theme.dart';
 import 'screens/home_screen.dart';
 import 'screens/favorites_screen.dart';
@@ -119,6 +122,75 @@ class _MainNavigationState extends State<MainNavigation> {
     HomeScreen(),
     AccountScreen(),
   ];
+
+  static const _promptKey = 'notification_prompt_shown';
+
+  @override
+  void initState() {
+    super.initState();
+    if (!kIsWeb) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _checkNotifications());
+    }
+  }
+
+  Future<void> _checkNotifications() async {
+    final allowed = await NotificationService.allowed();
+    if (allowed != false) return;
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getBool(_promptKey) == true) return;
+    await prefs.setBool(_promptKey, true);
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      builder: (ctx) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          backgroundColor: AppColors.blackCard,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: const BorderSide(color: AppColors.goldBorder),
+          ),
+          title: const Row(
+            children: [
+              Icon(Icons.notifications_active, color: AppColors.gold, size: 24),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text('السماح بالإشعارات',
+                    style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+          content: const Text(
+            'التطبيق يحتاج الإشعارات عشان يذكّرك بأذكار الصباح والمساء'
+            ' وأوقات الصلاة.\n\n'
+            'افتح إعدادات التطبيق وفعّل الإشعارات.',
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.5),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('لاحقاً',
+                  style: TextStyle(color: AppColors.textMuted, fontSize: 14)),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                Geolocator.openAppSettings();
+              },
+              child: const Text('فتح الإعدادات',
+                  style: TextStyle(
+                      color: AppColors.gold,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -1,5 +1,10 @@
-# Regenerate with: dart run flutter_launcher_icons
-# Source artwork is produced by tools/make_icon.py
+# Regenerate with:
+#   python3 tools/make_icon.py && dart run flutter_launcher_icons
+#
+# icon.png and foreground.png are both derived from assets/icon/artwork.jpg
+# and are deliberately different pictures: the square keeps the ornamented
+# border, the adaptive foreground is the medallion alone, cut to its circle
+# and dropped to the size Android guarantees will survive its mask.
 flutter_launcher_icons:
   image_path: "assets/icon/icon.png"
 

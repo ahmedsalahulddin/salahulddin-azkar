@@ -194,12 +194,27 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
   /// The Uthmanic face the page itself is set in.
   static const _mushafFont = 'AmiriQuran';
 
-  /// How far the writing sits above the middle of its own cartouche.
+  /// How far each label's ink sits below the middle of its own cartouche.
   ///
-  /// The box is padded evenly, but the face carries more space above its
-  /// glyphs than below it, so an evenly padded box reads bottom-heavy. This
-  /// moves the glyphs only — the box keeps its size and its place.
-  static const _labelLift = 2.0;
+  /// Measured off the rendered page, not guessed: the three are given the
+  /// same box and the same face and land in three different places, because
+  /// what centres is the line box and what the eye reads is the ink. A name
+  /// carrying fatha and kasra fills the room above and looks nearly centred
+  /// already; "الجزء ١" has less of it; a bare page number has none at all
+  /// and sits on the floor of its box. That is exactly the order the reader
+  /// reported — the two numbers wrong, the surah name forgiven.
+  ///
+  /// Across five pages spanning the Mushaf the juz and the page number
+  /// measured identically every time; the surah name moves about a pixel
+  /// either way with its diacritics, which is also why it was the one the
+  /// reader was willing to forgive.
+  ///
+  /// That the three land within half a pixel of each other says this is the
+  /// face's own asymmetry rather than anything about the strings: Amiri Quran
+  /// reserves room above every glyph for marks most of these never use.
+  static const _surahInk = 5.2;
+  static const _juzInk = 5.75;
+  static const _numberInk = 5.6;
 
   /// And how far the surah and juz cartouches themselves sit above the middle
   /// of the band. Separate from [_labelLift]: where the writing sits inside
@@ -230,6 +245,12 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
       color: palette.onPaperMuted,
       fontSize: FrameTuning.of('caption'),
       height: 1.15,
+      // Amiri Quran reserves a great deal of room above its glyphs for the
+      // Mushaf marks, and Flutter's default hands the extra line height out
+      // in proportion to that — nearly all of it above, which pushes the
+      // writing to the floor of its box. Split it evenly and the glyphs sit
+      // where the box says they do.
+      leadingDistribution: TextLeadingDistribution.even,
     );
 
     // Pinned to the bars rather than to where the printed image happened to
@@ -312,13 +333,17 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Flexible(
-                      child: _cartouche(surah.name, palette, caption),
+                      child: _cartouche(surah.name, palette, caption,
+                          boxKey: const Key('mushaf-cartouche-surah'),
+                          lift: _surahInk),
                     ),
                     const SizedBox(width: 8),
                     _cartouche(
                         'الجزء ${QuranService.toArabicDigits(widget.page.juz)}',
                         palette,
-                        caption),
+                        caption,
+                        boxKey: const Key('mushaf-cartouche-juz'),
+                        lift: _juzInk),
                   ],
                 ),
               ),
@@ -335,7 +360,9 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
                 child: _cartouche(
                     QuranService.toArabicDigits(widget.page.number),
                     palette,
-                    caption),
+                    caption,
+                    boxKey: const Key('mushaf-cartouche-number'),
+                    lift: _numberInk),
               ),
             ),
           ],
@@ -351,8 +378,10 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
   /// what breaks the ornament behind it and makes the label read as part of
   /// the border instead of as writing laid over it. The double rule is the
   /// printed convention — a single line looks like a text field.
-  Widget _cartouche(String text, MushafPalette palette, TextStyle caption) {
+  Widget _cartouche(String text, MushafPalette palette, TextStyle caption,
+      {Key? boxKey, required double lift}) {
     return Container(
+      key: boxKey,
       padding: const EdgeInsets.all(1.5),
       decoration: BoxDecoration(
         color: palette.paper,
@@ -371,7 +400,7 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
         // the border with it, and it is the border that is already where it
         // should be. This shifts the glyphs alone.
         child: Transform.translate(
-          offset: const Offset(0, -_labelLift),
+          offset: Offset(0, -lift),
           child: FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(text, style: caption, textAlign: TextAlign.center),

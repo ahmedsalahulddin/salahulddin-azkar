@@ -43,52 +43,60 @@ void main() {
         ),
       );
 
-  testWidgets('the writing sits above the middle of its own cartouche',
+  testWidgets('the writing rides above the middle of its own layout box',
       (tester) async {
+    // Every label is lifted, because the line box centres and the ink is what
+    // is read: this face reserves room above each glyph for marks that a page
+    // number and a juz number never carry, so an untouched label sits on the
+    // floor of its cartouche. How far each is lifted was measured off a
+    // rendered page — see the constants in page_sheet.dart — and this only
+    // holds that the lift is still applied at all.
     await tester.pumpWidget(sheet());
     await tester.pump();
 
     for (final label in ['البقرة', 'الجزء ١', '٣']) {
-      final text = tester.getRect(find.text(label));
-      // The cartouche is the nearest Container above the text; its centre is
-      // what the writing is meant to sit above.
-      final box = tester.getRect(find.ancestor(
+      final moved = tester.widget<Transform>(find.ancestor(
         of: find.text(label),
         matching: find.byType(Transform),
       ).first);
-
-      expect(text.center.dy, lessThan(box.center.dy),
-          reason: '$label should ride above the middle of its box');
+      expect(moved.transform.getTranslation().y, lessThan(-4),
+          reason: '$label is no longer being lifted inside its cartouche');
     }
   });
 
-  testWidgets('the header pair share a line', (tester) async {
+  testWidgets('the header pair sit on one line', (tester) async {
+    // The boxes, not the writing. The two labels are lifted by slightly
+    // different amounts inside their cartouches — measured separately,
+    // because a name carrying diacritics and the words "الجزء ١" do not put
+    // their ink in the same place — so their text no longer shares an exact
+    // line and is not meant to. Their cartouches do.
     await tester.pumpWidget(sheet());
     await tester.pump();
 
-    final surah = tester.getRect(find.text('البقرة'));
-    final juz = tester.getRect(find.text('الجزء ١'));
-    expect(surah.center.dy, closeTo(juz.center.dy, 0.01),
-        reason: 'they sit on one line and must move together');
+    final surah = tester.getRect(find.byKey(const Key('mushaf-cartouche-surah')));
+    final juz = tester.getRect(find.byKey(const Key('mushaf-cartouche-juz')));
+    expect(surah.top, closeTo(juz.top, 0.01));
+    expect(surah.height, closeTo(juz.height, 0.01));
   });
 
-  testWidgets('each label sits exactly where it was placed', (tester) async {
-    // Measured, then written down. These were set by eye against the printed
-    // page and to the pixel, and by eye is precisely what no later change can
-    // re-derive: without a number here, a refactor that moved them all by
-    // three would look like nothing had happened.
+  testWidgets('each cartouche sits exactly where it was placed',
+      (tester) async {
+    // Written down because it was set by eye and to the pixel, and by eye is
+    // exactly what a later change cannot re-derive: move all three by three
+    // pixels and, without a number here, nothing anywhere would say so.
     await tester.pumpWidget(sheet());
     await tester.pump();
 
-    final box = tester.getRect(find.byKey(const Key('mushaf-frame-box')));
+    final border = tester.getRect(find.byKey(const Key('mushaf-frame-box')));
 
-    for (final label in ['البقرة', 'الجزء ١']) {
-      expect(tester.getRect(find.text(label)).center.dy - box.top,
-          closeTo(33.5, 0.01),
-          reason: '$label sits below the top of the border by this much');
+    for (final label in ['surah', 'juz']) {
+      final box = tester.getRect(find.byKey(Key('mushaf-cartouche-$label')));
+      expect(box.center.dy - border.top, closeTo(35.5, 0.01),
+          reason: '$label sits below the head of the border by this much');
     }
-    expect(box.bottom - tester.getRect(find.text('٣')).center.dy,
-        closeTo(30.5, 0.01),
+    final number =
+        tester.getRect(find.byKey(const Key('mushaf-cartouche-number')));
+    expect(border.bottom - number.center.dy, closeTo(28.5, 0.01),
         reason: 'the page number sits above the foot of the border by this '
             'much');
   });
