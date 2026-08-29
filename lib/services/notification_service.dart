@@ -53,6 +53,18 @@ class NotificationService {
       const InitializationSettings(android: android, iOS: ios),
     );
     _initialized = true;
+
+    // An older version of the plugin (or the app) may have stored scheduled
+    // notifications whose serialised form is missing a field the current
+    // plugin expects — "Missing type parameter". If loading them fails, the
+    // stored list is corrupt and every future zonedSchedule() will fail too,
+    // because it reads the list before appending. Clearing it once lets
+    // scheduling resume; the reminders are rebuilt moments later in main().
+    try {
+      await _plugin.pendingNotificationRequests();
+    } catch (_) {
+      await _plugin.cancelAll();
+    }
   }
 
   /// The clock, and only the clock.

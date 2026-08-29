@@ -578,10 +578,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: loud ? AppColors.blackCard : AppColors.goldMuted,
+            color: loud ? AppColors.goldMuted : AppColors.blackCard,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-                color: loud ? AppColors.goldBorder : AppColors.gold),
+                color: loud ? AppColors.gold : AppColors.goldBorder),
           ),
           child: Row(
             children: [
@@ -592,7 +592,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('إشعارات بلا صوت',
+                    const Text('إشعارات بالصوت',
                         style: TextStyle(
                             color: AppColors.textPrimary, fontSize: 14)),
                     Text(
@@ -606,13 +606,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ),
               Switch(
-                value: !loud,
-                // Both ways. It used to act only on the way in, so switching
-                // the silence off did nothing and the switch sprang back —
-                // which reads as a broken control, and was one.
-                onChanged: (quiet) => quiet
-                    ? PrayerAlerts.muteEverything()
-                    : PrayerAlerts.restoreSound(),
+                value: loud,
+                onChanged: (soundOn) => soundOn
+                    ? PrayerAlerts.restoreSound()
+                    : PrayerAlerts.muteEverything(),
                 activeThumbColor: AppColors.gold,
               ),
             ],
