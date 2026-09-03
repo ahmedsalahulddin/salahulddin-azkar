@@ -94,7 +94,7 @@ class NoorAzkarApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'salahulddin-AZKAR',
+      title: 'SalaHulddin Azkar',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
       // Every route ends above the phone's navigation bar — screens added

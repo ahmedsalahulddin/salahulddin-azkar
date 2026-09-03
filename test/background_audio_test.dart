@@ -32,7 +32,9 @@ void main() {
   test('the notification can bring the app back', () {
     // Tapping the notification reopens the activity, which only works when it
     // is audio_service's own.
-    expect(manifest, contains('com.ryanheise.audioservice.AudioServiceActivity'));
+    // MainActivity extends AudioServiceActivity; the manifest uses the short
+    // form (.MainActivity) which Android resolves to the full package name.
+    expect(manifest, contains('.MainActivity'));
     expect(manifest, contains('com.ryanheise.audioservice.MediaButtonReceiver'));
     expect(manifest, contains('android.intent.action.MEDIA_BUTTON'));
   });
