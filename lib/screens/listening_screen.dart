@@ -33,6 +33,12 @@ class _ListeningScreenState extends State<ListeningScreen> {
   @override
   void initState() {
     super.initState();
+    // Stop anything that was playing from another screen so the reader is not
+    // hearing the Mushaf or a surah while browsing where to start listening.
+    if (AppAudio.player.playing &&
+        !AppAudio.ownsCurrent(ContinuousListening.owner)) {
+      AppAudio.player.stop();
+    }
     _load();
   }
 

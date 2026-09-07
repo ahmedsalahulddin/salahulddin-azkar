@@ -226,26 +226,39 @@ class NotificationService {
       final at = tz.TZDateTime(tz.local, soon.year, soon.month, soon.day,
           soon.hour, soon.minute, soon.second);
 
-      await _plugin.zonedSchedule(
-        _scheduledTestId,
-        'التنبيه المجدول وصل',
-        'أُرسل قبل دقيقة بنفس طريقة تنبيهات الصلاة والأذكار.',
-        at,
-        const NotificationDetails(
-          android: AndroidNotificationDetails(
-            'salahulddin_dhikr_v2',
-            'تذكير بالذكر',
-            channelDescription: 'ذكر قصير يصلك خلال اليوم',
-            importance: reminderImportance,
-            priority: reminderPriority,
-            visibility: NotificationVisibility.public,
-          ),
-          iOS: DarwinNotificationDetails(),
+      const testDetails = NotificationDetails(
+        android: AndroidNotificationDetails(
+          'salahulddin_dhikr_v2',
+          'تذكير بالذكر',
+          channelDescription: 'ذكر قصير يصلك خلال اليوم',
+          importance: reminderImportance,
+          priority: reminderPriority,
+          visibility: NotificationVisibility.public,
         ),
-        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
+        iOS: DarwinNotificationDetails(),
       );
+      // Mirror the prayer-alert path: alarmClock first, inexact as fallback.
+      try {
+        await _plugin.zonedSchedule(
+          _scheduledTestId,
+          'التنبيه المجدول وصل',
+          'أُرسل قبل دقيقة بنفس طريقة تنبيهات الصلاة والأذكار.',
+          at, testDetails,
+          androidScheduleMode: AndroidScheduleMode.alarmClock,
+          uiLocalNotificationDateInterpretation:
+              UILocalNotificationDateInterpretation.absoluteTime,
+        );
+      } catch (_) {
+        await _plugin.zonedSchedule(
+          _scheduledTestId,
+          'التنبيه المجدول وصل',
+          'أُرسل قبل دقيقة بنفس طريقة تنبيهات الصلاة والأذكار.',
+          at, testDetails,
+          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+          uiLocalNotificationDateInterpretation:
+              UILocalNotificationDateInterpretation.absoluteTime,
+        );
+      }
       return true;
     } catch (e) {
       lastScheduleError = e.toString();
@@ -317,11 +330,19 @@ class NotificationService {
   /// A channel's importance is fixed when it is made and an app may only
   /// lower it, so the replacements carry new ids and these are deleted rather
   /// than left sitting in the phone's settings under the same names.
+  ///
+  /// The v2 prayer sound channels are also removed here: if they were first
+  /// created in a session where sound was off, Android locked them without a
+  /// sound and they could never play the adhan. v3 channels are created fresh
+  /// with the correct sound file.
   static Future<void> _dropQuietChannels() async {
     const gone = [
       'salahulddin_dhikr_reminder',
       'salahulddin_daily',
       'salahulddin_prayer_silent',
+      'salahulddin_prayer_sound_v2_adhan_makkah',
+      'salahulddin_prayer_sound_v2_adhan_madinah',
+      'salahulddin_prayer_sound_v2_default',
     ];
     try {
       final android = _plugin.resolvePlatformSpecificImplementation<
@@ -418,8 +439,11 @@ class NotificationService {
     // next — nor play a different adhan after the reader changes it. The
     // channel id therefore carries both the mode and the chosen sound, and a
     // new combination simply creates a new channel.
+    //
+    // v3: old v2 channels are deleted at startup (_dropQuietChannels) so that
+    // any that were created without a sound get recreated here with the adhan.
     final channel = mode.sound
-        ? 'salahulddin_prayer_sound_v2_${soundResource ?? 'default'}'
+        ? 'salahulddin_prayer_sound_v3_${soundResource ?? 'default'}'
         : 'salahulddin_prayer_silent_v2';
 
     final androidDetails = AndroidNotificationDetails(
@@ -436,13 +460,26 @@ class NotificationService {
       visibility: NotificationVisibility.public,
     );
     final iosDetails = DarwinNotificationDetails(presentSound: mode.sound);
+    final details = NotificationDetails(android: androidDetails, iOS: iosDetails);
+    final tzAt = tz.TZDateTime.from(at, tz.local);
 
+    // alarmClock uses AlarmManager.setAlarmClock(), which is exempt from Doze
+    // and fires at the exact minute. On Android 13+ without SCHEDULE_EXACT_ALARM
+    // permission it throws SecurityException; the fallback still schedules it
+    // inexactly so the alert is never silently lost.
+    try {
+      await _plugin.zonedSchedule(
+        id, title, body, tzAt, details,
+        androidScheduleMode: AndroidScheduleMode.alarmClock,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+      );
+      return;
+    } catch (_) {
+      // Exact alarms not permitted on this device/OS version; fall through.
+    }
     await _plugin.zonedSchedule(
-      id,
-      title,
-      body,
-      tz.TZDateTime.from(at, tz.local),
-      NotificationDetails(android: androidDetails, iOS: iosDetails),
+      id, title, body, tzAt, details,
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,

@@ -40,6 +40,13 @@ class _SurahScreenState extends State<SurahScreen> {
   void initState() {
     super.initState();
     _load();
+    // Any audio playing when this screen opens belongs to another screen. Stop
+    // it now rather than letting it bleed into the reader's session — the
+    // ownership check in _play() would catch it on the first tap, but the
+    // reader should not hear the previous audio while they are choosing a ayah.
+    if (_player.playing && !AppAudio.ownsCurrent('${_reciter.id}:')) {
+      _player.stop();
+    }
 
     // Keep the highlight and scroll position in step with the playlist.
     _indexSub = _player.currentIndexStream.listen((i) {
@@ -47,6 +54,8 @@ class _SurahScreenState extends State<SurahScreen> {
       // Only when the player is on this surah's playlist: the shared player
       // reports the radio's track changes here too.
       if (!AppAudio.ownsCurrent('${_reciter.id}:')) return;
+      // Per-surah reciters load one file — index 0 is not an ayah position.
+      if (!_reciter.isPerAyah) return;
       final ayah = i + 1;
       setState(() => _playingAyah = ayah);
       _scrollTo(ayah);
@@ -92,11 +101,21 @@ class _SurahScreenState extends State<SurahScreen> {
   }
 
   /// Streams the surah as a playlist so playback rolls on to the next ayah.
+  /// For per-surah reciters (mp3quran.net), loads a single file instead.
   Future<void> _play({int fromAyah = 1}) async {
     final surah = _surah;
     if (surah == null) return;
 
     setState(() => _audioFailed = false);
+
+    if (_reciter.isPerAyah) {
+      await _playPerAyah(surah: surah, fromAyah: fromAyah);
+    } else {
+      await _playPerSurah(surah: surah);
+    }
+  }
+
+  Future<void> _playPerAyah({required dynamic surah, required int fromAyah}) async {
     // Whose playlist is loaded, not merely whether one is: the radio leaves
     // its own source in place, and seeking into that plays the broadcast
     // under this screen's reciter name.
@@ -140,6 +159,37 @@ class _SurahScreenState extends State<SurahScreen> {
     }
   }
 
+  // Per-surah reciters (mp3quran.net): one MP3 for the whole surah.
+  // Ayah highlighting is unavailable; _playingAyah stays null.
+  Future<void> _playPerSurah({required dynamic surah}) async {
+    final url = RecitationService.surahUrlFor(reciter: _reciter, surah: surah.number);
+    if (url == null) return;
+    final mine = '${_reciter.id}:${surah.number}';
+    try {
+      if (!AppAudio.ownsCurrent(mine)) {
+        await _player.stop();
+        await _player.setAudioSource(
+          AudioSource.uri(
+            Uri.parse(url),
+            tag: MediaItem(
+              id: mine,
+              title: surah.name,
+              artist: _reciter.name,
+              album: 'القرآن الكريم',
+            ),
+          ),
+        );
+      }
+      setState(() => _playingAyah = null);
+      await PlaybackSpeed.apply();
+      await _player.play();
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _audioFailed = true);
+      _toast('تعذّر تشغيل التلاوة — تحقّق من الاتصال');
+    }
+  }
+
   Future<void> _pause() async {
     await _player.pause();
     if (mounted) setState(() {});
@@ -152,11 +202,15 @@ class _SurahScreenState extends State<SurahScreen> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
+      isScrollControlled: true,
       builder: (ctx) => Directionality(
         textDirection: TextDirection.rtl,
-        child: SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
+        child: DraggableScrollableSheet(
+          expand: false,
+          initialChildSize: 0.55,
+          minChildSize: 0.35,
+          maxChildSize: 0.85,
+          builder: (ctx, scroll) => Column(
             children: [
               const Padding(
                 padding: EdgeInsets.all(16),
@@ -166,15 +220,23 @@ class _SurahScreenState extends State<SurahScreen> {
                         fontSize: 18,
                         fontWeight: FontWeight.bold)),
               ),
-              for (final r in RecitationService.reciters)
-                ListTile(
-                  title: Text(r.name,
-                      style: const TextStyle(color: AppColors.textPrimary)),
-                  trailing: r.id == _reciter.id
-                      ? const Icon(Icons.check, color: AppColors.gold)
-                      : null,
-                  onTap: () => Navigator.pop(ctx, r),
+              Expanded(
+                child: ListView(
+                  controller: scroll,
+                  children: [
+                    for (final r in RecitationService.reciters)
+                      ListTile(
+                        title: Text(r.name,
+                            style: const TextStyle(color: AppColors.textPrimary)),
+                        trailing: r.id == _reciter.id
+                            ? const Icon(Icons.check, color: AppColors.gold)
+                            : null,
+                        onTap: () => Navigator.pop(ctx, r),
+                      ),
+                    const SizedBox(height: 8),
+                  ],
                 ),
+              ),
             ],
           ),
         ),

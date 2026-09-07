@@ -100,9 +100,22 @@ class ContinuousListening {
 
     _wire();
     surah.value = number;
-    ayah.value = fromAyah.clamp(1, info.ayahCount);
     await _remember();
 
+    if (reciter.value.isPerAyah) {
+      await _playPerAyah(number: number, info: info, fromAyah: fromAyah);
+    } else {
+      await _playPerSurah(number: number, info: info);
+    }
+  }
+
+  static Future<void> _playPerAyah({
+    required int number,
+    required SurahInfo info,
+    required int fromAyah,
+  }) async {
+    ayah.value = fromAyah.clamp(1, info.ayahCount);
+    await _remember();
     try {
       await AppAudio.player.stop();
       await AppAudio.player.setAudioSources(
@@ -131,6 +144,37 @@ class ContinuousListening {
       // a first run), read that as "somebody else took it", and switched this
       // off again. The first surah still played, and then nothing followed it,
       // which is the one thing this file exists to prevent.
+      active.value = true;
+      await PlaybackSpeed.apply();
+      await AppAudio.player.play();
+    } catch (_) {
+      active.value = false;
+    }
+  }
+
+  // Per-surah reciters (mp3quran.net): one file per surah.
+  // Ayah tracking is unavailable; the completion handler still advances.
+  static Future<void> _playPerSurah({
+    required int number,
+    required SurahInfo info,
+  }) async {
+    final url = RecitationService.surahUrlFor(reciter: reciter.value, surah: number);
+    if (url == null) { active.value = false; return; }
+    ayah.value = 1;
+    await _remember();
+    try {
+      await AppAudio.player.stop();
+      await AppAudio.player.setAudioSource(
+        AudioSource.uri(
+          Uri.parse(url),
+          tag: MediaItem(
+            id: '$owner$number:1',
+            title: info.name,
+            artist: reciter.value.name,
+            album: 'الاستماع الدائم',
+          ),
+        ),
+      );
       active.value = true;
       await PlaybackSpeed.apply();
       await AppAudio.player.play();

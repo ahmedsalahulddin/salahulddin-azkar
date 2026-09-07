@@ -132,8 +132,8 @@ class Sources {
 
     // ---- audio -----------------------------------------------------------
     AppSource(
-      title: 'تلاوات القرّاء الستة',
-      holder: 'كل قارئ وناشر تسجيله — تُبثّ من everyayah.com',
+      title: 'تلاوات القرّاء التسعة',
+      holder: 'كل قارئ وناشر تسجيله — تُبثّ من everyayah.com و mp3quran.net',
       kind: SourceKind.audio,
       standing: Standing.hosted,
       detail: 'التسجيل عملٌ محفوظ لصاحبه، والتطبيق لا ينسخه',
