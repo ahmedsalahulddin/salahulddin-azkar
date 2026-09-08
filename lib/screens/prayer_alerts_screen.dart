@@ -4,6 +4,7 @@ import '../constants/theme.dart';
 import '../data/adhans.dart';
 import '../data/quran_data.dart';
 import '../services/adhan_downloads.dart';
+import '../services/notification_service.dart';
 import '../services/prayer_alerts.dart';
 
 /// The two moments a prayer announces itself, each with its own settings.
@@ -11,8 +12,25 @@ import '../services/prayer_alerts.dart';
 /// Laid out as the reader described it: the early warning and its lead time
 /// first, then the call itself and the adhan it plays. Notification and sound
 /// are separate switches, so both can be on at once.
-class PrayerAlertsScreen extends StatelessWidget {
+class PrayerAlertsScreen extends StatefulWidget {
   const PrayerAlertsScreen({super.key});
+
+  @override
+  State<PrayerAlertsScreen> createState() => _PrayerAlertsScreenState();
+}
+
+class _PrayerAlertsScreenState extends State<PrayerAlertsScreen> {
+  Future<void> _testSound() async {
+    final sent = await NotificationService.sendPrayerSoundTest();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(
+        sent ? 'يصلك صوت الأذان الآن.' : 'تعذّر إرسال التنبيه.',
+        textDirection: TextDirection.rtl,
+      ),
+      duration: const Duration(seconds: 3),
+    ));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,6 +55,27 @@ class PrayerAlertsScreen extends StatelessWidget {
               _section(AlertWhen.onTime),
               const SizedBox(height: 10),
               _adhanPicker(context),
+              const SizedBox(height: 12),
+              GestureDetector(
+                onTap: _testSound,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 13),
+                  decoration: BoxDecoration(
+                    color: AppColors.blackCard,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: AppColors.goldBorder),
+                  ),
+                  child: const Text(
+                    'جرّب صوت الأذان',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: AppColors.gold,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
               const SizedBox(height: 16),
               const Text(
                 'التنبيهات تُضبط على مواقيت يومك وتُجدَّد كل يوم.',

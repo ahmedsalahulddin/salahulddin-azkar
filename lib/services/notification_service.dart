@@ -266,6 +266,42 @@ class NotificationService {
     }
   }
 
+  /// Sends an immediate notification on the prayer sound channel with the
+  /// chosen adhan, so the reader can hear whether the adhan plays correctly
+  /// without waiting for prayer time.
+  static Future<bool> sendPrayerSoundTest() async {
+    if (kIsWeb) return false;
+    try {
+      await init();
+      final soundResource = PrayerAlerts.bundledResource;
+      final channel =
+          'salahulddin_prayer_sound_v4_${soundResource ?? 'default'}';
+      await _plugin.show(
+        _testId + 1,
+        'جرّبت صوت الأذان',
+        'هكذا سيصلك التنبيه وقت الصلاة.',
+        NotificationDetails(
+          android: AndroidNotificationDetails(
+            channel,
+            'مواقيت الصلاة — بالصوت',
+            channelDescription: 'تنبيهات الصلاة',
+            importance: reminderImportance,
+            priority: reminderPriority,
+            playSound: true,
+            sound: soundResource != null
+                ? RawResourceAndroidNotificationSound(soundResource)
+                : null,
+            visibility: NotificationVisibility.public,
+          ),
+          iOS: const DarwinNotificationDetails(presentSound: true),
+        ),
+      );
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   /// How many notifications the system is actually holding for this app.
   ///
   /// The ground truth, and the one thing the app could not see. Every switch
@@ -331,10 +367,10 @@ class NotificationService {
   /// lower it, so the replacements carry new ids and these are deleted rather
   /// than left sitting in the phone's settings under the same names.
   ///
-  /// The v2 prayer sound channels are also removed here: if they were first
-  /// created in a session where sound was off, Android locked them without a
-  /// sound and they could never play the adhan. v3 channels are created fresh
-  /// with the correct sound file.
+  /// The v2 and v3 prayer sound channels are also removed here: if they were
+  /// first created in a session where a non-bundled adhan was selected,
+  /// Android locked them without a sound and they could never play the adhan.
+  /// v4 channels are created fresh with the correct sound file.
   static Future<void> _dropQuietChannels() async {
     const gone = [
       'salahulddin_dhikr_reminder',
@@ -343,6 +379,9 @@ class NotificationService {
       'salahulddin_prayer_sound_v2_adhan_makkah',
       'salahulddin_prayer_sound_v2_adhan_madinah',
       'salahulddin_prayer_sound_v2_default',
+      'salahulddin_prayer_sound_v3_adhan_makkah',
+      'salahulddin_prayer_sound_v3_adhan_madinah',
+      'salahulddin_prayer_sound_v3_default',
     ];
     try {
       final android = _plugin.resolvePlatformSpecificImplementation<
@@ -440,10 +479,10 @@ class NotificationService {
     // channel id therefore carries both the mode and the chosen sound, and a
     // new combination simply creates a new channel.
     //
-    // v3: old v2 channels are deleted at startup (_dropQuietChannels) so that
-    // any that were created without a sound get recreated here with the adhan.
+    // v4: old v2/v3 channels are deleted at startup (_dropQuietChannels) so
+    // that any created without a sound get recreated here with the adhan.
     final channel = mode.sound
-        ? 'salahulddin_prayer_sound_v3_${soundResource ?? 'default'}'
+        ? 'salahulddin_prayer_sound_v4_${soundResource ?? 'default'}'
         : 'salahulddin_prayer_silent_v2';
 
     final androidDetails = AndroidNotificationDetails(

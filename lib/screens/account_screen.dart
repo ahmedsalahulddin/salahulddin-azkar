@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../constants/theme.dart';
 import '../services/auth_service.dart';
 import '../services/sync_service.dart';
@@ -24,13 +25,16 @@ class _AccountScreenState extends State<AccountScreen> {
   SignInProvider? _busyWith;
   bool _deleting = false;
   bool _isAdmin = false;
+  String _version = '';
 
   @override
   void initState() {
     super.initState();
     _checkAdmin();
-    // Signing in or out changes the answer.
     AuthService.user.addListener(_checkAdmin);
+    PackageInfo.fromPlatform().then((i) {
+      if (mounted) setState(() => _version = i.version);
+    });
   }
 
   @override
@@ -582,10 +586,10 @@ class _AccountScreenState extends State<AccountScreen> {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.goldBorder),
       ),
-      child: const Column(
+      child: Column(
         children: [
-          Text('الإصدار 1.0.0',
-              style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
+          Text('الإصدار $_version',
+              style: const TextStyle(color: AppColors.textMuted, fontSize: 12)),
           SizedBox(height: 8),
           Text(
             'نص المصحف: مجمع الملك فهد لطباعة المصحف الشريف\n'

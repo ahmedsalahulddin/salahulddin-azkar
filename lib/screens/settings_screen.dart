@@ -1138,7 +1138,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('تنبيهات المواقيت',
+                      const Text('تنبيهات أوقات الصلاة',
                           style: TextStyle(
                               color: AppColors.textPrimary, fontSize: 14)),
                       Text(
