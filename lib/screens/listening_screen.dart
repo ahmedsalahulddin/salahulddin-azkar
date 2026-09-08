@@ -219,23 +219,48 @@ class _ListeningScreenState extends State<ListeningScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.skip_previous,
-                    color: AppColors.textSecondary, size: 30),
-                onPressed: ContinuousListening.skipPrevious,
-                tooltip: 'السورة السابقة',
-              ),
-              _playButton(),
-              IconButton(
-                icon: const Icon(Icons.skip_next,
-                    color: AppColors.textSecondary, size: 30),
-                onPressed: ContinuousListening.skipNext,
-                tooltip: 'السورة التالية',
-              ),
-            ],
+          ValueListenableBuilder<Reciter>(
+            valueListenable: ContinuousListening.reciter,
+            builder: (context, rec, _) => Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.skip_previous,
+                      color: AppColors.textSecondary, size: 28),
+                  onPressed: ContinuousListening.skipPrevious,
+                  tooltip: 'السورة السابقة',
+                ),
+                IconButton(
+                  icon: Icon(Icons.fast_rewind,
+                      color: rec.isPerAyah
+                          ? AppColors.textSecondary
+                          : AppColors.goldBorder,
+                      size: 24),
+                  onPressed: rec.isPerAyah
+                      ? ContinuousListening.skipPreviousAyah
+                      : null,
+                  tooltip: 'الآية السابقة',
+                ),
+                _playButton(),
+                IconButton(
+                  icon: Icon(Icons.fast_forward,
+                      color: rec.isPerAyah
+                          ? AppColors.textSecondary
+                          : AppColors.goldBorder,
+                      size: 24),
+                  onPressed: rec.isPerAyah
+                      ? ContinuousListening.skipNextAyah
+                      : null,
+                  tooltip: 'الآية التالية',
+                ),
+                IconButton(
+                  icon: const Icon(Icons.skip_next,
+                      color: AppColors.textSecondary, size: 28),
+                  onPressed: ContinuousListening.skipNext,
+                  tooltip: 'السورة التالية',
+                ),
+              ],
+            ),
           ),
         ],
       ),

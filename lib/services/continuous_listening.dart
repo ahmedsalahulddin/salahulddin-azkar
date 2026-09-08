@@ -114,7 +114,13 @@ class ContinuousListening {
     required SurahInfo info,
     required int fromAyah,
   }) async {
-    ayah.value = fromAyah.clamp(1, info.ayahCount);
+    // Capture the start index as a local variable BEFORE any awaits.
+    // _indexSub can fire during AppAudio.player.stop() and overwrite
+    // ayah.value with a stale index from the old surah; reading ayah.value
+    // again at the setAudioSources call would then start the new surah at
+    // the wrong ayah. The local variable is immune to that race.
+    final startIndex = fromAyah.clamp(1, info.ayahCount) - 1;
+    ayah.value = startIndex + 1;
     await _remember();
     try {
       await AppAudio.player.stop();
@@ -136,7 +142,7 @@ class ContinuousListening {
               ),
             ),
         ],
-        initialIndex: ayah.value - 1,
+        initialIndex: startIndex,
       );
       // Only now. Claiming it before the playlist is loaded left a window —
       // across the awaits above — where the listener saw the previous owner's
@@ -191,6 +197,29 @@ class ContinuousListening {
   static Future<void> skipNext() => play(nextSurah(surah.value));
 
   static Future<void> skipPrevious() => play(previousSurah(surah.value));
+
+  static Future<void> skipNextAyah() async {
+    if (!reciter.value.isPerAyah) return;
+    if (!AppAudio.ownsCurrent(owner)) return;
+    final info = infoFor(surah.value);
+    if (info == null) return;
+    if (ayah.value >= info.ayahCount) {
+      await play(nextSurah(surah.value));
+    } else {
+      // seek to the start of the next ayah (index = current 0-based index + 1)
+      await AppAudio.player.seek(Duration.zero, index: ayah.value);
+    }
+  }
+
+  static Future<void> skipPreviousAyah() async {
+    if (!reciter.value.isPerAyah) return;
+    if (!AppAudio.ownsCurrent(owner)) return;
+    if (ayah.value <= 1) {
+      await play(previousSurah(surah.value));
+    } else {
+      await AppAudio.player.seek(Duration.zero, index: ayah.value - 2);
+    }
+  }
 
   static Future<void> toggle() async {
     if (!active.value || !AppAudio.ownsCurrent(owner)) {
