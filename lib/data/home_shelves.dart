@@ -17,6 +17,7 @@ import '../screens/memorisation_test_screen.dart';
 import '../screens/mushaf_screen.dart';
 import '../screens/my_cards_screen.dart';
 import '../screens/quran_home_screen.dart';
+import '../screens/quran_translation_screen.dart';
 import '../screens/listening_screen.dart';
 import '../screens/radio_screen.dart';
 import '../screens/quran_screen.dart';
@@ -155,6 +156,12 @@ HomeShelf _quranShelf() => HomeShelf(
         },
       ),
       rest: [
+        ShelfItem(
+          icon: '🌍',
+          title: 'ترجمات القرآن',
+          subtitle: 'بلغات متعددة',
+          open: (c) => _push(c, () => const QuranTranslationScreen()),
+        ),
         ShelfItem(
           icon: '🕌',
           title: 'تلاوة وتدبّر',
