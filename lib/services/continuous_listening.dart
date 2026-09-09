@@ -49,6 +49,11 @@ class ContinuousListening {
   static StreamSubscription<int?>? _indexSub;
   static StreamSubscription<PlayerState>? _stateSub;
 
+  /// The surah whose playlist is currently loaded. Set to 0 while a new
+  /// playlist is being loaded so that stale currentIndexStream events from the
+  /// previous surah are ignored rather than overwriting ayah.value.
+  static int _loadedSurah = 0;
+
   /// Guards against the completion handler firing while the next surah is
   /// still being loaded, which would skip a surah for every ayah left in the
   /// stream's queue.
@@ -123,6 +128,7 @@ class ContinuousListening {
     ayah.value = startIndex + 1;
     await _remember();
     try {
+      _loadedSurah = 0;
       await AppAudio.player.stop();
       await AppAudio.player.setAudioSources(
         [
@@ -144,6 +150,7 @@ class ContinuousListening {
         ],
         initialIndex: startIndex,
       );
+      _loadedSurah = number;
       // Only now. Claiming it before the playlist is loaded left a window —
       // across the awaits above — where the listener saw the previous owner's
       // tag still on the player (the Mushaf's, the radio's, or none at all on
@@ -169,6 +176,7 @@ class ContinuousListening {
     ayah.value = 1;
     await _remember();
     try {
+      _loadedSurah = 0;
       await AppAudio.player.stop();
       await AppAudio.player.setAudioSource(
         AudioSource.uri(
@@ -181,6 +189,7 @@ class ContinuousListening {
           ),
         ),
       );
+      _loadedSurah = number;
       active.value = true;
       await PlaybackSpeed.apply();
       await AppAudio.player.play();
@@ -246,6 +255,7 @@ class ContinuousListening {
 
     _indexSub = AppAudio.player.currentIndexStream.listen((i) {
       if (i == null || !AppAudio.ownsCurrent(owner)) return;
+      if (surah.value != _loadedSurah) return;
       ayah.value = i + 1;
       _remember();
     });
@@ -276,6 +286,7 @@ class ContinuousListening {
     _stateSub = null;
     _wired = false;
     _advancing = false;
+    _loadedSurah = 0;
     active.value = false;
     surah.value = 1;
     ayah.value = 1;
