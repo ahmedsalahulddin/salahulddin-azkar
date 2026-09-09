@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:in_app_update/in_app_update.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -129,7 +131,22 @@ class _MainNavigationState extends State<MainNavigation> {
   void initState() {
     super.initState();
     if (!kIsWeb) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _checkNotifications());
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _checkNotifications();
+        _checkForUpdate();
+      });
+    }
+  }
+
+  Future<void> _checkForUpdate() async {
+    if (!Platform.isAndroid) return;
+    try {
+      final info = await InAppUpdate.checkForUpdate();
+      if (info.updateAvailability == UpdateAvailability.updateAvailable) {
+        await InAppUpdate.performImmediateUpdate();
+      }
+    } catch (_) {
+      // Not distributed via Play Store (debug builds, direct APK) — ignore.
     }
   }
 
