@@ -5,6 +5,7 @@ import '../services/storage_service.dart';
 import 'memorisation_test_screen.dart';
 import 'mushaf_screen.dart';
 import 'quran_screen.dart';
+import 'quran_translation_screen.dart';
 
 /// Entry point for the Quran section: pick how you want to read.
 ///
@@ -50,6 +51,13 @@ class _QuranHomeScreenState extends State<QuranHomeScreen> {
     _loadProgress();
   }
 
+  Future<void> _openTranslation() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const QuranTranslationScreen()),
+    );
+  }
+
   Future<void> _openMushaf() async {
     final page = await StorageService.getLastMushafPage() ?? 1;
     if (!mounted) return;
@@ -84,22 +92,6 @@ class _QuranHomeScreenState extends State<QuranHomeScreen> {
               const SizedBox(height: 18),
 
               _modeCard(
-                icon: '🕌',
-                title: 'تلاوة وتدبّر',
-                subtitle: 'آية آية، مع التفسير والتلاوة',
-                details: const [
-                  'التفسير الميسّر لكل آية',
-                  'استمع للآية بصوت ستة قرّاء',
-                  'بحث ونسخ ومواضع السجود',
-                ],
-                progress: _lastSurahName == null
-                    ? null
-                    : 'آخر قراءة: سورة $_lastSurahName',
-                onTap: _openTadabbur,
-              ),
-              const SizedBox(height: 14),
-
-              _modeCard(
                 icon: '📖',
                 title: 'القرآن الكريم',
                 subtitle: 'صفحات',
@@ -117,9 +109,38 @@ class _QuranHomeScreenState extends State<QuranHomeScreen> {
               const SizedBox(height: 14),
 
               _modeCard(
+                icon: '🌍',
+                title: 'Quran',
+                subtitle: 'languages — ترجمات',
+                details: const [
+                  'النص العربي مع ترجمة بلغات متعددة',
+                  'English · Français · Türkçe · اردو · وأكثر',
+                  'الترجمة تُحفظ للاستخدام بلا إنترنت',
+                ],
+                onTap: _openTranslation,
+              ),
+              const SizedBox(height: 14),
+
+              _modeCard(
+                icon: '🕌',
+                title: 'تلاوة وتدبّر',
+                subtitle: 'آية آية، مع التفسير والتلاوة',
+                details: const [
+                  'التفسير الميسّر لكل آية',
+                  'استمع للآية بصوت ستة قرّاء',
+                  'بحث ونسخ ومواضع السجود',
+                ],
+                progress: _lastSurahName == null
+                    ? null
+                    : 'آخر قراءة: سورة $_lastSurahName',
+                onTap: _openTadabbur,
+              ),
+              const SizedBox(height: 14),
+
+              _modeCard(
                 icon: '🧠',
-                title: 'اختبار الحفظ',
-                subtitle: 'اختبر نفسك آية آية',
+                title: 'اختبارات الحفظ',
+                subtitle: 'مسابقات وأسئلة',
                 details: const [
                   'ثلاثة مستويات — من إخفاء كلمة إلى الآية كاملة',
                   'اكشف بعد الاسترجاع وسجّل نتيجتك',
