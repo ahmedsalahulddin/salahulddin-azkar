@@ -230,28 +230,28 @@ class _ListeningScreenState extends State<ListeningScreen> {
                   onPressed: ContinuousListening.skipPrevious,
                   tooltip: 'السورة السابقة',
                 ),
-                IconButton(
-                  icon: Icon(Icons.fast_rewind,
-                      color: rec.isPerAyah
-                          ? AppColors.textSecondary
-                          : AppColors.goldBorder,
-                      size: 24),
-                  onPressed: rec.isPerAyah
-                      ? ContinuousListening.skipPreviousAyah
-                      : null,
-                  tooltip: 'الآية السابقة',
+                Opacity(
+                  opacity: rec.isPerAyah ? 1.0 : 0.3,
+                  child: IconButton(
+                    icon: const Icon(Icons.fast_rewind,
+                        color: AppColors.gold, size: 24),
+                    onPressed: rec.isPerAyah
+                        ? ContinuousListening.skipPreviousAyah
+                        : null,
+                    tooltip: 'الآية السابقة',
+                  ),
                 ),
                 _playButton(),
-                IconButton(
-                  icon: Icon(Icons.fast_forward,
-                      color: rec.isPerAyah
-                          ? AppColors.textSecondary
-                          : AppColors.goldBorder,
-                      size: 24),
-                  onPressed: rec.isPerAyah
-                      ? ContinuousListening.skipNextAyah
-                      : null,
-                  tooltip: 'الآية التالية',
+                Opacity(
+                  opacity: rec.isPerAyah ? 1.0 : 0.3,
+                  child: IconButton(
+                    icon: const Icon(Icons.fast_forward,
+                        color: AppColors.gold, size: 24),
+                    onPressed: rec.isPerAyah
+                        ? ContinuousListening.skipNextAyah
+                        : null,
+                    tooltip: 'الآية التالية',
+                  ),
                 ),
                 IconButton(
                   icon: const Icon(Icons.skip_next,
