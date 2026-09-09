@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 
@@ -27,6 +28,17 @@ const _langs = [
 
 const _cdnBase =
     'https://cdn.jsdelivr.net/npm/quran-json@3.1.2/dist/chapters';
+
+const _ttsLocale = {
+  'en': 'en-US',
+  'fr': 'fr-FR',
+  'tr': 'tr-TR',
+  'ur': 'ur-PK',
+  'de': 'de-DE',
+  'es': 'es-ES',
+  'ru': 'ru-RU',
+  'id': 'id-ID',
+};
 
 Future<List<String>?> _fetchTranslation(String lang, int surahNum) async {
   final dir = await getApplicationDocumentsDirectory();
@@ -243,10 +255,42 @@ class _QuranTranslationSurahScreenState
   bool _loadingTranslation = true;
   bool _translationFailed = false;
 
+  final _tts = FlutterTts();
+  int? _speakingAyah;
+
   @override
   void initState() {
     super.initState();
+    _initTts();
     Future.wait([_loadArabic(), _loadTranslation()]);
+  }
+
+  Future<void> _initTts() async {
+    final locale = _ttsLocale[widget.langCode] ?? 'en-US';
+    await _tts.setLanguage(locale);
+    await _tts.setSpeechRate(0.45);
+    _tts.setCompletionHandler(() {
+      if (mounted) setState(() => _speakingAyah = null);
+    });
+    _tts.setCancelHandler(() {
+      if (mounted) setState(() => _speakingAyah = null);
+    });
+  }
+
+  Future<void> _speak(int ayahNum, String text) async {
+    if (_speakingAyah == ayahNum) {
+      await _tts.stop();
+      return;
+    }
+    await _tts.stop();
+    setState(() => _speakingAyah = ayahNum);
+    await _tts.speak(text);
+  }
+
+  @override
+  void dispose() {
+    _tts.stop();
+    super.dispose();
   }
 
   Future<void> _loadArabic() async {
@@ -342,33 +386,47 @@ class _QuranTranslationSurahScreenState
   }
 
   Widget _ayahCard(Ayah ayah, String? trans) {
+    final speaking = _speakingAyah == ayah.number;
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.blackCard,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.goldBorder),
+        border: Border.all(
+            color: speaking ? AppColors.gold : AppColors.goldBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Align(
-            alignment: Alignment.centerRight,
-            child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-              decoration: BoxDecoration(
-                color: AppColors.goldMuted,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.goldBorder),
+          Row(
+            children: [
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                decoration: BoxDecoration(
+                  color: AppColors.goldMuted,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: AppColors.goldBorder),
+                ),
+                child: Text(
+                  QuranService.toArabicDigits(ayah.number),
+                  style: const TextStyle(color: AppColors.gold, fontSize: 12),
+                ),
               ),
-              child: Text(
-                QuranService.toArabicDigits(ayah.number),
-                style: const TextStyle(
-                    color: AppColors.gold, fontSize: 12),
-              ),
-            ),
+              const Spacer(),
+              if (trans != null)
+                GestureDetector(
+                  onTap: () => _speak(ayah.number, trans),
+                  child: Icon(
+                    speaking
+                        ? Icons.stop_circle_outlined
+                        : Icons.volume_up_outlined,
+                    color: speaking ? AppColors.gold : AppColors.textMuted,
+                    size: 20,
+                  ),
+                ),
+            ],
           ),
           const SizedBox(height: 10),
           Text(
@@ -390,8 +448,10 @@ class _QuranTranslationSurahScreenState
               trans,
               textDirection: TextDirection.ltr,
               textAlign: TextAlign.left,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
+              style: TextStyle(
+                color: speaking
+                    ? AppColors.textGold
+                    : AppColors.textSecondary,
                 fontSize: 14,
                 height: 1.6,
               ),
