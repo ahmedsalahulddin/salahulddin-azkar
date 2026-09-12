@@ -8,11 +8,22 @@ import '../services/continuous_listening.dart';
 import '../services/recitation_service.dart';
 import '../widgets/speed_button.dart';
 
-/// The Mushaf, read straight through.
-///
-/// The card promised continuous listening and opened a note saying it was
-/// coming. This is the thing itself: a reciter, a place to start, and a
-/// recitation that carries on into the next surah on its own.
+// surahJuz[i] = juz where surah (i+1) starts.
+const _surahJuz = [
+  1, 1, 3, 4, 6, 7, 8, 9, 10, 11, // 1-10
+  11, 12, 13, 13, 14, 14, 15, 15, 16, 16, // 11-20
+  17, 17, 18, 18, 18, 19, 19, 20, 20, 21, // 21-30
+  21, 21, 21, 22, 22, 22, 23, 23, 23, 24, // 31-40
+  24, 25, 25, 25, 25, 26, 26, 26, 26, 26, // 41-50
+  26, 27, 27, 27, 27, 27, 27, 28, 28, 28, // 51-60
+  28, 28, 28, 28, 28, 28, 29, 29, 29, 29, // 61-70
+  29, 29, 29, 29, 29, 29, 29, 30, 30, 30, // 71-80
+  30, 30, 30, 30, 30, 30, 30, 30, 30, 30, // 81-90
+  30, 30, 30, 30, 30, 30, 30, 30, 30, 30, // 91-100
+  30, 30, 30, 30, 30, 30, 30, 30, 30, 30, // 101-110
+  30, 30, 30, 30, // 111-114
+];
+
 class ListeningScreen extends StatefulWidget {
   const ListeningScreen({super.key});
 
@@ -25,16 +36,15 @@ class _ListeningScreenState extends State<ListeningScreen> {
   bool _loading = true;
 
   final _listController = ScrollController();
-
-  /// Every row is the same height, which is what lets the list be scrolled to
-  /// a surah by arithmetic rather than by rendering the 114 above it.
   static const _rowHeight = 47.0;
+
+  // Filter state
+  int? _juzFilter; // null = all juz
+  int _startAyah = 1;
 
   @override
   void initState() {
     super.initState();
-    // Stop anything that was playing from another screen so the reader is not
-    // hearing the Mushaf or a surah while browsing where to start listening.
     if (AppAudio.player.playing &&
         !AppAudio.ownsCurrent(ContinuousListening.owner)) {
       AppAudio.player.stop();
@@ -50,9 +60,6 @@ class _ListeningScreenState extends State<ListeningScreen> {
       _index = index;
       _loading = false;
     });
-    // Opening at Yusuf and being shown Al-Fatiha means scrolling past eleven
-    // surahs to see where you are. The list follows the recitation instead,
-    // including when it moves on by itself.
     ContinuousListening.surah.addListener(_followRecitation);
     WidgetsBinding.instance
         .addPostFrameCallback((_) => _followRecitation(animate: false));
@@ -65,14 +72,28 @@ class _ListeningScreenState extends State<ListeningScreen> {
     super.dispose();
   }
 
+  // ─── Helpers ───────────────────────────────────────────────────────────────
+
+  List<SurahInfo> get _visible => _juzFilter == null
+      ? _index
+      : _index
+          .where((s) =>
+              s.number <= _surahJuz.length &&
+              _surahJuz[s.number - 1] == _juzFilter)
+          .toList();
+
   void _followRecitation({bool animate = true}) {
     if (!mounted || !_listController.hasClients) return;
+    if (_juzFilter != null) return; // user is browsing a specific juz
 
-    // A third of a screen above it, so the surahs around it are visible and
-    // the current one is not pinned to the very top.
-    final target = ((ContinuousListening.surah.value - 1) * _rowHeight -
-            MediaQuery.of(context).size.height / 3)
-        .clamp(0.0, _listController.position.maxScrollExtent);
+    final visible = _visible;
+    final idx = visible.indexWhere(
+        (s) => s.number == ContinuousListening.surah.value);
+    if (idx < 0) return;
+
+    final target =
+        (idx * _rowHeight - MediaQuery.of(context).size.height / 3)
+            .clamp(0.0, _listController.position.maxScrollExtent);
 
     if (animate) {
       _listController.animateTo(target,
@@ -82,13 +103,309 @@ class _ListeningScreenState extends State<ListeningScreen> {
     }
   }
 
+  void _scrollToIndex(int idx) {
+    if (!_listController.hasClients) return;
+    final target =
+        (idx * _rowHeight - MediaQuery.of(context).size.height / 4)
+            .clamp(0.0, _listController.position.maxScrollExtent);
+    _listController.animateTo(target,
+        duration: const Duration(milliseconds: 350), curve: Curves.easeOut);
+  }
+
+  // ─── Pickers ───────────────────────────────────────────────────────────────
+
+  void _pickJuz() {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppColors.blackCard,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(18))),
+      builder: (ctx) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
+                child: Row(
+                  children: [
+                    const Expanded(
+                      child: Text('اختر الجزء',
+                          style:
+                              TextStyle(color: AppColors.gold, fontSize: 15)),
+                    ),
+                    if (_juzFilter != null)
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          setState(() => _juzFilter = null);
+                          WidgetsBinding.instance.addPostFrameCallback(
+                              (_) => _followRecitation(animate: false));
+                        },
+                        child: const Text('الكل',
+                            style: TextStyle(
+                                color: AppColors.textMuted, fontSize: 12)),
+                      ),
+                  ],
+                ),
+              ),
+              SizedBox(
+                height: 340,
+                child: GridView.builder(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+                  gridDelegate:
+                      const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 5,
+                    childAspectRatio: 1.6,
+                    crossAxisSpacing: 8,
+                    mainAxisSpacing: 8,
+                  ),
+                  itemCount: 30,
+                  itemBuilder: (_, i) {
+                    final juz = i + 1;
+                    final selected = _juzFilter == juz;
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        setState(() => _juzFilter = juz);
+                        WidgetsBinding.instance
+                            .addPostFrameCallback((_) => _scrollToIndex(0));
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: selected
+                              ? AppColors.goldMuted
+                              : AppColors.blackSurface,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: selected
+                                ? AppColors.gold
+                                : AppColors.goldBorder,
+                          ),
+                        ),
+                        child: Center(
+                          child: Text(
+                            QuranService.toArabicDigits(juz),
+                            style: TextStyle(
+                              color: selected
+                                  ? AppColors.gold
+                                  : AppColors.textPrimary,
+                              fontSize: 13,
+                              fontWeight: selected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _pickSurah() {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppColors.blackCard,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(18))),
+      builder: (ctx) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: DraggableScrollableSheet(
+          initialChildSize: 0.7,
+          minChildSize: 0.4,
+          maxChildSize: 0.9,
+          expand: false,
+          builder: (_, sc) => Column(
+            children: [
+              const Padding(
+                padding: EdgeInsets.fromLTRB(20, 16, 20, 8),
+                child: Text('اختر السورة',
+                    style:
+                        TextStyle(color: AppColors.gold, fontSize: 15)),
+              ),
+              Expanded(
+                child: ListView.builder(
+                  controller: sc,
+                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 24),
+                  itemExtent: 44,
+                  itemCount: _index.length,
+                  itemBuilder: (_, i) {
+                    final info = _index[i];
+                    final on =
+                        info.number == ContinuousListening.surah.value;
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        setState(() {
+                          _juzFilter = null;
+                        });
+                        ContinuousListening.play(info.number,
+                            fromAyah: _startAyah);
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: on
+                              ? AppColors.goldMuted
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: on
+                                ? AppColors.gold
+                                : AppColors.goldBorder,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: 30,
+                              child: Text(
+                                QuranService.toArabicDigits(info.number),
+                                style: TextStyle(
+                                    color: on
+                                        ? AppColors.gold
+                                        : AppColors.textMuted,
+                                    fontSize: 11),
+                              ),
+                            ),
+                            Expanded(
+                              child: Text(info.name,
+                                  style: TextStyle(
+                                    color: on
+                                        ? AppColors.gold
+                                        : AppColors.textPrimary,
+                                    fontSize: 14,
+                                    fontWeight: on
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                                  )),
+                            ),
+                            Text(
+                              '${QuranService.toArabicDigits(info.ayahCount)} آية',
+                              style: const TextStyle(
+                                  color: AppColors.textMuted, fontSize: 10),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _pickAyah() {
+    final surahNum = ContinuousListening.surah.value;
+    final info = ContinuousListening.infoFor(surahNum);
+    if (info == null) return;
+    final total = info.ayahCount;
+
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppColors.blackCard,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(18))),
+      builder: (ctx) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: DraggableScrollableSheet(
+          initialChildSize: 0.55,
+          minChildSize: 0.3,
+          maxChildSize: 0.85,
+          expand: false,
+          builder: (_, sc) => Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                child: Text(
+                  'ابدأ من أي آية — ${info.name}',
+                  style: const TextStyle(
+                      color: AppColors.gold, fontSize: 15),
+                ),
+              ),
+              Expanded(
+                child: GridView.builder(
+                  controller: sc,
+                  padding:
+                      const EdgeInsets.fromLTRB(16, 4, 16, 24),
+                  gridDelegate:
+                      const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 6,
+                    childAspectRatio: 1.4,
+                    crossAxisSpacing: 6,
+                    mainAxisSpacing: 6,
+                  ),
+                  itemCount: total,
+                  itemBuilder: (_, i) {
+                    final ayah = i + 1;
+                    final selected = _startAyah == ayah;
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        setState(() => _startAyah = ayah);
+                        ContinuousListening.play(surahNum,
+                            fromAyah: ayah);
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: selected
+                              ? AppColors.goldMuted
+                              : AppColors.blackSurface,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: selected
+                                ? AppColors.gold
+                                : AppColors.goldBorder,
+                          ),
+                        ),
+                        child: Center(
+                          child: Text(
+                            QuranService.toArabicDigits(ayah),
+                            style: TextStyle(
+                              color: selected
+                                  ? AppColors.gold
+                                  : AppColors.textPrimary,
+                              fontSize: 12,
+                              fontWeight: selected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   void _pickReciter() {
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: AppColors.blackCard,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
-      ),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(18))),
       builder: (ctx) => Directionality(
         textDirection: TextDirection.rtl,
         child: SafeArea(
@@ -98,7 +415,8 @@ class _ListeningScreenState extends State<ListeningScreen> {
               const Padding(
                 padding: EdgeInsets.fromLTRB(20, 16, 20, 4),
                 child: Text('اختر القارئ',
-                    style: TextStyle(color: AppColors.gold, fontSize: 15)),
+                    style:
+                        TextStyle(color: AppColors.gold, fontSize: 15)),
               ),
               for (final r in RecitationService.reciters)
                 ListTile(
@@ -127,6 +445,8 @@ class _ListeningScreenState extends State<ListeningScreen> {
     );
   }
 
+  // ─── Build ─────────────────────────────────────────────────────────────────
+
   @override
   Widget build(BuildContext context) {
     return Directionality(
@@ -145,15 +465,7 @@ class _ListeningScreenState extends State<ListeningScreen> {
             : Column(
                 children: [
                   _nowPlaying(),
-                  const Padding(
-                    padding: EdgeInsets.fromLTRB(16, 4, 16, 6),
-                    child: Text(
-                      'تنتقل التلاوة إلى السورة التالية وحدها، وتكمل حتى تُغلقها.',
-                      textAlign: TextAlign.center,
-                      style:
-                          TextStyle(color: AppColors.textMuted, fontSize: 11),
-                    ),
-                  ),
+                  _filterBar(),
                   Expanded(child: _surahList()),
                 ],
               ),
@@ -161,10 +473,113 @@ class _ListeningScreenState extends State<ListeningScreen> {
     );
   }
 
+  Widget _filterBar() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+      child: ValueListenableBuilder<Reciter>(
+        valueListenable: ContinuousListening.reciter,
+        builder: (context2, reciter, child2) => Row(
+          children: [
+            _chip(
+              label: _juzFilter == null
+                  ? 'الجزء'
+                  : 'جزء ${QuranService.toArabicDigits(_juzFilter!)}',
+              icon: Icons.filter_list,
+              active: _juzFilter != null,
+              onTap: _pickJuz,
+            ),
+            const SizedBox(width: 6),
+            _chip(
+              label: 'السورة',
+              icon: Icons.menu_book_outlined,
+              onTap: _pickSurah,
+            ),
+            const SizedBox(width: 6),
+            _chip(
+              label: _startAyah == 1
+                  ? 'الآية'
+                  : 'من ${QuranService.toArabicDigits(_startAyah)}',
+              icon: Icons.format_list_numbered,
+              active: _startAyah != 1,
+              onTap: _pickAyah,
+            ),
+            const SizedBox(width: 6),
+            Expanded(
+              child: _chip(
+                label: _shortName(reciter.name),
+                icon: Icons.person_outline,
+                onTap: _pickReciter,
+                expand: true,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _chip({
+    required String label,
+    required IconData icon,
+    required VoidCallback onTap,
+    bool active = false,
+    bool expand = false,
+  }) {
+    Widget inner = GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+        decoration: BoxDecoration(
+          color: active ? AppColors.goldMuted : AppColors.blackCard,
+          borderRadius: BorderRadius.circular(10),
+          border:
+              Border.all(color: active ? AppColors.gold : AppColors.goldBorder),
+        ),
+        child: Row(
+          mainAxisSize: expand ? MainAxisSize.max : MainAxisSize.min,
+          children: [
+            Icon(icon,
+                color: active ? AppColors.gold : AppColors.textMuted, size: 13),
+            const SizedBox(width: 4),
+            if (expand)
+              Expanded(
+                child: Text(
+                  label,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: active ? AppColors.gold : AppColors.textSecondary,
+                    fontSize: 11,
+                  ),
+                ),
+              )
+            else
+              Text(
+                label,
+                style: TextStyle(
+                  color: active ? AppColors.gold : AppColors.textSecondary,
+                  fontSize: 11,
+                ),
+              ),
+            const SizedBox(width: 2),
+            Icon(Icons.keyboard_arrow_down,
+                color: active ? AppColors.gold : AppColors.textMuted, size: 12),
+          ],
+        ),
+      ),
+    );
+    return inner;
+  }
+
+  /// Shortens a long reciter name to fit the chip.
+  String _shortName(String name) {
+    final parts = name.split(' ');
+    return parts.length <= 2 ? name : parts.sublist(parts.length - 2).join(' ');
+  }
+
   Widget _nowPlaying() {
     return Container(
-      margin: const EdgeInsets.fromLTRB(16, 14, 16, 6),
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
+      margin: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
       decoration: BoxDecoration(
         color: AppColors.blackCard,
         borderRadius: BorderRadius.circular(16),
@@ -172,27 +587,9 @@ class _ListeningScreenState extends State<ListeningScreen> {
       ),
       child: Column(
         children: [
-          GestureDetector(
-            onTap: _pickReciter,
-            child: ValueListenableBuilder<Reciter>(
-              valueListenable: ContinuousListening.reciter,
-              builder: (context, reciter, _) => Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(reciter.name,
-                      style: const TextStyle(
-                          color: AppColors.textGold, fontSize: 13)),
-                  const SizedBox(width: 4),
-                  const Icon(Icons.keyboard_arrow_down,
-                      color: AppColors.textMuted, size: 18),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 6),
           ValueListenableBuilder<int>(
             valueListenable: ContinuousListening.surah,
-            builder: (context, number, _) => Column(
+            builder: (context3, number, child3) => Column(
               children: [
                 Text(
                   ContinuousListening.nameFor(number),
@@ -204,7 +601,7 @@ class _ListeningScreenState extends State<ListeningScreen> {
                 const SizedBox(height: 2),
                 ValueListenableBuilder<int>(
                   valueListenable: ContinuousListening.ayah,
-                  builder: (context, ayah, _) {
+                  builder: (context4, ayah, child4) {
                     final total =
                         ContinuousListening.infoFor(number)?.ayahCount ?? 0;
                     return Text(
@@ -218,10 +615,10 @@ class _ListeningScreenState extends State<ListeningScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           ValueListenableBuilder<Reciter>(
             valueListenable: ContinuousListening.reciter,
-            builder: (context, rec, _) => Row(
+            builder: (context5, rec, child5) => Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 IconButton(
@@ -270,11 +667,8 @@ class _ListeningScreenState extends State<ListeningScreen> {
   Widget _playButton() {
     return StreamBuilder<PlayerState>(
       stream: AppAudio.player.playerStateStream,
-      builder: (context, snapshot) {
+      builder: (_, snapshot) {
         final state = snapshot.data;
-        // Playing *this* recitation, not merely playing: the radio and the
-        // Mushaf share the one player, and the button must not offer to pause
-        // something this screen does not own.
         final mine = AppAudio.ownsCurrent(ContinuousListening.owner);
         final playing = (state?.playing ?? false) && mine;
         final loading = mine &&
@@ -302,67 +696,79 @@ class _ListeningScreenState extends State<ListeningScreen> {
   }
 
   Widget _surahList() {
+    final visible = _visible;
     return ValueListenableBuilder<int>(
       valueListenable: ContinuousListening.surah,
-      builder: (context, current, _) => ListView.builder(
-        controller: _listController,
-        padding: const EdgeInsets.fromLTRB(12, 0, 12, 24),
-        itemExtent: _rowHeight,
-        itemCount: _index.length,
-        itemBuilder: (context, i) {
-          final info = _index[i];
-          final on = info.number == current;
-
-          return GestureDetector(
-            onTap: () => ContinuousListening.play(info.number),
-            child: Container(
-              margin: const EdgeInsets.only(bottom: 6),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              decoration: BoxDecoration(
-                color: on ? AppColors.goldMuted : AppColors.blackCard,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                    color: on ? AppColors.gold : AppColors.goldBorder),
-              ),
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: 30,
-                    child: Text(
-                      QuranService.toArabicDigits(info.number),
-                      style: TextStyle(
-                          color: on ? AppColors.gold : AppColors.textMuted,
-                          fontSize: 12),
-                    ),
-                  ),
-                  Expanded(
-                    child: Text(
-                      info.name,
-                      style: TextStyle(
-                        color:
-                            on ? AppColors.gold : AppColors.textPrimary,
-                        fontSize: 15,
-                        fontWeight: on ? FontWeight.bold : FontWeight.normal,
-                      ),
-                    ),
-                  ),
-                  Text(
-                    '${QuranService.toArabicDigits(info.ayahCount)} آية',
-                    style: const TextStyle(
-                        color: AppColors.textMuted, fontSize: 11),
-                  ),
-                  if (on) ...[
-                    const SizedBox(width: 8),
-                    const Icon(Icons.graphic_eq,
-                        color: AppColors.gold, size: 16),
-                  ],
-                ],
-              ),
+      builder: (context6, current, child6) {
+        if (visible.isEmpty) {
+          return Center(
+            child: Text(
+              'لا توجد سور في هذا الجزء',
+              style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
             ),
           );
-        },
-      ),
+        }
+        return ListView.builder(
+          controller: _listController,
+          padding: const EdgeInsets.fromLTRB(12, 0, 12, 24),
+          itemExtent: _rowHeight,
+          itemCount: visible.length,
+          itemBuilder: (_, i) {
+            final info = visible[i];
+            final on = info.number == current;
+
+            return GestureDetector(
+              onTap: () =>
+                  ContinuousListening.play(info.number, fromAyah: _startAyah),
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  color: on ? AppColors.goldMuted : AppColors.blackCard,
+                  borderRadius: BorderRadius.circular(12),
+                  border:
+                      Border.all(color: on ? AppColors.gold : AppColors.goldBorder),
+                ),
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 30,
+                      child: Text(
+                        QuranService.toArabicDigits(info.number),
+                        style: TextStyle(
+                            color: on ? AppColors.gold : AppColors.textMuted,
+                            fontSize: 12),
+                      ),
+                    ),
+                    Expanded(
+                      child: Text(
+                        info.name,
+                        style: TextStyle(
+                          color: on ? AppColors.gold : AppColors.textPrimary,
+                          fontSize: 15,
+                          fontWeight:
+                              on ? FontWeight.bold : FontWeight.normal,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      '${QuranService.toArabicDigits(info.ayahCount)} آية',
+                      style: const TextStyle(
+                          color: AppColors.textMuted, fontSize: 11),
+                    ),
+                    if (on) ...[
+                      const SizedBox(width: 8),
+                      const Icon(Icons.graphic_eq,
+                          color: AppColors.gold, size: 16),
+                    ],
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }
