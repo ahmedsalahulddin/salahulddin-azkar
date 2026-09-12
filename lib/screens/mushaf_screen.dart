@@ -55,6 +55,7 @@ class _MushafScreenState extends State<MushafScreen> {
   Reciter _reciter = RecitationService.defaultReciter;
   RepeatSettings _repeat = const RepeatSettings();
   StreamSubscription<int?>? _indexSub;
+  bool _autoTurning = false;
 
   @override
   void initState() {
@@ -89,18 +90,21 @@ class _MushafScreenState extends State<MushafScreen> {
       _index!.firstWhere((s) => s.number == number);
 
   void _onPageChanged(int i) {
+    final wasAutoTurning = _autoTurning;
+    _autoTurning = false;
     setState(() {
       _current = i + 1;
-      _selected = null;
+      if (!wasAutoTurning) _selected = null;
     });
-    // Drop the recitation and the highlight that follows it together. Stopping
-    // the player alone leaves the listener attached, and its next event would
-    // re-select an ayah on a page the reader has already turned away from.
-    _indexSub?.cancel();
-    _indexSub = null;
-    _player.stop();
     StorageService.setLastMushafPage(i + 1);
     _prefetchAround(i + 1);
+    // Only stop recitation when the user manually swipes. Auto page-turns
+    // (triggered by the recitation reaching a new page) keep playing.
+    if (!wasAutoTurning) {
+      _indexSub?.cancel();
+      _indexSub = null;
+      _player.stop();
+    }
   }
 
   void _prefetchAround(int page) {
@@ -168,13 +172,28 @@ class _MushafScreenState extends State<MushafScreen> {
       );
       await PlaybackSpeed.apply();
 
-      // Follow the recitation with the highlight.
+      // Follow the recitation: highlight the playing ayah and auto-turn the
+      // page when it moves to the next one.
       _indexSub?.cancel();
       _indexSub = _player.currentIndexStream.listen((i) async {
         if (!mounted || i == null || i >= order.length) return;
-        final boxes = await AyahBoxService.forPage(_current);
+        final targetAyah = order[i];
+        final targetPage =
+            await QuranService.pageOfAyah(start.surah, targetAyah);
+
+        // Navigate automatically when the recitation crosses a page boundary.
+        if (targetPage != _current && mounted) {
+          _autoTurning = true;
+          _controller.animateToPage(
+            targetPage - 1,
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeInOut,
+          );
+        }
+
+        final boxes = await AyahBoxService.forPage(targetPage);
         final match = boxes
-            .where((b) => b.surah == start.surah && b.ayah == order[i])
+            .where((b) => b.surah == start.surah && b.ayah == targetAyah)
             .firstOrNull;
         if (match != null && mounted) setState(() => _selected = match);
       });
