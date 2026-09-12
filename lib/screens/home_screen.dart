@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../constants/theme.dart';
 import '../data/home_shelves.dart';
+import '../l10n/strings.dart';
+import '../services/app_locale.dart';
 import '../services/section_config.dart';
 import '../widgets/prayer_times_card.dart';
 import 'search_screen.dart';
@@ -60,32 +62,69 @@ class HomeScreen extends StatelessWidget {
   Widget _searchBar(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: GestureDetector(
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const SearchScreen()),
-        ),
-        behavior: HitTestBehavior.opaque,
+      child: Row(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SearchScreen()),
+              ),
+              behavior: HitTestBehavior.opaque,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                decoration: BoxDecoration(
+                  color: AppColors.blackCard,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: AppColors.goldBorder),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.search, color: AppColors.gold, size: 20),
+                    const SizedBox(width: 10),
+                    Text(t('search.label'),
+                        style: const TextStyle(
+                            color: AppColors.gold, fontSize: 14)),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(t('search.hint'),
+                          style: const TextStyle(
+                              color: AppColors.textMuted, fontSize: 12.5)),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          _langToggle(),
+        ],
+      ),
+    );
+  }
+
+  Widget _langToggle() {
+    return ValueListenableBuilder<String>(
+      valueListenable: AppLocale.locale,
+      builder: (_, locale, __) => GestureDetector(
+        onTap: () => AppLocale.set(locale == 'ar' ? 'en' : 'ar'),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
           decoration: BoxDecoration(
             color: AppColors.blackCard,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.goldBorder),
+            border: Border.all(
+              color: locale == 'en' ? AppColors.gold : AppColors.goldBorder,
+            ),
           ),
-          child: const Row(
-            children: [
-              Icon(Icons.search, color: AppColors.gold, size: 20),
-              SizedBox(width: 10),
-              Text('بحث شامل',
-                  style: TextStyle(color: AppColors.gold, fontSize: 14)),
-              SizedBox(width: 10),
-              Expanded(
-                child: Text('ابحث في كل أقسام التطبيق…',
-                    style: TextStyle(
-                        color: AppColors.textMuted, fontSize: 12.5)),
-              ),
-            ],
+          child: Text(
+            locale == 'ar' ? 'EN' : 'ع',
+            style: TextStyle(
+              color: locale == 'en' ? AppColors.gold : AppColors.textMuted,
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
       ),

@@ -18,10 +18,12 @@ import 'services/adhan_downloads.dart';
 import 'services/daily_reminders.dart';
 import 'services/dhikr_reminder.dart';
 import 'services/prayer_alerts.dart';
+import 'services/app_locale.dart';
 import 'services/playback_speed.dart';
 import 'services/prayer_settings.dart';
 import 'services/section_config.dart';
 import 'services/sync_service.dart';
+import 'l10n/strings.dart';
 import 'widgets/frame_tuning.dart';
 import 'widgets/mushaf_frames.dart';
 import 'widgets/mushaf_palettes.dart';
@@ -59,6 +61,7 @@ void main() async {
     await SectionConfig.load();
   } catch (_) {}
 
+  await AppLocale.load();
   await PlaybackSpeed.load();
   await PrayerSettings.load();
   PrayerAlerts.onChanged = NotificationService.schedulePrayerAlerts;
@@ -101,8 +104,15 @@ class NoorAzkarApp extends StatelessWidget {
       theme: AppTheme.darkTheme,
       // Every route ends above the phone's navigation bar — screens added
       // later inherit this without having to remember it.
-      builder: (context, child) =>
-          SafeArea(top: false, left: false, right: false, child: child!),
+      builder: (context, child) => ValueListenableBuilder<String>(
+        valueListenable: AppLocale.locale,
+        builder: (_, locale, __) => Directionality(
+          textDirection:
+              locale == 'en' ? TextDirection.ltr : TextDirection.rtl,
+          child: SafeArea(
+              top: false, left: false, right: false, child: child!),
+        ),
+      ),
       home: const MainNavigation(),
     );
   }
@@ -130,6 +140,7 @@ class _MainNavigationState extends State<MainNavigation> {
   @override
   void initState() {
     super.initState();
+    AppLocale.locale.addListener(_onLocale);
     if (!kIsWeb) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _checkNotifications();
@@ -137,6 +148,14 @@ class _MainNavigationState extends State<MainNavigation> {
       });
     }
   }
+
+  @override
+  void dispose() {
+    AppLocale.locale.removeListener(_onLocale);
+    super.dispose();
+  }
+
+  void _onLocale() => setState(() {});
 
   Future<void> _checkForUpdate() async {
     if (!Platform.isAndroid) return;
@@ -231,11 +250,10 @@ class _MainNavigationState extends State<MainNavigation> {
             selectedFontSize: 12,
             unselectedFontSize: 12,
             type: BottomNavigationBarType.fixed,
-            items: const [
-              BottomNavigationBarItem(icon: Icon(Icons.star_rounded), label: 'أذكاري'),
-              BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: 'الرئيسية'),
-              BottomNavigationBarItem(
-                  icon: Icon(Icons.person_rounded), label: 'حسابي'),
+            items: [
+              BottomNavigationBarItem(icon: const Icon(Icons.star_rounded), label: t('nav.adhkar')),
+              BottomNavigationBarItem(icon: const Icon(Icons.home_rounded), label: t('nav.home')),
+              BottomNavigationBarItem(icon: const Icon(Icons.person_rounded), label: t('nav.account')),
             ],
           ),
         ),

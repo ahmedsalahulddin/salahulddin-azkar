@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../constants/theme.dart';
+import '../l10n/strings.dart';
+import '../services/app_locale.dart';
 import '../services/auth_service.dart';
 import '../services/sync_service.dart';
 import '../services/section_config.dart';
@@ -55,9 +57,8 @@ class _AccountScreenState extends State<AccountScreen> {
     setState(() => _busyWith = null);
     if (!ok) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('تعذّر تسجيل الدخول — حاول مرة أخرى',
-              textDirection: TextDirection.rtl),
+        SnackBar(
+          content: Text(t('account.signInFail')),
           backgroundColor: AppColors.error,
         ),
       );
@@ -67,29 +68,26 @@ class _AccountScreenState extends State<AccountScreen> {
   Future<void> _signOut() async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => Directionality(
-        textDirection: TextDirection.rtl,
-        child: AlertDialog(
-          backgroundColor: AppColors.blackCard,
-          title: const Text('تسجيل الخروج',
-              style: TextStyle(color: AppColors.gold, fontSize: 17)),
-          content: const Text(
-            'ستبقى أذكارك المحفوظة على هذا الجهاز.',
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('إلغاء',
-                  style: TextStyle(color: AppColors.textMuted)),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('خروج',
-                  style: TextStyle(color: AppColors.error)),
-            ),
-          ],
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.blackCard,
+        title: Text(t('account.signOut'),
+            style: const TextStyle(color: AppColors.gold, fontSize: 17)),
+        content: Text(
+          t('account.signOutMsg'),
+          style: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
         ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(t('account.cancel'),
+                style: const TextStyle(color: AppColors.textMuted)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(t('account.signOutConfirm'),
+                style: const TextStyle(color: AppColors.error)),
+          ),
+        ],
       ),
     );
 
@@ -99,12 +97,12 @@ class _AccountScreenState extends State<AccountScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
+    return ValueListenableBuilder<String>(
+      valueListenable: AppLocale.locale,
+      builder: (context2, locale, child2) => Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
-          title: const Text('حسابي والإعدادات'),
+          title: Text(t('account.title')),
           backgroundColor: AppColors.black,
           foregroundColor: AppColors.gold,
         ),
@@ -119,19 +117,14 @@ class _AccountScreenState extends State<AccountScreen> {
                 _syncCard(),
               ],
               const SizedBox(height: 10),
-              // The settings themselves, not a link to them: there is one
-              // place the reader goes for anything about themselves or the
-              // app, and this is it.
               const SettingsScreen(embedded: true),
-              // Only shown to accounts listed in app_admins; a non-admin never
-              // learns the screen exists.
               if (_isAdmin) ...[
                 const SizedBox(height: 20),
-                _sectionTitle('الإدارة'),
+                _sectionTitle(t('account.adminSection')),
                 _tile(
                   icon: Icons.dashboard_customize,
-                  title: 'إدارة الأقسام',
-                  subtitle: 'أظهِر وأخفِ ورتّب أقسام الشاشة الرئيسية',
+                  title: t('account.adminTitle'),
+                  subtitle: t('account.adminSub'),
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => const AdminScreen()),
@@ -139,7 +132,7 @@ class _AccountScreenState extends State<AccountScreen> {
                 ),
               ],
               const SizedBox(height: 20),
-              _sectionTitle('عن التطبيق'),
+              _sectionTitle(t('account.aboutSection')),
               _aboutCard(),
               const SizedBox(height: 10),
               _sourcesLink(),
@@ -173,15 +166,15 @@ class _AccountScreenState extends State<AccountScreen> {
             const Icon(Icons.menu_book_outlined,
                 color: AppColors.gold, size: 20),
             const SizedBox(width: 12),
-            const Expanded(
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('المصادر والحقوق',
-                      style: TextStyle(
+                  Text(t('account.sources'),
+                      style: const TextStyle(
                           color: AppColors.textPrimary, fontSize: 14)),
-                  Text('من أين جاء كل نصّ وصوت وخطّ في التطبيق',
-                      style: TextStyle(
+                  Text(t('account.sourcesSub'),
+                      style: const TextStyle(
                           color: AppColors.textMuted, fontSize: 11)),
                 ],
               ),
@@ -215,14 +208,14 @@ class _AccountScreenState extends State<AccountScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('مزامنة علاماتك ومفضّلتك',
-                        style: TextStyle(
+                    Text(t('account.sync'),
+                        style: const TextStyle(
                             color: AppColors.textPrimary, fontSize: 14)),
                     const SizedBox(height: 2),
                     Text(
                       at == null
-                          ? 'لم تُزامَن بعد على هذا الجهاز'
-                          : 'آخر مزامنة ${_clock(at)}',
+                          ? t('account.syncNever')
+                          : '${t('account.syncLast')} ${_clock(at)}',
                       style: const TextStyle(
                           color: AppColors.textMuted, fontSize: 11),
                     ),
@@ -241,15 +234,15 @@ class _AccountScreenState extends State<AccountScreen> {
                         final ok = await SyncService.sync();
                         if (!context.mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text(
-                              ok ? 'تمت المزامنة' : 'تعذّرت المزامنة الآن',
-                              textAlign: TextAlign.right),
+                          content: Text(ok
+                              ? t('account.syncDone')
+                              : t('account.syncFail')),
                           backgroundColor: AppColors.blackCard,
                           behavior: SnackBarBehavior.floating,
                         ));
                       },
-                      child: const Text('زامن الآن',
-                          style: TextStyle(color: AppColors.gold)),
+                      child: Text(t('account.syncNow'),
+                          style: const TextStyle(color: AppColors.gold)),
                     ),
             ],
           ),
@@ -258,10 +251,10 @@ class _AccountScreenState extends State<AccountScreen> {
     );
   }
 
-  static String _clock(DateTime at) {
+  String _clock(DateTime at) {
     final h = at.hour % 12 == 0 ? 12 : at.hour % 12;
     final m = at.minute.toString().padLeft(2, '0');
-    return '$h:$m ${at.hour >= 12 ? 'م' : 'ص'}';
+    return '$h:$m ${at.hour >= 12 ? t('account.pm') : t('account.am')}';
   }
 
   Widget _profileCard(AppUser? user) {
@@ -281,7 +274,7 @@ class _AccountScreenState extends State<AccountScreen> {
           UserAvatar(user: user, size: 68),
           const SizedBox(height: 12),
           Text(
-            user?.displayName ?? 'تقرأ كضيف',
+            user?.displayName ?? t('account.guest'),
             style: const TextStyle(
                 color: AppColors.gold,
                 fontSize: 19,
@@ -315,10 +308,10 @@ class _AccountScreenState extends State<AccountScreen> {
   Widget _guestOnlyNote() {
     return Column(
       children: [
-        const Text(
-          'التطبيق يعمل كاملاً بدون حساب،\nوكل ما تحفظه محفوظ على جهازك.',
+        Text(
+          t('account.guestNote'),
           textAlign: TextAlign.center,
-          style: TextStyle(
+          style: const TextStyle(
               color: AppColors.textSecondary, fontSize: 13, height: 1.7),
         ),
         const SizedBox(height: 12),
@@ -329,9 +322,9 @@ class _AccountScreenState extends State<AccountScreen> {
             borderRadius: BorderRadius.circular(10),
             border: Border.all(color: AppColors.goldBorder),
           ),
-          child: const Text(
-            'الدخول بحساب جوجل — قريباً',
-            style: TextStyle(color: AppColors.textMuted, fontSize: 12),
+          child: Text(
+            t('account.signInSoon'),
+            style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
           ),
         ),
       ],
@@ -344,10 +337,10 @@ class _AccountScreenState extends State<AccountScreen> {
 
     return Column(
       children: [
-        const Text(
-          'سجّل الدخول لتنتقل مفضلتك وعلاماتك\nوموضع قراءتك بين أجهزتك.',
+        Text(
+          t('account.signInPrompt'),
           textAlign: TextAlign.center,
-          style: TextStyle(
+          style: const TextStyle(
               color: AppColors.textSecondary, fontSize: 13, height: 1.7),
         ),
         const SizedBox(height: 14),
@@ -358,8 +351,8 @@ class _AccountScreenState extends State<AccountScreen> {
             onPressed: _busyWith != null ? null : () => _signIn(provider),
           ),
         const SizedBox(height: 2),
-        const Text('اختياري — يمكنك المتابعة كضيف',
-            style: TextStyle(color: AppColors.textMuted, fontSize: 11)),
+        Text(t('account.optional'),
+            style: const TextStyle(color: AppColors.textMuted, fontSize: 11)),
       ],
     );
   }
@@ -377,7 +370,7 @@ class _AccountScreenState extends State<AccountScreen> {
               side: const BorderSide(color: AppColors.goldBorder),
               padding: const EdgeInsets.symmetric(vertical: 11),
             ),
-            label: const Text('تسجيل الخروج'),
+            label: Text(t('account.signOut')),
           ),
         ),
         const SizedBox(height: 8),
@@ -394,7 +387,7 @@ class _AccountScreenState extends State<AccountScreen> {
                   )
                 : const Icon(Icons.delete_forever, size: 17),
             style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            label: Text(_deleting ? 'جاري الحذف…' : 'حذف الحساب نهائياً'),
+            label: Text(_deleting ? t('account.deleting') : t('account.delete')),
           ),
         ),
       ],
@@ -406,43 +399,39 @@ class _AccountScreenState extends State<AccountScreen> {
   Future<void> _deleteAccount() async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => Directionality(
-        textDirection: TextDirection.rtl,
-        child: AlertDialog(
-          backgroundColor: AppColors.blackCard,
-          title: const Text('حذف الحساب نهائياً',
-              style: TextStyle(color: AppColors.error, fontSize: 17)),
-          content: const Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'سيُحذف حسابك وكل ما يخصّه من خوادمنا حذفاً لا رجعة فيه.',
-                style: TextStyle(
-                    color: AppColors.textPrimary, fontSize: 14, height: 1.7),
-              ),
-              SizedBox(height: 10),
-              Text(
-                'أذكارك المحفوظة وعلاماتك على هذا الجهاز تبقى كما هي — '
-                'يمحوها حذف التطبيق.',
-                style: TextStyle(
-                    color: AppColors.textMuted, fontSize: 12, height: 1.7),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('إلغاء',
-                  style: TextStyle(color: AppColors.textSecondary)),
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.blackCard,
+        title: Text(t('account.deleteTitle'),
+            style: const TextStyle(color: AppColors.error, fontSize: 17)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              t('account.deleteMsg'),
+              style: const TextStyle(
+                  color: AppColors.textPrimary, fontSize: 14, height: 1.7),
             ),
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('متابعة',
-                  style: TextStyle(color: AppColors.error)),
+            const SizedBox(height: 10),
+            Text(
+              t('account.deleteNote'),
+              style: const TextStyle(
+                  color: AppColors.textMuted, fontSize: 12, height: 1.7),
             ),
           ],
         ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(t('account.cancel'),
+                style: const TextStyle(color: AppColors.textSecondary)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(t('account.continue'),
+                style: const TextStyle(color: AppColors.error)),
+          ),
+        ],
       ),
     );
     if (confirmed != true || !mounted) return;
@@ -457,71 +446,63 @@ class _AccountScreenState extends State<AccountScreen> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          ok
-              ? 'تم حذف حسابك'
-              : 'تعذّر الحذف — حاول مرة أخرى أو راسلنا',
-          textDirection: TextDirection.rtl,
-        ),
+        content: Text(ok ? t('account.deleteDone') : t('account.deleteFail')),
         backgroundColor: ok ? AppColors.emerald : AppColors.error,
       ),
     );
   }
 
   Future<bool?> _confirmByTyping() {
-    const word = 'حذف';
+    final word = t('account.deleteWord');
     final controller = TextEditingController();
 
     return showDialog<bool>(
       context: context,
-      builder: (ctx) => Directionality(
-        textDirection: TextDirection.rtl,
-        child: StatefulBuilder(
-          builder: (ctx, setLocal) => AlertDialog(
-            backgroundColor: AppColors.blackCard,
-            title: const Text('تأكيد أخير',
-                style: TextStyle(color: AppColors.error, fontSize: 17)),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('اكتب كلمة «حذف» للتأكيد:',
-                    style: TextStyle(
-                        color: AppColors.textSecondary, fontSize: 13)),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: controller,
-                  autofocus: true,
-                  textAlign: TextAlign.center,
-                  onChanged: (_) => setLocal(() {}),
-                  style: const TextStyle(color: AppColors.textPrimary),
-                  decoration: const InputDecoration(
-                    enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: AppColors.goldBorder),
-                    ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setLocal) => AlertDialog(
+          backgroundColor: AppColors.blackCard,
+          title: Text(t('account.lastConfirm'),
+              style: const TextStyle(color: AppColors.error, fontSize: 17)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(t('account.deleteConfirm'),
+                  style: const TextStyle(
+                      color: AppColors.textSecondary, fontSize: 13)),
+              const SizedBox(height: 10),
+              TextField(
+                controller: controller,
+                autofocus: true,
+                textAlign: TextAlign.center,
+                onChanged: (_) => setLocal(() {}),
+                style: const TextStyle(color: AppColors.textPrimary),
+                decoration: const InputDecoration(
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: AppColors.goldBorder),
                   ),
                 ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: const Text('إلغاء',
-                    style: TextStyle(color: AppColors.textSecondary)),
-              ),
-              TextButton(
-                onPressed: controller.text.trim() == word
-                    ? () => Navigator.pop(ctx, true)
-                    : null,
-                child: Text('احذف حسابي',
-                    style: TextStyle(
-                      color: controller.text.trim() == word
-                          ? AppColors.error
-                          : AppColors.textMuted,
-                    )),
               ),
             ],
           ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(t('account.cancel'),
+                  style: const TextStyle(color: AppColors.textSecondary)),
+            ),
+            TextButton(
+              onPressed: controller.text.trim() == word
+                  ? () => Navigator.pop(ctx, true)
+                  : null,
+              child: Text(t('account.deleteBtn'),
+                  style: TextStyle(
+                    color: controller.text.trim() == word
+                        ? AppColors.error
+                        : AppColors.textMuted,
+                  )),
+            ),
+          ],
         ),
       ),
     );
@@ -588,14 +569,13 @@ class _AccountScreenState extends State<AccountScreen> {
       ),
       child: Column(
         children: [
-          Text('الإصدار $_version',
+          Text('${t('account.version')} $_version',
               style: const TextStyle(color: AppColors.textMuted, fontSize: 12)),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Text(
-            'نص المصحف: مجمع الملك فهد لطباعة المصحف الشريف\n'
-            'الأذكار: حصن المسلم — سعيد بن علي القحطاني',
+            t('account.aboutText'),
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
                 color: AppColors.textSecondary, fontSize: 11, height: 1.7),
           ),
         ],

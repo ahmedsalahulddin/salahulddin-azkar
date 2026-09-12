@@ -26,8 +26,18 @@ const _langs = [
   _Lang('id', 'Indonesia'),
 ];
 
-const _cdnBase =
-    'https://cdn.jsdelivr.net/npm/quran-json@3.1.2/dist/chapters';
+const _apiBase = 'https://api.alquran.cloud/v1/surah';
+
+const _edition = {
+  'en': 'en.sahih',
+  'fr': 'fr.hamidullah',
+  'tr': 'tr.diyanet',
+  'ur': 'ur.maududi',
+  'de': 'de.aburida',
+  'es': 'es.asad',
+  'ru': 'ru.kuliev',
+  'id': 'id.indonesian',
+};
 
 const _ttsLocale = {
   'en': 'en-US',
@@ -43,13 +53,14 @@ const _ttsLocale = {
 Future<List<String>?> _fetchTranslation(String lang, int surahNum) async {
   final dir = await getApplicationDocumentsDirectory();
   final file =
-      File('${dir.path}/quran_translations/$lang/$surahNum.json');
+      File('${dir.path}/quran_translations_v2/$lang/$surahNum.json');
   if (await file.exists()) {
     return _parse(await file.readAsString());
   }
+  final ed = _edition[lang] ?? 'en.sahih';
   try {
     final res = await http
-        .get(Uri.parse('$_cdnBase/$lang/$surahNum.json'))
+        .get(Uri.parse('$_apiBase/$surahNum/$ed'))
         .timeout(const Duration(seconds: 20));
     if (res.statusCode != 200) return null;
     await file.parent.create(recursive: true);
@@ -62,8 +73,10 @@ Future<List<String>?> _fetchTranslation(String lang, int surahNum) async {
 
 List<String>? _parse(String body) {
   try {
-    return (jsonDecode(body) as List)
-        .map((e) => (e as Map)['verse'] as String)
+    final json = jsonDecode(body) as Map;
+    final data = json['data'] as Map;
+    return (data['ayahs'] as List)
+        .map((e) => (e as Map)['text'] as String)
         .toList();
   } catch (_) {
     return null;
