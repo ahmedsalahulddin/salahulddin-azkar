@@ -4,10 +4,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:http/http.dart' as http;
+import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../constants/theme.dart';
 import '../data/quran_data.dart';
+import '../services/recitation_service.dart';
 
 class _Lang {
   final String code;
@@ -268,8 +270,14 @@ class _QuranTranslationSurahScreenState
   bool _loadingTranslation = true;
   bool _translationFailed = false;
 
+  // Audio
   final _tts = FlutterTts();
+  final _arPlayer = AudioPlayer();
+  Reciter _reciter = RecitationService.defaultReciter;
+  bool _arabicOn = true;
+  bool _transOn = true;
   int? _speakingAyah;
+  int _session = 0; // incremented on each stop to cancel in-flight plays
 
   @override
   void initState() {
@@ -282,26 +290,62 @@ class _QuranTranslationSurahScreenState
     final locale = _ttsLocale[widget.langCode] ?? 'en-US';
     await _tts.setLanguage(locale);
     await _tts.setSpeechRate(0.45);
-    _tts.setCompletionHandler(() {
-      if (mounted) setState(() => _speakingAyah = null);
-    });
-    _tts.setCancelHandler(() {
-      if (mounted) setState(() => _speakingAyah = null);
-    });
   }
 
-  Future<void> _speak(int ayahNum, String text) async {
+  Future<void> _stopAll() async {
+    _session++;
+    await _arPlayer.stop();
+    await _tts.stop();
+    if (mounted) setState(() => _speakingAyah = null);
+  }
+
+  Future<void> _speak(int ayahNum, String? trans) async {
     if (_speakingAyah == ayahNum) {
-      await _tts.stop();
+      await _stopAll();
       return;
     }
-    await _tts.stop();
+    await _stopAll();
+    if (!_arabicOn && !_transOn) return;
+    final s = ++_session;
+    if (!mounted) return;
     setState(() => _speakingAyah = ayahNum);
-    await _tts.speak(text);
+
+    // 1. Arabic recitation
+    if (_arabicOn) {
+      try {
+        await _arPlayer.setUrl(RecitationService.urlFor(
+          reciterId: _reciter.id,
+          surah: widget.info.number,
+          ayah: ayahNum,
+        ));
+        if (s != _session || !mounted) return;
+        await _arPlayer.play();
+        await _arPlayer.playerStateStream.firstWhere((st) =>
+            s != _session ||
+            st.processingState == ProcessingState.completed ||
+            st.processingState == ProcessingState.idle);
+      } catch (_) {}
+    }
+
+    // 2. Translation TTS
+    if (s != _session || !mounted) return;
+    if (_transOn && trans != null) {
+      bool done = false;
+      _tts.setCompletionHandler(() { done = true; });
+      _tts.setCancelHandler(() { done = true; });
+      await _tts.speak(trans);
+      // Wait until TTS finishes or session is cancelled
+      while (!done && s == _session && mounted) {
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+      }
+    }
+
+    if (s == _session && mounted) setState(() => _speakingAyah = null);
   }
 
   @override
   void dispose() {
+    _arPlayer.dispose();
     _tts.stop();
     super.dispose();
   }
@@ -316,8 +360,7 @@ class _QuranTranslationSurahScreenState
   }
 
   Future<void> _loadTranslation() async {
-    final trans =
-        await _fetchTranslation(widget.langCode, widget.info.number);
+    final trans = await _fetchTranslation(widget.langCode, widget.info.number);
     if (!mounted) return;
     setState(() {
       _translation = trans;
@@ -327,6 +370,52 @@ class _QuranTranslationSurahScreenState
   }
 
   bool get _loading => _loadingArabic || _loadingTranslation;
+
+  void _pickReciter() {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppColors.blackCard,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+      ),
+      builder: (ctx) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Padding(
+                padding: EdgeInsets.fromLTRB(20, 16, 20, 4),
+                child: Text('اختر المقرئ',
+                    style: TextStyle(color: AppColors.gold, fontSize: 15)),
+              ),
+              for (final r in RecitationService.reciters
+                  .where((r) => r.mp3quranPath == null))
+                ListTile(
+                  leading: Icon(
+                    r.id == _reciter.id
+                        ? Icons.radio_button_checked
+                        : Icons.radio_button_unchecked,
+                    color: r.id == _reciter.id
+                        ? AppColors.gold
+                        : AppColors.textMuted,
+                    size: 19,
+                  ),
+                  title: Text(r.name,
+                      style: const TextStyle(
+                          color: AppColors.textPrimary, fontSize: 14)),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    setState(() => _reciter = r);
+                  },
+                ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -338,6 +427,39 @@ class _QuranTranslationSurahScreenState
           title: Text(widget.info.name),
           backgroundColor: AppColors.black,
           foregroundColor: AppColors.gold,
+          actions: [
+            // Arabic audio toggle
+            IconButton(
+              tooltip: 'صوت المقرئ',
+              icon: Icon(
+                Icons.record_voice_over,
+                color: _arabicOn ? AppColors.gold : AppColors.textMuted,
+                size: 22,
+              ),
+              onPressed: () => setState(() => _arabicOn = !_arabicOn),
+            ),
+            // Reciter picker (only meaningful when Arabic is on)
+            if (_arabicOn)
+              TextButton(
+                onPressed: _pickReciter,
+                child: Text(
+                  _reciter.name,
+                  style: const TextStyle(
+                      color: AppColors.textGold, fontSize: 11),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            // Translation TTS toggle
+            IconButton(
+              tooltip: 'صوت الترجمة',
+              icon: Icon(
+                Icons.translate,
+                color: _transOn ? AppColors.gold : AppColors.textMuted,
+                size: 22,
+              ),
+              onPressed: () => setState(() => _transOn = !_transOn),
+            ),
+          ],
         ),
         body: _loading
             ? const Center(
@@ -400,6 +522,7 @@ class _QuranTranslationSurahScreenState
 
   Widget _ayahCard(Ayah ayah, String? trans) {
     final speaking = _speakingAyah == ayah.number;
+    final canPlay = _arabicOn || (_transOn && trans != null);
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.all(14),
@@ -428,15 +551,15 @@ class _QuranTranslationSurahScreenState
                 ),
               ),
               const Spacer(),
-              if (trans != null)
+              if (canPlay)
                 GestureDetector(
                   onTap: () => _speak(ayah.number, trans),
                   child: Icon(
                     speaking
                         ? Icons.stop_circle_outlined
-                        : Icons.volume_up_outlined,
+                        : Icons.play_circle_outline,
                     color: speaking ? AppColors.gold : AppColors.textMuted,
-                    size: 20,
+                    size: 22,
                   ),
                 ),
             ],
@@ -462,9 +585,7 @@ class _QuranTranslationSurahScreenState
               textDirection: TextDirection.ltr,
               textAlign: TextAlign.left,
               style: TextStyle(
-                color: speaking
-                    ? AppColors.textGold
-                    : AppColors.textSecondary,
+                color: speaking ? AppColors.textGold : AppColors.textSecondary,
                 fontSize: 14,
                 height: 1.6,
               ),

@@ -212,8 +212,8 @@ HomeShelf _lessonsShelf() => HomeShelf(
           ),
         ShelfItem(
           icon: '🎬',
-          title: 'قصص الأنبياء',
-          subtitle: 'على القناة — قريباً',
+          title: t('card.prophets.title'),
+          subtitle: t('card.prophets.sub'),
           open: (c) => _push(c, () => const LessonsScreen()),
         ),
       ],
@@ -236,8 +236,8 @@ HomeShelf _cardsShelf() {
     // The reader's own cards lead; the ready-made shelves follow.
     pinned: ShelfItem(
       icon: '🖼️',
-      title: 'كروتي',
-      subtitle: 'أضف كروتك من الجوال',
+      title: t('card.mycards.title'),
+      subtitle: t('card.mycards.sub'),
       open: (c) => _push(c, () => const MyCardsScreen()),
     ),
     rest: [for (final shelf in GreetingCards.shelvesInUse) card(shelf)],
@@ -252,8 +252,8 @@ HomeShelf _librarySheet() {
         icon: '📕',
         title: book.title,
         subtitle: book.isBundled
-            ? '${book.hadithCount} حديث'
-            : 'يحتاج تنزيلاً',
+            ? '${book.hadithCount} ${t('card.hadithCount')}'
+            : t('card.needsDownload'),
         // A book already on the device opens straight into the reader; one
         // that is not goes to the shelf screen, which knows how to fetch it.
         open: (c) => _push(

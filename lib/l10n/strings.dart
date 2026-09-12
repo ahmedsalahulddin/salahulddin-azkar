@@ -48,6 +48,14 @@ const _ar = <String, String>{
   'shelf.cards.title': 'كروت المعايدة',
   'shelf.library.title': 'الكتب والأحاديث',
 
+  // Home shelf: hardcoded items
+  'card.mycards.title': 'كروتي',
+  'card.mycards.sub': 'أضف كروتك من الجوال',
+  'card.prophets.title': 'قصص الأنبياء',
+  'card.prophets.sub': 'على القناة — قريباً',
+  'card.needsDownload': 'يحتاج تنزيلاً',
+  'card.hadithCount': 'حديث',
+
   // Account screen
   'account.title': 'حسابي والإعدادات',
   'account.guest': 'تقرأ كضيف',
@@ -131,6 +139,14 @@ const _en = <String, String>{
   'shelf.lessons.title': 'Lessons',
   'shelf.cards.title': 'Greeting Cards',
   'shelf.library.title': 'Books & Hadith',
+
+  // Home shelf: hardcoded items
+  'card.mycards.title': 'My Cards',
+  'card.mycards.sub': 'Add your cards from the gallery',
+  'card.prophets.title': "Prophets' Stories",
+  'card.prophets.sub': 'On the channel — coming soon',
+  'card.needsDownload': 'Requires download',
+  'card.hadithCount': 'hadiths',
 
   // Account screen
   'account.title': 'Account & Settings',
