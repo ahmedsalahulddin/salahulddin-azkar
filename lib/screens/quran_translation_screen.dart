@@ -4,11 +4,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:http/http.dart' as http;
-import 'package:just_audio/just_audio.dart';
+import 'package:just_audio/just_audio.dart' show ProcessingState;
 import 'package:path_provider/path_provider.dart';
 
 import '../constants/theme.dart';
 import '../data/quran_data.dart';
+import '../services/app_audio.dart';
 import '../services/recitation_service.dart';
 
 class _Lang {
@@ -272,7 +273,6 @@ class _QuranTranslationSurahScreenState
 
   // Audio
   final _tts = FlutterTts();
-  final _arPlayer = AudioPlayer();
   Reciter _reciter = RecitationService.defaultReciter;
   bool _arabicOn = true;
   bool _transOn = true;
@@ -305,7 +305,7 @@ class _QuranTranslationSurahScreenState
 
   Future<void> _stopAll() async {
     _session++;
-    await _arPlayer.stop();
+    await AppAudio.player.stop();
     await _tts.stop();
     if (mounted) setState(() => _speakingAyah = null);
   }
@@ -333,17 +333,21 @@ class _QuranTranslationSurahScreenState
       // 1. Arabic recitation
       if (_arabicOn) {
         try {
-          await _arPlayer.setUrl(RecitationService.urlFor(
-            reciterId: _reciter.id,
-            surah: widget.info.number,
-            ayah: ayah.number,
-          ));
-          if (s != _session || !mounted) return;
-          await _arPlayer.play();
-          // Wait for completion — skip idle (initial state) to avoid instant return.
-          await _arPlayer.playerStateStream.firstWhere((st) =>
-              s != _session ||
-              st.processingState == ProcessingState.completed);
+          final url = _reciter.isPerAyah
+              ? RecitationService.urlFor(
+                  reciterId: _reciter.id,
+                  surah: widget.info.number,
+                  ayah: ayah.number,
+                )
+              : null;
+          if (url != null) {
+            await AppAudio.player.setUrl(url);
+            if (s != _session || !mounted) return;
+            await AppAudio.player.play();
+            await AppAudio.player.playerStateStream.firstWhere((st) =>
+                s != _session ||
+                st.processingState == ProcessingState.completed);
+          }
         } catch (_) {}
       }
 
@@ -392,7 +396,7 @@ class _QuranTranslationSurahScreenState
   @override
   void dispose() {
     _scrollController.dispose();
-    _arPlayer.dispose();
+    AppAudio.player.stop();
     _tts.stop();
     super.dispose();
   }

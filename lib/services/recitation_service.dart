@@ -35,6 +35,11 @@ class RecitationService {
       name: 'أحمد الحواشي',
       mp3quranPath: 'server11/hawashi',
     ),
+    Reciter(
+      id: 'banna',
+      name: 'محمود علي البنا',
+      mp3quranPath: 'server2/banna',
+    ),
   ];
 
   static Reciter get defaultReciter => reciters.first;
