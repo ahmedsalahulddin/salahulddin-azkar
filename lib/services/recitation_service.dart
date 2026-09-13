@@ -38,7 +38,7 @@ class RecitationService {
     Reciter(
       id: 'banna',
       name: 'محمود علي البنا',
-      mp3quranPath: 'server2/banna',
+      mp3quranPath: 'server8/bna',
     ),
   ];
 
