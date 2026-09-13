@@ -287,6 +287,7 @@ class _QuranTranslationSurahScreenState
   Reciter _reciter = RecitationService.defaultReciter;
   bool _arabicOn = true;
   bool _transOn = true;
+  int _repeatCount = 1; // 1-5: how many times to repeat the Arabic recitation
   int? _speakingAyah;
   int _session = 0; // incremented on each stop to cancel in-flight plays
 
@@ -341,25 +342,29 @@ class _QuranTranslationSurahScreenState
         _scrollToAyah(i, ayah.number);
       }
 
-      // 1. Arabic recitation
-      if (_arabicOn) {
-        try {
-          final url = _reciter.isPerAyah
-              ? RecitationService.urlFor(
-                  reciterId: _reciter.id,
-                  surah: widget.info.number,
-                  ayah: ayah.number,
-                )
-              : null;
-          if (url != null) {
+      // 1. Arabic recitation — repeated _repeatCount times
+      if (_arabicOn && _reciter.isPerAyah) {
+        final url = RecitationService.urlFor(
+          reciterId: _reciter.id,
+          surah: widget.info.number,
+          ayah: ayah.number,
+        );
+        for (int r = 0; r < _repeatCount; r++) {
+          if (s != _session || !mounted) return;
+          try {
+            await AppAudio.player.stop();
+            if (s != _session || !mounted) return;
             await AppAudio.player.setUrl(url);
             if (s != _session || !mounted) return;
             await AppAudio.player.play();
-            await AppAudio.player.playerStateStream.firstWhere((st) =>
-                s != _session ||
-                st.processingState == ProcessingState.completed);
-          }
-        } catch (_) {}
+            await for (final state
+                in AppAudio.player.processingStateStream) {
+              if (s != _session || !mounted) return;
+              if (state == ProcessingState.completed ||
+                  state == ProcessingState.idle) { break; }
+            }
+          } catch (_) {}
+        }
       }
 
       // 2. Translation TTS
@@ -553,7 +558,7 @@ class _QuranTranslationSurahScreenState
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            // Arabic audio toggle (default ON)
+            // Arabic audio toggle
             IconButton(
               tooltip: 'صوت المقرئ',
               icon: Icon(
@@ -563,7 +568,36 @@ class _QuranTranslationSurahScreenState
               ),
               onPressed: () => setState(() => _arabicOn = !_arabicOn),
             ),
-            // Translation TTS toggle (default ON)
+            // Repeat counter for Arabic (1→2→3→4→5→1)
+            GestureDetector(
+              onTap: _arabicOn
+                  ? () => setState(() { _repeatCount = _repeatCount % 5 + 1; })
+                  : null,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                margin: const EdgeInsets.symmetric(vertical: 14),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: _arabicOn
+                        ? AppColors.goldBorder
+                        : AppColors.textMuted.withValues(alpha: 0.3),
+                  ),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  '×$_repeatCount',
+                  style: TextStyle(
+                    color: _arabicOn
+                        ? AppColors.gold
+                        : AppColors.textMuted,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 4),
+            // Translation TTS toggle
             IconButton(
               tooltip: 'صوت الترجمة',
               icon: Icon(
