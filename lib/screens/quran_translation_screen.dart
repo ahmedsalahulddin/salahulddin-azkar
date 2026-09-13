@@ -221,12 +221,23 @@ class _QuranTranslationScreenState extends State<QuranTranslationScreen> {
                             ),
                           ),
                           Expanded(
-                            child: Text(
-                              info.name,
-                              style: const TextStyle(
-                                  color: AppColors.textPrimary,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  info.name,
+                                  style: const TextStyle(
+                                      color: AppColors.textPrimary,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500),
+                                ),
+                                Text(
+                                  '(${info.nameEn})',
+                                  style: const TextStyle(
+                                      color: AppColors.textMuted,
+                                      fontSize: 11),
+                                ),
+                              ],
                             ),
                           ),
                           Text(
