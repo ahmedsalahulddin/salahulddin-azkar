@@ -3,131 +3,646 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>تحميل salahulddin-AZKAR</title>
+<title>أذكار صلاح الدين</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans:wght@400;500;600&display=swap">
 <style>
-  :root {
-    --gold: #d4a843;
-    --gold-dim: #b8860b;
-    --border: rgba(184,134,11,.35);
-    --bg: #0d0d0d;
-    --card: #141414;
-    --navy: #16233d;
-    --text: #f5f0e8;
-    --muted: #7a6f5f;
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    padding: 28px 18px 48px;
-    background: var(--bg);
-    color: var(--text);
-    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-    line-height: 1.7;
-  }
-  .wrap { max-width: 520px; margin: 0 auto; }
-  header { text-align: center; padding-bottom: 22px; border-bottom: 1px solid var(--border); }
-  h1 { color: var(--gold); font-size: 30px; margin: 6px 0 4px; }
-  .sub { color: var(--muted); font-size: 14px; margin: 0; }
-  .badge {
-    display: inline-block; margin-top: 12px; padding: 4px 12px;
-    border: 1px solid var(--border); border-radius: 20px;
-    color: var(--muted); font-size: 12px;
-  }
-  h2 { color: var(--gold); font-size: 17px; margin: 30px 0 12px; }
-  .btn {
-    display: block; text-decoration: none; margin-bottom: 12px; padding: 16px 18px;
-    background: linear-gradient(180deg, var(--navy), #0f1a2e);
-    border: 1px solid var(--border); border-radius: 14px; color: var(--text);
-  }
-  .btn:active { border-color: var(--gold); }
-  .btn .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-  .btn b { color: var(--gold); font-size: 16px; }
-  .btn .size { color: var(--muted); font-size: 13px; white-space: nowrap; }
-  .btn .note { color: var(--muted); font-size: 12px; margin-top: 3px; }
-  ol { padding-inline-start: 20px; margin: 0; }
-  li { margin-bottom: 8px; }
-  .card {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 14px; padding: 16px 18px;
-  }
-  .warn { border-color: rgba(207,102,121,.5); }
-  .warn b { color: #cf6679; }
-  ul.features { list-style: none; padding: 0; margin: 0; }
-  ul.features li { padding-inline-start: 26px; position: relative; }
-  ul.features li::before { content: "✦"; color: var(--gold-dim); position: absolute; inset-inline-start: 0; }
-  .web-link { display: block; text-align: center; margin-top: 26px; color: var(--gold); font-size: 14px; }
-  footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 34px; }
+:root {
+  --gold: #d4a843;
+  --gold-dim: #a07828;
+  --gold-glow: rgba(212,168,67,.18);
+  --border: rgba(184,134,11,.3);
+  --bg: #0b0b0b;
+  --surface: #131313;
+  --card: #181818;
+  --text: #f0ebe0;
+  --muted: #6e6455;
+  --subtle: #3a3228;
+  --green: #3a7c5c;
+  --danger: #8b3040;
+  --r: 14px;
+  --font-ar: 'Noto Naskh Arabic', 'Amiri', serif;
+  --font-en: 'Noto Sans', system-ui, sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font-ar);
+  line-height:1.8;
+  min-height:100vh;
+}
+body.en{font-family:var(--font-en);direction:ltr;text-align:left}
+body.en [dir=rtl]{direction:rtl}
+
+/* ── NAV ── */
+nav{
+  position:sticky;top:0;z-index:100;
+  background:rgba(11,11,11,.92);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  padding:0 20px;
+  display:flex;align-items:center;justify-content:space-between;
+  height:58px;gap:12px;
+}
+.nav-brand{
+  display:flex;align-items:center;gap:10px;
+  text-decoration:none;color:var(--gold);font-weight:700;font-size:16px;
+}
+.nav-tabs{display:flex;gap:2px}
+.nav-tab{
+  padding:7px 14px;border-radius:8px;cursor:pointer;
+  font-size:14px;color:var(--muted);border:none;background:none;
+  transition:color .2s,background .2s;
+}
+.nav-tab.active,.nav-tab:hover{color:var(--text);background:var(--subtle)}
+.lang-btn{
+  padding:6px 14px;border-radius:20px;cursor:pointer;
+  border:1px solid var(--border);background:none;
+  color:var(--gold);font-size:13px;font-weight:600;
+  transition:background .2s;white-space:nowrap;
+}
+.lang-btn:hover{background:var(--gold-glow)}
+
+/* ── SECTIONS ── */
+.section{display:none;max-width:700px;margin:0 auto;padding:32px 18px 64px}
+.section.active{display:block}
+
+/* ── HERO ── */
+.hero{text-align:center;padding:48px 0 36px}
+.hero-icon{font-size:56px;line-height:1;margin-bottom:14px}
+h1.app-name{
+  font-size:clamp(24px,6vw,36px);
+  color:var(--gold);font-weight:700;
+  letter-spacing:.02em;margin-bottom:8px;
+}
+.hero-tagline{color:var(--muted);font-size:15px;margin-bottom:20px}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:6px 16px;border-radius:20px;
+  border:1px solid var(--border);
+  color:var(--muted);font-size:13px;
+}
+.hero-badge span{color:var(--gold);font-weight:600}
+
+/* ── FEATURE GRID ── */
+.feat-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+  gap:10px;margin:28px 0;
+}
+.feat-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r);padding:16px;
+  display:flex;flex-direction:column;gap:6px;
+}
+.feat-icon{font-size:22px}
+.feat-title{font-size:14px;font-weight:600;color:var(--text)}
+.feat-desc{font-size:12px;color:var(--muted);line-height:1.5}
+
+/* ── DOWNLOAD ── */
+.dl-section h2{color:var(--gold);font-size:18px;margin:28px 0 12px}
+.dl-btn{
+  display:block;text-decoration:none;
+  margin-bottom:10px;padding:18px 20px;
+  background:linear-gradient(160deg,#1a2840,#0f1520);
+  border:1px solid var(--border);border-radius:var(--r);
+  color:var(--text);transition:border-color .2s;
+}
+.dl-btn:hover{border-color:var(--gold)}
+.dl-btn .row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.dl-btn .row b{color:var(--gold);font-size:16px}
+.dl-btn .size{color:var(--muted);font-size:13px;white-space:nowrap}
+.dl-btn .note{color:var(--muted);font-size:12px;margin-top:4px}
+.steps-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r);padding:18px 20px;
+}
+.steps-card ol{padding-inline-start:20px}
+.steps-card li{margin-bottom:8px;font-size:14px}
+.warn-card{
+  background:var(--card);border:1px solid rgba(139,48,64,.5);
+  border-radius:var(--r);padding:16px 20px;
+  font-size:14px;color:var(--text);
+  margin:12px 0;
+}
+.warn-card b{color:#d47080}
+
+/* ── ADHKAR BROWSER ── */
+.browse-layout{display:flex;gap:16px;align-items:flex-start}
+.chapter-list{
+  width:220px;flex-shrink:0;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r);overflow:hidden;
+  position:sticky;top:72px;max-height:calc(100vh - 100px);
+  overflow-y:auto;
+}
+body.en .chapter-list{direction:ltr}
+.chapter-list::-webkit-scrollbar{width:4px}
+.chapter-list::-webkit-scrollbar-track{background:transparent}
+.chapter-list::-webkit-scrollbar-thumb{background:var(--subtle);border-radius:2px}
+.chapter-item{
+  padding:11px 14px;cursor:pointer;font-size:13px;
+  border-bottom:1px solid var(--border);color:var(--muted);
+  transition:background .15s,color .15s;
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+}
+.chapter-item:last-child{border-bottom:none}
+.chapter-item:hover,.chapter-item.active{background:var(--subtle);color:var(--text)}
+.chapter-item.active{border-inline-start:3px solid var(--gold)}
+.chapter-num{font-size:11px;color:var(--muted);flex-shrink:0}
+.adhkar-panel{flex:1;min-width:0}
+.chapter-heading{
+  font-size:18px;font-weight:700;color:var(--gold);
+  margin-bottom:16px;line-height:1.4;
+}
+.dhikr-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r);padding:20px;margin-bottom:12px;
+}
+.dhikr-text{
+  font-family:var(--font-ar);direction:rtl;text-align:right;
+  font-size:17px;line-height:2;color:var(--text);
+  margin-bottom:10px;
+}
+.dhikr-meta{
+  display:flex;align-items:center;gap:10px;
+  font-size:12px;color:var(--muted);
+}
+.rep-badge{
+  padding:3px 10px;border-radius:12px;
+  background:var(--subtle);color:var(--gold);font-size:12px;
+}
+.source-tag{
+  padding:3px 8px;border-radius:10px;
+  border:1px solid var(--border);font-size:11px;
+}
+
+/* ── MOBILE CHAPTER SELECT ── */
+.chapter-select-wrap{display:none;margin-bottom:16px}
+.chapter-select{
+  width:100%;padding:12px 14px;
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r);color:var(--text);font-size:14px;
+  font-family:inherit;cursor:pointer;
+}
+@media(max-width:600px){
+  .browse-layout{flex-direction:column}
+  .chapter-list{display:none}
+  .chapter-select-wrap{display:block}
+}
+
+/* ── ABOUT / FOOTER ── */
+.about-block{
+  text-align:center;padding:32px 0 8px;
+  border-top:1px solid var(--border);margin-top:32px;
+}
+.about-block .store-row{
+  display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:16px 0 8px;
+}
+.store-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:10px 18px;border-radius:10px;
+  border:1px solid var(--border);background:var(--card);
+  color:var(--text);text-decoration:none;font-size:13px;
+  transition:border-color .2s;
+}
+.store-badge:hover{border-color:var(--gold)}
+.store-badge .lbl{display:flex;flex-direction:column;line-height:1.2}
+.store-badge small{font-size:10px;color:var(--muted)}
+footer{
+  text-align:center;color:var(--muted);font-size:12px;
+  padding:20px 18px;border-top:1px solid var(--border);
+}
+footer a{color:var(--muted);text-decoration:none}
+footer a:hover{color:var(--gold)}
 </style>
 </head>
 <body>
-<div class="wrap">
 
-  <header>
-    <div style="font-size:38px">🕌</div>
-    <h1>salahulddin-AZKAR</h1>
-    <p class="sub">أذكار المسلم · المصحف · التلاوة · التفسير</p>
-    <span class="badge">الإصدار 1.0.0 — أندرويد</span>
-  </header>
+<nav>
+  <a class="nav-brand" href="/download">
+    <span>🕌</span>
+    <span class="ar-txt">أذكار صلاح الدين</span>
+    <span class="en-txt" hidden>Azkar Salahulddin</span>
+  </a>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showSection('home')" id="tab-home">
+      <span class="ar-txt">الرئيسية</span><span class="en-txt" hidden>Home</span>
+    </button>
+    <button class="nav-tab" onclick="showSection('browse')" id="tab-browse">
+      <span class="ar-txt">الأذكار</span><span class="en-txt" hidden>Adhkar</span>
+    </button>
+    <button class="nav-tab" onclick="showSection('download')" id="tab-download">
+      <span class="ar-txt">تحميل</span><span class="en-txt" hidden>Download</span>
+    </button>
+  </div>
+  <button class="lang-btn" onclick="toggleLang()" id="lang-btn">EN</button>
+</nav>
 
-  <h2>حمّل التطبيق</h2>
-
-  <a class="btn" href="/apk/salahulddin-azkar-arm64.apk" download>
-    <div class="row">
-      <b>تحميل — الأجهزة الحديثة</b>
-      <span class="size">20 م.ب</span>
+<!-- ══════════════════ HOME ══════════════════ -->
+<section id="section-home" class="section active">
+  <div class="hero">
+    <div class="hero-icon">🕌</div>
+    <h1 class="app-name">
+      <span class="ar-txt">أذكار صلاح الدين</span>
+      <span class="en-txt" hidden>Azkar Salahulddin</span>
+    </h1>
+    <p class="hero-tagline">
+      <span class="ar-txt">أذكار المسلم · المصحف الشريف · التلاوة · التفسير</span>
+      <span class="en-txt" hidden>Muslim Adhkar · Holy Quran · Recitation · Tafsir</span>
+    </p>
+    <div class="hero-badge">
+      <span class="ar-txt">الإصدار</span><span class="en-txt" hidden>Version</span>
+      <span>1.1.0</span> · Android
     </div>
-    <div class="note">arm64 — يناسب أغلب الهواتف. ابدأ بهذا.</div>
+  </div>
+
+  <div class="feat-grid">
+    <div class="feat-card">
+      <div class="feat-icon">📖</div>
+      <div class="feat-title ar-txt">المصحف الشريف</div>
+      <div class="feat-title en-txt" hidden>Holy Quran</div>
+      <div class="feat-desc ar-txt">نص مجمع الملك فهد — رواية حفص، صفحات المصحف كاملة</div>
+      <div class="feat-desc en-txt" hidden>King Fahd Complex text — Hafs narration, full mushaf pages</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🎧</div>
+      <div class="feat-title ar-txt">التلاوة والاستماع</div>
+      <div class="feat-title en-txt" hidden>Recitation</div>
+      <div class="feat-desc ar-txt">ستة قرّاء، انتقال تلقائي مع الآيات، تظليل أثناء التلاوة</div>
+      <div class="feat-desc en-txt" hidden>Six reciters, auto page-turn with verses, ayah highlighting during recitation</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🌍</div>
+      <div class="feat-title ar-txt">ترجمات القرآن</div>
+      <div class="feat-title en-txt" hidden>Quran Translations</div>
+      <div class="feat-desc ar-txt">ست لغات: إنجليزي، أردو، إندونيسي، بنغالي، فرنسي، فلبيني</div>
+      <div class="feat-desc en-txt" hidden>Six languages: English, Urdu, Indonesian, Bengali, French, Filipino</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">📿</div>
+      <div class="feat-title ar-txt">الأذكار الصحيحة</div>
+      <div class="feat-title en-txt" hidden>Authentic Adhkar</div>
+      <div class="feat-desc ar-txt">حصن المسلم — ١٣٢ باباً مع عدّاد لكل ذكر والمصدر والفضل</div>
+      <div class="feat-desc en-txt" hidden>Hisn Al-Muslim — 132 chapters, counter per dhikr, source & benefit</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">📚</div>
+      <div class="feat-title ar-txt">المكتبة الإسلامية</div>
+      <div class="feat-title en-txt" hidden>Islamic Library</div>
+      <div class="feat-desc ar-txt">الأربعينيات جاهزة والكتب الستة متاحة بالتنزيل</div>
+      <div class="feat-desc en-txt" hidden>Arbaʿin bundled; the Six Books available to download</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🧠</div>
+      <div class="feat-title ar-txt">اختبار الحفظ</div>
+      <div class="feat-title en-txt" hidden>Memory Test</div>
+      <div class="feat-desc ar-txt">أربعة أساليب للاختبار، تكرار، ثلاثة مستويات صعوبة</div>
+      <div class="feat-desc en-txt" hidden>Four question types, repetition, three difficulty levels</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">📖</div>
+      <div class="feat-title ar-txt">أربعة تفاسير</div>
+      <div class="feat-title en-txt" hidden>Four Tafsir</div>
+      <div class="feat-desc ar-txt">الميسّر والمختصر جاهزان، والسعدي وابن كثير بالتنزيل</div>
+      <div class="feat-desc en-txt" hidden>Al-Muyassar & Al-Mukhtasar bundled; Al-Saadi & Ibn Kathir downloadable</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🔢</div>
+      <div class="feat-title ar-txt">عدّاد التسبيح</div>
+      <div class="feat-title en-txt" hidden>Tasbih Counter</div>
+      <div class="feat-desc ar-txt">مرتبط بكل ذكر أو حر، مع الاحتفاظ بالسجل</div>
+      <div class="feat-desc en-txt" hidden>Per-dhikr or free counter with progress tracking</div>
+    </div>
+  </div>
+
+  <div class="about-block">
+    <div class="store-row">
+      <a class="store-badge" onclick="showSection('download');return false;" href="#">
+        <span style="font-size:22px">⬇️</span>
+        <div class="lbl">
+          <small class="ar-txt">تثبيت مباشر</small>
+          <small class="en-txt" hidden>Direct install</small>
+          <span class="ar-txt">نزّل APK</span>
+          <span class="en-txt" hidden>Download APK</span>
+        </div>
+      </a>
+      <a class="store-badge" onclick="showSection('browse');return false;" href="#">
+        <span style="font-size:22px">📿</span>
+        <div class="lbl">
+          <small class="ar-txt">تصفّح الآن</small>
+          <small class="en-txt" hidden>Browse now</small>
+          <span class="ar-txt">الأذكار</span>
+          <span class="en-txt" hidden>Adhkar</span>
+        </div>
+      </a>
+    </div>
+    <p style="font-size:13px;color:var(--muted);margin-top:8px">
+      <span class="ar-txt">المصدر: حصن المسلم — سعيد بن علي القحطاني</span>
+      <span class="en-txt" hidden>Source: Hisn Al-Muslim — Saʿīd ibn ʿAlī Al-Qahtani</span>
+    </p>
+  </div>
+</section>
+
+<!-- ══════════════════ BROWSE ADHKAR ══════════════════ -->
+<section id="section-browse" class="section">
+
+  <div class="chapter-select-wrap">
+    <select class="chapter-select" onchange="selectChapter(+this.value)">
+    </select>
+  </div>
+
+  <div class="browse-layout">
+    <div class="chapter-list" id="chapter-list"></div>
+    <div class="adhkar-panel" id="adhkar-panel">
+      <p style="color:var(--muted);font-size:14px;text-align:center;padding:40px 0">
+        <span class="ar-txt">اختر باباً من القائمة</span>
+        <span class="en-txt" hidden>Select a chapter from the list</span>
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ DOWNLOAD ══════════════════ -->
+<section id="section-download" class="section dl-section">
+
+  <h2>
+    <span class="ar-txt">حمّل التطبيق</span>
+    <span class="en-txt" hidden>Download the App</span>
+  </h2>
+
+  <a class="dl-btn" href="/apk/salahulddin-azkar-arm64.apk" download>
+    <div class="row">
+      <b>
+        <span class="ar-txt">تحميل — الأجهزة الحديثة</span>
+        <span class="en-txt" hidden>Download — Modern Phones</span>
+      </b>
+      <span class="size">24 MB · v1.1.0</span>
+    </div>
+    <div class="note">
+      <span class="ar-txt">arm64 — يناسب أغلب الهواتف. ابدأ بهذا.</span>
+      <span class="en-txt" hidden>arm64 — fits most phones. Start with this.</span>
+    </div>
   </a>
 
-  <a class="btn" href="/apk/salahulddin-azkar-arm32.apk" download>
+  <a class="dl-btn" href="/apk/salahulddin-azkar-arm32.apk" download>
     <div class="row">
-      <b>تحميل — الأجهزة الأقدم</b>
-      <span class="size">17 م.ب</span>
+      <b>
+        <span class="ar-txt">تحميل — الأجهزة الأقدم</span>
+        <span class="en-txt" hidden>Download — Older Phones</span>
+      </b>
+      <span class="size">22 MB · v1.1.0</span>
     </div>
-    <div class="note">arm32 — جرّبه إذا رفض الأول التثبيت.</div>
+    <div class="note">
+      <span class="ar-txt">arm32 — جرّبه إذا رفض الأول التثبيت.</span>
+      <span class="en-txt" hidden>arm32 — try this if the first one won't install.</span>
+    </div>
   </a>
 
-  <h2>خطوات التثبيت</h2>
-  <div class="card">
-    <ol>
+  <h2>
+    <span class="ar-txt">خطوات التثبيت</span>
+    <span class="en-txt" hidden>Installation Steps</span>
+  </h2>
+  <div class="steps-card">
+    <ol class="ar-txt">
       <li>افتح هذه الصفحة <b>من جوال الأندرويد</b> واضغط زر التحميل.</li>
       <li>المتصفح قد ينبّهك أن الملف قد يضر بجهازك — اختر <b>«موافق»</b> أو <b>«الاحتفاظ»</b>.</li>
       <li>افتح الملف بعد انتهاء التحميل.</li>
       <li>إن ظهرت رسالة عن مصادر غير معروفة، اضغط <b>«الإعدادات»</b> ثم فعّل السماح لهذا المتصفح.</li>
       <li>ارجع واضغط <b>«تثبيت»</b>.</li>
     </ol>
+    <ol class="en-txt" hidden>
+      <li>Open this page <b>on your Android phone</b> and tap the download button.</li>
+      <li>Your browser may warn that the file could harm your device — choose <b>"OK"</b> or <b>"Keep"</b>.</li>
+      <li>Open the file once the download is complete.</li>
+      <li>If you see a message about unknown sources, tap <b>"Settings"</b> and allow installs from this browser.</li>
+      <li>Go back and tap <b>"Install"</b>.</li>
+    </ol>
   </div>
 
-  <h2>تنبيه</h2>
-  <div class="card warn">
-    إن كانت لديك نسخة سابقة، <b>ثبّت فوقها مباشرة ولا تحذفها</b> — الحذف يمسح المفضلة وقائمة الوفيات وعدّاد التسبيح.
+  <div class="warn-card">
+    <b class="ar-txt">⚠️ تنبيه:</b>
+    <b class="en-txt" hidden>⚠️ Note:</b>
+    <span class="ar-txt"> إن كانت لديك نسخة سابقة، <b>ثبّت فوقها مباشرة ولا تحذفها</b> — الحذف يمسح المفضلة وقائمة الوفيات وعدّاد التسبيح.</span>
+    <span class="en-txt" hidden> If you have a previous version, <b>install over it directly — do not uninstall</b> — uninstalling erases your favorites, deceased list, and tasbih counter.</span>
   </div>
 
-  <h2>ماذا يحتوي</h2>
-  <div class="card">
-    <ul class="features">
-      <li>أوقات الصلاة مع عدّاد تنازلي حسب موقعك</li>
-      <li>المصحف كاملاً بنص مجمع الملك فهد — رواية حفص</li>
-      <li>وضعان للقراءة: تدبّر آية آية، أو صفحة المصحف كاملة</li>
-      <li>التلاوة بصوت ستة قرّاء مع الانتقال التلقائي</li>
-      <li>أربعة تفاسير — الميسّر والمختصر جاهزان، والسعدي وابن كثير بالتنزيل</li>
-      <li>تحديد الآية على المصحف: علامة · تفسير · نسخ · مشاركة</li>
-      <li>التكرار للحفظ واختبار الحفظ بثلاثة مستويات</li>
-      <li>التراجم والمعاني بست لغات — إنجليزي وأردو وإندونيسي وبنغالي وفرنسي وفلبيني</li>
-      <li>صحيح الأذكار — حصن المسلم بـ ١٣٢ باباً وعدّاد لكل ذكر</li>
-      <li>أذكار الصباح والمساء والنوم والسفر والرقية</li>
-      <li>المكتبة الإسلامية — الأربعينيات جاهزة والكتب الستة بالتنزيل</li>
-      <li>عدّاد التسبيح، والمفضلة، وتذكيرات يومية</li>
+  <h2 style="margin-top:32px">
+    <span class="ar-txt">جديد في الإصدار 1.1.0</span>
+    <span class="en-txt" hidden>What's New in 1.1.0</span>
+  </h2>
+  <div class="steps-card">
+    <ul style="padding-inline-start:18px">
+      <li class="ar-txt">تظليل الآية الجارية على المصحف أثناء التلاوة مع الانتقال التلقائي للصفحة</li>
+      <li class="en-txt" hidden>Ayah highlighting on the Mushaf page during recitation with auto page-turn</li>
+      <li class="ar-txt">تشغيل مزدوج في ترجمات القرآن: صوت المقرئ ثم صوت الترجمة، مع تحكم منفصل لكل منهما</li>
+      <li class="en-txt" hidden>Dual audio in Quran Translations: Arabic reciter first, then translation TTS, with independent controls</li>
+      <li class="ar-txt">دعم كامل للغة الإنجليزية في واجهة التطبيق</li>
+      <li class="en-txt" hidden>Full English language support in the app interface</li>
     </ul>
   </div>
 
-  <a class="web-link" href="/">أو افتح التطبيق مباشرة في المتصفح ←</a>
-
-  <footer>
-    نص المصحف: مجمع الملك فهد لطباعة المصحف الشريف<br>
-    التفسير الميسّر · خط Amiri Quran (رخصة OFL)
+  <footer style="margin-top:40px;border:none;padding-top:24px;border-top:1px solid var(--border)">
+    <span class="ar-txt">نص المصحف: مجمع الملك فهد لطباعة المصحف الشريف</span>
+    <span class="en-txt" hidden>Quran text: King Fahd Complex for the Printing of the Holy Quran</span>
+    <br>
+    <a href="/privacy.html" class="ar-txt">سياسة الخصوصية</a>
+    <a href="/privacy.html" class="en-txt" hidden>Privacy Policy</a>
+    ·
+    <a href="/delete-account.html" class="ar-txt">حذف الحساب</a>
+    <a href="/delete-account.html" class="en-txt" hidden>Delete Account</a>
   </footer>
+</section>
 
-</div>
+<script>
+// ── DATA ──
+const CHAPTERS = [
+  {id:27,ar:"أذكار الصباح والمساء",en:"Morning & Evening Adhkar"},
+  {id:28,ar:"أذكار النوم",en:"Bedtime Adhkar"},
+  {id:1,ar:"أذكار الاستيقاظ من النوم",en:"Waking Up Adhkar"},
+  {id:10,ar:"الذكر عند الخروج من المنزل",en:"Leaving Home"},
+  {id:11,ar:"الذكر عند دخول المنزل",en:"Entering Home"},
+  {id:12,ar:"دعاء الذهاب إلى المسجد",en:"Going to the Mosque"},
+  {id:13,ar:"دعاء دخول المسجد",en:"Entering the Mosque"},
+  {id:14,ar:"دعاء الخروج من المسجد",en:"Leaving the Mosque"},
+  {id:16,ar:"دعاء الاستفتاح",en:"Opening Prayer (Salah)"},
+  {id:17,ar:"دعاء الركوع",en:"Ruku' Supplication"},
+  {id:18,ar:"دعاء الرفع من الركوع",en:"Rising from Ruku'"},
+  {id:19,ar:"دعاء السجود",en:"Sujood Supplication"},
+  {id:25,ar:"الأذكار بعد السلام من الصلاة",en:"Post-Prayer Adhkar"},
+  {id:34,ar:"دعاء الهم والحزن",en:"Du'a for Worry & Grief"},
+  {id:35,ar:"دعاء الكرب",en:"Du'a for Distress"},
+  {id:69,ar:"الدعاء قبل الطعام",en:"Before Eating"},
+  {id:70,ar:"الدعاء عند الفراغ من الطعام",en:"After Eating"},
+  {id:96,ar:"دعاء السفر",en:"Travel Du'a"},
+  {id:129,ar:"الاستغفار والتوبة",en:"Seeking Forgiveness"},
+  {id:130,ar:"فضل التسبيح والتحميد",en:"Virtues of Tasbih"},
+];
+
+const ITEMS = {
+  27:[
+    {t:"أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لاَ إِلَهَ إِلاَّ اللَّهُ وَحْدَهُ لاَ شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ.",r:1},
+    {t:"اللَّهُمَّ بِكَ أَصْبَحْنَا، وَبِكَ أَمْسَيْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ، وَإِلَيْكَ النُّشُورُ.",r:1},
+    {t:"اللَّهُمَّ أَنْتَ رَبِّي لاَ إِلَهَ إِلاَّ أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ بِذَنْبِي فَاغْفِرْ لِي فَإِنَّهُ لاَ يَغْفِرُ الذُّنُوبَ إِلاَّ أَنْتَ.",r:1},
+  ],
+  28:[
+    {t:"بِاسْمِكَ اللَّهُمَّ أَمُوتُ وَأَحْيَا.",r:1},
+    {t:"اللَّهُمَّ قِنِي عَذَابَكَ يَوْمَ تَبْعَثُ عِبَادَكَ.",r:3},
+    {t:"اللَّهُمَّ بِاسْمِكَ أَمُوتُ وَأَحْيَا.",r:1},
+  ],
+  1:[
+    {t:"الْحَمْدُ للَّهِ الَّذِي أَحْيَانَا بَعْدَ مَا أَمَاتَنَا، وَإِلَيْهِ النُّشُورُ.",r:1},
+    {t:"لاَ إِلَهَ إِلاَّ اللَّهُ وَحْدَهُ لاَ شَريكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ، سُبْحَانَ اللَّهِ، وَالْحَمْدُ للَّهِ، وَلاَ إِلَهَ إِلاَّ اللَّهُ، وَاللَّهُ أَكبَرُ، وَلاَ حَوْلَ وَلاَ قُوَّةَ إِلاَّ بِاللَّهِ الْعَلِيِّ الْعَظِيمِ، رَبِّ اغْفرْ لِي.",r:1},
+    {t:"الْحَمْدُ لِلَّهِ الَّذِي عَافَانِي فِي جَسَدِي، وَرَدَّ عَلَيَّ رُوحِي، وَأَذِنَ لي بِذِكْرِهِ.",r:1},
+  ],
+  10:[
+    {t:"بِسْمِ اللَّهِ، تَوَكَّلْتُ عَلَى اللَّهِ، وَلَاَ حَوْلَ وَلَا قُوَّةَ إِلاَّ بِاللَّهِ.",r:1},
+    {t:"اللَّهُمَّ إِنِّي أَعُوذُ بِكَ أَنْ أَضِلَّ، أَوْ أُضَلَّ، أَوْ أَزِلَّ، أَوْ أُزَلَّ، أَوْ أَظْلِمَ، أَوْ أُظْلَمَ، أَوْ أَجْهَلَ، أَوْ يُجْهَلَ عَلَيَّ.",r:1},
+  ],
+  11:[{t:"بِسْمِ اللَّهِ وَلَجْنَا، وَبِسْمِ اللَّهِ خَرَجْنَا، وَعَلَى اللَّهِ رَبِّنَا تَوَكَّلْنَا.",r:1}],
+  12:[{t:"اللَّهُمَّ اجْعَلْ فِي قَلْبِي نُوراً، وَفِي لِسَانِي نُوراً، وَفِي سَمْعِي نُوراً، وَفِي بَصَرِي نُوراً، وَمِنْ فَوْقِي نُوراً، وَمِنْ تَحْتِي نُوراً، وَعَنْ يَمِينِي نُوراً، وَعَنْ شِمَالِي نُوراً، وَمِنْ أَمَامِي نُوراً، وَمِنْ خَلْفِي نُوراً، وَاجْعَلْ فِي نَفْسِي نُوراً، وَأَعْظِمْ لِي نُوراً.",r:1}],
+  13:[{t:"أَعُوذُ بِاللَّهِ الْعَظِيمِ، وَبِوَجْهِهِ الْكَرِيمِ، وَسُلْطَانِهِ الْقَدِيمِ، مِنَ الشَّيْطَانِ الرَّجِيمِ. اللَّهُمَّ افْتَحْ لِي أَبْوَابَ رَحْمَتِكَ.",r:1}],
+  14:[{t:"بِسْمِ اللَّهِ وَالصّلَاةُ وَالسَّلَامُ عَلَى رَسُولِ اللَّهِ، اللَّهُمَّ إِنِّي أَسْأَلُكَ مِنْ فَضْلِك، اللَّهُمَّ اعْصِمْنِي مِنَ الشَّيْطَانِ الرَّجِيمِ.",r:1}],
+  16:[
+    {t:"اللَّهُمَّ بَاعِدْ بَيْنِي وَبَيْنَ خَطَايَايَ كَمَا بَاعَدْتَ بَيْنَ الْمَشْرِقِ وَالْمَغْرِبِ، اللَّهُمَّ نَقِّنِي مِنْ خَطَايَايَ كَمَا يُنَقَّى الثَّوْبُ الأَبْيَضُ مِنَ الدَّنَسِ، اللَّهُمَّ اغْسِلْنِي مِنْ خَطَايَايَ بِالثَّلْجِ وَالْمَاءِ وَالْبَرَدِ.",r:1},
+    {t:"سُبْحانَكَ اللَّهُمَّ وَبِحَمْدِكَ، وَتَبارَكَ اسْمُكَ، وَتَعَالَى جَدُّكَ، وَلاَ إِلَهَ غَيْرُكَ.",r:1},
+  ],
+  17:[
+    {t:"سُبْحانَ رَبِّيَ الْعَظِيمِ.",r:3},
+    {t:"سُبْحَانَكَ اللَّهُمَّ رَبَّنَا وَبِحَمْدِكَ، اللَّهُمَّ اغْفِرْ لِي.",r:1},
+  ],
+  18:[
+    {t:"سَمِعَ اللَّهُ لِمَنْ حَمِدَهُ.",r:1},
+    {t:"رَبَّنَا وَلَكَ الْحَمْدُ، حَمْداً كَثيراً طَيِّباً مُبارَكاً فِيهِ.",r:1},
+  ],
+  19:[
+    {t:"سُبْحَانَ رَبِّيَ الأَعْلَى.",r:3},
+    {t:"سُبْحَانَكَ اللَّهُمَّ رَبَّنَا وَبِحَمْدِكَ، اللَّهُمَّ اغْفِرْ لِي.",r:1},
+  ],
+  25:[
+    {t:"أَسْتَغْفِرُ اللَّهَ.",r:3},
+    {t:"اللَّهُمَّ أَنْتَ السَّلاَمُ وَمِنْكَ السَّلاَمُ، تَبَارَكْتَ ذَا الْجَلاَلِ وَالإِكْرَامِ.",r:1},
+    {t:"لاَ إِلَهَ إِلاَّ اللَّهُ وَحْدَهُ لاَ شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ. اللَّهُمَّ لاَ مَانِعَ لِمَا أَعْطَيْتَ، وَلاَ مُعْطِيَ لِمَا مَنَعْتَ، وَلاَ يَنْفَعُ ذَا الجَدِّ مِنْكَ الجَدُّ.",r:1},
+  ],
+  34:[
+    {t:"اللَّهُمَّ إِنِّي عَبْدُكَ، ابْنُ عَبْدِكَ، ابْنُ أَمَتِكَ، نَاصِيَتِي بِيَدِكَ، مَاضٍ فِيَّ حُكْمُكَ، عَدْلٌ فِيَّ قَضَاؤُكَ، أَسْأَلُكَ بِكُلِّ اسْمٍ هُوَ لَكَ سَمَّيْتَ بِهِ نَفْسَكَ، أَوْ أَنْزَلْتَهُ فِي كِتَابِكَ، أَوْ عَلَّمْتَهُ أَحَداً مِنْ خَلْقِكَ، أَوِ اسْتَأْثَرْتَ بِهِ فِي عِلْمِ الْغَيْبِ عِنْدَكَ، أَنْ تَجْعَلَ الْقُرْآنَ رَبِيعَ قَلْبِي، وَنُورَ صَدْرِي، وَجَلاَءَ حُزْنِي، وَذَهَابَ هَمِّي.",r:1},
+    {t:"اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْهَمِّ وَالْحَزَنِ، وَالْعَجْزِ وَالْكَسَلِ، وَالْبُخْلِ وَالْجُبْنِ، وَضَلَعِ الدَّيْنِ وَغَلَبَةِ الرِّجَالِ.",r:1},
+  ],
+  35:[
+    {t:"لاَ إِلَهَ إِلاَّ اللَّهُ الْعَظِيمُ الْحَلِيمُ، لاَ إِلَهَ إِلاَّ اللَّهُ رَبُّ الْعَرْشِ الْعَظِيمِ، لاَ إِلَهَ إِلاَّ اللَّهُ رَبُّ السَّمَوَاتِ وَرَبُّ الأَرْضِ وَرَبُّ الْعَرْشِ الْكَرِيمِ.",r:1},
+  ],
+  69:[
+    {t:"بِسْمِ اللَّهِ.",r:1},
+    {t:"اللَّهُمَّ بَارِكْ لَنَا فِيهِ وَأَطْعِمْنَا خَيْراً مِنْهُ.",r:1},
+  ],
+  70:[
+    {t:"الْحَمْدُ لِلَّهِ الَّذِي أَطْعَمَنَا وَسَقَانَا، وَجَعَلَنَا مُسْلِمِينَ.",r:1},
+    {t:"الْحَمْدُ لِلَّهِ حَمْداً كَثِيراً طَيِّباً مُبَارَكاً فِيهِ، غَيْرَ مَكْفِيٍّ وَلاَ مُوَدَّعٍ وَلاَ مُسْتَغْنَىً عَنْهُ رَبَّنَا.",r:1},
+  ],
+  96:[
+    {t:"اللَّهُ أَكْبَرُ، اللَّهُ أَكْبَرُ، اللَّهُ أَكْبَرُ. سُبْحَانَ الَّذِي سَخَّرَ لَنَا هَذَا وَمَا كُنَّا لَهُ مُقْرِنِينَ وَإِنَّا إِلَى رَبِّنَا لَمُنقَلِبُونَ. اللَّهُمَّ إِنَّا نَسْأَلُكَ فِي سَفَرِنَا هَذَا الْبِرَّ وَالتَّقْوَى، وَمِنَ الْعَمَلِ مَا تَرْضَى.",r:1},
+  ],
+  129:[
+    {t:"أَسْتَغْفِرُ اللَّهَ الَّذِي لاَ إِلَهَ إِلاَّ هُوَ الْحَيُّ الْقَيُّومُ وَأَتُوبُ إِلَيْهِ.",r:1},
+    {t:"سُبْحَانَكَ اللَّهُمَّ وَبِحَمْدِكَ، أَشْهَدُ أَنْ لاَ إِلَهَ إِلاَّ أَنْتَ، أَسْتَغْفِرُكَ وَأَتُوبُ إِلَيْكَ.",r:1},
+  ],
+  130:[
+    {t:"سُبْحَانَ اللَّهِ وَبِحَمْدِهِ.",r:100},
+    {t:"سُبْحَانَ اللَّهِ الْعَظِيمِ.",r:1},
+    {t:"سُبْحَانَ اللَّهِ، وَالْحَمْدُ لِلَّهِ، وَلاَ إِلَهَ إِلاَّ اللَّهُ، وَاللَّهُ أَكْبَرُ.",r:1},
+  ],
+};
+
+// ── LANG ──
+let isEn = false;
+
+function toggleLang() {
+  isEn = !isEn;
+  const body = document.body;
+  const btn = document.getElementById('lang-btn');
+  if (isEn) {
+    body.classList.add('en');
+    body.setAttribute('lang','en');
+    body.setAttribute('dir','ltr');
+    btn.textContent = 'عر';
+  } else {
+    body.classList.remove('en');
+    body.setAttribute('lang','ar');
+    body.setAttribute('dir','rtl');
+    btn.textContent = 'EN';
+  }
+  document.querySelectorAll('.ar-txt').forEach(el => el.hidden = isEn);
+  document.querySelectorAll('.en-txt').forEach(el => el.hidden = !isEn);
+  renderChapterList();
+}
+
+// ── SECTIONS ──
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('section-'+id).classList.add('active');
+  document.getElementById('tab-'+id).classList.add('active');
+  if (id === 'browse') renderChapterList();
+}
+
+// ── CHAPTERS ──
+let activeChapterId = null;
+
+function renderChapterList() {
+  const list = document.getElementById('chapter-list');
+  const sel = document.querySelector('.chapter-select');
+  list.innerHTML = '';
+  sel.innerHTML = '';
+  CHAPTERS.forEach((ch, i) => {
+    const name = isEn ? ch.en : ch.ar;
+    // sidebar
+    const item = document.createElement('div');
+    item.className = 'chapter-item' + (ch.id === activeChapterId ? ' active' : '');
+    item.innerHTML = `<span>${name}</span><span class="chapter-num">${i+1}</span>`;
+    item.onclick = () => selectChapter(ch.id);
+    list.appendChild(item);
+    // select
+    const opt = document.createElement('option');
+    opt.value = ch.id;
+    opt.textContent = name;
+    if (ch.id === activeChapterId) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  if (!activeChapterId && CHAPTERS.length) selectChapter(CHAPTERS[0].id);
+}
+
+function selectChapter(id) {
+  activeChapterId = id;
+  const ch = CHAPTERS.find(c => c.id === id);
+  if (!ch) return;
+  // update sidebar active state
+  document.querySelectorAll('.chapter-item').forEach((el, i) => {
+    el.classList.toggle('active', CHAPTERS[i].id === id);
+  });
+  const panel = document.getElementById('adhkar-panel');
+  const items = ITEMS[id] || [];
+  const name = isEn ? ch.en : ch.ar;
+  const repLabel = isEn ? 'times' : 'مرة';
+  const sourceLabel = isEn ? 'Hisn Al-Muslim' : 'حصن المسلم';
+  panel.innerHTML = `
+    <h2 class="chapter-heading">${name}</h2>
+    ${items.map((item, i) => `
+      <div class="dhikr-card">
+        <div class="dhikr-text">${item.t}</div>
+        <div class="dhikr-meta">
+          ${item.r > 1 ? `<span class="rep-badge">${item.r} ${repLabel}</span>` : ''}
+          <span class="source-tag">${sourceLabel}</span>
+          <span style="color:var(--muted)">${i+1} / ${items.length}</span>
+        </div>
+      </div>
+    `).join('')}
+  `;
+}
+
+// ── INIT ──
+document.querySelectorAll('.ar-txt').forEach(el => el.hidden = false);
+document.querySelectorAll('.en-txt').forEach(el => el.hidden = true);
+</script>
 </body>
 </html>

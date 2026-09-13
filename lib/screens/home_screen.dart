@@ -12,8 +12,6 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final all = buildShelves();
-
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
@@ -31,21 +29,26 @@ class HomeScreen extends StatelessWidget {
                 const PrayerTimesCard(),
                 const SizedBox(height: 20),
 
-                // Visibility and order can be changed remotely; if that config
-                // is unavailable every section shows in its built-in order.
-                ValueListenableBuilder<Map<String, SectionSetting>>(
-                  valueListenable: SectionConfig.settings,
+                // Rebuilt whenever the locale or section-visibility config changes.
+                ValueListenableBuilder<String>(
+                  valueListenable: AppLocale.locale,
                   builder: (context, _, _) {
-                    final visible = [
-                      for (var i = 0; i < all.length; i++)
-                        if (SectionConfig.isVisible(all[i].key)) (all[i], i),
-                    ]..sort((a, b) => SectionConfig.orderOf(a.$1.key, a.$2)
-                        .compareTo(SectionConfig.orderOf(b.$1.key, b.$2)));
+                    final all = buildShelves();
+                    return ValueListenableBuilder<Map<String, SectionSetting>>(
+                      valueListenable: SectionConfig.settings,
+                      builder: (context, _, _) {
+                        final visible = [
+                          for (var i = 0; i < all.length; i++)
+                            if (SectionConfig.isVisible(all[i].key)) (all[i], i),
+                        ]..sort((a, b) => SectionConfig.orderOf(a.$1.key, a.$2)
+                            .compareTo(SectionConfig.orderOf(b.$1.key, b.$2)));
 
-                    return Column(
-                      children: [
-                        for (final (shelf, _) in visible) _shelfRow(context, shelf),
-                      ],
+                        return Column(
+                          children: [
+                            for (final (shelf, _) in visible) _shelfRow(context, shelf),
+                          ],
+                        );
+                      },
                     );
                   },
                 ),

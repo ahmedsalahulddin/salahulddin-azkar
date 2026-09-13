@@ -279,15 +279,26 @@ class _QuranTranslationSurahScreenState
   int? _speakingAyah;
   int _session = 0; // incremented on each stop to cancel in-flight plays
 
+  // Scroll
+  final _scrollController = ScrollController();
+  final Map<int, GlobalKey> _ayahKeys = {};
+
+  // Language — can be changed from within this screen
+  late String _langCode;
+
   @override
   void initState() {
     super.initState();
+    _langCode = widget.langCode;
     _initTts();
     Future.wait([_loadArabic(), _loadTranslation()]);
   }
 
+  String get _langName =>
+      _langs.firstWhere((l) => l.code == _langCode).name;
+
   Future<void> _initTts() async {
-    final locale = _ttsLocale[widget.langCode] ?? 'en-US';
+    final locale = _ttsLocale[_langCode] ?? 'en-US';
     await _tts.setLanguage(locale);
     await _tts.setSpeechRate(0.45);
   }
@@ -299,52 +310,88 @@ class _QuranTranslationSurahScreenState
     if (mounted) setState(() => _speakingAyah = null);
   }
 
-  Future<void> _speak(int ayahNum, String? trans) async {
-    if (_speakingAyah == ayahNum) {
-      await _stopAll();
-      return;
-    }
+  // Plays starting from [startIndex] and auto-advances through the surah.
+  Future<void> _speakFrom(int startIndex) async {
     await _stopAll();
     if (!_arabicOn && !_transOn) return;
     final s = ++_session;
-    if (!mounted) return;
-    setState(() => _speakingAyah = ayahNum);
 
-    // 1. Arabic recitation
-    if (_arabicOn) {
-      try {
-        await _arPlayer.setUrl(RecitationService.urlFor(
-          reciterId: _reciter.id,
-          surah: widget.info.number,
-          ayah: ayahNum,
-        ));
-        if (s != _session || !mounted) return;
-        await _arPlayer.play();
-        await _arPlayer.playerStateStream.firstWhere((st) =>
-            s != _session ||
-            st.processingState == ProcessingState.completed ||
-            st.processingState == ProcessingState.idle);
-      } catch (_) {}
-    }
+    final ayahs = _surah?.ayahs ?? [];
+    for (int i = startIndex; i < ayahs.length; i++) {
+      if (s != _session || !mounted) return;
 
-    // 2. Translation TTS
-    if (s != _session || !mounted) return;
-    if (_transOn && trans != null) {
-      bool done = false;
-      _tts.setCompletionHandler(() { done = true; });
-      _tts.setCancelHandler(() { done = true; });
-      await _tts.speak(trans);
-      // Wait until TTS finishes or session is cancelled
-      while (!done && s == _session && mounted) {
-        await Future<void>.delayed(const Duration(milliseconds: 100));
+      final ayah = ayahs[i];
+      final trans = (_translation != null && i < _translation!.length)
+          ? _translation![i]
+          : null;
+
+      if (mounted) {
+        setState(() => _speakingAyah = ayah.number);
+        _scrollToAyah(i, ayah.number);
+      }
+
+      // 1. Arabic recitation
+      if (_arabicOn) {
+        try {
+          await _arPlayer.setUrl(RecitationService.urlFor(
+            reciterId: _reciter.id,
+            surah: widget.info.number,
+            ayah: ayah.number,
+          ));
+          if (s != _session || !mounted) return;
+          await _arPlayer.play();
+          // Wait for completion — skip idle (initial state) to avoid instant return.
+          await _arPlayer.playerStateStream.firstWhere((st) =>
+              s != _session ||
+              st.processingState == ProcessingState.completed);
+        } catch (_) {}
+      }
+
+      // 2. Translation TTS
+      if (s != _session || !mounted) return;
+      if (_transOn && trans != null) {
+        bool done = false;
+        _tts.setCompletionHandler(() { done = true; });
+        _tts.setCancelHandler(() { done = true; });
+        await _tts.speak(trans);
+        while (!done && s == _session && mounted) {
+          await Future<void>.delayed(const Duration(milliseconds: 100));
+        }
       }
     }
 
     if (s == _session && mounted) setState(() => _speakingAyah = null);
   }
 
+  void _scrollToAyah(int listIndex, int ayahNumber) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final ctx = _ayahKeys[ayahNumber]?.currentContext;
+      if (ctx != null) {
+        Scrollable.ensureVisible(
+          ctx,
+          duration: const Duration(milliseconds: 350),
+          curve: Curves.easeInOut,
+          alignment: 0.15,
+        );
+      } else if (_scrollController.hasClients) {
+        // Item not built yet — jump to estimated position to force it into view
+        final bannerOffset = _translationFailed ? 1 : 0;
+        const avgCardHeight = 220.0;
+        final pos = ((listIndex + bannerOffset) * avgCardHeight + 8)
+            .clamp(0.0, _scrollController.position.maxScrollExtent);
+        _scrollController.animateTo(
+          pos,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
   @override
   void dispose() {
+    _scrollController.dispose();
     _arPlayer.dispose();
     _tts.stop();
     super.dispose();
@@ -360,7 +407,7 @@ class _QuranTranslationSurahScreenState
   }
 
   Future<void> _loadTranslation() async {
-    final trans = await _fetchTranslation(widget.langCode, widget.info.number);
+    final trans = await _fetchTranslation(_langCode, widget.info.number);
     if (!mounted) return;
     setState(() {
       _translation = trans;
@@ -370,6 +417,59 @@ class _QuranTranslationSurahScreenState
   }
 
   bool get _loading => _loadingArabic || _loadingTranslation;
+
+  void _pickLang() {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppColors.blackCard,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+      ),
+      builder: (ctx) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Padding(
+                padding: EdgeInsets.fromLTRB(20, 16, 20, 4),
+                child: Text('اختر اللغة',
+                    style: TextStyle(color: AppColors.gold, fontSize: 15)),
+              ),
+              for (final lang in _langs)
+                ListTile(
+                  leading: Icon(
+                    lang.code == _langCode
+                        ? Icons.radio_button_checked
+                        : Icons.radio_button_unchecked,
+                    color: lang.code == _langCode
+                        ? AppColors.gold
+                        : AppColors.textMuted,
+                    size: 19,
+                  ),
+                  title: Text(lang.name,
+                      style: const TextStyle(
+                          color: AppColors.textPrimary, fontSize: 14)),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    if (lang.code == _langCode) return;
+                    setState(() {
+                      _langCode = lang.code;
+                      _translation = null;
+                      _loadingTranslation = true;
+                      _translationFailed = false;
+                    });
+                    _initTts();
+                    _loadTranslation();
+                  },
+                ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   void _pickReciter() {
     showModalBottomSheet<void>(
@@ -428,7 +528,17 @@ class _QuranTranslationSurahScreenState
           backgroundColor: AppColors.black,
           foregroundColor: AppColors.gold,
           actions: [
-            // Arabic audio toggle
+            // Reciter name — always visible
+            TextButton(
+              onPressed: _pickReciter,
+              child: Text(
+                _reciter.name,
+                style: const TextStyle(
+                    color: AppColors.textGold, fontSize: 11),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            // Arabic audio toggle (default ON)
             IconButton(
               tooltip: 'صوت المقرئ',
               icon: Icon(
@@ -438,18 +548,7 @@ class _QuranTranslationSurahScreenState
               ),
               onPressed: () => setState(() => _arabicOn = !_arabicOn),
             ),
-            // Reciter picker (only meaningful when Arabic is on)
-            if (_arabicOn)
-              TextButton(
-                onPressed: _pickReciter,
-                child: Text(
-                  _reciter.name,
-                  style: const TextStyle(
-                      color: AppColors.textGold, fontSize: 11),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            // Translation TTS toggle
+            // Translation TTS toggle (default ON)
             IconButton(
               tooltip: 'صوت الترجمة',
               icon: Icon(
@@ -459,12 +558,21 @@ class _QuranTranslationSurahScreenState
               ),
               onPressed: () => setState(() => _transOn = !_transOn),
             ),
+            // Language selector
+            TextButton.icon(
+              icon: const Icon(Icons.language, size: 17),
+              label: Text(_langName,
+                  style: const TextStyle(fontSize: 13)),
+              style: TextButton.styleFrom(foregroundColor: AppColors.gold),
+              onPressed: _pickLang,
+            ),
           ],
         ),
         body: _loading
             ? const Center(
                 child: CircularProgressIndicator(color: AppColors.gold))
             : ListView.builder(
+                controller: _scrollController,
                 padding: const EdgeInsets.fromLTRB(14, 8, 14, 32),
                 itemCount:
                     (_surah?.ayahs.length ?? 0) + (_translationFailed ? 1 : 0),
@@ -473,12 +581,13 @@ class _QuranTranslationSurahScreenState
                     return _errorBanner();
                   }
                   final offset = _translationFailed ? 1 : 0;
-                  final ayah = _surah!.ayahs[i - offset];
+                  final idx = i - offset;
+                  final ayah = _surah!.ayahs[idx];
                   final trans =
-                      (_translation != null && (i - offset) < _translation!.length)
-                          ? _translation![i - offset]
+                      (_translation != null && idx < _translation!.length)
+                          ? _translation![idx]
                           : null;
-                  return _ayahCard(ayah, trans);
+                  return _ayahCard(ayah, trans, idx);
                 },
               ),
       ),
@@ -520,10 +629,13 @@ class _QuranTranslationSurahScreenState
     );
   }
 
-  Widget _ayahCard(Ayah ayah, String? trans) {
+  Widget _ayahCard(Ayah ayah, String? trans, int index) {
     final speaking = _speakingAyah == ayah.number;
+    final anySpeaking = _speakingAyah != null;
     final canPlay = _arabicOn || (_transOn && trans != null);
+    final key = _ayahKeys.putIfAbsent(ayah.number, GlobalKey.new);
     return Container(
+      key: key,
       margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -553,7 +665,9 @@ class _QuranTranslationSurahScreenState
               const Spacer(),
               if (canPlay)
                 GestureDetector(
-                  onTap: () => _speak(ayah.number, trans),
+                  onTap: () => anySpeaking && speaking
+                      ? _stopAll()
+                      : _speakFrom(index),
                   child: Icon(
                     speaking
                         ? Icons.stop_circle_outlined

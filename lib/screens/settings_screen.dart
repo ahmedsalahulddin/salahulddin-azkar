@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../constants/theme.dart';
 import '../data/quran_data.dart';
 import '../data/adhans.dart';
+import '../l10n/strings.dart';
+import '../services/app_locale.dart';
 import '../services/daily_reminders.dart';
 import '../services/dhikr_reminder.dart';
 import '../services/notification_service.dart';
@@ -43,23 +45,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    return ValueListenableBuilder<String>(
+      valueListenable: AppLocale.locale,
+      builder: (context, _, __) => _buildContent(context),
+    );
+  }
+
+  Widget _buildContent(BuildContext context) {
     final previewSize = _fontSize == 'small' ? 18.0 : _fontSize == 'large' ? 28.0 : 22.0;
 
     final body = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-
-                // Font size section
-                _sectionTitle('حجم الخط'),
+                _sectionTitle(t('settings.fontSize')),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Row(
                     children: [
-                      _fontBtn('صغير', 'small'),
+                      _fontBtn(t('settings.fontSize.small'), 'small'),
                       const SizedBox(width: 8),
-                      _fontBtn('متوسط', 'medium'),
+                      _fontBtn(t('settings.fontSize.medium'), 'medium'),
                       const SizedBox(width: 8),
-                      _fontBtn('كبير', 'large'),
+                      _fontBtn(t('settings.fontSize.large'), 'large'),
                     ],
                   ),
                 ),
@@ -78,20 +85,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     textAlign: TextAlign.center,
                   ),
                 ),
-
-                // Everything, quieted at once.
                 _muteAll(),
-
-                // Prayer times
-                _sectionTitle('حساب مواقيت الصلاة'),
+                _sectionTitle(t('settings.prayerCalc')),
                 _prayerMethod(),
                 const SizedBox(height: 10),
                 _asrSchool(),
                 const SizedBox(height: 10),
                 _alertsRow(),
-
-                // Notifications
-                _sectionTitle('التذكيرات'),
+                _sectionTitle(t('settings.reminders')),
                 _notificationHealth(),
                 const SizedBox(height: 10),
                 _dhikrReminder(),
@@ -99,8 +100,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _verseReminder(),
                 const SizedBox(height: 10),
                 _adhkarWindow(
-                  title: 'أذكار الصباح',
-                  note: 'من بعد الفجر وحتى ما قبل الظهر',
+                  title: t('settings.adhkar.morning.title'),
+                  note: t('settings.adhkar.morning.note'),
                   on: DailyReminders.morningOn,
                   at: DailyReminders.morningAt,
                   window: DailyReminders.morningWindow,
@@ -108,8 +109,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 const SizedBox(height: 10),
                 _adhkarWindow(
-                  title: 'أذكار المساء',
-                  note: 'من بعد العصر وحتى المغرب',
+                  title: t('settings.adhkar.evening.title'),
+                  note: t('settings.adhkar.evening.note'),
                   on: DailyReminders.eveningOn,
                   at: DailyReminders.eveningAt,
                   window: DailyReminders.eveningWindow,
@@ -118,7 +119,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ],
     );
 
-    // Embedded, the caller owns the page and its scrolling.
     if (widget.embedded) return body;
 
     return Directionality(
@@ -126,12 +126,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
-          title: const Text('الإعدادات'),
+          title: Text(t('settings.reminders')),
           backgroundColor: AppColors.black,
           foregroundColor: AppColors.gold,
         ),
         body: SafeArea(child: SingleChildScrollView(child: body)),
-
       ),
     );
   }
@@ -221,10 +220,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   Expanded(
                     child: Text(
                       blocked
-                          ? 'الجوال يمنع إشعارات التطبيق'
+                          ? t('settings.notif.blocked')
                           : allOn
-                              ? 'التنبيهات مُشغّلة'
-                              : 'تنبيهات الصلاة والأذكار',
+                              ? t('settings.notif.allOn')
+                              : t('settings.notif.label'),
                       style: TextStyle(
                           color: blocked
                               ? AppColors.error
@@ -237,18 +236,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
               const SizedBox(height: 4),
               Text(
                 blocked
-                    ? 'لن يصل شيء حتى تسمح بها من إعدادات الجوال.'
+                    ? t('settings.notif.blockedNote')
                     : (prayersOn || dhikrOn) && _pending == 0
-                        ? 'الإعدادات مُشغّلة لكن النظام لا يحمل أي تنبيه '
-                            'مجدول. افتح الرئيسية مرة ليُعاد ضبطها.'
+                        ? t('settings.notif.staleNote')
                         : allOn
-                        ? 'مواقيت الصلاة، وتنبيه قبلها بـ'
-                            '${QuranService.toArabicDigits(PrayerAlerts.lead.value)}'
-                            ' دقيقة، وذكر خلال اليوم.'
+                        ? t('settings.notif.leadNote').replaceFirst('%s',
+                            QuranService.toArabicDigits(PrayerAlerts.lead.value))
                         : prayersOn || dhikrOn
-                            ? 'بعضها مُشغّل. اضغط لتشغيل الباقي.'
-                            : 'شغّلها كلها بضغطة: مواقيت الصلاة، وتنبيه قبلها، '
-                                'وذكر أو دعاء يصلك خلال اليوم.',
+                            ? t('settings.notif.someOn')
+                            : t('settings.notif.allOff'),
                 style: const TextStyle(
                     color: AppColors.textMuted, fontSize: 11, height: 1.7),
               ),
@@ -259,9 +255,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   // nothing scheduled, and until now there was no way to see
                   // which of the two was wrong.
                   _pending == 0
-                      ? 'لا يوجد تنبيه مجدول الآن'
-                      : 'مجدول في النظام: '
-                          '${QuranService.toArabicDigits(_pending!)} تنبيه',
+                      ? t('settings.notif.noAlarms')
+                      : t('settings.notif.alarmCount').replaceFirst(
+                          '%s', QuranService.toArabicDigits(_pending!)),
                   style: TextStyle(
                     color: _pending == 0 && (prayersOn || dhikrOn)
                         ? AppColors.error
@@ -275,7 +271,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 // 6:55, with nothing anywhere saying why.
                 if (NotificationService.zoneName.isNotEmpty)
                   Text(
-                    'التوقيت المعتمد: ${NotificationService.zoneName}',
+                    t('settings.notif.timezone').replaceFirst('%s', NotificationService.zoneName),
                     style: const TextStyle(
                         color: AppColors.textMuted, fontSize: 10.5),
                   ),
@@ -286,7 +282,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   if (blocked)
                     Expanded(
                       child: _healthButton(
-                        'افتح إعدادات التطبيق',
+                        t('settings.notif.openApp'),
                         Icons.settings,
                         // The app has no notification-settings opener of its
                         // own; geolocator's lands on the app's own page in the
@@ -298,20 +294,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   else ...[
                     Expanded(
                       child: _healthButton(
-                        allOn ? 'أوقف التنبيهات' : 'شغّل التنبيهات',
+                        allOn ? t('settings.notif.turnOff') : t('settings.notif.turnOn'),
                         allOn ? Icons.stop : Icons.play_arrow,
                         allOn ? _turnOffAlerts : _turnOnAlerts,
                       ),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: _healthButton(
-                          'جرّب الآن', Icons.notifications, _tryNow),
+                      child: _healthButton(t('settings.notif.tryNow'), Icons.notifications, _tryNow),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: _healthButton('بعد دقيقة', Icons.schedule,
-                          _trySchedule),
+                      child: _healthButton(t('settings.notif.inMinute'), Icons.schedule, _trySchedule),
                     ),
                   ],
                 ],
@@ -356,9 +350,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await NotificationService.requestPermission();
     final sent = await NotificationService.sendTest();
     if (!mounted) return;
-    _say(sent
-        ? 'أُرسل إشعار تجريبي — إن لم يصلك فالجوال يمنعه.'
-        : 'تعذّر إرسال الإشعار.');
+    _say(sent ? t('settings.notif.testSent') : t('settings.notif.testFail'));
     // The reader may have just granted the permission, so ask again.
     setState(() => _allowed = NotificationService.allowed());
     await _countPending();
@@ -374,9 +366,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await NotificationService.requestPermission();
     final set = await NotificationService.sendScheduledTest();
     if (!mounted) return;
-    _say(set
-        ? 'سيصلك تنبيه بعد دقيقة. أغلق الشاشة وانتظره.'
-        : 'تعذّر جدولة الإشعار: ${NotificationService.lastScheduleError}');
+    _say(set ? t('settings.notif.scheduledSent') : t('settings.notif.scheduleFail').replaceFirst('%s', NotificationService.lastScheduleError));
     await _countPending();
   }
 
@@ -390,7 +380,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await PrayerAlerts.setAll(AlertWhen.onTime, notify);
     await DhikrReminder.apply(on: true);
     if (!mounted) return;
-    _say('شُغّلت تنبيهات الصلاة وقبلها، وتذكير الذكر.');
+    _say(t('settings.notif.turnedOn'));
     await _countPending();
   }
 
@@ -402,7 +392,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await PrayerAlerts.setAll(AlertWhen.onTime, AlertMode.off);
     await DhikrReminder.apply(on: false);
     if (!mounted) return;
-    _say('أُوقفت التنبيهات.');
+    _say(t('settings.notif.turnedOff'));
     await _countPending();
   }
 
@@ -458,10 +448,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(method.label,
+                          Text(t('prayer.method.${method.id}.label'),
                               style: const TextStyle(
                                   color: AppColors.textPrimary, fontSize: 13)),
-                          Text(method.where,
+                          Text(t('prayer.method.${method.id}.where'),
                               style: const TextStyle(
                                   color: AppColors.textMuted, fontSize: 10)),
                         ],
@@ -477,10 +467,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(chosen.label,
+                    Text(t('prayer.method.${chosen.id}.label'),
                         style: const TextStyle(
                             color: AppColors.gold, fontSize: 14)),
-                    Text(chosen.where,
+                    Text(t('prayer.method.${chosen.id}.where'),
                         style: const TextStyle(
                             color: AppColors.textMuted, fontSize: 11)),
                   ],
@@ -510,11 +500,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Padding(
-              padding: EdgeInsets.only(right: 2, bottom: 8),
-              child: Text('وقت العصر',
+            Padding(
+              padding: const EdgeInsets.only(right: 2, bottom: 8),
+              child: Text(t('settings.asrTime'),
                   style:
-                      TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+                      const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
             ),
             Row(
               children: [
@@ -539,14 +529,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                           child: Column(
                             children: [
-                              Text(school.label,
+                              Text(t('asr.school.${school.id}.label'),
                                   style: TextStyle(
                                       color: school == chosen
                                           ? AppColors.gold
                                           : AppColors.textMuted,
                                       fontSize: 13,
                                       fontWeight: FontWeight.bold)),
-                              Text(school.note,
+                              Text(t('asr.school.${school.id}.note'),
                                   style: const TextStyle(
                                       color: AppColors.textMuted,
                                       fontSize: 10)),
@@ -592,13 +582,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('إشعارات بالصوت',
-                        style: TextStyle(
+                    Text(t('settings.sound.title'),
+                        style: const TextStyle(
                             color: AppColors.textPrimary, fontSize: 14)),
                     Text(
                       loud
-                          ? 'بعض التنبيهات تصدر صوتاً'
-                          : 'كل التنبيهات صامتة الآن',
+                          ? t('settings.sound.on')
+                          : t('settings.sound.off'),
                       style: const TextStyle(
                           color: AppColors.textMuted, fontSize: 11),
                     ),
@@ -644,13 +634,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('ذكر على شاشتك',
-                          style: TextStyle(
+                      Text(t('settings.dhikr.title'),
+                          style: const TextStyle(
                               color: AppColors.textPrimary, fontSize: 14)),
                       Text(
                         on
-                            ? 'يصلك خلال اليوم، ويتبدّل في كل مرة'
-                            : 'مغلق',
+                            ? t('settings.dhikr.on')
+                            : t('settings.dhikr.off'),
                         style: const TextStyle(
                             color: AppColors.textMuted, fontSize: 11),
                       ),
@@ -666,9 +656,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             if (on) ...[
               const Divider(color: AppColors.goldBorder, height: 20),
-              const Text('متى يصلك',
+              Text(t('settings.dhikr.when'),
                   style:
-                      TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                      const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
               const SizedBox(height: 6),
               ValueListenableBuilder<DhikrRhythm>(
                 valueListenable: DhikrReminder.rhythm,
@@ -683,7 +673,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 3),
                               child: _pill(
-                                label: choice.label,
+                                label: t('dhikr.rhythm.${choice.name}.label'),
                                 on: choice == beat,
                                 onTap: () =>
                                     DhikrReminder.apply(beat: choice),
@@ -693,7 +683,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ],
                     ),
                     const SizedBox(height: 4),
-                    Text(beat.note,
+                    Text(t('dhikr.rhythm.${beat.name}.note'),
                         style: const TextStyle(
                             color: AppColors.textMuted, fontSize: 10)),
                   ],
@@ -710,9 +700,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               const SizedBox(height: 8),
               _whenTheyArrive(),
               const SizedBox(height: 10),
-              const Text('نوع الذكر',
+              Text(t('settings.dhikr.type'),
                   style:
-                      TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                      const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
               const SizedBox(height: 6),
               _dhikrFlavour(),
             ],
@@ -761,8 +751,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       builder: (context, lead, _) => Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text('قبل الأذان بـ',
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+          Text(t('settings.dhikr.beforeAdhan'),
+              style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
           const SizedBox(height: 6),
           Row(
             children: [
@@ -771,7 +761,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 3),
                     child: _pill(
-                      label: '${QuranService.toArabicDigits(choice)} د',
+                      label: AppLocale.isEn
+                          ? '$choice min'
+                          : '${QuranService.toArabicDigits(choice)} د',
                       on: choice == lead,
                       onTap: () =>
                           DhikrReminder.apply(minutesBefore: choice),
@@ -795,16 +787,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _whenTheyArrive() {
     final slots = DhikrReminder.slotMinutes();
     if (slots.isEmpty) {
-      return const Text('لا يصلك شيء بهذه الإعدادات',
-          style: TextStyle(color: AppColors.error, fontSize: 11));
+      return Text(t('settings.dhikr.noSlots'),
+          style: const TextStyle(color: AppColors.error, fontSize: 11));
     }
 
     String clock(int m) {
       final h = m ~/ 60;
       final hour = h % 12 == 0 ? 12 : h % 12;
+      if (AppLocale.isEn) {
+        final min = (m % 60).toString().padLeft(2, '0');
+        return '$hour:$min ${h >= 12 ? t('account.pm') : t('account.am')}';
+      }
       return '${QuranService.toArabicDigits(hour)}:'
           '${QuranService.toArabicDigits(m % 60).padLeft(2, '٠')}'
-          '${h >= 12 ? 'م' : 'ص'}';
+          '${h >= 12 ? t('account.pm') : t('account.am')}';
     }
 
     final crowded = DhikrReminder.isCrowded;
@@ -813,15 +809,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          'يصلك: ${slots.map(clock).join(' · ')}',
+          t('settings.dhikr.arrives').replaceFirst('%s', slots.map(clock).join(' · ')),
           style: const TextStyle(
               color: AppColors.textMuted, fontSize: 10.5, height: 1.7),
         ),
         if (crowded) ...[
           const SizedBox(height: 3),
           Text(
-            'بينها ${QuranService.toArabicDigits(DhikrReminder.spacing)} دقائق '
-            'فقط — وسّع الساعات أو أنقص العدد.',
+            t('settings.crowded').replaceFirst('%s', QuranService.toArabicDigits(DhikrReminder.spacing)),
             style: const TextStyle(color: AppColors.error, fontSize: 10.5),
           ),
         ],
@@ -833,8 +828,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Text('كم مرة في اليوم',
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+        Text(t('settings.dhikr.count'),
+            style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
         const SizedBox(height: 6),
         ValueListenableBuilder<int>(
           valueListenable: DhikrReminder.perDay,
@@ -858,14 +853,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
         // Nobody wants a buzz at three in the morning.
         Row(
           children: [
-            const Text('بين الساعة',
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+            Text(t('settings.dhikr.between'),
+                style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
             const SizedBox(width: 8),
             _hourPicker(
                 DhikrReminder.fromHour, (h) => DhikrReminder.apply(from: h)),
             const SizedBox(width: 8),
-            const Text('و',
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+            Text(t('settings.dhikr.and'),
+                style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
             const SizedBox(width: 8),
             _hourPicker(
                 DhikrReminder.toHour, (h) => DhikrReminder.apply(to: h)),
@@ -900,7 +895,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           : AppColors.goldBorder),
                 ),
                 child: Text(
-                  flavour.label,
+                  t('dhikr.flavour.${flavour.id}.label'),
                   style: TextStyle(
                     color:
                         flavour == kind ? AppColors.gold : AppColors.textMuted,
@@ -927,9 +922,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           for (var h = 0; h < 24; h++)
             PopupMenuItem(
               value: h,
-              child: Text('${QuranService.toArabicDigits(h)}:٠٠',
-                  style: const TextStyle(
-                      color: AppColors.textPrimary, fontSize: 13)),
+              child: Text(
+                AppLocale.isEn ? '$h:00' : '${QuranService.toArabicDigits(h)}:٠٠',
+                style: const TextStyle(color: AppColors.textPrimary, fontSize: 13),
+              ),
             ),
         ],
         child: Container(
@@ -939,8 +935,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             borderRadius: BorderRadius.circular(8),
             border: Border.all(color: AppColors.goldBorder),
           ),
-          child: Text('${QuranService.toArabicDigits(value)}:٠٠',
-              style: const TextStyle(color: AppColors.gold, fontSize: 13)),
+          child: Text(
+            AppLocale.isEn ? '$value:00' : '${QuranService.toArabicDigits(value)}:٠٠',
+            style: const TextStyle(color: AppColors.gold, fontSize: 13),
+          ),
         ),
       ),
     );
@@ -955,8 +953,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _switchRow(
-              title: 'آية وتفسيرها على شاشتك',
-              subtitle: on ? 'مرتين في اليوم' : 'مغلق',
+              title: t('settings.verse.title'),
+              subtitle: on ? t('settings.verse.on') : t('settings.verse.off'),
               value: on,
               onChanged: (v) => DailyReminders.setVerse(on: v),
             ),
@@ -964,15 +962,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
               const Divider(color: AppColors.goldBorder, height: 20),
               Row(
                 children: [
-                  const Text('الأولى',
-                      style: TextStyle(
+                  Text(t('settings.verse.first'),
+                      style: const TextStyle(
                           color: AppColors.textSecondary, fontSize: 12)),
                   const SizedBox(width: 8),
                   _timePicker(DailyReminders.verseFirst, 0, 24 * 60 - 1,
                       (t) => DailyReminders.setVerse(first: t)),
                   const Spacer(),
-                  const Text('الثانية',
-                      style: TextStyle(
+                  Text(t('settings.verse.second'),
+                      style: const TextStyle(
                           color: AppColors.textSecondary, fontSize: 12)),
                   const SizedBox(width: 8),
                   _timePicker(DailyReminders.verseSecond, 0, 24 * 60 - 1,
@@ -1003,7 +1001,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           children: [
             _switchRow(
               title: title,
-              subtitle: enabled ? note : 'مغلق',
+              subtitle: enabled ? note : t('settings.dhikr.off'),
               value: enabled,
               onChanged: (v) => apply(v, null),
             ),
@@ -1011,8 +1009,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               const Divider(color: AppColors.goldBorder, height: 20),
               Row(
                 children: [
-                  const Text('الوقت',
-                      style: TextStyle(
+                  Text(t('settings.time'),
+                      style: const TextStyle(
                           color: AppColors.textSecondary, fontSize: 12)),
                   const SizedBox(width: 10),
                   _timePicker(at, window.earliest, window.latest,
@@ -1138,13 +1136,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('تنبيهات أوقات الصلاة',
-                          style: TextStyle(
+                      Text(t('settings.alerts.title'),
+                          style: const TextStyle(
                               color: AppColors.textPrimary, fontSize: 14)),
                       Text(
                         on == 0
-                            ? 'لا تنبيه مفعّل'
-                            : 'مفعّل لـ ${QuranService.toArabicDigits(on)} من عشرة',
+                            ? t('settings.alerts.none')
+                            : t('settings.alerts.on').replaceFirst(
+                                '%s', QuranService.toArabicDigits(on)),
                         style: const TextStyle(
                             color: AppColors.textMuted, fontSize: 11),
                       ),

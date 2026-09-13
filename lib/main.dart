@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:in_app_update/in_app_update.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'constants/theme.dart';
@@ -145,6 +146,7 @@ class _MainNavigationState extends State<MainNavigation> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _checkNotifications();
         _checkForUpdate();
+        Future<void>.delayed(const Duration(milliseconds: 600), _checkWhatsNew);
       });
     }
   }
@@ -223,6 +225,135 @@ class _MainNavigationState extends State<MainNavigation> {
                       fontWeight: FontWeight.bold)),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  static const _whatsNewKey = 'whats_new_seen';
+
+  Future<void> _checkWhatsNew() async {
+    if (!mounted) return;
+    final info = await PackageInfo.fromPlatform();
+    final version = info.version; // e.g. "1.1.0"
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getString(_whatsNewKey) == version) return;
+    await prefs.setString(_whatsNewKey, version);
+    if (!mounted) return;
+    _showWhatsNew(version);
+  }
+
+  void _showWhatsNew(String version) {
+    final isEn = AppLocale.isEn;
+    final items = isEn
+        ? [
+            ('🌍', 'Quran Translations', 'Choose from 8 languages with auto-playback'),
+            ('🎙️', 'Full Recitation', 'Reciter → Translation → next verse, automatically'),
+            ('📜', 'Auto-scroll', 'The current verse always stays in view'),
+            ('🌐', 'Full English UI', 'Every section of the app is now translated'),
+          ]
+        : [
+            ('🌍', 'ترجمات القرآن', 'اختر من ٨ لغات مع التلاوة والترجمة الصوتية'),
+            ('🎙️', 'تلاوة متكاملة', 'مقرئ ثم ترجمة، انتقال تلقائي للآية التالية'),
+            ('📜', 'تمرير تلقائي', 'الآية الجارية دائماً في المنظور'),
+            ('🌐', 'واجهة بالإنجليزي', 'كل أقسام التطبيق مترجمة بالكامل'),
+          ];
+
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppColors.blackCard,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Directionality(
+        textDirection: isEn ? TextDirection.ltr : TextDirection.rtl,
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppColors.goldMuted,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: AppColors.goldBorder),
+                      ),
+                      child: Text('v$version',
+                          style: const TextStyle(
+                              color: AppColors.gold,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold)),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      isEn ? "What's New" : 'ما الجديد',
+                      style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 18),
+                for (final (icon, title, sub) in items) ...[
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(icon, style: const TextStyle(fontSize: 22)),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(title,
+                                style: const TextStyle(
+                                    color: AppColors.textPrimary,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 2),
+                            Text(sub,
+                                style: const TextStyle(
+                                    color: AppColors.textMuted,
+                                    fontSize: 12,
+                                    height: 1.4)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                ],
+                const SizedBox(height: 4),
+                SizedBox(
+                  width: double.infinity,
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    style: TextButton.styleFrom(
+                      backgroundColor: AppColors.goldMuted,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: const BorderSide(color: AppColors.goldBorder),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: Text(
+                      isEn ? 'Got it' : 'فهمت',
+                      style: const TextStyle(
+                          color: AppColors.gold,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

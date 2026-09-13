@@ -6,7 +6,7 @@
     "enabled": true
   },
   "assets": {
-    "directory": "build/web"
+    "directory": "web"
   },
   "compatibility_flags": [
     "nodejs_compat"
@@ -15,6 +15,11 @@
     {
       "pattern": "islamic-azkar.yallanow.app",
       "zone_name": "yallanow.app",
+      "custom_domain": true
+    },
+    {
+      "pattern": "azkar.salahulddin.com",
+      "zone_name": "salahulddin.com",
       "custom_domain": true
     }
   ]

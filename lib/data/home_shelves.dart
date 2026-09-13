@@ -121,7 +121,7 @@ HomeShelf _adhkarShelf() {
       for (final category in categories)
         ShelfItem(
           icon: category.icon,
-          title: category.name,
+          title: t('adhkar.cat.${category.id}'),
           subtitle: '${category.count} ${t('adhkar.countSuffix')}',
           open: (c) => _push(
             c,
@@ -198,16 +198,16 @@ HomeShelf _lessonsShelf() => HomeShelf(
       all: () => const LessonsScreen(),
       pinned: ShelfItem(
         icon: Lessons.all.first.icon,
-        title: Lessons.all.first.title,
-        subtitle: Lessons.all.first.summary,
+        title: t('lesson.${Lessons.all.first.id}.title'),
+        subtitle: t('lesson.${Lessons.all.first.id}.summary'),
         open: (c) => _push(c, () => LessonScreen(lesson: Lessons.all.first)),
       ),
       rest: [
         for (final lesson in Lessons.all.skip(1))
           ShelfItem(
             icon: lesson.icon,
-            title: lesson.title,
-            subtitle: lesson.summary,
+            title: t('lesson.${lesson.id}.title'),
+            subtitle: t('lesson.${lesson.id}.summary'),
             open: (c) => _push(c, () => LessonScreen(lesson: lesson)),
           ),
         ShelfItem(
@@ -222,8 +222,8 @@ HomeShelf _lessonsShelf() => HomeShelf(
 HomeShelf _cardsShelf() {
   ShelfItem card(CardShelf shelf) => ShelfItem(
         icon: shelf.icon,
-        title: shelf.title,
-        subtitle: shelf.subtitle,
+        title: t('cardshelf.${shelf.id}.title'),
+        subtitle: t('cardshelf.${shelf.id}.subtitle'),
         open: (c) => _push(c, () => CardsScreen(shelf: shelf)),
       );
 
@@ -250,7 +250,7 @@ HomeShelf _librarySheet() {
 
   ShelfItem card(IslamicBook book) => ShelfItem(
         icon: '📕',
-        title: book.title,
+        title: t('book.${book.id}'),
         subtitle: book.isBundled
             ? '${book.hadithCount} ${t('card.hadithCount')}'
             : t('card.needsDownload'),
