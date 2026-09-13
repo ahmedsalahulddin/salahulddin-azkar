@@ -4,7 +4,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:http/http.dart' as http;
-import 'package:just_audio/just_audio.dart' show ProcessingState;
+import 'package:just_audio/just_audio.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../constants/theme.dart';
@@ -287,9 +288,11 @@ class _QuranTranslationSurahScreenState
   Reciter _reciter = RecitationService.defaultReciter;
   bool _arabicOn = true;
   bool _transOn = true;
-  int _repeatCount = 1; // 1-5: how many times to repeat the Arabic recitation
+  int _repeatCount = 1; // 1-5: surah-wide repeat for continuous playback
+  final Map<int, int> _ayahRepeat = {}; // per-ayah repeat, defaults to 1
   int? _speakingAyah;
   int _session = 0; // incremented on each stop to cancel in-flight plays
+  bool _audioErrorShown = false;
 
   // Scroll
   final _scrollController = ScrollController();
@@ -322,7 +325,85 @@ class _QuranTranslationSurahScreenState
     if (mounted) setState(() => _speakingAyah = null);
   }
 
-  // Plays starting from [startIndex] and auto-advances through the surah.
+  bool _cancelled(int s) => s != _session || !mounted;
+
+  void _toast(String msg) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+  // just_audio_background refuses any source without a MediaItem tag, so a
+  // bare setUrl() throws before a byte is fetched.
+  Future<void> _playArabicOnce(Ayah ayah, int s) async {
+    final url = RecitationService.urlFor(
+      reciterId: _reciter.id,
+      surah: widget.info.number,
+      ayah: ayah.number,
+    );
+    await AppAudio.player.stop();
+    if (_cancelled(s)) return;
+    await AppAudio.player.setAudioSource(
+      AudioSource.uri(
+        Uri.parse(url),
+        tag: MediaItem(
+          id: 'trans:${_reciter.id}:${widget.info.number}:${ayah.number}',
+          title:
+              '${widget.info.name} — الآية ${QuranService.toArabicDigits(ayah.number)}',
+          artist: _reciter.name,
+          album: 'القرآن الكريم',
+        ),
+      ),
+    );
+    if (_cancelled(s)) return;
+    await AppAudio.player.play();
+    await for (final st in AppAudio.player.processingStateStream) {
+      if (_cancelled(s)) return;
+      if (st == ProcessingState.completed || st == ProcessingState.idle) {
+        break;
+      }
+    }
+  }
+
+  // Plays the Arabic [times] times; returns false if playback failed.
+  Future<bool> _playArabic(Ayah ayah, int times, int s) async {
+    for (int r = 0; r < times; r++) {
+      if (_cancelled(s)) return false;
+      try {
+        await _playArabicOnce(ayah, s);
+      } catch (_) {
+        if (!_audioErrorShown) {
+          _audioErrorShown = true;
+          _toast('تعذّر تشغيل التلاوة — تحقّق من الاتصال');
+        }
+        return false;
+      }
+    }
+    return true;
+  }
+
+  Future<void> _speakTranslation(String trans, int s) async {
+    bool done = false;
+    _tts.setCompletionHandler(() { done = true; });
+    _tts.setCancelHandler(() { done = true; });
+    _tts.setErrorHandler((_) { done = true; });
+    await _tts.speak(trans);
+    while (!done && !_cancelled(s)) {
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+    }
+  }
+
+  void _markSpeaking(int index, Ayah ayah) {
+    if (!mounted) return;
+    setState(() => _speakingAyah = ayah.number);
+    _scrollToAyah(index, ayah.number);
+  }
+
+  void _clearSpeaking(int s) {
+    if (s == _session && mounted) setState(() => _speakingAyah = null);
+  }
+
+  // Continuous playback from [startIndex] through the surah, using the
+  // app-bar settings (reciter on/off, surah-wide repeat, translation on/off).
   Future<void> _speakFrom(int startIndex) async {
     await _stopAll();
     if (!_arabicOn && !_transOn) return;
@@ -330,57 +411,37 @@ class _QuranTranslationSurahScreenState
 
     final ayahs = _surah?.ayahs ?? [];
     for (int i = startIndex; i < ayahs.length; i++) {
-      if (s != _session || !mounted) return;
-
+      if (_cancelled(s)) return;
       final ayah = ayahs[i];
       final trans = (_translation != null && i < _translation!.length)
           ? _translation![i]
           : null;
+      _markSpeaking(i, ayah);
 
-      if (mounted) {
-        setState(() => _speakingAyah = ayah.number);
-        _scrollToAyah(i, ayah.number);
-      }
-
-      // 1. Arabic recitation — repeated _repeatCount times
       if (_arabicOn && _reciter.isPerAyah) {
-        final url = RecitationService.urlFor(
-          reciterId: _reciter.id,
-          surah: widget.info.number,
-          ayah: ayah.number,
-        );
-        for (int r = 0; r < _repeatCount; r++) {
-          if (s != _session || !mounted) return;
-          try {
-            await AppAudio.player.stop();
-            if (s != _session || !mounted) return;
-            await AppAudio.player.setUrl(url);
-            if (s != _session || !mounted) return;
-            await AppAudio.player.play();
-            await for (final state
-                in AppAudio.player.processingStateStream) {
-              if (s != _session || !mounted) return;
-              if (state == ProcessingState.completed ||
-                  state == ProcessingState.idle) { break; }
-            }
-          } catch (_) {}
-        }
+        await _playArabic(ayah, _repeatCount, s);
       }
-
-      // 2. Translation TTS
-      if (s != _session || !mounted) return;
-      if (_transOn && trans != null) {
-        bool done = false;
-        _tts.setCompletionHandler(() { done = true; });
-        _tts.setCancelHandler(() { done = true; });
-        await _tts.speak(trans);
-        while (!done && s == _session && mounted) {
-          await Future<void>.delayed(const Duration(milliseconds: 100));
-        }
-      }
+      if (_cancelled(s)) return;
+      if (_transOn && trans != null) await _speakTranslation(trans, s);
     }
+    _clearSpeaking(s);
+  }
 
-    if (s == _session && mounted) setState(() => _speakingAyah = null);
+  // One ayah only, repeated as many times as its own card counter says.
+  Future<void> _playAyahArabic(int index, Ayah ayah) async {
+    await _stopAll();
+    final s = ++_session;
+    _markSpeaking(index, ayah);
+    await _playArabic(ayah, _ayahRepeat[ayah.number] ?? 1, s);
+    _clearSpeaking(s);
+  }
+
+  Future<void> _playAyahTranslation(int index, Ayah ayah, String trans) async {
+    await _stopAll();
+    final s = ++_session;
+    _markSpeaking(index, ayah);
+    await _speakTranslation(trans, s);
+    _clearSpeaking(s);
   }
 
   void _scrollToAyah(int listIndex, int ayahNumber) {
@@ -544,78 +605,28 @@ class _QuranTranslationSurahScreenState
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
-          title: Text(widget.info.name),
+          title: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Text(widget.info.name),
+              const SizedBox(width: 6),
+              Text(
+                '(${widget.info.nameEn})',
+                textDirection: TextDirection.ltr,
+                style: const TextStyle(
+                    color: AppColors.textMuted, fontSize: 13),
+              ),
+            ],
+          ),
+          centerTitle: true,
           backgroundColor: AppColors.black,
           foregroundColor: AppColors.gold,
-          actions: [
-            // Reciter name — always visible
-            TextButton(
-              onPressed: _pickReciter,
-              child: Text(
-                _reciter.name,
-                style: const TextStyle(
-                    color: AppColors.textGold, fontSize: 11),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            // Arabic audio toggle
-            IconButton(
-              tooltip: 'صوت المقرئ',
-              icon: Icon(
-                Icons.record_voice_over,
-                color: _arabicOn ? AppColors.gold : AppColors.textMuted,
-                size: 22,
-              ),
-              onPressed: () => setState(() => _arabicOn = !_arabicOn),
-            ),
-            // Repeat counter for Arabic (1→2→3→4→5→1)
-            GestureDetector(
-              onTap: _arabicOn
-                  ? () => setState(() { _repeatCount = _repeatCount % 5 + 1; })
-                  : null,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                margin: const EdgeInsets.symmetric(vertical: 14),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: _arabicOn
-                        ? AppColors.goldBorder
-                        : AppColors.textMuted.withValues(alpha: 0.3),
-                  ),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  '×$_repeatCount',
-                  style: TextStyle(
-                    color: _arabicOn
-                        ? AppColors.gold
-                        : AppColors.textMuted,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 4),
-            // Translation TTS toggle
-            IconButton(
-              tooltip: 'صوت الترجمة',
-              icon: Icon(
-                Icons.translate,
-                color: _transOn ? AppColors.gold : AppColors.textMuted,
-                size: 22,
-              ),
-              onPressed: () => setState(() => _transOn = !_transOn),
-            ),
-            // Language selector
-            TextButton.icon(
-              icon: const Icon(Icons.language, size: 17),
-              label: Text(_langName,
-                  style: const TextStyle(fontSize: 13)),
-              style: TextButton.styleFrom(foregroundColor: AppColors.gold),
-              onPressed: _pickLang,
-            ),
-          ],
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(44),
+            child: _controlsBar(),
+          ),
         ),
         body: _loading
             ? const Center(
@@ -639,6 +650,90 @@ class _QuranTranslationSurahScreenState
                   return _ayahCard(ayah, trans, idx);
                 },
               ),
+      ),
+    );
+  }
+
+  // Surah-wide playback settings: reciter, Arabic on/off, repeat, TTS on/off,
+  // language. The per-ayah buttons on each card use their own counters.
+  Widget _controlsBar() {
+    return Container(
+      height: 44,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: AppColors.goldBorder)),
+      ),
+      child: Row(
+        children: [
+          Flexible(
+            child: TextButton(
+              onPressed: _pickReciter,
+              style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 6)),
+              child: Text(
+                _reciter.name,
+                style: const TextStyle(
+                    color: AppColors.textGold, fontSize: 12),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
+          const Spacer(),
+          IconButton(
+            tooltip: 'صوت المقرئ',
+            visualDensity: VisualDensity.compact,
+            icon: Icon(
+              Icons.record_voice_over,
+              color: _arabicOn ? AppColors.gold : AppColors.textMuted,
+              size: 22,
+            ),
+            onPressed: () => setState(() => _arabicOn = !_arabicOn),
+          ),
+          GestureDetector(
+            onTap: _arabicOn
+                ? () => setState(() { _repeatCount = _repeatCount % 5 + 1; })
+                : null,
+            behavior: HitTestBehavior.opaque,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: _arabicOn
+                      ? AppColors.goldBorder
+                      : AppColors.textMuted.withValues(alpha: 0.3),
+                ),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                '×$_repeatCount',
+                style: TextStyle(
+                  color: _arabicOn ? AppColors.gold : AppColors.textMuted,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          IconButton(
+            tooltip: 'صوت الترجمة',
+            visualDensity: VisualDensity.compact,
+            icon: Icon(
+              Icons.translate,
+              color: _transOn ? AppColors.gold : AppColors.textMuted,
+              size: 22,
+            ),
+            onPressed: () => setState(() => _transOn = !_transOn),
+          ),
+          TextButton.icon(
+            icon: const Icon(Icons.language, size: 16),
+            label: Text(_langName, style: const TextStyle(fontSize: 12)),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.gold,
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+            ),
+            onPressed: _pickLang,
+          ),
+        ],
       ),
     );
   }
@@ -678,10 +773,28 @@ class _QuranTranslationSurahScreenState
     );
   }
 
+  Widget _cardButton({
+    required IconData icon,
+    required String tooltip,
+    required VoidCallback onTap,
+  }) {
+    return Tooltip(
+      message: tooltip,
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+          child: Icon(icon, color: AppColors.textMuted, size: 20),
+        ),
+      ),
+    );
+  }
+
   Widget _ayahCard(Ayah ayah, String? trans, int index) {
     final speaking = _speakingAyah == ayah.number;
-    final anySpeaking = _speakingAyah != null;
     final canPlay = _arabicOn || (_transOn && trans != null);
+    final repeat = _ayahRepeat[ayah.number] ?? 1;
     final key = _ayahKeys.putIfAbsent(ayah.number, GlobalKey.new);
     return Container(
       key: key,
@@ -712,11 +825,55 @@ class _QuranTranslationSurahScreenState
                 ),
               ),
               const Spacer(),
-              if (canPlay)
+              // Per-ayah: reciter once/N times, its own counter, translation.
+              if (_reciter.isPerAyah) ...[
+                _cardButton(
+                  icon: Icons.record_voice_over,
+                  tooltip: 'تشغيل المقرئ',
+                  onTap: () => _playAyahArabic(index, ayah),
+                ),
                 GestureDetector(
-                  onTap: () => anySpeaking && speaking
-                      ? _stopAll()
-                      : _speakFrom(index),
+                  onTap: () => setState(() {
+                    _ayahRepeat[ayah.number] = repeat % 5 + 1;
+                  }),
+                  behavior: HitTestBehavior.opaque,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 6, vertical: 1),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: AppColors.goldBorder),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      '×$repeat',
+                      style: TextStyle(
+                        color: repeat > 1
+                            ? AppColors.gold
+                            : AppColors.textMuted,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+              if (trans != null)
+                _cardButton(
+                  icon: Icons.translate,
+                  tooltip: 'تشغيل الترجمة',
+                  onTap: () => _playAyahTranslation(index, ayah, trans),
+                ),
+              if (canPlay) ...[
+                Container(
+                  width: 1,
+                  height: 18,
+                  margin: const EdgeInsets.symmetric(horizontal: 6),
+                  color: AppColors.goldBorder,
+                ),
+                // Continuous playback from here, per the app-bar settings.
+                GestureDetector(
+                  onTap: () => speaking ? _stopAll() : _speakFrom(index),
+                  behavior: HitTestBehavior.opaque,
                   child: Icon(
                     speaking
                         ? Icons.stop_circle_outlined
@@ -725,6 +882,7 @@ class _QuranTranslationSurahScreenState
                     size: 22,
                   ),
                 ),
+              ],
             ],
           ),
           const SizedBox(height: 10),
