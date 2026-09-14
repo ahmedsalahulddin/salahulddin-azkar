@@ -4,6 +4,8 @@ import '../data/adhkar_data.dart';
 import '../data/hisn_data.dart';
 import '../data/umrah_data.dart';
 import '../data/home_shelves.dart';
+import '../l10n/strings.dart';
+import '../widgets/bilingual_text.dart';
 import '../widgets/tasbih_counter.dart';
 import 'category_screen.dart';
 import 'deceased_screen.dart';
@@ -63,12 +65,12 @@ class AdhkarHomeScreen extends StatelessWidget {
                   children: [
                     Text(cat.icon, style: const TextStyle(fontSize: 32)),
                     const SizedBox(height: 8),
-                    Text(
-                      cat.name,
+                    BilingualText(
+                      tBoth('adhkar.cat.${cat.id}'),
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         color: AppColors.textPrimary,
-                        fontSize: 14,
+                        fontSize: 13,
                         fontWeight: FontWeight.w600,
                       ),
                     ),

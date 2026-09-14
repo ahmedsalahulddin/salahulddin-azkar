@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
+import '../services/app_locale.dart';
 
 class HisnDhikr {
   final int number;
@@ -12,11 +13,16 @@ class HisnDhikr {
   /// ships without audio.
   final int? audioId;
 
+  /// The publisher's own English translation, fetched from the same
+  /// hisnmuslim.com API the audio is served from.
+  final String? english;
+
   const HisnDhikr({
     required this.number,
     required this.text,
     required this.repeat,
     this.audioId,
+    this.english,
   });
 
   factory HisnDhikr.fromJson(Map<String, dynamic> j) => HisnDhikr(
@@ -24,6 +30,7 @@ class HisnDhikr {
         text: j['t'],
         repeat: j['r'] ?? 1,
         audioId: j['au'],
+        english: (j['en'] as String?)?.isEmpty ?? true ? null : j['en'],
       );
 
   bool get hasAudio => audioId != null;
@@ -37,21 +44,31 @@ class HisnDhikr {
 class HisnChapter {
   final int id;
   final String title;
+  final String? titleEn;
   final List<HisnDhikr> items;
 
   const HisnChapter({
     required this.id,
     required this.title,
+    this.titleEn,
     required this.items,
   });
 
   factory HisnChapter.fromJson(Map<String, dynamic> j) => HisnChapter(
         id: j['id'],
         title: j['title'],
+        titleEn: j['titleEn'],
         items: (j['items'] as List)
             .map((e) => HisnDhikr.fromJson(e as Map<String, dynamic>))
             .toList(),
       );
+
+  /// Arabic with the English chapter title in parentheses, once the reader
+  /// has switched to English — same convention as every other card name.
+  String get displayTitle {
+    if (!AppLocale.isEn || titleEn == null) return title;
+    return '$title ($titleEn)';
+  }
 }
 
 /// Hisn al-Muslim (حصن المسلم) by Sa'id bin Ali al-Qahtani — the compilation

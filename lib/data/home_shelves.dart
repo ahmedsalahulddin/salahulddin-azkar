@@ -102,26 +102,26 @@ HomeShelf _adhkarShelf() {
   return HomeShelf(
     key: 'adhkar',
     icon: '📿',
-    title: t('shelf.adhkar.title'),
+    title: tBoth('shelf.adhkar.title'),
     tint: AppColors.goldMuted,
     all: () => const AdhkarHomeScreen(),
     pinned: ShelfItem(
       icon: '🕌',
-      title: t('card.sahih.title'),
-      subtitle: t('card.sahih.sub'),
+      title: tBoth('card.sahih.title'),
+      subtitle: tBoth('card.sahih.sub'),
       open: (c) => _push(c, () => const SahihAdhkarScreen()),
     ),
     rest: [
       ShelfItem(
         icon: '🕋',
-        title: t('card.umrah.title'),
-        subtitle: t('card.umrah.sub'),
+        title: tBoth('card.umrah.title'),
+        subtitle: tBoth('card.umrah.sub'),
         open: (c) => _push(c, () => const UmrahScreen()),
       ),
       for (final category in categories)
         ShelfItem(
           icon: category.icon,
-          title: t('adhkar.cat.${category.id}'),
+          title: tBoth('adhkar.cat.${category.id}'),
           subtitle: '${category.count} ${t('adhkar.countSuffix')}',
           open: (c) => _push(
             c,
@@ -132,8 +132,8 @@ HomeShelf _adhkarShelf() {
         ),
       ShelfItem(
         icon: '🔢',
-        title: t('card.tasbih.title'),
-        subtitle: t('card.tasbih.sub'),
+        title: tBoth('card.tasbih.title'),
+        subtitle: tBoth('card.tasbih.sub'),
         open: (c) => _push(c, () => const TasbihCounter(dhikr: freeTasbih)),
       ),
     ],
@@ -143,13 +143,13 @@ HomeShelf _adhkarShelf() {
 HomeShelf _quranShelf() => HomeShelf(
       key: 'quran',
       icon: '📖',
-      title: t('shelf.quran.title'),
+      title: tBoth('shelf.quran.title'),
       tint: AppColors.emeraldMuted,
       all: () => const QuranHomeScreen(),
       pinned: ShelfItem(
         icon: '📖',
-        title: t('card.mushaf.title'),
-        subtitle: t('card.mushaf.sub'),
+        title: tBoth('card.mushaf.title'),
+        subtitle: tBoth('card.mushaf.sub'),
         open: (c) async {
           final page = await StorageService.getLastMushafPage() ?? 1;
           if (!c.mounted) return;
@@ -159,32 +159,32 @@ HomeShelf _quranShelf() => HomeShelf(
       rest: [
         ShelfItem(
           icon: '🌍',
-          title: t('card.translation.title'),
-          subtitle: t('card.translation.sub'),
+          title: tBoth('card.translation.title'),
+          subtitle: tBoth('card.translation.sub'),
           open: (c) => _push(c, () => const QuranTranslationScreen()),
         ),
         ShelfItem(
           icon: '🕌',
-          title: t('card.recitation.title'),
-          subtitle: t('card.recitation.sub'),
+          title: tBoth('card.recitation.title'),
+          subtitle: tBoth('card.recitation.sub'),
           open: (c) => _push(c, () => const QuranScreen()),
         ),
         ShelfItem(
           icon: '🧠',
-          title: t('card.memtest.title'),
-          subtitle: t('card.memtest.sub'),
+          title: tBoth('card.memtest.title'),
+          subtitle: tBoth('card.memtest.sub'),
           open: openMemorisationPicker,
         ),
         ShelfItem(
           icon: '📻',
-          title: t('card.radio.title'),
-          subtitle: t('card.radio.sub'),
+          title: tBoth('card.radio.title'),
+          subtitle: tBoth('card.radio.sub'),
           open: (c) => _push(c, () => const RadioScreen()),
         ),
         ShelfItem(
           icon: '🎧',
-          title: t('card.listen.title'),
-          subtitle: t('card.listen.sub'),
+          title: tBoth('card.listen.title'),
+          subtitle: tBoth('card.listen.sub'),
           open: (c) => _push(c, () => const ListeningScreen()),
         ),
       ],
@@ -193,27 +193,27 @@ HomeShelf _quranShelf() => HomeShelf(
 HomeShelf _lessonsShelf() => HomeShelf(
       key: 'lessons',
       icon: '🎓',
-      title: t('shelf.lessons.title'),
+      title: tBoth('shelf.lessons.title'),
       tint: AppColors.goldMuted,
       all: () => const LessonsScreen(),
       pinned: ShelfItem(
         icon: Lessons.all.first.icon,
-        title: t('lesson.${Lessons.all.first.id}.title'),
-        subtitle: t('lesson.${Lessons.all.first.id}.summary'),
+        title: tBoth('lesson.${Lessons.all.first.id}.title'),
+        subtitle: tBoth('lesson.${Lessons.all.first.id}.summary'),
         open: (c) => _push(c, () => LessonScreen(lesson: Lessons.all.first)),
       ),
       rest: [
         for (final lesson in Lessons.all.skip(1))
           ShelfItem(
             icon: lesson.icon,
-            title: t('lesson.${lesson.id}.title'),
-            subtitle: t('lesson.${lesson.id}.summary'),
+            title: tBoth('lesson.${lesson.id}.title'),
+            subtitle: tBoth('lesson.${lesson.id}.summary'),
             open: (c) => _push(c, () => LessonScreen(lesson: lesson)),
           ),
         ShelfItem(
           icon: '🎬',
-          title: t('card.prophets.title'),
-          subtitle: t('card.prophets.sub'),
+          title: tBoth('card.prophets.title'),
+          subtitle: tBoth('card.prophets.sub'),
           open: (c) => _push(c, () => const LessonsScreen()),
         ),
       ],
@@ -222,22 +222,22 @@ HomeShelf _lessonsShelf() => HomeShelf(
 HomeShelf _cardsShelf() {
   ShelfItem card(CardShelf shelf) => ShelfItem(
         icon: shelf.icon,
-        title: t('cardshelf.${shelf.id}.title'),
-        subtitle: t('cardshelf.${shelf.id}.subtitle'),
+        title: tBoth('cardshelf.${shelf.id}.title'),
+        subtitle: tBoth('cardshelf.${shelf.id}.subtitle'),
         open: (c) => _push(c, () => CardsScreen(shelf: shelf)),
       );
 
   return HomeShelf(
     key: 'cards',
     icon: '💌',
-    title: t('shelf.cards.title'),
+    title: tBoth('shelf.cards.title'),
     tint: AppColors.goldMuted,
     all: () => const MyCardsScreen(),
     // The reader's own cards lead; the ready-made shelves follow.
     pinned: ShelfItem(
       icon: '🖼️',
-      title: t('card.mycards.title'),
-      subtitle: t('card.mycards.sub'),
+      title: tBoth('card.mycards.title'),
+      subtitle: tBoth('card.mycards.sub'),
       open: (c) => _push(c, () => const MyCardsScreen()),
     ),
     rest: [for (final shelf in GreetingCards.shelvesInUse) card(shelf)],
@@ -250,7 +250,7 @@ HomeShelf _librarySheet() {
 
   ShelfItem card(IslamicBook book) => ShelfItem(
         icon: '📕',
-        title: t('book.${book.id}'),
+        title: tBoth('book.${book.id}'),
         subtitle: book.isBundled
             ? '${book.hadithCount} ${t('card.hadithCount')}'
             : t('card.needsDownload'),
@@ -267,7 +267,7 @@ HomeShelf _librarySheet() {
   return HomeShelf(
     key: 'library',
     icon: '📚',
-    title: t('shelf.library.title'),
+    title: tBoth('shelf.library.title'),
     tint: AppColors.emeraldMuted,
     all: () => const BooksScreen(),
     pinned: card(first),

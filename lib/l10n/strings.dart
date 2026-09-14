@@ -6,6 +6,28 @@ String t(String key) {
   return map[key] ?? key;
 }
 
+/// A card name in Arabic, with its English rendering in parentheses on the
+/// same line when the reader has switched to English — Arabic stays the one
+/// language of record, the parenthetical is a hint back to it. Arabic-only
+/// readers see just the Arabic, unchanged.
+String tBoth(String key) {
+  final ar = _ar[key] ?? key;
+  if (!AppLocale.isEn) return ar;
+  final en = _en[key];
+  if (en == null || en == ar) return ar;
+  return '$ar ($en)';
+}
+
+/// Splits a [tBoth] string back into its Arabic and English halves, so a
+/// caller can lay them out as two separate lines instead of one that wraps —
+/// a wrapped "Arabic (English)" string breaks the parenthetical apart under
+/// RTL/LTR bidi reordering once it no longer fits on a single line.
+(String, String?) splitBilingual(String combined) {
+  final i = combined.lastIndexOf(' (');
+  if (i == -1 || !combined.endsWith(')')) return (combined, null);
+  return (combined.substring(0, i), combined.substring(i + 2, combined.length - 1));
+}
+
 // ─── Arabic (default) ──────────────────────────────────────────────────────
 
 const _ar = <String, String>{

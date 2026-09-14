@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/theme.dart';
 import '../data/hisn_data.dart';
+import '../widgets/bilingual_text.dart';
 import 'hisn_chapter_screen.dart';
 
 /// The 132 chapters of Hisn al-Muslim, searchable by title.
@@ -167,7 +168,9 @@ class _SahihAdhkarScreenState extends State<SahihAdhkarScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(c.title,
+                  BilingualText(c.displayTitle,
+                      textAlign: TextAlign.right,
+                      maxLines: 2,
                       style: const TextStyle(
                           color: AppColors.textPrimary,
                           fontSize: 15,

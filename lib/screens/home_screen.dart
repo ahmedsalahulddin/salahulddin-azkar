@@ -4,6 +4,7 @@ import '../data/home_shelves.dart';
 import '../l10n/strings.dart';
 import '../services/app_locale.dart';
 import '../services/section_config.dart';
+import '../widgets/bilingual_text.dart';
 import '../widgets/prayer_times_card.dart';
 import 'search_screen.dart';
 
@@ -172,9 +173,10 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
           SizedBox(
-            // Tall enough for a two-line title plus its subtitle; anything
-            // less and the longer adhkar names overflow the card.
-            height: 124,
+            // Tall enough for a three-line title (Arabic name plus its
+            // English translation in parentheses) plus a subtitle; anything
+            // less and the longer titles overflow the card.
+            height: 136,
             child: Row(
               children: [
                 const SizedBox(width: 16),
@@ -228,14 +230,13 @@ class HomeScreen extends StatelessWidget {
                   child: Text(item.icon, style: const TextStyle(fontSize: 19))),
             ),
             const SizedBox(height: 7),
-            Text(item.title,
+            BilingualText(item.title,
                 textAlign: TextAlign.center,
                 maxLines: 2,
-                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 12,
-                    height: 1.25,
+                    height: 1.2,
                     fontWeight: FontWeight.w600)),
             const SizedBox(height: 2),
             Text(item.subtitle,

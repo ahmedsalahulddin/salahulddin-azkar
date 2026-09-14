@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../constants/theme.dart';
 import '../data/adhkar_data.dart';
+import '../l10n/strings.dart';
 import '../widgets/adhkar_card.dart';
+import '../widgets/bilingual_text.dart';
 import '../widgets/tasbih_counter.dart';
 
 class CategoryScreen extends StatefulWidget {
@@ -51,7 +53,12 @@ class _CategoryScreenState extends State<CategoryScreen> {
         appBar: AppBar(
           backgroundColor: AppColors.black,
           foregroundColor: AppColors.gold,
-          title: Text(cat.name),
+          title: BilingualText(
+            tBoth('adhkar.cat.${cat.id}'),
+            style: const TextStyle(
+                color: AppColors.gold, fontSize: 17, fontWeight: FontWeight.w600),
+            maxLines: 2,
+          ),
           centerTitle: true,
         ),
         body: Column(

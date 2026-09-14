@@ -4,7 +4,9 @@ import '../constants/theme.dart';
 import '../data/hisn_data.dart';
 import '../data/quran_data.dart' show QuranService;
 import '../services/favourites.dart';
+import '../widgets/bilingual_text.dart';
 import '../widgets/dhikr_audio.dart';
+import '../widgets/dhikr_text.dart';
 import '../widgets/favourite_star.dart';
 import '../widgets/speed_button.dart';
 
@@ -72,8 +74,9 @@ class _HisnChapterScreenState extends State<HisnChapterScreen> {
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
-          title: Text(chapter.title,
-              style: const TextStyle(fontSize: 17), maxLines: 1),
+          title: BilingualText(chapter.displayTitle,
+              style: const TextStyle(color: AppColors.gold, fontSize: 15),
+              maxLines: 2),
           backgroundColor: AppColors.black,
           foregroundColor: AppColors.gold,
           actions: [
@@ -155,14 +158,12 @@ class _HisnChapterScreenState extends State<HisnChapterScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              d.text,
+            DhikrText(
+              arabic: d.text,
+              english: d.english,
+              fontSize: 19,
+              color: done ? AppColors.textSecondary : AppColors.textPrimary,
               textAlign: TextAlign.justify,
-              style: TextStyle(
-                color: done ? AppColors.textSecondary : AppColors.textPrimary,
-                fontSize: 19,
-                height: 2.0,
-              ),
             ),
             const SizedBox(height: 12),
             Row(

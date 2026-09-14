@@ -8,6 +8,7 @@ import '../constants/theme.dart';
 import '../services/app_audio.dart';
 import '../services/playback_speed.dart';
 import '../data/adhkar_data.dart';
+import 'dhikr_text.dart';
 import 'favourite_star.dart';
 
 class AdhkarCard extends StatefulWidget {
@@ -164,15 +165,11 @@ class _AdhkarCardState extends State<AdhkarCard> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        dhikr.text,
-                        style: TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: dhikrSize,
-                          height: 1.8,
-                        ),
-                        textAlign: TextAlign.right,
-                        textDirection: TextDirection.rtl,
+                      DhikrText(
+                        arabic: dhikr.text,
+                        english: dhikr.english,
+                        fontSize: dhikrSize,
+                        color: AppColors.textPrimary,
                       ),
                       if (_showBenefit) ...[
                         const SizedBox(height: 10),

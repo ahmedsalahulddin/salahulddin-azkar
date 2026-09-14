@@ -5,7 +5,9 @@ import '../data/hisn_data.dart';
 import '../data/quran_data.dart' show QuranService;
 import '../data/umrah_data.dart';
 import '../services/favourites.dart';
+import '../widgets/bilingual_text.dart';
 import '../widgets/dhikr_audio.dart';
+import '../widgets/dhikr_text.dart';
 import '../widgets/favourite_star.dart';
 
 /// The Umrah supplications, walked through in the order of the rites.
@@ -215,7 +217,9 @@ class _UmrahScreenState extends State<UmrahScreen> {
     return [
       Padding(
         padding: const EdgeInsets.fromLTRB(14, 12, 14, 6),
-        child: Text(chapter.title,
+        child: BilingualText(chapter.displayTitle,
+            textAlign: TextAlign.right,
+            maxLines: 2,
             style: const TextStyle(
                 color: AppColors.textGold,
                 fontSize: 13,
@@ -233,10 +237,13 @@ class _UmrahScreenState extends State<UmrahScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(dhikr.text,
-                  textAlign: TextAlign.justify,
-                  style: const TextStyle(
-                      color: AppColors.textPrimary, fontSize: 18, height: 1.9)),
+              DhikrText(
+                arabic: dhikr.text,
+                english: dhikr.english,
+                fontSize: 18,
+                color: AppColors.textPrimary,
+                textAlign: TextAlign.justify,
+              ),
               const SizedBox(height: 10),
               Row(
                 children: [
