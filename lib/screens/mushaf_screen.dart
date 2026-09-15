@@ -80,7 +80,10 @@ class _MushafScreenState extends State<MushafScreen> {
     setState(() {
       _pages = pages;
       _index = index;
-      _reciter = reciter;
+      // The page follows the recitation ayah by ayah — a per-surah reciter
+      // (one file for the whole surah, no ayah-level audio) can't drive that,
+      // so this screen only ever offers and remembers a per-ayah reciter.
+      _reciter = reciter.isPerAyah ? reciter : RecitationService.defaultReciter;
       _repeat = repeat;
     });
     _prefetchAround(_current);
@@ -596,7 +599,9 @@ class _MushafScreenState extends State<MushafScreen> {
       constraints: const BoxConstraints(minWidth: 220, maxWidth: 340),
       onSelected: _applyReciter,
       itemBuilder: (context) => [
-        for (final r in RecitationService.reciters)
+        // Per-surah reciters (one file per surah) can't drive the ayah-by-ayah
+        // highlighting and auto page-turn this screen is built around.
+        for (final r in RecitationService.reciters.where((r) => r.isPerAyah))
           PopupMenuItem(
             value: r,
             height: 40,

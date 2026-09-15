@@ -150,6 +150,14 @@ class ContinuousListening {
         ],
         initialIndex: startIndex,
       );
+      // just_audio_background sometimes settles on index 0 for a moment after
+      // setAudioSources before honouring initialIndex — the background
+      // session's own restore can race the one just requested. An explicit
+      // seek forces the position rather than trusting that race, and without
+      // it a jump to any ayah but the first would silently reopen at ayah 1.
+      if (startIndex != 0) {
+        await AppAudio.player.seek(Duration.zero, index: startIndex);
+      }
       _loadedSurah = number;
       // Only now. Claiming it before the playlist is loaded left a window —
       // across the awaits above — where the listener saw the previous owner's
