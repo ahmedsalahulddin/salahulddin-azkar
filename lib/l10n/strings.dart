@@ -65,6 +65,19 @@ const _ar = <String, String>{
   'card.tasbih.sub': 'سبّح واحتسب',
   'adhkar.countSuffix': 'ذكر',
 
+  // Home shelf: Islamic stories
+  'shelf.stories.title': 'قصص إسلامية',
+  'card.stories.title': 'قصص إسلامية',
+  'card.stories.sub': 'من القرآن والسيرة',
+  'story.countSuffix': 'قصة',
+  'story.cat.miracles': 'قصص المعجزات',
+  'story.cat.prophets': 'قصص الأنبياء',
+  'story.cat.animals': 'قصص الحيوانات',
+  'story.cat.righteous': 'التابعون والصالحون',
+  'story.cat.children': 'قصص للأطفال',
+  'story.cat.companions': 'مواقف مع الصحابة',
+  'story.cat.battles': 'الغزوات',
+
   // Home shelf: Lessons / Cards / Library (titles only)
   'shelf.lessons.title': 'الدروس',
   'shelf.cards.title': 'كروت المعايدة',
@@ -299,6 +312,19 @@ const _en = <String, String>{
   'card.tasbih.title': 'Tasbih Counter',
   'card.tasbih.sub': 'Glorify & be rewarded',
   'adhkar.countSuffix': 'adhkar',
+
+  // Home shelf: Islamic stories
+  'shelf.stories.title': 'Islamic Stories',
+  'card.stories.title': 'Islamic Stories',
+  'card.stories.sub': 'From the Quran and Seerah',
+  'story.countSuffix': 'stories',
+  'story.cat.miracles': 'Miracles',
+  'story.cat.prophets': 'Stories of the Prophets',
+  'story.cat.animals': 'Animal Stories',
+  'story.cat.righteous': 'The Righteous Predecessors',
+  'story.cat.children': "Children's Stories",
+  'story.cat.companions': 'Companion Moments',
+  'story.cat.battles': 'The Battles',
 
   // Home shelf: Lessons / Cards / Library (titles only)
   'shelf.lessons.title': 'Lessons',

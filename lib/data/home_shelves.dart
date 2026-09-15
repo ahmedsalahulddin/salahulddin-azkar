@@ -6,6 +6,7 @@ import '../data/adhkar_data.dart';
 import '../data/greeting_cards.dart';
 import '../data/lessons.dart';
 import '../data/library_data.dart';
+import '../data/stories_data.dart';
 import '../screens/adhkar_home_screen.dart';
 import '../screens/book_reader_screen.dart';
 import '../screens/books_screen.dart';
@@ -23,6 +24,8 @@ import '../screens/listening_screen.dart';
 import '../screens/radio_screen.dart';
 import '../screens/quran_screen.dart';
 import '../screens/sahih_adhkar_screen.dart';
+import '../screens/stories_home_screen.dart';
+import '../screens/story_category_screen.dart';
 import '../screens/umrah_screen.dart';
 import '../services/storage_service.dart';
 import '../widgets/tasbih_counter.dart';
@@ -91,10 +94,44 @@ Future<void> _push(BuildContext context, Widget Function() build) =>
 List<HomeShelf> buildShelves() => [
       _quranShelf(),
       _adhkarShelf(),
+      _storiesShelf(),
       _lessonsShelf(),
       _librarySheet(),
       _cardsShelf(),
     ];
+
+HomeShelf _storiesShelf() {
+  final categories = getStoryCategoriesWithCount();
+
+  return HomeShelf(
+    key: 'stories',
+    icon: '📜',
+    title: tBoth('shelf.stories.title'),
+    tint: AppColors.emeraldMuted,
+    all: () => const StoriesHomeScreen(),
+    pinned: ShelfItem(
+      icon: categories.first.icon,
+      title: tBoth('story.cat.${categories.first.id}'),
+      subtitle: '${categories.first.count} ${t('story.countSuffix')}',
+      open: (c) => _push(
+        c,
+        () => StoryCategoryScreen(category: categories.first),
+      ),
+    ),
+    rest: [
+      for (final category in categories.skip(1))
+        ShelfItem(
+          icon: category.icon,
+          title: tBoth('story.cat.${category.id}'),
+          subtitle: '${category.count} ${t('story.countSuffix')}',
+          open: (c) => _push(
+            c,
+            () => StoryCategoryScreen(category: category),
+          ),
+        ),
+    ],
+  );
+}
 
 HomeShelf _adhkarShelf() {
   final categories = getCategoriesWithCount();
