@@ -1,4 +1,5 @@
 import 'story_translations/fr.dart';
+import 'story_translations/ha.dart';
 import 'story_translations/hi.dart';
 import 'story_translations/id.dart';
 import 'story_translations/ms.dart';
@@ -51,6 +52,7 @@ class Story {
 /// file's own story content.
 final Map<String, Map<String, StoryTranslation>> storyTranslations = {
   'fr': frStoryTranslations,
+  'ha': haStoryTranslations,
   'hi': hiStoryTranslations,
   'id': idStoryTranslations,
   'ms': msStoryTranslations,
