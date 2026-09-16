@@ -28,7 +28,10 @@ const _langs = [
   _Lang('es', 'Español'),
   _Lang('ru', 'Русский'),
   _Lang('id', 'Indonesia'),
+  _Lang('ms', 'Bahasa Melayu'),
   _Lang('bn', 'বাংলা'),
+  _Lang('hi', 'हिन्दी'),
+  _Lang('ha', 'Hausa'),
 ];
 
 const _apiBase = 'https://api.alquran.cloud/v1/surah';
@@ -42,6 +45,9 @@ const _edition = {
   'es': 'es.asad',
   'ru': 'ru.kuliev',
   'id': 'id.indonesian',
+  'ms': 'ms.basmeih',
+  'hi': 'hi.hindi',
+  'ha': 'ha.gumi',
 };
 
 const _ttsLocale = {
@@ -53,7 +59,10 @@ const _ttsLocale = {
   'es': 'es-ES',
   'ru': 'ru-RU',
   'id': 'id-ID',
+  'ms': 'ms-MY',
   'bn': 'bn-BD',
+  'hi': 'hi-IN',
+  'ha': 'ha-NG',
 };
 
 /// Bengali has no King Fahd Complex edition on alquran.cloud, so it is
