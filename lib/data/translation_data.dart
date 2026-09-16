@@ -53,10 +53,34 @@ class TranslationService {
       slug: 'ind-kingfahdcomplex',
     ),
     Translation(
+      id: 'ms',
+      language: 'Bahasa Melayu',
+      translator: 'Abdullah Muhammad Basmeih',
+      slug: 'msa-abdullahmuhamma',
+    ),
+    Translation(
       id: 'bn',
       language: 'বাংলা',
       translator: 'Abu Bakr Zakaria',
-      slug: 'ben-abubakrzakaria-la',
+      slug: 'ben-abubakrzakaria',
+    ),
+    Translation(
+      id: 'hi',
+      language: 'हिन्दी',
+      translator: 'Maulana Azizul Haque Al-Umari',
+      slug: 'hin-maulanaazizulha',
+    ),
+    Translation(
+      id: 'tr',
+      language: 'Türkçe',
+      translator: 'Diyanet İşleri',
+      slug: 'tur-diyanetisleri',
+    ),
+    Translation(
+      id: 'ha',
+      language: 'Hausa',
+      translator: 'Abubakar Mahmoud Gumi',
+      slug: 'hau-abubakarmahmoud',
     ),
     Translation(
       id: 'fr',
