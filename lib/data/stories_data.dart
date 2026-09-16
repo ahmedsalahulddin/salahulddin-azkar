@@ -1,3 +1,25 @@
+import 'story_translations/fr.dart';
+
+/// A story's title, body and source in one non-Arabic language.
+///
+/// [translator] names who produced this rendering — every non-Arabic
+/// version here is machine translation by Claude AI, not a scholarly or
+/// human-reviewed translation, and the app says so next to every one of
+/// them rather than presenting it as authoritative.
+class StoryTranslation {
+  final String title;
+  final String body;
+  final String source;
+  final String translator;
+
+  const StoryTranslation({
+    required this.title,
+    required this.body,
+    required this.source,
+    this.translator = 'Claude AI',
+  });
+}
+
 /// One story: a title, its body, and where it comes from.
 ///
 /// The body is a retelling in plain language, not a translation of the
@@ -18,6 +40,33 @@ class Story {
     required this.source,
   });
 }
+
+/// Language code -> story id -> that story's translation. Each language
+/// lives in its own file under story_translations/ — imported here and
+/// added to this map — so covering one more language never touches this
+/// file's own story content.
+final Map<String, Map<String, StoryTranslation>> storyTranslations = {
+  'fr': frStoryTranslations,
+};
+
+/// A story's translation in [lang], or null if that language doesn't
+/// (yet) cover this story.
+StoryTranslation? translationFor(String storyId, String lang) =>
+    storyTranslations[lang]?[storyId];
+
+/// Language codes with at least one story translated, in menu order.
+const supportedStoryLanguages = <(String code, String name)>[
+  ('fr', 'Français'),
+  ('ur', 'اردو'),
+  ('id', 'Indonesia'),
+  ('ms', 'Bahasa Melayu'),
+  ('hi', 'हिन्दी'),
+  ('tr', 'Türkçe'),
+  ('bn', 'বাংলা'),
+  ('fa', 'فارسی'),
+  ('ha', 'Hausa'),
+  ('sw', 'Kiswahili'),
+];
 
 class StoryCategory {
   final String id;

@@ -28,6 +28,7 @@ const _langs = [
   _Lang('es', 'Español'),
   _Lang('ru', 'Русский'),
   _Lang('id', 'Indonesia'),
+  _Lang('bn', 'বাংলা'),
 ];
 
 const _apiBase = 'https://api.alquran.cloud/v1/surah';
@@ -52,32 +53,53 @@ const _ttsLocale = {
   'es': 'es-ES',
   'ru': 'ru-RU',
   'id': 'id-ID',
+  'bn': 'bn-BD',
 };
+
+/// Bengali has no King Fahd Complex edition on alquran.cloud, so it is
+/// fetched from quran.com instead — resource 213 is Dr. Abu Bakr
+/// Muhammad Zakaria's translation, the one the Complex (the Saudi
+/// government's Quran-printing body) itself published and distributed,
+/// the same standard the app already holds every other language to.
+const _quranComResourceId = {'bn': 213};
 
 Future<List<String>?> _fetchTranslation(String lang, int surahNum) async {
   final dir = await getApplicationDocumentsDirectory();
   final file =
       File('${dir.path}/quran_translations_v2/$lang/$surahNum.json');
   if (await file.exists()) {
-    return _parse(await file.readAsString());
+    return _parse(await file.readAsString(), lang);
   }
-  final ed = _edition[lang] ?? 'en.sahih';
+  final resourceId = _quranComResourceId[lang];
   try {
-    final res = await http
-        .get(Uri.parse('$_apiBase/$surahNum/$ed'))
-        .timeout(const Duration(seconds: 20));
+    final uri = resourceId != null
+        ? Uri.parse(
+            'https://api.quran.com/api/v4/quran/translations/$resourceId'
+            '?chapter_number=$surahNum')
+        : Uri.parse('$_apiBase/$surahNum/${_edition[lang] ?? 'en.sahih'}');
+    final res = await http.get(uri).timeout(const Duration(seconds: 20));
     if (res.statusCode != 200) return null;
     await file.parent.create(recursive: true);
     await file.writeAsBytes(res.bodyBytes);
-    return _parse(res.body);
+    return _parse(res.body, lang);
   } catch (_) {
     return null;
   }
 }
 
-List<String>? _parse(String body) {
+List<String>? _parse(String body, String lang) {
   try {
     final json = jsonDecode(body) as Map;
+    if (_quranComResourceId.containsKey(lang)) {
+      // quran.com's Zakaria text carries footnote markers like "[১]" —
+      // meaningless without the footnotes themselves, which this app
+      // doesn't fetch, so they're stripped rather than left dangling.
+      return (json['translations'] as List)
+          .map((e) => ((e as Map)['text'] as String)
+              .replaceAll(RegExp(r'\[[^\]]*\]'), '')
+              .trim())
+          .toList();
+    }
     final data = json['data'] as Map;
     return (data['ayahs'] as List)
         .map((e) => (e as Map)['text'] as String)
