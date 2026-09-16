@@ -1,5 +1,6 @@
 import 'story_translations/fr.dart';
 import 'story_translations/id.dart';
+import 'story_translations/ms.dart';
 import 'story_translations/ur.dart';
 
 /// A story's title, body and source in one non-Arabic language.
@@ -50,6 +51,7 @@ class Story {
 final Map<String, Map<String, StoryTranslation>> storyTranslations = {
   'fr': frStoryTranslations,
   'id': idStoryTranslations,
+  'ms': msStoryTranslations,
   'ur': urStoryTranslations,
 };
 
