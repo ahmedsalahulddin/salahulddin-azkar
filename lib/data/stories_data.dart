@@ -78,7 +78,6 @@ const supportedStoryLanguages = <(String code, String name)>[
   ('tr', 'Türkçe'),
   ('bn', 'বাংলা'),
   ('ha', 'Hausa'),
-  ('sw', 'Kiswahili'),
 ];
 
 class StoryCategory {
