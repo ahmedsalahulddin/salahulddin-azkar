@@ -1,3 +1,4 @@
+import 'story_translations/bn.dart';
 import 'story_translations/fr.dart';
 import 'story_translations/ha.dart';
 import 'story_translations/hi.dart';
@@ -52,6 +53,7 @@ class Story {
 /// added to this map — so covering one more language never touches this
 /// file's own story content.
 final Map<String, Map<String, StoryTranslation>> storyTranslations = {
+  'bn': bnStoryTranslations,
   'fr': frStoryTranslations,
   'ha': haStoryTranslations,
   'hi': hiStoryTranslations,
@@ -98,40 +100,47 @@ class StoryCategory {
 
 final List<StoryCategory> storyCategories = [
   StoryCategory(
-      id: 'miracles',
-      name: 'قصص المعجزات',
-      icon: '✨',
-      description: 'آيات خارقة أيّد الله بها أنبياءه'),
+    id: 'miracles',
+    name: 'قصص المعجزات',
+    icon: '✨',
+    description: 'آيات خارقة أيّد الله بها أنبياءه',
+  ),
   StoryCategory(
-      id: 'prophets',
-      name: 'قصص الأنبياء',
-      icon: '📖',
-      description: 'سِيَر المرسلين كما قصّها القرآن'),
+    id: 'prophets',
+    name: 'قصص الأنبياء',
+    icon: '📖',
+    description: 'سِيَر المرسلين كما قصّها القرآن',
+  ),
   StoryCategory(
-      id: 'animals',
-      name: 'قصص الحيوانات',
-      icon: '🐾',
-      description: 'مواقف لها عبرة، من القرآن والسنة'),
+    id: 'animals',
+    name: 'قصص الحيوانات',
+    icon: '🐾',
+    description: 'مواقف لها عبرة، من القرآن والسنة',
+  ),
   StoryCategory(
-      id: 'righteous',
-      name: 'التابعون والصالحون',
-      icon: '🌿',
-      description: 'من سار على نهج الصحابة بعدهم'),
+    id: 'righteous',
+    name: 'التابعون والصالحون',
+    icon: '🌿',
+    description: 'من سار على نهج الصحابة بعدهم',
+  ),
   StoryCategory(
-      id: 'children',
-      name: 'قصص للأطفال',
-      icon: '🧒',
-      description: 'نفس القصص، بأسلوب أبسط وأقصر'),
+    id: 'children',
+    name: 'قصص للأطفال',
+    icon: '🧒',
+    description: 'نفس القصص، بأسلوب أبسط وأقصر',
+  ),
   StoryCategory(
-      id: 'companions',
-      name: 'مواقف مع الصحابة',
-      icon: '🤝',
-      description: 'وفاء وتضحية وإيمان لا يتزعزع'),
+    id: 'companions',
+    name: 'مواقف مع الصحابة',
+    icon: '🤝',
+    description: 'وفاء وتضحية وإيمان لا يتزعزع',
+  ),
   StoryCategory(
-      id: 'battles',
-      name: 'الغزوات',
-      icon: '⚔️',
-      description: 'أيام الإسلام الفاصلة في السيرة'),
+    id: 'battles',
+    name: 'الغزوات',
+    icon: '⚔️',
+    description: 'أيام الإسلام الفاصلة في السيرة',
+  ),
 ];
 
 final List<Story> stories = const [
