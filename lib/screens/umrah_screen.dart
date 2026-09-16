@@ -240,6 +240,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
               DhikrText(
                 arabic: dhikr.text,
                 english: dhikr.english,
+                moreTranslations: hisnTranslationsFor(chapter.id, dhikr.number),
                 fontSize: 18,
                 color: AppColors.textPrimary,
                 textAlign: TextAlign.justify,

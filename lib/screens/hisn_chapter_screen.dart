@@ -161,6 +161,7 @@ class _HisnChapterScreenState extends State<HisnChapterScreen> {
             DhikrText(
               arabic: d.text,
               english: d.english,
+              moreTranslations: hisnTranslationsFor(widget.chapter.id, d.number),
               fontSize: 19,
               color: done ? AppColors.textSecondary : AppColors.textPrimary,
               textAlign: TextAlign.justify,

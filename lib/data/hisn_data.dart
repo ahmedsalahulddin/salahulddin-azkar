@@ -1,6 +1,65 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import '../services/app_locale.dart';
+import 'hisn_translations/bn.dart';
+import 'hisn_translations/fr.dart';
+import 'hisn_translations/ha.dart';
+import 'hisn_translations/hi.dart';
+import 'hisn_translations/id.dart';
+import 'hisn_translations/ms.dart';
+import 'hisn_translations/tr.dart';
+import 'hisn_translations/ur.dart';
+
+/// Machine translations of Hisn al-Muslim, keyed by language then by a
+/// "chapterId:number" key — [HisnDhikr.number] alone is only unique within
+/// its chapter, so the chapter id disambiguates it. Unlike
+/// [HisnDhikr.english] — the publisher's own translation from the
+/// hisnmuslim.com API — these are Claude AI renderings, not a scholarly or
+/// human-reviewed translation. The UI discloses this next to every one.
+final Map<String, Map<String, String>> hisnTranslations = {
+  'bn': bnHisnTranslations,
+  'fr': frHisnTranslations,
+  'ha': haHisnTranslations,
+  'hi': hiHisnTranslations,
+  'id': idHisnTranslations,
+  'ms': msHisnTranslations,
+  'tr': trHisnTranslations,
+  'ur': urHisnTranslations,
+};
+
+/// A dhikr's translation in [lang], or null if that language doesn't cover
+/// this dhikr (or [lang] is 'en', which lives on [HisnDhikr.english]
+/// instead).
+String? hisnTranslationFor(int chapterId, int dhikrNumber, String lang) =>
+    hisnTranslations[lang]?['$chapterId:$dhikrNumber'];
+
+/// Every available machine translation of one dhikr, keyed by language
+/// code — what [DhikrText.moreTranslations] expects.
+Map<String, String> hisnTranslationsFor(int chapterId, int dhikrNumber) {
+  final key = '$chapterId:$dhikrNumber';
+  final out = <String, String>{};
+  for (final entry in hisnTranslations.entries) {
+    final text = entry.value[key];
+    if (text != null) out[entry.key] = text;
+  }
+  return out;
+}
+
+/// Machine-translation credit shown next to every non-English rendering.
+const hisnTranslator = 'Claude AI';
+
+/// Language codes with a machine translation, in menu order — the same set
+/// covered by the Islamic Stories feature.
+const supportedHisnLanguages = <(String code, String name)>[
+  ('fr', 'Français'),
+  ('ur', 'اردو'),
+  ('id', 'Indonesia'),
+  ('ms', 'Bahasa Melayu'),
+  ('hi', 'हिन्दी'),
+  ('tr', 'Türkçe'),
+  ('bn', 'বাংলা'),
+  ('ha', 'Hausa'),
+];
 
 class HisnDhikr {
   final int number;
