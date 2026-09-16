@@ -77,7 +77,6 @@ const supportedStoryLanguages = <(String code, String name)>[
   ('hi', 'हिन्दी'),
   ('tr', 'Türkçe'),
   ('bn', 'বাংলা'),
-  ('fa', 'فارسی'),
   ('ha', 'Hausa'),
   ('sw', 'Kiswahili'),
 ];
