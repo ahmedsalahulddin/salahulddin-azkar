@@ -145,28 +145,7 @@ class PrayerService {
   /// marker, so the app never demands the location before it has shown the
   /// reader why it wants it.
   static Future<PrayerData> load({bool ask = false}) async {
-    var coords = _riyadh;
-    var status = LocationStatus.denied;
-
-    try {
-      final fix = await _locate(ask: ask);
-      status = fix.status;
-      final pos = fix.position;
-      if (pos != null) {
-        coords = Coordinates(pos.latitude, pos.longitude);
-        await _remember(pos);
-      } else {
-        // No fix now, but a place we reached before beats defaulting to a city
-        // the reader may be nowhere near.
-        final last = await _lastKnown();
-        if (last != null) {
-          coords = last;
-          status = LocationStatus.remembered;
-        }
-      }
-    } catch (_) {
-      // Geolocator is unavailable (tests, web without permission). Riyadh it is.
-    }
+    final (coords, status) = await currentCoordinates(ask: ask);
 
     // The authority and the Asr rule come from the reader's settings, which
     // default to whichever method is used where they are standing.
@@ -255,6 +234,39 @@ class PrayerService {
       status: status,
       method: PrayerSettings.effective(coords.latitude, coords.longitude),
     );
+  }
+
+  /// The reader's coordinates — a fresh fix if one is available, the last
+  /// remembered one otherwise, Riyadh failing that. Shared by [load] and
+  /// anything else that needs a location without its own prayer-time math
+  /// (the Qibla screen).
+  static Future<(Coordinates, LocationStatus)> currentCoordinates({
+    bool ask = false,
+  }) async {
+    var coords = _riyadh;
+    var status = LocationStatus.denied;
+
+    try {
+      final fix = await _locate(ask: ask);
+      status = fix.status;
+      final pos = fix.position;
+      if (pos != null) {
+        coords = Coordinates(pos.latitude, pos.longitude);
+        await _remember(pos);
+      } else {
+        // No fix now, but a place we reached before beats defaulting to a city
+        // the reader may be nowhere near.
+        final last = await _lastKnown();
+        if (last != null) {
+          coords = last;
+          status = LocationStatus.remembered;
+        }
+      }
+    } catch (_) {
+      // Geolocator is unavailable (tests, web without permission). Riyadh it is.
+    }
+
+    return (coords, status);
   }
 
   static Future<({Position? position, LocationStatus status})> _locate({

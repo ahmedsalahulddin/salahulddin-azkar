@@ -66,6 +66,8 @@ const _ar = <String, String>{
   'card.umrah.sub': 'من الميقات للتحلّل',
   'card.tasbih.title': 'عداد التسبيح',
   'card.tasbih.sub': 'سبّح واحتسب',
+  'card.qibla.title': 'اتجاه القبلة',
+  'card.qibla.sub': 'بوصلة نحو الكعبة',
   'adhkar.countSuffix': 'ذكر',
 
   // Home shelf: Islamic stories
@@ -350,6 +352,8 @@ const _en = <String, String>{
   'card.umrah.sub': 'From miqat to tahallul',
   'card.tasbih.title': 'Tasbih Counter',
   'card.tasbih.sub': 'Glorify & be rewarded',
+  'card.qibla.title': 'Qibla Direction',
+  'card.qibla.sub': 'Compass toward the Kaaba',
   'adhkar.countSuffix': 'adhkar',
 
   // Home shelf: Islamic stories

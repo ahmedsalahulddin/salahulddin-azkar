@@ -18,6 +18,7 @@ import '../screens/lesson_screen.dart';
 import '../screens/lessons_screen.dart';
 import '../screens/memorisation_test_screen.dart';
 import '../screens/mushaf_screen.dart';
+import '../screens/qibla_screen.dart';
 import '../screens/my_cards_screen.dart';
 import '../screens/quran_home_screen.dart';
 import '../screens/quran_translation_screen.dart';
@@ -168,6 +169,12 @@ HomeShelf _adhkarShelf() {
         title: tBoth('card.tasbih.title'),
         subtitle: tBoth('card.tasbih.sub'),
         open: (c) => _push(c, () => const TasbihCounter(dhikr: freeTasbih)),
+      ),
+      ShelfItem(
+        icon: '🧭',
+        title: tBoth('card.qibla.title'),
+        subtitle: tBoth('card.qibla.sub'),
+        open: (c) => _push(c, () => const QiblaScreen()),
       ),
     ],
   );

@@ -19,6 +19,10 @@
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"/>
+    <!-- The Qibla compass reads this if present but works without it (the
+         screen says so when no heading arrives) — not required, so phones
+         without a magnetometer are not excluded from the Play listing. -->
+    <uses-feature android:name="android.hardware.sensor.compass" android:required="false"/>
     <application
         android:label="SalaHulddin Azkar"
         android:name="${applicationName}"
