@@ -13,6 +13,7 @@ import '../screens/books_screen.dart';
 import '../screens/cards_screen.dart';
 import '../screens/category_screen.dart';
 import '../screens/deceased_screen.dart';
+import '../screens/hadith_encyclopedia_screen.dart';
 import '../screens/lesson_screen.dart';
 import '../screens/lessons_screen.dart';
 import '../screens/memorisation_test_screen.dart';
@@ -92,13 +93,13 @@ Future<void> _push(BuildContext context, Widget Function() build) =>
 /// The shelves, built fresh so the adhkar counts and book list are
 /// whatever they are now rather than whatever they were at startup.
 List<HomeShelf> buildShelves() => [
-      _quranShelf(),
-      _adhkarShelf(),
-      _storiesShelf(),
-      _lessonsShelf(),
-      _librarySheet(),
-      _cardsShelf(),
-    ];
+  _quranShelf(),
+  _adhkarShelf(),
+  _storiesShelf(),
+  _lessonsShelf(),
+  _librarySheet(),
+  _cardsShelf(),
+];
 
 HomeShelf _storiesShelf() {
   final categories = getStoryCategoriesWithCount();
@@ -113,10 +114,8 @@ HomeShelf _storiesShelf() {
       icon: categories.first.icon,
       title: tBoth('story.cat.${categories.first.id}'),
       subtitle: '${categories.first.count} ${t('story.countSuffix')}',
-      open: (c) => _push(
-        c,
-        () => StoryCategoryScreen(category: categories.first),
-      ),
+      open: (c) =>
+          _push(c, () => StoryCategoryScreen(category: categories.first)),
     ),
     rest: [
       for (final category in categories.skip(1))
@@ -124,10 +123,7 @@ HomeShelf _storiesShelf() {
           icon: category.icon,
           title: tBoth('story.cat.${category.id}'),
           subtitle: '${category.count} ${t('story.countSuffix')}',
-          open: (c) => _push(
-            c,
-            () => StoryCategoryScreen(category: category),
-          ),
+          open: (c) => _push(c, () => StoryCategoryScreen(category: category)),
         ),
     ],
   );
@@ -178,91 +174,91 @@ HomeShelf _adhkarShelf() {
 }
 
 HomeShelf _quranShelf() => HomeShelf(
-      key: 'quran',
-      icon: '📖',
-      title: tBoth('shelf.quran.title'),
-      tint: AppColors.emeraldMuted,
-      all: () => const QuranHomeScreen(),
-      pinned: ShelfItem(
-        icon: '📖',
-        title: tBoth('card.mushaf.title'),
-        subtitle: tBoth('card.mushaf.sub'),
-        open: (c) async {
-          final page = await StorageService.getLastMushafPage() ?? 1;
-          if (!c.mounted) return;
-          await _push(c, () => MushafScreen(initialPage: page));
-        },
-      ),
-      rest: [
-        ShelfItem(
-          icon: '🌍',
-          title: tBoth('card.translation.title'),
-          subtitle: tBoth('card.translation.sub'),
-          open: (c) => _push(c, () => const QuranTranslationScreen()),
-        ),
-        ShelfItem(
-          icon: '🕌',
-          title: tBoth('card.recitation.title'),
-          subtitle: tBoth('card.recitation.sub'),
-          open: (c) => _push(c, () => const QuranScreen()),
-        ),
-        ShelfItem(
-          icon: '🧠',
-          title: tBoth('card.memtest.title'),
-          subtitle: tBoth('card.memtest.sub'),
-          open: openMemorisationPicker,
-        ),
-        ShelfItem(
-          icon: '📻',
-          title: tBoth('card.radio.title'),
-          subtitle: tBoth('card.radio.sub'),
-          open: (c) => _push(c, () => const RadioScreen()),
-        ),
-        ShelfItem(
-          icon: '🎧',
-          title: tBoth('card.listen.title'),
-          subtitle: tBoth('card.listen.sub'),
-          open: (c) => _push(c, () => const ListeningScreen()),
-        ),
-      ],
-    );
+  key: 'quran',
+  icon: '📖',
+  title: tBoth('shelf.quran.title'),
+  tint: AppColors.emeraldMuted,
+  all: () => const QuranHomeScreen(),
+  pinned: ShelfItem(
+    icon: '📖',
+    title: tBoth('card.mushaf.title'),
+    subtitle: tBoth('card.mushaf.sub'),
+    open: (c) async {
+      final page = await StorageService.getLastMushafPage() ?? 1;
+      if (!c.mounted) return;
+      await _push(c, () => MushafScreen(initialPage: page));
+    },
+  ),
+  rest: [
+    ShelfItem(
+      icon: '🌍',
+      title: tBoth('card.translation.title'),
+      subtitle: tBoth('card.translation.sub'),
+      open: (c) => _push(c, () => const QuranTranslationScreen()),
+    ),
+    ShelfItem(
+      icon: '🕌',
+      title: tBoth('card.recitation.title'),
+      subtitle: tBoth('card.recitation.sub'),
+      open: (c) => _push(c, () => const QuranScreen()),
+    ),
+    ShelfItem(
+      icon: '🧠',
+      title: tBoth('card.memtest.title'),
+      subtitle: tBoth('card.memtest.sub'),
+      open: openMemorisationPicker,
+    ),
+    ShelfItem(
+      icon: '📻',
+      title: tBoth('card.radio.title'),
+      subtitle: tBoth('card.radio.sub'),
+      open: (c) => _push(c, () => const RadioScreen()),
+    ),
+    ShelfItem(
+      icon: '🎧',
+      title: tBoth('card.listen.title'),
+      subtitle: tBoth('card.listen.sub'),
+      open: (c) => _push(c, () => const ListeningScreen()),
+    ),
+  ],
+);
 
 HomeShelf _lessonsShelf() => HomeShelf(
-      key: 'lessons',
-      icon: '🎓',
-      title: tBoth('shelf.lessons.title'),
-      tint: AppColors.goldMuted,
-      all: () => const LessonsScreen(),
-      pinned: ShelfItem(
-        icon: Lessons.all.first.icon,
-        title: tBoth('lesson.${Lessons.all.first.id}.title'),
-        subtitle: tBoth('lesson.${Lessons.all.first.id}.summary'),
-        open: (c) => _push(c, () => LessonScreen(lesson: Lessons.all.first)),
+  key: 'lessons',
+  icon: '🎓',
+  title: tBoth('shelf.lessons.title'),
+  tint: AppColors.goldMuted,
+  all: () => const LessonsScreen(),
+  pinned: ShelfItem(
+    icon: Lessons.all.first.icon,
+    title: tBoth('lesson.${Lessons.all.first.id}.title'),
+    subtitle: tBoth('lesson.${Lessons.all.first.id}.summary'),
+    open: (c) => _push(c, () => LessonScreen(lesson: Lessons.all.first)),
+  ),
+  rest: [
+    for (final lesson in Lessons.all.skip(1))
+      ShelfItem(
+        icon: lesson.icon,
+        title: tBoth('lesson.${lesson.id}.title'),
+        subtitle: tBoth('lesson.${lesson.id}.summary'),
+        open: (c) => _push(c, () => LessonScreen(lesson: lesson)),
       ),
-      rest: [
-        for (final lesson in Lessons.all.skip(1))
-          ShelfItem(
-            icon: lesson.icon,
-            title: tBoth('lesson.${lesson.id}.title'),
-            subtitle: tBoth('lesson.${lesson.id}.summary'),
-            open: (c) => _push(c, () => LessonScreen(lesson: lesson)),
-          ),
-        ShelfItem(
-          icon: '🎬',
-          title: tBoth('card.prophets.title'),
-          subtitle: tBoth('card.prophets.sub'),
-          open: (c) => _push(c, () => const LessonsScreen()),
-        ),
-      ],
-    );
+    ShelfItem(
+      icon: '🎬',
+      title: tBoth('card.prophets.title'),
+      subtitle: tBoth('card.prophets.sub'),
+      open: (c) => _push(c, () => const LessonsScreen()),
+    ),
+  ],
+);
 
 HomeShelf _cardsShelf() {
   ShelfItem card(CardShelf shelf) => ShelfItem(
-        icon: shelf.icon,
-        title: tBoth('cardshelf.${shelf.id}.title'),
-        subtitle: tBoth('cardshelf.${shelf.id}.subtitle'),
-        open: (c) => _push(c, () => CardsScreen(shelf: shelf)),
-      );
+    icon: shelf.icon,
+    title: tBoth('cardshelf.${shelf.id}.title'),
+    subtitle: tBoth('cardshelf.${shelf.id}.subtitle'),
+    open: (c) => _push(c, () => CardsScreen(shelf: shelf)),
+  );
 
   return HomeShelf(
     key: 'cards',
@@ -286,20 +282,25 @@ HomeShelf _librarySheet() {
   final first = books.firstWhere((b) => b.isBundled, orElse: () => books.first);
 
   ShelfItem card(IslamicBook book) => ShelfItem(
-        icon: '📕',
-        title: tBoth('book.${book.id}'),
-        subtitle: book.isBundled
-            ? '${book.hadithCount} ${t('card.hadithCount')}'
-            : t('card.needsDownload'),
-        // A book already on the device opens straight into the reader; one
-        // that is not goes to the shelf screen, which knows how to fetch it.
-        open: (c) => _push(
-          c,
-          () => book.isBundled
-              ? BookReaderScreen(book: book)
-              : const BooksScreen(),
-        ),
-      );
+    icon: '📕',
+    title: tBoth('book.${book.id}'),
+    subtitle: book.isBundled
+        ? '${book.hadithCount} ${t('card.hadithCount')}'
+        : t('card.needsDownload'),
+    // A book already on the device opens straight into the reader; one
+    // that is not goes to the shelf screen, which knows how to fetch it.
+    open: (c) => _push(
+      c,
+      () => book.isBundled ? BookReaderScreen(book: book) : const BooksScreen(),
+    ),
+  );
+
+  final hadithEncItem = ShelfItem(
+    icon: '🕮',
+    title: tBoth('card.hadithEnc.title'),
+    subtitle: t('card.hadithEnc.sub'),
+    open: (c) => _push(c, () => const HadithEncyclopediaScreen()),
+  );
 
   return HomeShelf(
     key: 'library',
@@ -308,6 +309,10 @@ HomeShelf _librarySheet() {
     tint: AppColors.emeraldMuted,
     all: () => const BooksScreen(),
     pinned: card(first),
-    rest: [for (final book in books) if (book.id != first.id) card(book)],
+    rest: [
+      for (final book in books)
+        if (book.id != first.id) card(book),
+      hadithEncItem,
+    ],
   );
 }

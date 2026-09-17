@@ -85,6 +85,13 @@ class Sources {
       detail: '١٣٢ باباً — ٢٦٧ ذكراً',
     ),
     AppSource(
+      title: 'موسوعة الحديث',
+      holder: 'hadeethenc.com — جمعية الدعوة والإرشاد وتوعية الجاليات بالربوة',
+      kind: SourceKind.scripture,
+      standing: Standing.hosted,
+      detail: 'أحاديث مصنّفة بالموضوع مع شرحها، بترجمات معتمدة لا آلية',
+    ),
+    AppSource(
       title: 'التفسير الميسّر',
       holder: 'مجمع الملك فهد لطباعة المصحف الشريف',
       kind: SourceKind.scripture,

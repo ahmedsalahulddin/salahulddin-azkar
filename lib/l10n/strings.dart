@@ -301,6 +301,10 @@ const _ar = <String, String>{
   // Home shelves
   'home.seeAll': 'الكل',
 
+  // Hadith encyclopedia
+  'card.hadithEnc.title': 'موسوعة الحديث',
+  'card.hadithEnc.sub': 'أحاديث مبوّبة بالموضوع، بلغات متعددة',
+
   // Update check
   'account.checkUpdate': 'التحقق من وجود تحديث',
   'account.updateUpToDate': 'التطبيق مُحدَّث لآخر إصدار',
@@ -585,6 +589,10 @@ const _en = <String, String>{
 
   // Home shelves
   'home.seeAll': 'See all',
+
+  // Hadith encyclopedia
+  'card.hadithEnc.title': 'Hadith Encyclopedia',
+  'card.hadithEnc.sub': 'Hadiths by topic, in multiple languages',
 
   // Update check
   'account.checkUpdate': 'Check for updates',
