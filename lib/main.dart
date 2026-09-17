@@ -13,7 +13,9 @@ import 'constants/theme.dart';
 import 'screens/home_screen.dart';
 import 'screens/favorites_screen.dart';
 import 'screens/account_screen.dart';
+import 'screens/tahfeez/tahfeez_tab.dart';
 import 'services/auth_service.dart';
+import 'services/tahfeez_service.dart';
 import 'services/notification_service.dart';
 import 'services/adhan_downloads.dart';
 import 'services/daily_reminders.dart';
@@ -132,7 +134,12 @@ class _MainNavigationState extends State<MainNavigation> {
   // Land on الرئيسية (prayer times + sections), not the favorites tab.
   int _currentIndex = 1;
 
-  final _screens = const [FavoritesScreen(), HomeScreen(), AccountScreen()];
+  final _screens = const [
+    FavoritesScreen(),
+    HomeScreen(),
+    TahfeezTab(),
+    AccountScreen(),
+  ];
 
   static const _promptKey = 'notification_prompt_shown';
 
@@ -140,6 +147,8 @@ class _MainNavigationState extends State<MainNavigation> {
   void initState() {
     super.initState();
     AppLocale.locale.addListener(_onLocale);
+    AuthService.user.addListener(TahfeezService.refreshPendingBadge);
+    TahfeezService.refreshPendingBadge();
     if (!kIsWeb) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _checkNotifications();
@@ -152,6 +161,7 @@ class _MainNavigationState extends State<MainNavigation> {
   @override
   void dispose() {
     AppLocale.locale.removeListener(_onLocale);
+    AuthService.user.removeListener(TahfeezService.refreshPendingBadge);
     super.dispose();
   }
 
@@ -434,7 +444,19 @@ class _MainNavigationState extends State<MainNavigation> {
                 label: t('nav.home'),
               ),
               BottomNavigationBarItem(
-                icon: const Icon(Icons.person_rounded),
+                icon: const Icon(Icons.school_rounded),
+                label: t('nav.tahfeez'),
+              ),
+              BottomNavigationBarItem(
+                icon: ValueListenableBuilder<int>(
+                  valueListenable: TahfeezService.pendingBadge,
+                  builder: (_, n, _) => Badge(
+                    isLabelVisible: n > 0,
+                    label: Text('$n'),
+                    backgroundColor: AppColors.error,
+                    child: const Icon(Icons.person_rounded),
+                  ),
+                ),
                 label: t('nav.account'),
               ),
             ],

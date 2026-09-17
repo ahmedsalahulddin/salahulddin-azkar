@@ -7,9 +7,11 @@ import '../services/app_locale.dart';
 import '../services/auth_service.dart';
 import '../services/sync_service.dart';
 import '../services/section_config.dart';
+import '../services/tahfeez_service.dart';
 import '../services/update_checker.dart';
 import '../widgets/sign_in_buttons.dart';
 import 'admin_screen.dart';
+import 'tahfeez/teacher_requests_screen.dart';
 import 'settings_screen.dart';
 import 'sources_screen.dart';
 
@@ -217,6 +219,26 @@ class _AccountScreenState extends State<AccountScreen> {
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => const AdminScreen()),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                ValueListenableBuilder<int>(
+                  valueListenable: TahfeezService.pendingBadge,
+                  builder: (_, n, _) => _tile(
+                    icon: Icons.how_to_reg,
+                    title: n > 0
+                        ? '${t('account.teacherRequestsTitle')} ($n)'
+                        : t('account.teacherRequestsTitle'),
+                    subtitle: t('account.teacherRequestsSub'),
+                    onTap: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const TeacherRequestsScreen(),
+                        ),
+                      );
+                      TahfeezService.refreshPendingBadge();
+                    },
                   ),
                 ),
               ],
