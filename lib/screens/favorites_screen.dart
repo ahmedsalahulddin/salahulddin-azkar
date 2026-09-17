@@ -6,6 +6,7 @@ import '../services/favourites.dart';
 import '../services/storage_service.dart';
 import '../widgets/adhkar_card.dart';
 import '../widgets/dhikr_audio.dart';
+import '../widgets/dhikr_text.dart';
 import '../widgets/favourite_star.dart';
 import '../widgets/speak_button.dart';
 import '../widgets/tasbih_counter.dart';
@@ -60,12 +61,10 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       builder: (context, at, _) {
         if (at == null) {
           return GestureDetector(
-            onTap: () =>
-                Tts.readAll([for (final e in _favorites) e.text]),
+            onTap: () => Tts.readAll([for (final e in _favorites) e.text]),
             behavior: HitTestBehavior.opaque,
             child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
               decoration: BoxDecoration(
                 color: AppColors.goldMuted,
                 borderRadius: BorderRadius.circular(20),
@@ -76,11 +75,14 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                 children: [
                   Icon(Icons.play_arrow, color: AppColors.gold, size: 18),
                   SizedBox(width: 6),
-                  Text('اقرأ الكل',
-                      style: TextStyle(
-                          color: AppColors.gold,
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold)),
+                  Text(
+                    'اقرأ الكل',
+                    style: TextStyle(
+                      color: AppColors.gold,
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -91,8 +93,11 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(
-              icon: const Icon(Icons.stop_circle_outlined,
-                  color: AppColors.gold, size: 24),
+              icon: const Icon(
+                Icons.stop_circle_outlined,
+                color: AppColors.gold,
+                size: 24,
+              ),
               onPressed: Tts.stop,
               tooltip: 'إيقاف',
             ),
@@ -102,8 +107,11 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
               style: const TextStyle(color: AppColors.textGold, fontSize: 12),
             ),
             IconButton(
-              icon: const Icon(Icons.skip_next,
-                  color: AppColors.textSecondary, size: 22),
+              icon: const Icon(
+                Icons.skip_next,
+                color: AppColors.textSecondary,
+                size: 22,
+              ),
               onPressed: Tts.skip,
               tooltip: 'التالي',
             ),
@@ -133,8 +141,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         color: AppColors.blackCard,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-            color: reading ? AppColors.gold : AppColors.goldBorder,
-            width: reading ? 2 : 1),
+          color: reading ? AppColors.gold : AppColors.goldBorder,
+          width: reading ? 2 : 1,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -144,7 +153,10 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             textAlign: TextAlign.justify,
             textDirection: TextDirection.rtl,
             style: const TextStyle(
-                color: AppColors.textPrimary, fontSize: 18, height: 1.9),
+              color: AppColors.textPrimary,
+              fontSize: 18,
+              height: 1.9,
+            ),
           ),
           Row(
             children: [
@@ -154,7 +166,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                      color: AppColors.textMuted, fontSize: 11),
+                    color: AppColors.textMuted,
+                    fontSize: 11,
+                  ),
                 ),
               ),
               if (entry.hisn != null)
@@ -172,13 +186,13 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   /// A ring around whatever is being read, for cards that draw their own
   /// border and cannot simply be told to light it.
   Widget _lit(Widget card) => Container(
-        margin: const EdgeInsets.symmetric(horizontal: 10),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.gold, width: 2),
-        ),
-        child: card,
-      );
+    margin: const EdgeInsets.symmetric(horizontal: 10),
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(20),
+      border: Border.all(color: AppColors.gold, width: 2),
+    ),
+    child: card,
+  );
 
   void _openTasbih(Dhikr dhikr) {
     Navigator.push(
@@ -200,17 +214,32 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 decoration: const BoxDecoration(
-                  border: Border(bottom: BorderSide(color: AppColors.goldBorder)),
+                  border: Border(
+                    bottom: BorderSide(color: AppColors.goldBorder),
+                  ),
                 ),
                 child: Column(
                   children: [
                     const Text('⭐', style: TextStyle(fontSize: 32)),
                     const SizedBox(height: 4),
-                    const Text('أذكاري',
-                        style: TextStyle(color: AppColors.gold, fontSize: 24, fontWeight: FontWeight.bold)),
+                    const Text(
+                      'أذكاري',
+                      style: TextStyle(
+                        color: AppColors.gold,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     const SizedBox(height: 4),
-                    Text('${_favorites.length} أذكار محفوظة',
-                        style: const TextStyle(color: AppColors.textMuted, fontSize: 13)),
+                    Text(
+                      '${_favorites.length} أذكار محفوظة',
+                      style: const TextStyle(
+                        color: AppColors.textMuted,
+                        fontSize: 13,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    const DhikrLangButton(),
                     if (_favorites.isNotEmpty) ...[
                       const SizedBox(height: 10),
                       _readAllBar(),
@@ -226,16 +255,32 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: const [
-                            Text('☆', style: TextStyle(fontSize: 64, color: AppColors.textMuted)),
+                            Text(
+                              '☆',
+                              style: TextStyle(
+                                fontSize: 64,
+                                color: AppColors.textMuted,
+                              ),
+                            ),
                             SizedBox(height: 16),
-                            Text('لا توجد أذكار محفوظة',
-                                style: TextStyle(color: AppColors.textSecondary, fontSize: 20, fontWeight: FontWeight.bold)),
+                            Text(
+                              'لا توجد أذكار محفوظة',
+                              style: TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                             SizedBox(height: 8),
                             Padding(
                               padding: EdgeInsets.symmetric(horizontal: 40),
                               child: Text(
                                 'اضغط على النجمة ★ في أي ذكر لإضافته إلى المفضلة',
-                                style: TextStyle(color: AppColors.textMuted, fontSize: 14, height: 1.6),
+                                style: TextStyle(
+                                  color: AppColors.textMuted,
+                                  fontSize: 14,
+                                  height: 1.6,
+                                ),
                                 textAlign: TextAlign.center,
                               ),
                             ),
@@ -249,12 +294,12 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                           padding: const EdgeInsets.only(bottom: 24, top: 8),
                           itemBuilder: (context, index) =>
                               ValueListenableBuilder<int?>(
-                            valueListenable: Tts.readingIndex,
-                            builder: (context, at, _) => _card(
-                              _favorites[index],
-                              reading: at == index,
-                            ),
-                          ),
+                                valueListenable: Tts.readingIndex,
+                                builder: (context, at, _) => _card(
+                                  _favorites[index],
+                                  reading: at == index,
+                                ),
+                              ),
                         ),
                       ),
               ),

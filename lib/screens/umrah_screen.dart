@@ -53,9 +53,11 @@ class _UmrahScreenState extends State<UmrahScreen> {
   }
 
   Future<void> _copy(HisnDhikr dhikr, String chapterTitle) async {
-    await Clipboard.setData(ClipboardData(
-      text: '${dhikr.text}\n\n[$chapterTitle — ${UmrahGuide.attribution}]',
-    ));
+    await Clipboard.setData(
+      ClipboardData(
+        text: '${dhikr.text}\n\n[$chapterTitle — ${UmrahGuide.attribution}]',
+      ),
+    );
     if (!mounted) return;
     HapticFeedback.lightImpact();
     ScaffoldMessenger.of(context).showSnackBar(
@@ -79,10 +81,12 @@ class _UmrahScreenState extends State<UmrahScreen> {
           title: const Text('أدعية العمرة'),
           backgroundColor: AppColors.black,
           foregroundColor: AppColors.gold,
+          actions: const [DhikrLangButton()],
         ),
         body: stages == null
             ? const Center(
-                child: CircularProgressIndicator(color: AppColors.gold))
+                child: CircularProgressIndicator(color: AppColors.gold),
+              )
             : ListView.builder(
                 padding: const EdgeInsets.fromLTRB(12, 12, 12, 28),
                 itemCount: stages.length + 2,
@@ -114,15 +118,21 @@ class _UmrahScreenState extends State<UmrahScreen> {
         children: [
           const Text('🕋', style: TextStyle(fontSize: 34)),
           const SizedBox(height: 8),
-          const Text('أدعية العمرة',
-              style: TextStyle(
-                  color: AppColors.gold,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold)),
+          const Text(
+            'أدعية العمرة',
+            style: TextStyle(
+              color: AppColors.gold,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const SizedBox(height: 6),
           Text(
             'مرتّبة على خطوات النسك — ${QuranService.toArabicDigits(_total)} دعاءً',
-            style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 13,
+            ),
           ),
         ],
       ),
@@ -138,8 +148,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
       decoration: BoxDecoration(
         color: AppColors.blackCard,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-            color: open ? AppColors.gold : AppColors.goldBorder),
+        border: Border.all(color: open ? AppColors.gold : AppColors.goldBorder),
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(
@@ -164,11 +173,14 @@ class _UmrahScreenState extends State<UmrahScreen> {
                       border: Border.all(color: AppColors.goldBorder),
                     ),
                     child: Center(
-                      child: Text(QuranService.toArabicDigits(index + 1),
-                          style: const TextStyle(
-                              color: AppColors.gold,
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold)),
+                      child: Text(
+                        QuranService.toArabicDigits(index + 1),
+                        style: const TextStyle(
+                          color: AppColors.gold,
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -178,20 +190,30 @@ class _UmrahScreenState extends State<UmrahScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(stage.title,
-                            style: const TextStyle(
-                                color: AppColors.textPrimary,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600)),
+                        Text(
+                          stage.title,
+                          style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                         const SizedBox(height: 2),
-                        Text('${QuranService.toArabicDigits(count)} دعاء',
-                            style: const TextStyle(
-                                color: AppColors.textMuted, fontSize: 11)),
+                        Text(
+                          '${QuranService.toArabicDigits(count)} دعاء',
+                          style: const TextStyle(
+                            color: AppColors.textMuted,
+                            fontSize: 11,
+                          ),
+                        ),
                       ],
                     ),
                   ),
-                  Icon(open ? Icons.expand_less : Icons.expand_more,
-                      color: AppColors.textMuted, size: 22),
+                  Icon(
+                    open ? Icons.expand_less : Icons.expand_more,
+                    color: AppColors.textMuted,
+                    size: 22,
+                  ),
                 ],
               ),
             ),
@@ -201,9 +223,14 @@ class _UmrahScreenState extends State<UmrahScreen> {
               width: double.infinity,
               color: AppColors.blackSurface,
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              child: Text(stage.guidance,
-                  style: const TextStyle(
-                      color: AppColors.textSecondary, fontSize: 12, height: 1.5)),
+              child: Text(
+                stage.guidance,
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 12,
+                  height: 1.5,
+                ),
+              ),
             ),
             for (final chapter in chapters) ..._chapterBlock(chapter),
             const SizedBox(height: 6),
@@ -217,13 +244,16 @@ class _UmrahScreenState extends State<UmrahScreen> {
     return [
       Padding(
         padding: const EdgeInsets.fromLTRB(14, 12, 14, 6),
-        child: BilingualText(chapter.displayTitle,
-            textAlign: TextAlign.right,
-            maxLines: 2,
-            style: const TextStyle(
-                color: AppColors.textGold,
-                fontSize: 13,
-                fontWeight: FontWeight.bold)),
+        child: BilingualText(
+          chapter.displayTitle,
+          textAlign: TextAlign.right,
+          maxLines: 2,
+          style: const TextStyle(
+            color: AppColors.textGold,
+            fontSize: 13,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
       for (final dhikr in chapter.items)
         Container(
@@ -251,18 +281,22 @@ class _UmrahScreenState extends State<UmrahScreen> {
                   if (dhikr.repeat > 1)
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 3),
+                        horizontal: 10,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.goldMuted,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(color: AppColors.goldBorder),
                       ),
                       child: Text(
-                          '${QuranService.toArabicDigits(dhikr.repeat)} مرات',
-                          style: const TextStyle(
-                              color: AppColors.textGold,
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold)),
+                        '${QuranService.toArabicDigits(dhikr.repeat)} مرات',
+                        style: const TextStyle(
+                          color: AppColors.textGold,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   const Spacer(),
                   DhikrListenButton(dhikr: dhikr, controller: _audio),
@@ -276,8 +310,11 @@ class _UmrahScreenState extends State<UmrahScreen> {
                     behavior: HitTestBehavior.opaque,
                     child: const Padding(
                       padding: EdgeInsets.all(4),
-                      child: Icon(Icons.copy,
-                          color: AppColors.textMuted, size: 17),
+                      child: Icon(
+                        Icons.copy,
+                        color: AppColors.textMuted,
+                        size: 17,
+                      ),
                     ),
                   ),
                 ],
@@ -289,9 +326,11 @@ class _UmrahScreenState extends State<UmrahScreen> {
   }
 
   Widget _footer() => Padding(
-        padding: const EdgeInsets.only(top: 6),
-        child: Text(UmrahGuide.attribution,
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: AppColors.textMuted, fontSize: 11)),
-      );
+    padding: const EdgeInsets.only(top: 6),
+    child: Text(
+      UmrahGuide.attribution,
+      textAlign: TextAlign.center,
+      style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+    ),
+  );
 }

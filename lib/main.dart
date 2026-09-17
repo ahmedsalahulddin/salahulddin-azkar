@@ -25,6 +25,7 @@ import 'services/prayer_settings.dart';
 import 'services/section_config.dart';
 import 'services/sync_service.dart';
 import 'l10n/strings.dart';
+import 'widgets/dhikr_text.dart';
 import 'widgets/frame_tuning.dart';
 import 'widgets/mushaf_frames.dart';
 import 'widgets/mushaf_palettes.dart';
@@ -32,10 +33,12 @@ import 'widgets/mushaf_palettes.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    statusBarColor: AppColors.black,
-    statusBarIconBrightness: Brightness.light,
-  ));
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: AppColors.black,
+      statusBarIconBrightness: Brightness.light,
+    ),
+  );
   // Lets recitation keep playing once the reader leaves the app, and puts the
   // controls in the notification shade and on the lock screen. Must run before
   // any player is built.
@@ -63,6 +66,7 @@ void main() async {
   } catch (_) {}
 
   await AppLocale.load();
+  await DhikrLangPref.load();
   await PlaybackSpeed.load();
   await PrayerSettings.load();
   PrayerAlerts.onChanged = NotificationService.schedulePrayerAlerts;
@@ -108,10 +112,8 @@ class NoorAzkarApp extends StatelessWidget {
       builder: (context, child) => ValueListenableBuilder<String>(
         valueListenable: AppLocale.locale,
         builder: (_, locale, __) => Directionality(
-          textDirection:
-              locale == 'en' ? TextDirection.ltr : TextDirection.rtl,
-          child: SafeArea(
-              top: false, left: false, right: false, child: child!),
+          textDirection: locale == 'en' ? TextDirection.ltr : TextDirection.rtl,
+          child: SafeArea(top: false, left: false, right: false, child: child!),
         ),
       ),
       home: const MainNavigation(),
@@ -130,11 +132,7 @@ class _MainNavigationState extends State<MainNavigation> {
   // Land on الرئيسية (prayer times + sections), not the favorites tab.
   int _currentIndex = 1;
 
-  final _screens = const [
-    FavoritesScreen(),
-    HomeScreen(),
-    AccountScreen(),
-  ];
+  final _screens = const [FavoritesScreen(), HomeScreen(), AccountScreen()];
 
   static const _promptKey = 'notification_prompt_shown';
 
@@ -193,11 +191,14 @@ class _MainNavigationState extends State<MainNavigation> {
               Icon(Icons.notifications_active, color: AppColors.gold, size: 24),
               SizedBox(width: 8),
               Expanded(
-                child: Text('السماح بالإشعارات',
-                    style: TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold)),
+                child: Text(
+                  'السماح بالإشعارات',
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ],
           ),
@@ -205,24 +206,33 @@ class _MainNavigationState extends State<MainNavigation> {
             'التطبيق يحتاج الإشعارات عشان يذكّرك بأذكار الصباح والمساء'
             ' وأوقات الصلاة.\n\n'
             'افتح إعدادات التطبيق وفعّل الإشعارات.',
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.5),
+            style: TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 14,
+              height: 1.5,
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('لاحقاً',
-                  style: TextStyle(color: AppColors.textMuted, fontSize: 14)),
+              child: const Text(
+                'لاحقاً',
+                style: TextStyle(color: AppColors.textMuted, fontSize: 14),
+              ),
             ),
             TextButton(
               onPressed: () {
                 Navigator.pop(ctx);
                 Geolocator.openAppSettings();
               },
-              child: const Text('فتح الإعدادات',
-                  style: TextStyle(
-                      color: AppColors.gold,
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold)),
+              child: const Text(
+                'فتح الإعدادات',
+                style: TextStyle(
+                  color: AppColors.gold,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ],
         ),
@@ -247,14 +257,34 @@ class _MainNavigationState extends State<MainNavigation> {
     final isEn = AppLocale.isEn;
     final items = isEn
         ? [
-            ('🌍', 'Quran Translations', 'Choose from 8 languages with auto-playback'),
-            ('🎙️', 'Full Recitation', 'Reciter → Translation → next verse, automatically'),
+            (
+              '🌍',
+              'Quran Translations',
+              'Choose from 8 languages with auto-playback',
+            ),
+            (
+              '🎙️',
+              'Full Recitation',
+              'Reciter → Translation → next verse, automatically',
+            ),
             ('📜', 'Auto-scroll', 'The current verse always stays in view'),
-            ('🌐', 'Full English UI', 'Every section of the app is now translated'),
+            (
+              '🌐',
+              'Full English UI',
+              'Every section of the app is now translated',
+            ),
           ]
         : [
-            ('🌍', 'ترجمات القرآن', 'اختر من ٨ لغات مع التلاوة والترجمة الصوتية'),
-            ('🎙️', 'تلاوة متكاملة', 'مقرئ ثم ترجمة، انتقال تلقائي للآية التالية'),
+            (
+              '🌍',
+              'ترجمات القرآن',
+              'اختر من ٨ لغات مع التلاوة والترجمة الصوتية',
+            ),
+            (
+              '🎙️',
+              'تلاوة متكاملة',
+              'مقرئ ثم ترجمة، انتقال تلقائي للآية التالية',
+            ),
             ('📜', 'تمرير تلقائي', 'الآية الجارية دائماً في المنظور'),
             ('🌐', 'واجهة بالإنجليزي', 'كل أقسام التطبيق مترجمة بالكامل'),
           ];
@@ -278,25 +308,32 @@ class _MainNavigationState extends State<MainNavigation> {
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.goldMuted,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(color: AppColors.goldBorder),
                       ),
-                      child: Text('v$version',
-                          style: const TextStyle(
-                              color: AppColors.gold,
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold)),
+                      child: Text(
+                        'v$version',
+                        style: const TextStyle(
+                          color: AppColors.gold,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                     const SizedBox(width: 10),
                     Text(
                       isEn ? "What's New" : 'ما الجديد',
                       style: const TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold),
+                        color: AppColors.textPrimary,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
@@ -311,17 +348,23 @@ class _MainNavigationState extends State<MainNavigation> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(title,
-                                style: const TextStyle(
-                                    color: AppColors.textPrimary,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold)),
+                            Text(
+                              title,
+                              style: const TextStyle(
+                                color: AppColors.textPrimary,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                             const SizedBox(height: 2),
-                            Text(sub,
-                                style: const TextStyle(
-                                    color: AppColors.textMuted,
-                                    fontSize: 12,
-                                    height: 1.4)),
+                            Text(
+                              sub,
+                              style: const TextStyle(
+                                color: AppColors.textMuted,
+                                fontSize: 12,
+                                height: 1.4,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -345,9 +388,10 @@ class _MainNavigationState extends State<MainNavigation> {
                     child: Text(
                       isEn ? 'Got it' : 'فهمت',
                       style: const TextStyle(
-                          color: AppColors.gold,
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold),
+                        color: AppColors.gold,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
@@ -364,13 +408,12 @@ class _MainNavigationState extends State<MainNavigation> {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        body: IndexedStack(
-          index: _currentIndex,
-          children: _screens,
-        ),
+        body: IndexedStack(index: _currentIndex, children: _screens),
         bottomNavigationBar: Container(
           decoration: const BoxDecoration(
-            border: Border(top: BorderSide(color: AppColors.goldBorder, width: 1)),
+            border: Border(
+              top: BorderSide(color: AppColors.goldBorder, width: 1),
+            ),
           ),
           child: BottomNavigationBar(
             currentIndex: _currentIndex,
@@ -382,9 +425,18 @@ class _MainNavigationState extends State<MainNavigation> {
             unselectedFontSize: 12,
             type: BottomNavigationBarType.fixed,
             items: [
-              BottomNavigationBarItem(icon: const Icon(Icons.star_rounded), label: t('nav.adhkar')),
-              BottomNavigationBarItem(icon: const Icon(Icons.home_rounded), label: t('nav.home')),
-              BottomNavigationBarItem(icon: const Icon(Icons.person_rounded), label: t('nav.account')),
+              BottomNavigationBarItem(
+                icon: const Icon(Icons.star_rounded),
+                label: t('nav.adhkar'),
+              ),
+              BottomNavigationBarItem(
+                icon: const Icon(Icons.home_rounded),
+                label: t('nav.home'),
+              ),
+              BottomNavigationBarItem(
+                icon: const Icon(Icons.person_rounded),
+                label: t('nav.account'),
+              ),
             ],
           ),
         ),

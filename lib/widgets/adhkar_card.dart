@@ -69,10 +69,12 @@ class _AdhkarCardState extends State<AdhkarCard> {
     try {
       if (AppAudio.currentId() != _tagId) {
         await player.stop();
-        await player.setAudioSource(AudioSource.uri(
-          Uri.parse(url),
-          tag: MediaItem(id: _tagId, title: 'ذكر', album: 'الأذكار'),
-        ));
+        await player.setAudioSource(
+          AudioSource.uri(
+            Uri.parse(url),
+            tag: MediaItem(id: _tagId, title: 'ذكر', album: 'الأذكار'),
+          ),
+        );
       }
       await PlaybackSpeed.apply();
       await player.play();
@@ -117,7 +119,10 @@ class _AdhkarCardState extends State<AdhkarCard> {
                     // being lit here too — the card used to read the list once
                     // and then never look again.
                     FavouriteStar(
-                        id: widget.dhikr.id, size: 22, announce: false),
+                      id: widget.dhikr.id,
+                      size: 22,
+                      announce: false,
+                    ),
                     const SizedBox(height: 8),
                     GestureDetector(
                       onTap: widget.onTasbih,
@@ -137,8 +142,9 @@ class _AdhkarCardState extends State<AdhkarCard> {
                         onTap: _toggleAudio,
                         child: Icon(
                           _isPlaying ? Icons.pause_circle : Icons.volume_up,
-                          color:
-                              _isPlaying ? AppColors.gold : AppColors.textMuted,
+                          color: _isPlaying
+                              ? AppColors.gold
+                              : AppColors.textMuted,
                           size: 20,
                         ),
                       ),
@@ -146,7 +152,8 @@ class _AdhkarCardState extends State<AdhkarCard> {
                     if (dhikr.benefit != null) ...[
                       const SizedBox(height: 12),
                       GestureDetector(
-                        onTap: () => setState(() => _showBenefit = !_showBenefit),
+                        onTap: () =>
+                            setState(() => _showBenefit = !_showBenefit),
                         child: Icon(
                           _showBenefit ? Icons.info : Icons.info_outline,
                           color: AppColors.textMuted,
@@ -168,6 +175,7 @@ class _AdhkarCardState extends State<AdhkarCard> {
                       DhikrText(
                         arabic: dhikr.text,
                         english: dhikr.english,
+                        moreTranslations: adhkarTranslationsFor(dhikr.id),
                         fontSize: dhikrSize,
                         color: AppColors.textPrimary,
                       ),
@@ -176,14 +184,19 @@ class _AdhkarCardState extends State<AdhkarCard> {
                         Container(
                           padding: const EdgeInsets.only(top: 8),
                           decoration: const BoxDecoration(
-                            border: Border(top: BorderSide(color: AppColors.goldBorder)),
+                            border: Border(
+                              top: BorderSide(color: AppColors.goldBorder),
+                            ),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               Text(
                                 '📖 ${dhikr.source}',
-                                style: TextStyle(color: AppColors.textSecondary, fontSize: sourceSize),
+                                style: TextStyle(
+                                  color: AppColors.textSecondary,
+                                  fontSize: sourceSize,
+                                ),
                                 textAlign: TextAlign.right,
                               ),
                               if (dhikr.benefit != null) ...[
@@ -196,7 +209,10 @@ class _AdhkarCardState extends State<AdhkarCard> {
                                   ),
                                   child: Text(
                                     '✨ ${dhikr.benefit}',
-                                    style: TextStyle(color: AppColors.textSecondary, fontSize: sourceSize),
+                                    style: TextStyle(
+                                      color: AppColors.textSecondary,
+                                      fontSize: sourceSize,
+                                    ),
                                     textAlign: TextAlign.right,
                                     textDirection: TextDirection.rtl,
                                   ),
@@ -212,15 +228,24 @@ class _AdhkarCardState extends State<AdhkarCard> {
                                       widget.onTasbih?.call();
                                     },
                                     child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 14,
+                                        vertical: 6,
+                                      ),
                                       decoration: BoxDecoration(
                                         color: AppColors.goldMuted,
                                         borderRadius: BorderRadius.circular(20),
-                                        border: Border.all(color: AppColors.goldBorder),
+                                        border: Border.all(
+                                          color: AppColors.goldBorder,
+                                        ),
                                       ),
                                       child: const Text(
                                         'عداد التسبيح',
-                                        style: TextStyle(color: AppColors.gold, fontSize: 13, fontWeight: FontWeight.bold),
+                                        style: TextStyle(
+                                          color: AppColors.gold,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                     ),
                                   ),

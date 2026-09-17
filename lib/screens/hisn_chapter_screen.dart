@@ -51,9 +51,12 @@ class _HisnChapterScreenState extends State<HisnChapterScreen> {
   }
 
   Future<void> _copy(HisnDhikr d) async {
-    await Clipboard.setData(ClipboardData(
-      text: '${d.text}\n\n[${widget.chapter.title} — ${HisnService.attribution}]',
-    ));
+    await Clipboard.setData(
+      ClipboardData(
+        text:
+            '${d.text}\n\n[${widget.chapter.title} — ${HisnService.attribution}]',
+      ),
+    );
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -74,12 +77,15 @@ class _HisnChapterScreenState extends State<HisnChapterScreen> {
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
-          title: BilingualText(chapter.displayTitle,
-              style: const TextStyle(color: AppColors.gold, fontSize: 15),
-              maxLines: 2),
+          title: BilingualText(
+            chapter.displayTitle,
+            style: const TextStyle(color: AppColors.gold, fontSize: 15),
+            maxLines: 2,
+          ),
           backgroundColor: AppColors.black,
           foregroundColor: AppColors.gold,
           actions: [
+            const DhikrLangButton(),
             const SpeedButton(showLabel: false),
             if (_counts.isNotEmpty)
               IconButton(
@@ -100,12 +106,20 @@ class _HisnChapterScreenState extends State<HisnChapterScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('${chapter.items.length} أذكار',
-                            style: const TextStyle(
-                                color: AppColors.textMuted, fontSize: 12)),
-                        Text('أتممت $done',
-                            style: const TextStyle(
-                                color: AppColors.textGold, fontSize: 12)),
+                        Text(
+                          '${chapter.items.length} أذكار',
+                          style: const TextStyle(
+                            color: AppColors.textMuted,
+                            fontSize: 12,
+                          ),
+                        ),
+                        Text(
+                          'أتممت $done',
+                          style: const TextStyle(
+                            color: AppColors.textGold,
+                            fontSize: 12,
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 6),
@@ -114,8 +128,9 @@ class _HisnChapterScreenState extends State<HisnChapterScreen> {
                       child: LinearProgressIndicator(
                         value: done / chapter.items.length,
                         backgroundColor: AppColors.blackSurface,
-                        valueColor:
-                            const AlwaysStoppedAnimation(AppColors.gold),
+                        valueColor: const AlwaysStoppedAnimation(
+                          AppColors.gold,
+                        ),
                         minHeight: 5,
                       ),
                     ),
@@ -161,7 +176,10 @@ class _HisnChapterScreenState extends State<HisnChapterScreen> {
             DhikrText(
               arabic: d.text,
               english: d.english,
-              moreTranslations: hisnTranslationsFor(widget.chapter.id, d.number),
+              moreTranslations: hisnTranslationsFor(
+                widget.chapter.id,
+                d.number,
+              ),
               fontSize: 19,
               color: done ? AppColors.textSecondary : AppColors.textPrimary,
               textAlign: TextAlign.justify,
@@ -171,21 +189,25 @@ class _HisnChapterScreenState extends State<HisnChapterScreen> {
               children: [
                 // Repeat / progress badge
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 5,
+                  ),
                   decoration: BoxDecoration(
                     color: done ? AppColors.emerald : AppColors.goldMuted,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: done ? AppColors.emeraldLight : AppColors.goldBorder,
+                      color: done
+                          ? AppColors.emeraldLight
+                          : AppColors.goldBorder,
                     ),
                   ),
                   child: Text(
                     done
                         ? '✓ تمّ'
                         : d.repeat == 1
-                            ? 'مرة واحدة'
-                            : '${QuranService.toArabicDigits(count)} / ${QuranService.toArabicDigits(d.repeat)}',
+                        ? 'مرة واحدة'
+                        : '${QuranService.toArabicDigits(count)} / ${QuranService.toArabicDigits(d.repeat)}',
                     style: TextStyle(
                       color: done ? AppColors.white : AppColors.textGold,
                       fontSize: 12,
@@ -207,8 +229,11 @@ class _HisnChapterScreenState extends State<HisnChapterScreen> {
                   behavior: HitTestBehavior.opaque,
                   child: const Padding(
                     padding: EdgeInsets.all(4),
-                    child:
-                        Icon(Icons.copy, color: AppColors.textMuted, size: 17),
+                    child: Icon(
+                      Icons.copy,
+                      color: AppColors.textMuted,
+                      size: 17,
+                    ),
                   ),
                 ),
               ],
@@ -220,11 +245,11 @@ class _HisnChapterScreenState extends State<HisnChapterScreen> {
   }
 
   Widget _attribution() => Padding(
-        padding: const EdgeInsets.only(top: 8),
-        child: Text(
-          HisnService.attribution,
-          textAlign: TextAlign.center,
-          style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
-        ),
-      );
+    padding: const EdgeInsets.only(top: 8),
+    child: Text(
+      HisnService.attribution,
+      textAlign: TextAlign.center,
+      style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+    ),
+  );
 }

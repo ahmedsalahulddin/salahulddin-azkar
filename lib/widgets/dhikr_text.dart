@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/theme.dart';
 
 /// Display names for the machine-translated languages a caller may pass in
 /// [DhikrText.moreTranslations], in picker order.
-const _moreLanguageNames = <String, String>{
+const dhikrMoreLanguageNames = <String, String>{
   'fr': 'Français',
   'ur': 'اردو',
   'id': 'Indonesia',
@@ -14,17 +15,118 @@ const _moreLanguageNames = <String, String>{
   'ha': 'Hausa',
 };
 
-/// A dhikr's Arabic text with an inline translation toggle.
-///
-/// Used everywhere a dhikr/dua is read — the adhkar cards, Hisn al-Muslim
-/// chapters, and the Umrah guide. With only [english] set, it behaves as a
-/// plain English on/off toggle. When [moreTranslations] is also given (Hisn
-/// al-Muslim and the Umrah guide, which share its data), the toggle becomes
-/// a language picker covering English plus every language in
-/// [moreTranslations]; non-English choices are Claude AI machine
-/// translations, disclosed under the text. Silently renders Arabic-only
-/// when both are null/empty.
-class DhikrText extends StatefulWidget {
+/// The reader's chosen dhikr-translation language, shared by every
+/// [DhikrText] on screen at once — picked from a single [DhikrLangButton] at
+/// the top of the page rather than per card. Null means Arabic-only.
+class DhikrLangPref {
+  static const _key = '@noor_dhikr_lang';
+  static final ValueNotifier<String?> selected = ValueNotifier(null);
+
+  static Future<void> load() async {
+    final prefs = await SharedPreferences.getInstance();
+    selected.value = prefs.getString(_key);
+  }
+
+  static Future<void> set(String? lang) async {
+    selected.value = lang;
+    final prefs = await SharedPreferences.getInstance();
+    if (lang == null) {
+      await prefs.remove(_key);
+    } else {
+      await prefs.setString(_key, lang);
+    }
+  }
+}
+
+/// An app-bar action that opens a language picker and updates
+/// [DhikrLangPref] for every [DhikrText] on screen. Place one per screen
+/// that reads adhkar/duas — the Adhkar categories, Hisn al-Muslim chapters,
+/// and the Umrah guide all share the same reader preference.
+class DhikrLangButton extends StatelessWidget {
+  const DhikrLangButton({super.key});
+
+  void _pick(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppColors.blackCard,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+      ),
+      builder: (ctx) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: SafeArea(
+          child: ValueListenableBuilder<String?>(
+            valueListenable: DhikrLangPref.selected,
+            builder: (ctx, current, _) => Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(20, 16, 20, 4),
+                  child: Text(
+                    'لغة الترجمة',
+                    style: TextStyle(color: AppColors.gold, fontSize: 15),
+                  ),
+                ),
+                _tile(ctx, null, 'بدون ترجمة — عربي فقط', current),
+                _tile(ctx, 'en', 'English', current),
+                for (final code in dhikrMoreLanguageNames.keys)
+                  _tile(ctx, code, dhikrMoreLanguageNames[code]!, current),
+                const SizedBox(height: 8),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _tile(BuildContext ctx, String? code, String name, String? current) {
+    final selected = code == current;
+    return ListTile(
+      leading: Icon(
+        selected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+        color: selected ? AppColors.gold : AppColors.textMuted,
+        size: 19,
+      ),
+      title: Text(
+        name,
+        style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
+      ),
+      onTap: () {
+        Navigator.pop(ctx);
+        DhikrLangPref.set(code);
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<String?>(
+      valueListenable: DhikrLangPref.selected,
+      builder: (context, lang, _) => TextButton.icon(
+        onPressed: () => _pick(context),
+        icon: const Icon(Icons.translate, size: 17),
+        label: Text(
+          lang == null
+              ? 'ترجمة'
+              : (lang == 'en' ? 'English' : dhikrMoreLanguageNames[lang]!),
+          style: const TextStyle(fontSize: 13),
+        ),
+        style: TextButton.styleFrom(foregroundColor: AppColors.gold),
+      ),
+    );
+  }
+}
+
+/// A dhikr's Arabic text, with its translation shown underneath whenever
+/// [DhikrLangPref.selected] is set and this dhikr has a rendering in that
+/// language. Used everywhere a dhikr/dua is read — the adhkar cards, Hisn
+/// al-Muslim chapters, and the Umrah guide — so picking a language once at
+/// the top of any of those screens (via [DhikrLangButton]) translates every
+/// card on it at once. Non-English translations are Claude AI machine
+/// renderings, disclosed under the text; [english] alone is treated as
+/// official/hand-translated and carries no such disclosure.
+class DhikrText extends StatelessWidget {
   final String arabic;
   final String? english;
 
@@ -46,160 +148,63 @@ class DhikrText extends StatefulWidget {
   });
 
   @override
-  State<DhikrText> createState() => _DhikrTextState();
-}
-
-class _DhikrTextState extends State<DhikrText> {
-  String? _activeLang;
-
-  Map<String, String> get _all => {
-        if (widget.english != null) 'en': widget.english!,
-        ...?widget.moreTranslations,
-      };
-
-  bool get _hasMultipleLanguages => widget.moreTranslations?.isNotEmpty ?? false;
-
-  void _toggleSimple() {
-    setState(() => _activeLang = _activeLang == null ? 'en' : null);
-  }
-
-  void _pickLanguage() {
-    final all = _all;
-    showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: AppColors.blackCard,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
-      ),
-      builder: (ctx) => Directionality(
-        textDirection: TextDirection.rtl,
-        child: SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Padding(
-                padding: EdgeInsets.fromLTRB(20, 16, 20, 4),
-                child: Text('اختر لغة الترجمة',
-                    style: TextStyle(color: AppColors.gold, fontSize: 15)),
-              ),
-              if (all['en'] != null)
-                _langTile(ctx, 'en', 'English'),
-              for (final code in _moreLanguageNames.keys)
-                if (all[code] != null)
-                  _langTile(ctx, code, _moreLanguageNames[code]!),
-              const SizedBox(height: 8),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _langTile(BuildContext ctx, String code, String name) {
-    final selected = code == _activeLang;
-    return ListTile(
-      leading: Icon(
-        selected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-        color: selected ? AppColors.gold : AppColors.textMuted,
-        size: 19,
-      ),
-      title: Text(name,
-          style: const TextStyle(color: AppColors.textPrimary, fontSize: 14)),
-      onTap: () {
-        Navigator.pop(ctx);
-        setState(() => _activeLang = code);
-      },
-    );
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final active = _activeLang;
-    final activeText = active == null ? null : _all[active];
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(
-          widget.arabic,
-          textAlign: widget.textAlign,
-          textDirection: TextDirection.rtl,
-          style: TextStyle(
-              color: widget.color, fontSize: widget.fontSize, height: 1.9),
-        ),
-        if (_all.isNotEmpty) ...[
-          const SizedBox(height: 8),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: GestureDetector(
-              onTap: _hasMultipleLanguages ? _pickLanguage : _toggleSimple,
-              behavior: HitTestBehavior.opaque,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.translate,
-                      size: 15,
-                      color:
-                          active != null ? AppColors.gold : AppColors.textMuted),
-                  const SizedBox(width: 4),
-                  Text(
-                    active == null
-                        ? 'Translation'
-                        : (active == 'en' ? 'English' : _moreLanguageNames[active]!),
-                    style: TextStyle(
-                      fontSize: 11,
-                      color:
-                          active != null ? AppColors.gold : AppColors.textMuted,
-                    ),
-                  ),
-                  if (_hasMultipleLanguages) ...[
-                    const SizedBox(width: 2),
-                    Icon(Icons.arrow_drop_down,
-                        size: 16,
-                        color: active != null
-                            ? AppColors.gold
-                            : AppColors.textMuted),
-                  ],
-                ],
-              ),
+    return ValueListenableBuilder<String?>(
+      valueListenable: DhikrLangPref.selected,
+      builder: (context, lang, _) {
+        final activeText = lang == null
+            ? null
+            : (lang == 'en' ? english : moreTranslations?[lang]);
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              arabic,
+              textAlign: textAlign,
+              textDirection: TextDirection.rtl,
+              style: TextStyle(color: color, fontSize: fontSize, height: 1.9),
             ),
-          ),
-          if (activeText != null) ...[
-            const SizedBox(height: 6),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: AppColors.goldMuted,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    activeText,
-                    textDirection: TextDirection.ltr,
-                    textAlign: TextAlign.left,
-                    style: const TextStyle(
+            if (activeText != null) ...[
+              const SizedBox(height: 8),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: AppColors.goldMuted,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      activeText,
+                      textDirection: TextDirection.ltr,
+                      textAlign: TextAlign.left,
+                      style: const TextStyle(
                         color: AppColors.textGold,
                         fontSize: 13.5,
-                        height: 1.55),
-                  ),
-                  if (active != 'en') ...[
-                    const SizedBox(height: 6),
-                    const Text(
-                      'ترجمة آلية بواسطة Claude AI — وليست ترجمة معتمدة',
-                      textDirection: TextDirection.rtl,
-                      textAlign: TextAlign.right,
-                      style: TextStyle(
-                          color: AppColors.textMuted, fontSize: 10),
+                        height: 1.55,
+                      ),
                     ),
+                    if (lang != 'en') ...[
+                      const SizedBox(height: 6),
+                      const Text(
+                        'ترجمة آلية بواسطة Claude AI — وليست ترجمة معتمدة',
+                        textDirection: TextDirection.rtl,
+                        textAlign: TextAlign.right,
+                        style: TextStyle(
+                          color: AppColors.textMuted,
+                          fontSize: 10,
+                        ),
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
-            ),
+            ],
           ],
-        ],
-      ],
+        );
+      },
     );
   }
 }

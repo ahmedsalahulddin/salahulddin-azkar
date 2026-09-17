@@ -4,6 +4,7 @@ import '../data/adhkar_data.dart';
 import '../l10n/strings.dart';
 import '../widgets/adhkar_card.dart';
 import '../widgets/bilingual_text.dart';
+import '../widgets/dhikr_text.dart';
 import '../widgets/tasbih_counter.dart';
 
 class CategoryScreen extends StatefulWidget {
@@ -22,10 +23,14 @@ class _CategoryScreenState extends State<CategoryScreen> {
   List<Dhikr> get _filteredAdhkar {
     final all = getAdhkarByCategory(widget.category.id);
     if (_search.isEmpty) return all;
-    return all.where((d) =>
-        d.text.contains(_search) ||
-        d.source.contains(_search) ||
-        (d.benefit?.contains(_search) ?? false)).toList();
+    return all
+        .where(
+          (d) =>
+              d.text.contains(_search) ||
+              d.source.contains(_search) ||
+              (d.benefit?.contains(_search) ?? false),
+        )
+        .toList();
   }
 
   void _openTasbih(Dhikr dhikr) {
@@ -56,10 +61,14 @@ class _CategoryScreenState extends State<CategoryScreen> {
           title: BilingualText(
             tBoth('adhkar.cat.${cat.id}'),
             style: const TextStyle(
-                color: AppColors.gold, fontSize: 17, fontWeight: FontWeight.w600),
+              color: AppColors.gold,
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
+            ),
             maxLines: 2,
           ),
           centerTitle: true,
+          actions: const [DhikrLangButton()],
         ),
         body: Column(
           children: [
@@ -74,7 +83,9 @@ class _CategoryScreenState extends State<CategoryScreen> {
                 cat.description,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                    color: AppColors.textSecondary, fontSize: 13),
+                  color: AppColors.textSecondary,
+                  fontSize: 13,
+                ),
               ),
             ),
 
@@ -89,7 +100,10 @@ class _CategoryScreenState extends State<CategoryScreen> {
                 style: const TextStyle(color: AppColors.textPrimary),
                 decoration: InputDecoration(
                   hintText: 'ابحث في ${cat.name}...',
-                  hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 14),
+                  hintStyle: const TextStyle(
+                    color: AppColors.textMuted,
+                    fontSize: 14,
+                  ),
                   filled: true,
                   fillColor: AppColors.blackSurface,
                   border: OutlineInputBorder(
@@ -104,8 +118,14 @@ class _CategoryScreenState extends State<CategoryScreen> {
                     borderRadius: BorderRadius.circular(12),
                     borderSide: const BorderSide(color: AppColors.gold),
                   ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  suffixIcon: const Icon(Icons.search, color: AppColors.textMuted),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
+                  suffixIcon: const Icon(
+                    Icons.search,
+                    color: AppColors.textMuted,
+                  ),
                 ),
               ),
             ),
@@ -114,8 +134,13 @@ class _CategoryScreenState extends State<CategoryScreen> {
             Expanded(
               child: filtered.isEmpty
                   ? const Center(
-                      child: Text('لا توجد نتائج',
-                          style: TextStyle(color: AppColors.textMuted, fontSize: 16)),
+                      child: Text(
+                        'لا توجد نتائج',
+                        style: TextStyle(
+                          color: AppColors.textMuted,
+                          fontSize: 16,
+                        ),
+                      ),
                     )
                   : ListView.builder(
                       itemCount: filtered.length,
