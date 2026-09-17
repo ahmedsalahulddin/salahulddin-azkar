@@ -25,7 +25,10 @@ String tBoth(String key) {
 (String, String?) splitBilingual(String combined) {
   final i = combined.lastIndexOf(' (');
   if (i == -1 || !combined.endsWith(')')) return (combined, null);
-  return (combined.substring(0, i), combined.substring(i + 2, combined.length - 1));
+  return (
+    combined.substring(0, i),
+    combined.substring(i + 2, combined.length - 1),
+  );
 }
 
 // ─── Arabic (default) ──────────────────────────────────────────────────────
@@ -142,7 +145,8 @@ const _ar = <String, String>{
   'settings.notif.blockedNote': 'لن يصل شيء حتى تسمح بها من إعدادات الجوال.',
   'settings.notif.allOnNote': 'مواقيت الصلاة، وتنبيه قبلها، وذكر خلال اليوم.',
   'settings.notif.someOn': 'بعضها مُشغّل. اضغط لتشغيل الباقي.',
-  'settings.notif.allOff': 'شغّلها كلها بضغطة: مواقيت الصلاة، وتنبيه قبلها، وذكر أو دعاء يصلك خلال اليوم.',
+  'settings.notif.allOff':
+      'شغّلها كلها بضغطة: مواقيت الصلاة، وتنبيه قبلها، وذكر أو دعاء يصلك خلال اليوم.',
   'settings.notif.openApp': 'افتح إعدادات التطبيق',
   'settings.notif.turnOn': 'شغّل التنبيهات',
   'settings.notif.turnOff': 'أوقف التنبيهات',
@@ -151,8 +155,10 @@ const _ar = <String, String>{
   'settings.notif.noAlarms': 'لا يوجد تنبيه مجدول الآن',
   'settings.notif.alarmCount': 'مجدول في النظام: %s تنبيه',
   'settings.notif.timezone': 'التوقيت المعتمد: %s',
-  'settings.notif.staleNote': 'الإعدادات مُشغّلة لكن النظام لا يحمل أي تنبيه مجدول. افتح الرئيسية مرة ليُعاد ضبطها.',
-  'settings.notif.leadNote': 'مواقيت الصلاة، وتنبيه قبلها بـ %s دقيقة، وذكر خلال اليوم.',
+  'settings.notif.staleNote':
+      'الإعدادات مُشغّلة لكن النظام لا يحمل أي تنبيه مجدول. افتح الرئيسية مرة ليُعاد ضبطها.',
+  'settings.notif.leadNote':
+      'مواقيت الصلاة، وتنبيه قبلها بـ %s دقيقة، وذكر خلال اليوم.',
   'settings.notif.turnedOn': 'شُغّلت تنبيهات الصلاة وقبلها، وتذكير الذكر.',
   'settings.notif.turnedOff': 'أُوقفت التنبيهات.',
   'settings.notif.testSent': 'أُرسل إشعار تجريبي — إن لم يصلك فالجوال يمنعه.',
@@ -237,17 +243,21 @@ const _ar = <String, String>{
   // Account screen
   'account.title': 'حسابي والإعدادات',
   'account.guest': 'تقرأ كضيف',
-  'account.guestNote': 'التطبيق يعمل كاملاً بدون حساب،\nوكل ما تحفظه محفوظ على جهازك.',
+  'account.guestNote':
+      'التطبيق يعمل كاملاً بدون حساب،\nوكل ما تحفظه محفوظ على جهازك.',
   'account.signInSoon': 'الدخول بحساب جوجل — قريباً',
-  'account.signInPrompt': 'سجّل الدخول لتنتقل مفضلتك وعلاماتك\nوموضع قراءتك بين أجهزتك.',
+  'account.signInPrompt':
+      'سجّل الدخول لتنتقل مفضلتك وعلاماتك\nوموضع قراءتك بين أجهزتك.',
   'account.signOut': 'تسجيل الخروج',
   'account.signOutMsg': 'ستبقى أذكارك المحفوظة على هذا الجهاز.',
   'account.signOutConfirm': 'خروج',
   'account.delete': 'حذف الحساب نهائياً',
   'account.deleting': 'جاري الحذف…',
   'account.deleteTitle': 'حذف الحساب نهائياً',
-  'account.deleteMsg': 'سيُحذف حسابك وكل ما يخصّه من خوادمنا حذفاً لا رجعة فيه.',
-  'account.deleteNote': 'أذكارك المحفوظة وعلاماتك على هذا الجهاز تبقى كما هي — يمحوها حذف التطبيق.',
+  'account.deleteMsg':
+      'سيُحذف حسابك وكل ما يخصّه من خوادمنا حذفاً لا رجعة فيه.',
+  'account.deleteNote':
+      'أذكارك المحفوظة وعلاماتك على هذا الجهاز تبقى كما هي — يمحوها حذف التطبيق.',
   'account.deleteConfirm': 'اكتب كلمة «حذف» للتأكيد:',
   'account.deleteWord': 'حذف',
   'account.deleteBtn': 'احذف حسابي',
@@ -265,7 +275,8 @@ const _ar = <String, String>{
   'account.version': 'الإصدار',
   'account.sources': 'المصادر والحقوق',
   'account.sourcesSub': 'من أين جاء كل نصّ وصوت وخطّ في التطبيق',
-  'account.aboutText': 'نص المصحف: مجمع الملك فهد لطباعة المصحف الشريف\nالأذكار: حصن المسلم — سعيد بن علي القحطاني',
+  'account.aboutText':
+      'نص المصحف: مجمع الملك فهد لطباعة المصحف الشريف\nالأذكار: حصن المسلم — سعيد بن علي القحطاني',
   'account.sync': 'مزامنة علاماتك ومفضّلتك',
   'account.syncNever': 'لم تُزامَن بعد على هذا الجهاز',
   'account.syncLast': 'آخر مزامنة',
@@ -274,6 +285,21 @@ const _ar = <String, String>{
   'account.syncFail': 'تعذّرت المزامنة الآن',
   'account.am': 'ص',
   'account.pm': 'م',
+
+  // Playback controls
+  'playback.prevSurah': 'السورة السابقة',
+  'playback.prevAyah': 'الآية السابقة',
+  'playback.nextAyah': 'الآية التالية',
+  'playback.nextSurah': 'السورة التالية',
+  'playback.pickReciter': 'اختر القارئ',
+  'playback.decreaseFont': 'تصغير الخط',
+  'playback.increaseFont': 'تكبير الخط',
+  'playback.speed': 'سرعة التشغيل',
+  'playback.speedNormal': 'الطبيعية',
+  'playback.speedLabel': 'سـرعة',
+
+  // Home shelves
+  'home.seeAll': 'الكل',
 };
 
 // ─── English ───────────────────────────────────────────────────────────────
@@ -387,10 +413,13 @@ const _en = <String, String>{
   'settings.notif.blocked': 'Phone blocks app notifications',
   'settings.notif.allOn': 'Alerts are on',
   'settings.notif.label': 'Prayer & Adhkar alerts',
-  'settings.notif.blockedNote': 'Nothing will arrive until you allow notifications in phone settings.',
-  'settings.notif.allOnNote': 'Prayer times, a pre-adhan reminder, and a dhikr through the day.',
+  'settings.notif.blockedNote':
+      'Nothing will arrive until you allow notifications in phone settings.',
+  'settings.notif.allOnNote':
+      'Prayer times, a pre-adhan reminder, and a dhikr through the day.',
   'settings.notif.someOn': 'Some are on. Tap to turn on the rest.',
-  'settings.notif.allOff': 'Turn them all on with one tap: prayer times, a pre-adhan reminder, and a dhikr or supplication through the day.',
+  'settings.notif.allOff':
+      'Turn them all on with one tap: prayer times, a pre-adhan reminder, and a dhikr or supplication through the day.',
   'settings.notif.openApp': 'Open App Settings',
   'settings.notif.turnOn': 'Turn On Alerts',
   'settings.notif.turnOff': 'Turn Off Alerts',
@@ -399,13 +428,17 @@ const _en = <String, String>{
   'settings.notif.noAlarms': 'No alarm scheduled right now',
   'settings.notif.alarmCount': 'Scheduled: %s alarms',
   'settings.notif.timezone': 'Active timezone: %s',
-  'settings.notif.staleNote': 'Settings are on but the system holds no scheduled alarms. Open the home screen once to reset them.',
-  'settings.notif.leadNote': 'Prayer times, a %s-min pre-adhan reminder, and a dhikr through the day.',
+  'settings.notif.staleNote':
+      'Settings are on but the system holds no scheduled alarms. Open the home screen once to reset them.',
+  'settings.notif.leadNote':
+      'Prayer times, a %s-min pre-adhan reminder, and a dhikr through the day.',
   'settings.notif.turnedOn': 'Prayer alerts and dhikr reminder turned on.',
   'settings.notif.turnedOff': 'Alerts turned off.',
-  'settings.notif.testSent': 'Test notification sent — if it did not arrive, the phone is blocking it.',
+  'settings.notif.testSent':
+      'Test notification sent — if it did not arrive, the phone is blocking it.',
   'settings.notif.testFail': 'Failed to send notification.',
-  'settings.notif.scheduledSent': 'You will receive an alert in one minute. Lock the screen and wait.',
+  'settings.notif.scheduledSent':
+      'You will receive an alert in one minute. Lock the screen and wait.',
   'settings.notif.scheduleFail': 'Failed to schedule notification: %s',
   'settings.dhikr.title': 'Dhikr on your screen',
   'settings.dhikr.on': 'Arrives through the day, changes each time',
@@ -428,7 +461,8 @@ const _en = <String, String>{
   'settings.adhkar.evening.title': 'Evening Adhkar',
   'settings.adhkar.evening.note': 'After Asr until Maghrib',
   'settings.time': 'Time',
-  'settings.crowded': 'Only %s min apart — widen the window or reduce the count.',
+  'settings.crowded':
+      'Only %s min apart — widen the window or reduce the count.',
 
   // Prayer method
   'prayer.method.auto.label': 'Auto by location',
@@ -485,17 +519,21 @@ const _en = <String, String>{
   // Account screen
   'account.title': 'Account & Settings',
   'account.guest': 'Browsing as guest',
-  'account.guestNote': 'The app works fully without an account.\nEverything you save stays on your device.',
+  'account.guestNote':
+      'The app works fully without an account.\nEverything you save stays on your device.',
   'account.signInSoon': 'Sign in with Google — coming soon',
-  'account.signInPrompt': 'Sign in to sync your favorites,\nbookmarks and reading position across devices.',
+  'account.signInPrompt':
+      'Sign in to sync your favorites,\nbookmarks and reading position across devices.',
   'account.signOut': 'Sign out',
   'account.signOutMsg': 'Your saved adhkar will remain on this device.',
   'account.signOutConfirm': 'Sign out',
   'account.delete': 'Delete account permanently',
   'account.deleting': 'Deleting…',
   'account.deleteTitle': 'Delete account permanently',
-  'account.deleteMsg': 'Your account and all its data will be permanently deleted from our servers.',
-  'account.deleteNote': 'Your saved adhkar and bookmarks on this device remain — they are only removed if you uninstall the app.',
+  'account.deleteMsg':
+      'Your account and all its data will be permanently deleted from our servers.',
+  'account.deleteNote':
+      'Your saved adhkar and bookmarks on this device remain — they are only removed if you uninstall the app.',
   'account.deleteConfirm': 'Type the word "delete" to confirm:',
   'account.deleteWord': 'delete',
   'account.deleteBtn': 'Delete my account',
@@ -513,7 +551,8 @@ const _en = <String, String>{
   'account.version': 'Version',
   'account.sources': 'Sources & Credits',
   'account.sourcesSub': 'Sources for all text, audio and fonts in the app',
-  'account.aboutText': 'Quran text: King Fahd Complex for the Printing of the Holy Quran\nAdhkar: Hisn Al-Muslim — Sa\'eed ibn Ali Al-Qahtani',
+  'account.aboutText':
+      'Quran text: King Fahd Complex for the Printing of the Holy Quran\nAdhkar: Hisn Al-Muslim — Sa\'eed ibn Ali Al-Qahtani',
   'account.sync': 'Sync your bookmarks & favorites',
   'account.syncNever': 'Not yet synced on this device',
   'account.syncLast': 'Last synced',
@@ -522,4 +561,19 @@ const _en = <String, String>{
   'account.syncFail': 'Sync failed, try again',
   'account.am': 'AM',
   'account.pm': 'PM',
+
+  // Playback controls
+  'playback.prevSurah': 'Previous surah',
+  'playback.prevAyah': 'Previous ayah',
+  'playback.nextAyah': 'Next ayah',
+  'playback.nextSurah': 'Next surah',
+  'playback.pickReciter': 'Choose reciter',
+  'playback.decreaseFont': 'Decrease font size',
+  'playback.increaseFont': 'Increase font size',
+  'playback.speed': 'Playback speed',
+  'playback.speedNormal': 'Normal',
+  'playback.speedLabel': 'Speed',
+
+  // Home shelves
+  'home.seeAll': 'See all',
 };

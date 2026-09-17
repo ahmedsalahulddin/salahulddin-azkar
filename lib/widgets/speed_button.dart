@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../constants/theme.dart';
+import '../l10n/strings.dart';
 import '../services/playback_speed.dart';
 
 /// Picks the playback speed.
@@ -24,7 +25,7 @@ class SpeedButton extends StatelessWidget {
         final text = PlaybackSpeed.label(speed);
 
         return PopupMenuButton<double>(
-          tooltip: 'سرعة التشغيل',
+          tooltip: t('playback.speed'),
           color: AppColors.blackCard,
           position: PopupMenuPosition.under,
           shape: RoundedRectangleBorder(
@@ -46,9 +47,13 @@ class SpeedButton extends StatelessWidget {
                       const SizedBox(width: 15),
                     const SizedBox(width: 8),
                     Text(
-                      s == 1.0 ? 'الطبيعية' : '${PlaybackSpeed.label(s)}×',
+                      s == 1.0
+                          ? t('playback.speedNormal')
+                          : '${PlaybackSpeed.label(s)}×',
                       style: TextStyle(
-                        color: s == speed ? AppColors.gold : AppColors.textPrimary,
+                        color: s == speed
+                            ? AppColors.gold
+                            : AppColors.textPrimary,
                         fontSize: 13,
                       ),
                     ),
@@ -82,13 +87,14 @@ class SpeedButton extends StatelessWidget {
                 ),
                 if (showLabel) ...[
                   const SizedBox(width: 3),
-                  Text('سـرعة',
-                      style: TextStyle(
-                        color: tint,
-                        fontSize: 11,
-                        fontWeight:
-                            changed ? FontWeight.bold : FontWeight.normal,
-                      )),
+                  Text(
+                    t('playback.speedLabel'),
+                    style: TextStyle(
+                      color: tint,
+                      fontSize: 11,
+                      fontWeight: changed ? FontWeight.bold : FontWeight.normal,
+                    ),
+                  ),
                 ],
               ],
             ),

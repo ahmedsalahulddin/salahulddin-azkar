@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'app_locale.dart';
 
 /// How an alert arrives.
 ///
@@ -79,16 +80,23 @@ enum AlertWhen {
 /// prayer, and an alarm for it would call people to something that is not
 /// there.
 enum AlertPrayer {
-  fajr('fajr', 'الفجر'),
-  dhuhr('dhuhr', 'الظهر'),
-  asr('asr', 'العصر'),
-  maghrib('maghrib', 'المغرب'),
-  isha('isha', 'العشاء');
+  fajr('fajr', 'الفجر', 'Fajr'),
+  dhuhr('dhuhr', 'الظهر', 'Dhuhr'),
+  asr('asr', 'العصر', 'Asr'),
+  maghrib('maghrib', 'المغرب', 'Maghrib'),
+  isha('isha', 'العشاء', 'Isha');
 
-  const AlertPrayer(this.id, this.name);
+  const AlertPrayer(this.id, this.name, this.nameEn);
 
   final String id;
+
+  /// Arabic name. Kept as `name`, shadowing [Enum.name], for the many
+  /// existing call sites that predate [displayName].
   final String name;
+  final String nameEn;
+
+  /// What the reader actually sees — the one to use in UI text.
+  String get displayName => AppLocale.isEn ? nameEn : name;
 }
 
 /// Every prayer's two alerts, how far ahead the early one comes, and which
@@ -123,7 +131,10 @@ class PrayerAlerts {
   /// Set at startup. Kept as a hook rather than an import so this file stays
   /// unaware of the notification plumbing.
   static Future<void> Function(
-      Map<AlertPrayer, DateTime>, Map<AlertPrayer, DateTime>)? onChanged;
+    Map<AlertPrayer, DateTime>,
+    Map<AlertPrayer, DateTime>,
+  )?
+  onChanged;
 
   /// Lays the alerts down again after a change.
   ///
@@ -172,7 +183,10 @@ class PrayerAlerts {
   }
 
   static Future<void> setMode(
-      AlertPrayer prayer, AlertWhen when, AlertMode mode) async {
+    AlertPrayer prayer,
+    AlertWhen when,
+    AlertMode mode,
+  ) async {
     settings.value = {...settings.value, keyFor(prayer, when): mode};
     await _persist();
     await _reschedule();
@@ -213,12 +227,14 @@ class PrayerAlerts {
     // Only on the way in, and only from a state that had sound: muting twice
     // must not overwrite the memory with an already-silent one.
     if (anySound) {
-      await _save((prefs) => prefs.setString(
-            _beforeMuteKey,
-            jsonEncode({
-              for (final e in settings.value.entries) e.key: e.value.encode(),
-            }),
-          ));
+      await _save(
+        (prefs) => prefs.setString(
+          _beforeMuteKey,
+          jsonEncode({
+            for (final e in settings.value.entries) e.key: e.value.encode(),
+          }),
+        ),
+      );
     }
 
     settings.value = {
@@ -252,7 +268,8 @@ class PrayerAlerts {
       // Fall through to the sensible default below.
     }
 
-    settings.value = before ??
+    settings.value =
+        before ??
         {
           for (final prayer in AlertPrayer.values)
             for (final when in AlertWhen.values)
@@ -271,24 +288,27 @@ class PrayerAlerts {
   /// are copied in, so until then the alert keeps the system tone rather than
   /// falling silent.
   static String? get bundledResource => switch (adhan.value) {
-        'makkah' => 'adhan_makkah',
-        'madinah' => 'adhan_madinah',
-        _ => null,
-      };
+    'makkah' => 'adhan_makkah',
+    'madinah' => 'adhan_madinah',
+    _ => null,
+  };
 
-  static bool get anySound =>
-      settings.value.values.any((m) => m.sound);
+  static bool get anySound => settings.value.values.any((m) => m.sound);
 
   static bool get anyOn => settings.value.values.any((m) => !m.isOff);
 
-  static Future<void> _persist() => _save((prefs) => prefs.setString(
-        _key,
-        jsonEncode({
-          for (final e in settings.value.entries) e.key: e.value.encode(),
-        }),
-      ));
+  static Future<void> _persist() => _save(
+    (prefs) => prefs.setString(
+      _key,
+      jsonEncode({
+        for (final e in settings.value.entries) e.key: e.value.encode(),
+      }),
+    ),
+  );
 
-  static Future<void> _save(Future<void> Function(SharedPreferences) write) async {
+  static Future<void> _save(
+    Future<void> Function(SharedPreferences) write,
+  ) async {
     try {
       await write(await SharedPreferences.getInstance());
     } catch (_) {

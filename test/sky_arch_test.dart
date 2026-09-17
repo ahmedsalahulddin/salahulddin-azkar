@@ -17,12 +17,27 @@ void main() {
     'العشاء': t(19, 58),
   };
 
+  const namesEn = {
+    'الفجر': 'Fajr',
+    'الشروق': 'Sunrise',
+    'الظهر': 'Dhuhr',
+    'العصر': 'Asr',
+    'المغرب': 'Maghrib',
+    'العشاء': 'Isha',
+  };
+
   final data = PrayerData(
     prayers: [
       for (final e in times.entries)
-        PrayerInfo(name: e.key, time: e.value, isNext: false),
+        PrayerInfo(
+          name: e.key,
+          nameEn: namesEn[e.key]!,
+          time: e.value,
+          isNext: false,
+        ),
     ],
     nextName: 'العشاء',
+    nextNameEn: 'Isha',
     nextTime: times['العشاء']!,
     status: LocationStatus.fixed,
   );
@@ -52,15 +67,18 @@ void main() {
     expect(clock.fractionFor(times['الفجر']!), greaterThan(1));
     // Isha is early in the night, Fajr late — that ordering is what puts them
     // at opposite ends of the dip below the horizon.
-    expect(clock.fractionFor(times['العشاء']!),
-        lessThan(clock.fractionFor(times['الفجر']!)));
+    expect(
+      clock.fractionFor(times['العشاء']!),
+      lessThan(clock.fractionFor(times['الفجر']!)),
+    );
   });
 
   test('the circuit is continuous and never doubles back', () {
     var previous = -1.0;
     for (var minute = 0; minute < 24 * 60; minute += 7) {
       final f = clock.fractionFor(
-          DateTime(2026, 8, 14).add(Duration(minutes: minute)));
+        DateTime(2026, 8, 14).add(Duration(minutes: minute)),
+      );
       expect(f, inInclusiveRange(0, 2));
       // Midnight starts mid-night, so the one wrap is expected; everywhere
       // else time only moves forward along the path.
@@ -73,8 +91,9 @@ void main() {
 
   test('a whole day is a whole circuit', () {
     final start = clock.fractionFor(times['الشروق']!);
-    final round =
-        clock.fractionFor(times['الشروق']!.add(const Duration(days: 1)));
+    final round = clock.fractionFor(
+      times['الشروق']!.add(const Duration(days: 1)),
+    );
     expect(round % 2, closeTo(start, 0.02));
   });
 
@@ -92,9 +111,15 @@ void main() {
     final frozen = PrayerData(
       prayers: [
         for (final name in times.keys)
-          PrayerInfo(name: name, time: t(12, 0), isNext: false),
+          PrayerInfo(
+            name: name,
+            nameEn: namesEn[name]!,
+            time: t(12, 0),
+            isNext: false,
+          ),
       ],
       nextName: 'الفجر',
+      nextNameEn: 'Fajr',
       nextTime: t(12, 0),
       status: LocationStatus.fixed,
     );

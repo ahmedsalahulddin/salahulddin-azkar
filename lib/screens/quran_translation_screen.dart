@@ -74,8 +74,7 @@ const _quranComResourceId = {'bn': 213};
 
 Future<List<String>?> _fetchTranslation(String lang, int surahNum) async {
   final dir = await getApplicationDocumentsDirectory();
-  final file =
-      File('${dir.path}/quran_translations_v2/$lang/$surahNum.json');
+  final file = File('${dir.path}/quran_translations_v2/$lang/$surahNum.json');
   if (await file.exists()) {
     return _parse(await file.readAsString(), lang);
   }
@@ -84,7 +83,8 @@ Future<List<String>?> _fetchTranslation(String lang, int surahNum) async {
     final uri = resourceId != null
         ? Uri.parse(
             'https://api.quran.com/api/v4/quran/translations/$resourceId'
-            '?chapter_number=$surahNum')
+            '?chapter_number=$surahNum',
+          )
         : Uri.parse('$_apiBase/$surahNum/${_edition[lang] ?? 'en.sahih'}');
     final res = await http.get(uri).timeout(const Duration(seconds: 20));
     if (res.statusCode != 200) return null;
@@ -104,9 +104,11 @@ List<String>? _parse(String body, String lang) {
       // meaningless without the footnotes themselves, which this app
       // doesn't fetch, so they're stripped rather than left dangling.
       return (json['translations'] as List)
-          .map((e) => ((e as Map)['text'] as String)
-              .replaceAll(RegExp(r'\[[^\]]*\]'), '')
-              .trim())
+          .map(
+            (e) => ((e as Map)['text'] as String)
+                .replaceAll(RegExp(r'\[[^\]]*\]'), '')
+                .trim(),
+          )
           .toList();
     }
     final data = json['data'] as Map;
@@ -123,8 +125,7 @@ class QuranTranslationScreen extends StatefulWidget {
   const QuranTranslationScreen({super.key});
 
   @override
-  State<QuranTranslationScreen> createState() =>
-      _QuranTranslationScreenState();
+  State<QuranTranslationScreen> createState() => _QuranTranslationScreenState();
 }
 
 class _QuranTranslationScreenState extends State<QuranTranslationScreen> {
@@ -147,8 +148,7 @@ class _QuranTranslationScreenState extends State<QuranTranslationScreen> {
     });
   }
 
-  String get _langName =>
-      _langs.firstWhere((l) => l.code == _langCode).name;
+  String get _langName => _langs.firstWhere((l) => l.code == _langCode).name;
 
   void _pickLang() {
     showModalBottomSheet<void>(
@@ -165,8 +165,10 @@ class _QuranTranslationScreenState extends State<QuranTranslationScreen> {
             children: [
               const Padding(
                 padding: EdgeInsets.fromLTRB(20, 16, 20, 4),
-                child: Text('اختر اللغة',
-                    style: TextStyle(color: AppColors.gold, fontSize: 15)),
+                child: Text(
+                  'اختر اللغة',
+                  style: TextStyle(color: AppColors.gold, fontSize: 15),
+                ),
               ),
               for (final lang in _langs)
                 ListTile(
@@ -179,9 +181,13 @@ class _QuranTranslationScreenState extends State<QuranTranslationScreen> {
                         : AppColors.textMuted,
                     size: 19,
                   ),
-                  title: Text(lang.name,
-                      style: const TextStyle(
-                          color: AppColors.textPrimary, fontSize: 14)),
+                  title: Text(
+                    lang.name,
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 14,
+                    ),
+                  ),
                   onTap: () {
                     Navigator.pop(ctx);
                     setState(() => _langCode = lang.code);
@@ -208,8 +214,7 @@ class _QuranTranslationScreenState extends State<QuranTranslationScreen> {
           actions: [
             TextButton.icon(
               icon: const Icon(Icons.language, size: 17),
-              label: Text(_langName,
-                  style: const TextStyle(fontSize: 13)),
+              label: Text(_langName, style: const TextStyle(fontSize: 13)),
               style: TextButton.styleFrom(foregroundColor: AppColors.gold),
               onPressed: _pickLang,
             ),
@@ -217,7 +222,8 @@ class _QuranTranslationScreenState extends State<QuranTranslationScreen> {
         ),
         body: _loading
             ? const Center(
-                child: CircularProgressIndicator(color: AppColors.gold))
+                child: CircularProgressIndicator(color: AppColors.gold),
+              )
             : ListView.builder(
                 padding: const EdgeInsets.fromLTRB(12, 8, 12, 24),
                 itemCount: _index.length,
@@ -236,7 +242,9 @@ class _QuranTranslationScreenState extends State<QuranTranslationScreen> {
                     child: Container(
                       margin: const EdgeInsets.only(bottom: 6),
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 12),
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.blackCard,
                         borderRadius: BorderRadius.circular(12),
@@ -249,7 +257,9 @@ class _QuranTranslationScreenState extends State<QuranTranslationScreen> {
                             child: Text(
                               QuranService.toArabicDigits(info.number),
                               style: const TextStyle(
-                                  color: AppColors.textMuted, fontSize: 12),
+                                color: AppColors.textMuted,
+                                fontSize: 12,
+                              ),
                             ),
                           ),
                           Expanded(
@@ -259,15 +269,17 @@ class _QuranTranslationScreenState extends State<QuranTranslationScreen> {
                                 Text(
                                   info.name,
                                   style: const TextStyle(
-                                      color: AppColors.textPrimary,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w500),
+                                    color: AppColors.textPrimary,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
                                 Text(
                                   '(${info.nameEn})',
                                   style: const TextStyle(
-                                      color: AppColors.textMuted,
-                                      fontSize: 11),
+                                    color: AppColors.textMuted,
+                                    fontSize: 11,
+                                  ),
                                 ),
                               ],
                             ),
@@ -275,11 +287,16 @@ class _QuranTranslationScreenState extends State<QuranTranslationScreen> {
                           Text(
                             '${QuranService.toArabicDigits(info.ayahCount)} آية',
                             style: const TextStyle(
-                                color: AppColors.textMuted, fontSize: 11),
+                              color: AppColors.textMuted,
+                              fontSize: 11,
+                            ),
                           ),
                           const SizedBox(width: 4),
-                          const Icon(Icons.chevron_left,
-                              color: AppColors.textMuted, size: 18),
+                          const Icon(
+                            Icons.chevron_left,
+                            color: AppColors.textMuted,
+                            size: 18,
+                          ),
                         ],
                       ),
                     ),
@@ -340,8 +357,7 @@ class _QuranTranslationSurahScreenState
     Future.wait([_loadArabic(), _loadTranslation()]);
   }
 
-  String get _langName =>
-      _langs.firstWhere((l) => l.code == _langCode).name;
+  String get _langName => _langs.firstWhere((l) => l.code == _langCode).name;
 
   Future<void> _initTts() async {
     final locale = _ttsLocale[_langCode] ?? 'en-US';
@@ -380,7 +396,7 @@ class _QuranTranslationSurahScreenState
           id: 'trans:${_reciter.id}:${widget.info.number}:${ayah.number}',
           title:
               '${widget.info.name} — الآية ${QuranService.toArabicDigits(ayah.number)}',
-          artist: _reciter.name,
+          artist: _reciter.displayName,
           album: 'القرآن الكريم',
         ),
       ),
@@ -414,9 +430,15 @@ class _QuranTranslationSurahScreenState
 
   Future<void> _speakTranslation(String trans, int s) async {
     bool done = false;
-    _tts.setCompletionHandler(() { done = true; });
-    _tts.setCancelHandler(() { done = true; });
-    _tts.setErrorHandler((_) { done = true; });
+    _tts.setCompletionHandler(() {
+      done = true;
+    });
+    _tts.setCancelHandler(() {
+      done = true;
+    });
+    _tts.setErrorHandler((_) {
+      done = true;
+    });
     await _tts.speak(trans);
     while (!done && !_cancelled(s)) {
       await Future<void>.delayed(const Duration(milliseconds: 100));
@@ -490,8 +512,10 @@ class _QuranTranslationSurahScreenState
         // Item not built yet — jump to estimated position to force it into view
         final bannerOffset = _translationFailed ? 1 : 0;
         const avgCardHeight = 220.0;
-        final pos = ((listIndex + bannerOffset) * avgCardHeight + 8)
-            .clamp(0.0, _scrollController.position.maxScrollExtent);
+        final pos = ((listIndex + bannerOffset) * avgCardHeight + 8).clamp(
+          0.0,
+          _scrollController.position.maxScrollExtent,
+        );
         _scrollController.animateTo(
           pos,
           duration: const Duration(milliseconds: 300),
@@ -545,8 +569,10 @@ class _QuranTranslationSurahScreenState
             children: [
               const Padding(
                 padding: EdgeInsets.fromLTRB(20, 16, 20, 4),
-                child: Text('اختر اللغة',
-                    style: TextStyle(color: AppColors.gold, fontSize: 15)),
+                child: Text(
+                  'اختر اللغة',
+                  style: TextStyle(color: AppColors.gold, fontSize: 15),
+                ),
               ),
               for (final lang in _langs)
                 ListTile(
@@ -559,9 +585,13 @@ class _QuranTranslationSurahScreenState
                         : AppColors.textMuted,
                     size: 19,
                   ),
-                  title: Text(lang.name,
-                      style: const TextStyle(
-                          color: AppColors.textPrimary, fontSize: 14)),
+                  title: Text(
+                    lang.name,
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 14,
+                    ),
+                  ),
                   onTap: () {
                     Navigator.pop(ctx);
                     if (lang.code == _langCode) return;
@@ -598,11 +628,14 @@ class _QuranTranslationSurahScreenState
             children: [
               const Padding(
                 padding: EdgeInsets.fromLTRB(20, 16, 20, 4),
-                child: Text('اختر المقرئ',
-                    style: TextStyle(color: AppColors.gold, fontSize: 15)),
+                child: Text(
+                  'اختر المقرئ',
+                  style: TextStyle(color: AppColors.gold, fontSize: 15),
+                ),
               ),
-              for (final r in RecitationService.reciters
-                  .where((r) => r.mp3quranPath == null))
+              for (final r in RecitationService.reciters.where(
+                (r) => r.mp3quranPath == null,
+              ))
                 ListTile(
                   leading: Icon(
                     r.id == _reciter.id
@@ -613,9 +646,13 @@ class _QuranTranslationSurahScreenState
                         : AppColors.textMuted,
                     size: 19,
                   ),
-                  title: Text(r.name,
-                      style: const TextStyle(
-                          color: AppColors.textPrimary, fontSize: 14)),
+                  title: Text(
+                    r.displayName,
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 14,
+                    ),
+                  ),
                   onTap: () {
                     Navigator.pop(ctx);
                     setState(() => _reciter = r);
@@ -647,7 +684,9 @@ class _QuranTranslationSurahScreenState
                 '(${widget.info.nameEn})',
                 textDirection: TextDirection.ltr,
                 style: const TextStyle(
-                    color: AppColors.textMuted, fontSize: 13),
+                  color: AppColors.textMuted,
+                  fontSize: 13,
+                ),
               ),
             ],
           ),
@@ -661,7 +700,8 @@ class _QuranTranslationSurahScreenState
         ),
         body: _loading
             ? const Center(
-                child: CircularProgressIndicator(color: AppColors.gold))
+                child: CircularProgressIndicator(color: AppColors.gold),
+              )
             : ListView.builder(
                 controller: _scrollController,
                 padding: const EdgeInsets.fromLTRB(14, 8, 14, 32),
@@ -676,8 +716,8 @@ class _QuranTranslationSurahScreenState
                   final ayah = _surah!.ayahs[idx];
                   final trans =
                       (_translation != null && idx < _translation!.length)
-                          ? _translation![idx]
-                          : null;
+                      ? _translation![idx]
+                      : null;
                   return _ayahCard(ayah, trans, idx);
                 },
               ),
@@ -700,11 +740,11 @@ class _QuranTranslationSurahScreenState
             child: TextButton(
               onPressed: _pickReciter,
               style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 6)),
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+              ),
               child: Text(
-                _reciter.name,
-                style: const TextStyle(
-                    color: AppColors.textGold, fontSize: 12),
+                _reciter.displayName,
+                style: const TextStyle(color: AppColors.textGold, fontSize: 12),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
@@ -722,7 +762,9 @@ class _QuranTranslationSurahScreenState
           ),
           GestureDetector(
             onTap: _arabicOn
-                ? () => setState(() { _repeatCount = _repeatCount % 5 + 1; })
+                ? () => setState(() {
+                    _repeatCount = _repeatCount % 5 + 1;
+                  })
                 : null,
             behavior: HitTestBehavior.opaque,
             child: Container(
@@ -796,8 +838,10 @@ class _QuranTranslationSurahScreenState
               });
               _loadTranslation();
             },
-            child: const Text('أعد',
-                style: TextStyle(color: AppColors.gold, fontSize: 12)),
+            child: const Text(
+              'أعد',
+              style: TextStyle(color: AppColors.gold, fontSize: 12),
+            ),
           ),
         ],
       ),
@@ -835,7 +879,8 @@ class _QuranTranslationSurahScreenState
         color: AppColors.blackCard,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-            color: speaking ? AppColors.gold : AppColors.goldBorder),
+          color: speaking ? AppColors.gold : AppColors.goldBorder,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -843,8 +888,10 @@ class _QuranTranslationSurahScreenState
           Row(
             children: [
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 3,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.goldMuted,
                   borderRadius: BorderRadius.circular(20),
@@ -870,7 +917,9 @@ class _QuranTranslationSurahScreenState
                   behavior: HitTestBehavior.opaque,
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 6, vertical: 1),
+                      horizontal: 6,
+                      vertical: 1,
+                    ),
                     decoration: BoxDecoration(
                       border: Border.all(color: AppColors.goldBorder),
                       borderRadius: BorderRadius.circular(6),

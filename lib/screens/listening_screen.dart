@@ -3,6 +3,7 @@ import 'package:just_audio/just_audio.dart';
 
 import '../constants/theme.dart';
 import '../data/quran_data.dart';
+import '../l10n/strings.dart';
 import '../services/app_audio.dart';
 import '../services/continuous_listening.dart';
 import '../services/recitation_service.dart';
@@ -61,8 +62,9 @@ class _ListeningScreenState extends State<ListeningScreen> {
       _loading = false;
     });
     ContinuousListening.surah.addListener(_followRecitation);
-    WidgetsBinding.instance
-        .addPostFrameCallback((_) => _followRecitation(animate: false));
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _followRecitation(animate: false),
+    );
   }
 
   @override
@@ -77,10 +79,12 @@ class _ListeningScreenState extends State<ListeningScreen> {
   List<SurahInfo> get _visible => _juzFilter == null
       ? _index
       : _index
-          .where((s) =>
-              s.number <= _surahJuz.length &&
-              _surahJuz[s.number - 1] == _juzFilter)
-          .toList();
+            .where(
+              (s) =>
+                  s.number <= _surahJuz.length &&
+                  _surahJuz[s.number - 1] == _juzFilter,
+            )
+            .toList();
 
   void _followRecitation({bool animate = true}) {
     if (!mounted || !_listController.hasClients) return;
@@ -88,16 +92,19 @@ class _ListeningScreenState extends State<ListeningScreen> {
 
     final visible = _visible;
     final idx = visible.indexWhere(
-        (s) => s.number == ContinuousListening.surah.value);
+      (s) => s.number == ContinuousListening.surah.value,
+    );
     if (idx < 0) return;
 
-    final target =
-        (idx * _rowHeight - MediaQuery.of(context).size.height / 3)
-            .clamp(0.0, _listController.position.maxScrollExtent);
+    final target = (idx * _rowHeight - MediaQuery.of(context).size.height / 3)
+        .clamp(0.0, _listController.position.maxScrollExtent);
 
     if (animate) {
-      _listController.animateTo(target,
-          duration: const Duration(milliseconds: 350), curve: Curves.easeOut);
+      _listController.animateTo(
+        target,
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeOut,
+      );
     } else {
       _listController.jumpTo(target);
     }
@@ -105,11 +112,13 @@ class _ListeningScreenState extends State<ListeningScreen> {
 
   void _scrollToIndex(int idx) {
     if (!_listController.hasClients) return;
-    final target =
-        (idx * _rowHeight - MediaQuery.of(context).size.height / 4)
-            .clamp(0.0, _listController.position.maxScrollExtent);
-    _listController.animateTo(target,
-        duration: const Duration(milliseconds: 350), curve: Curves.easeOut);
+    final target = (idx * _rowHeight - MediaQuery.of(context).size.height / 4)
+        .clamp(0.0, _listController.position.maxScrollExtent);
+    _listController.animateTo(
+      target,
+      duration: const Duration(milliseconds: 350),
+      curve: Curves.easeOut,
+    );
   }
 
   // ─── Pickers ───────────────────────────────────────────────────────────────
@@ -119,7 +128,8 @@ class _ListeningScreenState extends State<ListeningScreen> {
       context: context,
       backgroundColor: AppColors.blackCard,
       shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(18))),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+      ),
       builder: (ctx) => Directionality(
         textDirection: TextDirection.rtl,
         child: SafeArea(
@@ -131,9 +141,10 @@ class _ListeningScreenState extends State<ListeningScreen> {
                 child: Row(
                   children: [
                     const Expanded(
-                      child: Text('اختر الجزء',
-                          style:
-                              TextStyle(color: AppColors.gold, fontSize: 15)),
+                      child: Text(
+                        'اختر الجزء',
+                        style: TextStyle(color: AppColors.gold, fontSize: 15),
+                      ),
                     ),
                     if (_juzFilter != null)
                       TextButton(
@@ -141,11 +152,16 @@ class _ListeningScreenState extends State<ListeningScreen> {
                           Navigator.pop(ctx);
                           setState(() => _juzFilter = null);
                           WidgetsBinding.instance.addPostFrameCallback(
-                              (_) => _followRecitation(animate: false));
+                            (_) => _followRecitation(animate: false),
+                          );
                         },
-                        child: const Text('الكل',
-                            style: TextStyle(
-                                color: AppColors.textMuted, fontSize: 12)),
+                        child: const Text(
+                          'الكل',
+                          style: TextStyle(
+                            color: AppColors.textMuted,
+                            fontSize: 12,
+                          ),
+                        ),
                       ),
                   ],
                 ),
@@ -154,8 +170,7 @@ class _ListeningScreenState extends State<ListeningScreen> {
                 height: 340,
                 child: GridView.builder(
                   padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
-                  gridDelegate:
-                      const SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 5,
                     childAspectRatio: 1.6,
                     crossAxisSpacing: 8,
@@ -169,8 +184,9 @@ class _ListeningScreenState extends State<ListeningScreen> {
                       onTap: () {
                         Navigator.pop(ctx);
                         setState(() => _juzFilter = juz);
-                        WidgetsBinding.instance
-                            .addPostFrameCallback((_) => _scrollToIndex(0));
+                        WidgetsBinding.instance.addPostFrameCallback(
+                          (_) => _scrollToIndex(0),
+                        );
                       },
                       child: Container(
                         decoration: BoxDecoration(
@@ -216,7 +232,8 @@ class _ListeningScreenState extends State<ListeningScreen> {
       backgroundColor: AppColors.blackCard,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(18))),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+      ),
       builder: (ctx) => Directionality(
         textDirection: TextDirection.rtl,
         child: DraggableScrollableSheet(
@@ -228,9 +245,10 @@ class _ListeningScreenState extends State<ListeningScreen> {
             children: [
               const Padding(
                 padding: EdgeInsets.fromLTRB(20, 16, 20, 8),
-                child: Text('اختر السورة',
-                    style:
-                        TextStyle(color: AppColors.gold, fontSize: 15)),
+                child: Text(
+                  'اختر السورة',
+                  style: TextStyle(color: AppColors.gold, fontSize: 15),
+                ),
               ),
               Expanded(
                 child: ListView.builder(
@@ -240,30 +258,29 @@ class _ListeningScreenState extends State<ListeningScreen> {
                   itemCount: _index.length,
                   itemBuilder: (_, i) {
                     final info = _index[i];
-                    final on =
-                        info.number == ContinuousListening.surah.value;
+                    final on = info.number == ContinuousListening.surah.value;
                     return GestureDetector(
                       onTap: () {
                         Navigator.pop(ctx);
                         setState(() {
                           _juzFilter = null;
                         });
-                        ContinuousListening.play(info.number,
-                            fromAyah: _startAyah);
+                        ContinuousListening.play(
+                          info.number,
+                          fromAyah: _startAyah,
+                        );
                       },
                       child: Container(
                         margin: const EdgeInsets.only(bottom: 4),
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 8),
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
-                          color: on
-                              ? AppColors.goldMuted
-                              : Colors.transparent,
+                          color: on ? AppColors.goldMuted : Colors.transparent,
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
-                            color: on
-                                ? AppColors.gold
-                                : AppColors.goldBorder,
+                            color: on ? AppColors.gold : AppColors.goldBorder,
                           ),
                         ),
                         child: Row(
@@ -273,28 +290,33 @@ class _ListeningScreenState extends State<ListeningScreen> {
                               child: Text(
                                 QuranService.toArabicDigits(info.number),
                                 style: TextStyle(
-                                    color: on
-                                        ? AppColors.gold
-                                        : AppColors.textMuted,
-                                    fontSize: 11),
+                                  color: on
+                                      ? AppColors.gold
+                                      : AppColors.textMuted,
+                                  fontSize: 11,
+                                ),
                               ),
                             ),
                             Expanded(
-                              child: Text(info.name,
-                                  style: TextStyle(
-                                    color: on
-                                        ? AppColors.gold
-                                        : AppColors.textPrimary,
-                                    fontSize: 14,
-                                    fontWeight: on
-                                        ? FontWeight.bold
-                                        : FontWeight.normal,
-                                  )),
+                              child: Text(
+                                info.name,
+                                style: TextStyle(
+                                  color: on
+                                      ? AppColors.gold
+                                      : AppColors.textPrimary,
+                                  fontSize: 14,
+                                  fontWeight: on
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                ),
+                              ),
                             ),
                             Text(
                               '${QuranService.toArabicDigits(info.ayahCount)} آية',
                               style: const TextStyle(
-                                  color: AppColors.textMuted, fontSize: 10),
+                                color: AppColors.textMuted,
+                                fontSize: 10,
+                              ),
                             ),
                           ],
                         ),
@@ -321,7 +343,8 @@ class _ListeningScreenState extends State<ListeningScreen> {
       backgroundColor: AppColors.blackCard,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(18))),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+      ),
       builder: (ctx) => Directionality(
         textDirection: TextDirection.rtl,
         child: DraggableScrollableSheet(
@@ -335,17 +358,14 @@ class _ListeningScreenState extends State<ListeningScreen> {
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
                 child: Text(
                   'ابدأ من أي آية — ${info.name}',
-                  style: const TextStyle(
-                      color: AppColors.gold, fontSize: 15),
+                  style: const TextStyle(color: AppColors.gold, fontSize: 15),
                 ),
               ),
               Expanded(
                 child: GridView.builder(
                   controller: sc,
-                  padding:
-                      const EdgeInsets.fromLTRB(16, 4, 16, 24),
-                  gridDelegate:
-                      const SliverGridDelegateWithFixedCrossAxisCount(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 6,
                     childAspectRatio: 1.4,
                     crossAxisSpacing: 6,
@@ -359,8 +379,7 @@ class _ListeningScreenState extends State<ListeningScreen> {
                       onTap: () {
                         Navigator.pop(ctx);
                         setState(() => _startAyah = ayah);
-                        ContinuousListening.play(surahNum,
-                            fromAyah: ayah);
+                        ContinuousListening.play(surahNum, fromAyah: ayah);
                       },
                       child: Container(
                         decoration: BoxDecoration(
@@ -405,7 +424,8 @@ class _ListeningScreenState extends State<ListeningScreen> {
       context: context,
       backgroundColor: AppColors.blackCard,
       shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(18))),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+      ),
       builder: (ctx) => Directionality(
         textDirection: TextDirection.rtl,
         child: SafeArea(
@@ -414,9 +434,10 @@ class _ListeningScreenState extends State<ListeningScreen> {
             children: [
               const Padding(
                 padding: EdgeInsets.fromLTRB(20, 16, 20, 4),
-                child: Text('اختر القارئ',
-                    style:
-                        TextStyle(color: AppColors.gold, fontSize: 15)),
+                child: Text(
+                  'اختر القارئ',
+                  style: TextStyle(color: AppColors.gold, fontSize: 15),
+                ),
               ),
               for (final r in RecitationService.reciters)
                 ListTile(
@@ -429,9 +450,13 @@ class _ListeningScreenState extends State<ListeningScreen> {
                         : AppColors.textMuted,
                     size: 19,
                   ),
-                  title: Text(r.name,
-                      style: const TextStyle(
-                          color: AppColors.textPrimary, fontSize: 14)),
+                  title: Text(
+                    r.displayName,
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 14,
+                    ),
+                  ),
                   onTap: () {
                     Navigator.pop(ctx);
                     ContinuousListening.setReciter(r);
@@ -461,7 +486,8 @@ class _ListeningScreenState extends State<ListeningScreen> {
         ),
         body: _loading
             ? const Center(
-                child: CircularProgressIndicator(color: AppColors.gold))
+                child: CircularProgressIndicator(color: AppColors.gold),
+              )
             : Column(
                 children: [
                   _nowPlaying(),
@@ -506,7 +532,7 @@ class _ListeningScreenState extends State<ListeningScreen> {
             const SizedBox(width: 6),
             Expanded(
               child: _chip(
-                label: _shortName(reciter.name),
+                label: _shortName(reciter.displayName),
                 icon: Icons.person_outline,
                 onTap: _pickReciter,
                 expand: true,
@@ -532,14 +558,18 @@ class _ListeningScreenState extends State<ListeningScreen> {
         decoration: BoxDecoration(
           color: active ? AppColors.goldMuted : AppColors.blackCard,
           borderRadius: BorderRadius.circular(10),
-          border:
-              Border.all(color: active ? AppColors.gold : AppColors.goldBorder),
+          border: Border.all(
+            color: active ? AppColors.gold : AppColors.goldBorder,
+          ),
         ),
         child: Row(
           mainAxisSize: expand ? MainAxisSize.max : MainAxisSize.min,
           children: [
-            Icon(icon,
-                color: active ? AppColors.gold : AppColors.textMuted, size: 13),
+            Icon(
+              icon,
+              color: active ? AppColors.gold : AppColors.textMuted,
+              size: 13,
+            ),
             const SizedBox(width: 4),
             if (expand)
               Expanded(
@@ -561,8 +591,11 @@ class _ListeningScreenState extends State<ListeningScreen> {
                 ),
               ),
             const SizedBox(width: 2),
-            Icon(Icons.keyboard_arrow_down,
-                color: active ? AppColors.gold : AppColors.textMuted, size: 12),
+            Icon(
+              Icons.keyboard_arrow_down,
+              color: active ? AppColors.gold : AppColors.textMuted,
+              size: 12,
+            ),
           ],
         ),
       ),
@@ -594,9 +627,10 @@ class _ListeningScreenState extends State<ListeningScreen> {
                 Text(
                   ContinuousListening.nameFor(number),
                   style: const TextStyle(
-                      color: AppColors.gold,
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold),
+                    color: AppColors.gold,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 ValueListenableBuilder<int>(
@@ -608,7 +642,9 @@ class _ListeningScreenState extends State<ListeningScreen> {
                       'الآية ${QuranService.toArabicDigits(ayah)}'
                       ' من ${QuranService.toArabicDigits(total)}',
                       style: const TextStyle(
-                          color: AppColors.textMuted, fontSize: 12),
+                        color: AppColors.textMuted,
+                        fontSize: 12,
+                      ),
                     );
                   },
                 ),
@@ -622,39 +658,51 @@ class _ListeningScreenState extends State<ListeningScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 IconButton(
-                  icon: const Icon(Icons.skip_previous,
-                      color: AppColors.textSecondary, size: 28),
+                  icon: const Icon(
+                    Icons.skip_previous,
+                    color: AppColors.textSecondary,
+                    size: 28,
+                  ),
                   onPressed: ContinuousListening.skipPrevious,
-                  tooltip: 'السورة السابقة',
+                  tooltip: t('playback.prevSurah'),
                 ),
                 Opacity(
                   opacity: rec.isPerAyah ? 1.0 : 0.3,
                   child: IconButton(
-                    icon: const Icon(Icons.fast_rewind,
-                        color: AppColors.gold, size: 24),
+                    icon: const Icon(
+                      Icons.fast_rewind,
+                      color: AppColors.gold,
+                      size: 24,
+                    ),
                     onPressed: rec.isPerAyah
                         ? ContinuousListening.skipPreviousAyah
                         : null,
-                    tooltip: 'الآية السابقة',
+                    tooltip: t('playback.prevAyah'),
                   ),
                 ),
                 _playButton(),
                 Opacity(
                   opacity: rec.isPerAyah ? 1.0 : 0.3,
                   child: IconButton(
-                    icon: const Icon(Icons.fast_forward,
-                        color: AppColors.gold, size: 24),
+                    icon: const Icon(
+                      Icons.fast_forward,
+                      color: AppColors.gold,
+                      size: 24,
+                    ),
                     onPressed: rec.isPerAyah
                         ? ContinuousListening.skipNextAyah
                         : null,
-                    tooltip: 'الآية التالية',
+                    tooltip: t('playback.nextAyah'),
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.skip_next,
-                      color: AppColors.textSecondary, size: 28),
+                  icon: const Icon(
+                    Icons.skip_next,
+                    color: AppColors.textSecondary,
+                    size: 28,
+                  ),
                   onPressed: ContinuousListening.skipNext,
-                  tooltip: 'السورة التالية',
+                  tooltip: t('playback.nextSurah'),
                 ),
               ],
             ),
@@ -671,7 +719,8 @@ class _ListeningScreenState extends State<ListeningScreen> {
         final state = snapshot.data;
         final mine = AppAudio.ownsCurrent(ContinuousListening.owner);
         final playing = (state?.playing ?? false) && mine;
-        final loading = mine &&
+        final loading =
+            mine &&
             (state?.processingState == ProcessingState.loading ||
                 state?.processingState == ProcessingState.buffering);
 
@@ -682,7 +731,9 @@ class _ListeningScreenState extends State<ListeningScreen> {
                   width: 30,
                   height: 30,
                   child: CircularProgressIndicator(
-                      strokeWidth: 2.5, color: AppColors.gold),
+                    strokeWidth: 2.5,
+                    color: AppColors.gold,
+                  ),
                 )
               : Icon(
                   playing ? Icons.pause_circle_filled : Icons.play_circle_fill,
@@ -722,13 +773,16 @@ class _ListeningScreenState extends State<ListeningScreen> {
                   ContinuousListening.play(info.number, fromAyah: _startAyah),
               child: Container(
                 margin: const EdgeInsets.only(bottom: 6),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: on ? AppColors.goldMuted : AppColors.blackCard,
                   borderRadius: BorderRadius.circular(12),
-                  border:
-                      Border.all(color: on ? AppColors.gold : AppColors.goldBorder),
+                  border: Border.all(
+                    color: on ? AppColors.gold : AppColors.goldBorder,
+                  ),
                 ),
                 child: Row(
                   children: [
@@ -737,8 +791,9 @@ class _ListeningScreenState extends State<ListeningScreen> {
                       child: Text(
                         QuranService.toArabicDigits(info.number),
                         style: TextStyle(
-                            color: on ? AppColors.gold : AppColors.textMuted,
-                            fontSize: 12),
+                          color: on ? AppColors.gold : AppColors.textMuted,
+                          fontSize: 12,
+                        ),
                       ),
                     ),
                     Expanded(
@@ -747,20 +802,24 @@ class _ListeningScreenState extends State<ListeningScreen> {
                         style: TextStyle(
                           color: on ? AppColors.gold : AppColors.textPrimary,
                           fontSize: 15,
-                          fontWeight:
-                              on ? FontWeight.bold : FontWeight.normal,
+                          fontWeight: on ? FontWeight.bold : FontWeight.normal,
                         ),
                       ),
                     ),
                     Text(
                       '${QuranService.toArabicDigits(info.ayahCount)} آية',
                       style: const TextStyle(
-                          color: AppColors.textMuted, fontSize: 11),
+                        color: AppColors.textMuted,
+                        fontSize: 11,
+                      ),
                     ),
                     if (on) ...[
                       const SizedBox(width: 8),
-                      const Icon(Icons.graphic_eq,
-                          color: AppColors.gold, size: 16),
+                      const Icon(
+                        Icons.graphic_eq,
+                        color: AppColors.gold,
+                        size: 16,
+                      ),
                     ],
                   ],
                 ),

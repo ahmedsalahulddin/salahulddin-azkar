@@ -38,15 +38,22 @@ class HomeScreen extends StatelessWidget {
                     return ValueListenableBuilder<Map<String, SectionSetting>>(
                       valueListenable: SectionConfig.settings,
                       builder: (context, _, _) {
-                        final visible = [
-                          for (var i = 0; i < all.length; i++)
-                            if (SectionConfig.isVisible(all[i].key)) (all[i], i),
-                        ]..sort((a, b) => SectionConfig.orderOf(a.$1.key, a.$2)
-                            .compareTo(SectionConfig.orderOf(b.$1.key, b.$2)));
+                        final visible =
+                            [
+                              for (var i = 0; i < all.length; i++)
+                                if (SectionConfig.isVisible(all[i].key))
+                                  (all[i], i),
+                            ]..sort(
+                              (a, b) => SectionConfig.orderOf(a.$1.key, a.$2)
+                                  .compareTo(
+                                    SectionConfig.orderOf(b.$1.key, b.$2),
+                                  ),
+                            );
 
                         return Column(
                           children: [
-                            for (final (shelf, _) in visible) _shelfRow(context, shelf),
+                            for (final (shelf, _) in visible)
+                              _shelfRow(context, shelf),
                           ],
                         );
                       },
@@ -76,8 +83,10 @@ class HomeScreen extends StatelessWidget {
               ),
               behavior: HitTestBehavior.opaque,
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.blackCard,
                   borderRadius: BorderRadius.circular(14),
@@ -87,14 +96,22 @@ class HomeScreen extends StatelessWidget {
                   children: [
                     const Icon(Icons.search, color: AppColors.gold, size: 20),
                     const SizedBox(width: 10),
-                    Text(t('search.label'),
-                        style: const TextStyle(
-                            color: AppColors.gold, fontSize: 14)),
+                    Text(
+                      t('search.label'),
+                      style: const TextStyle(
+                        color: AppColors.gold,
+                        fontSize: 14,
+                      ),
+                    ),
                     const SizedBox(width: 10),
                     Expanded(
-                      child: Text(t('search.hint'),
-                          style: const TextStyle(
-                              color: AppColors.textMuted, fontSize: 12.5)),
+                      child: Text(
+                        t('search.hint'),
+                        style: const TextStyle(
+                          color: AppColors.textMuted,
+                          fontSize: 12.5,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -157,17 +174,27 @@ class HomeScreen extends StatelessWidget {
                   Text(shelf.icon, style: const TextStyle(fontSize: 17)),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: Text(shelf.title,
-                        style: const TextStyle(
-                            color: AppColors.textPrimary,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold)),
+                    child: Text(
+                      shelf.title,
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
-                  const Text('الكل',
-                      style:
-                          TextStyle(color: AppColors.textGold, fontSize: 12)),
-                  const Icon(Icons.chevron_left,
-                      color: AppColors.textGold, size: 18),
+                  Text(
+                    t('home.seeAll'),
+                    style: const TextStyle(
+                      color: AppColors.textGold,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const Icon(
+                    Icons.chevron_left,
+                    color: AppColors.textGold,
+                    size: 18,
+                  ),
                 ],
               ),
             ),
@@ -200,8 +227,12 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _shelfCard(BuildContext context, ShelfItem item, Color tint,
-      {bool pinned = false}) {
+  Widget _shelfCard(
+    BuildContext context,
+    ShelfItem item,
+    Color tint, {
+    bool pinned = false,
+  }) {
     return GestureDetector(
       onTap: () => item.open(context),
       behavior: HitTestBehavior.opaque,
@@ -214,7 +245,8 @@ class HomeScreen extends StatelessWidget {
           // The pinned card carries the full gold edge; the rest are quieter,
           // so the row reads as "this one, and then the others".
           border: Border.all(
-              color: pinned ? AppColors.gold : AppColors.goldBorder),
+            color: pinned ? AppColors.gold : AppColors.goldBorder,
+          ),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -227,24 +259,29 @@ class HomeScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(11),
               ),
               child: Center(
-                  child: Text(item.icon, style: const TextStyle(fontSize: 19))),
+                child: Text(item.icon, style: const TextStyle(fontSize: 19)),
+              ),
             ),
             const SizedBox(height: 7),
-            BilingualText(item.title,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 12,
-                    height: 1.2,
-                    fontWeight: FontWeight.w600)),
+            BilingualText(
+              item.title,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 12,
+                height: 1.2,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
             const SizedBox(height: 2),
-            Text(item.subtitle,
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style:
-                    const TextStyle(color: AppColors.textMuted, fontSize: 10)),
+            Text(
+              item.subtitle,
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(color: AppColors.textMuted, fontSize: 10),
+            ),
           ],
         ),
       ),

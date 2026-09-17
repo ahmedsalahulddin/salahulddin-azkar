@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'app_locale.dart';
 import 'dhikr_reminder.dart';
 import 'notification_service.dart';
 import 'prayer_alerts.dart';
@@ -44,39 +45,53 @@ extension LocationStatusLabel on LocationStatus {
 
   /// The caption on the prayer card.
   String get label => switch (this) {
-        LocationStatus.fixed => 'حسب موقعك',
-        LocationStatus.remembered => 'موقعك المحفوظ',
-        _ => 'الرياض',
-      };
+    LocationStatus.fixed => 'حسب موقعك',
+    LocationStatus.remembered => 'موقعك المحفوظ',
+    _ => 'الرياض',
+  };
 
   /// Said once, after the reader taps the marker.
   String get explanation => switch (this) {
-        LocationStatus.fixed => 'تم تحديد موقعك، وحُسبت المواقيت عليه',
-        LocationStatus.remembered =>
-          'تعذّر تحديث الموقع الآن، والمواقيت محسوبة على آخر موقع معروف',
-        LocationStatus.denied =>
-          'التطبيق يحتاج إذن الموقع ليحسب المواقيت على مدينتك',
-        LocationStatus.blocked =>
-          'إذن الموقع مرفوض من إعدادات الجهاز، ولن يظهر السؤال مرة أخرى',
-        LocationStatus.serviceOff => 'خدمة الموقع مغلقة في جهازك',
-        LocationStatus.unavailable =>
-          'تعذّر الوصول للموقع. جرّب قرب نافذة أو في مكان مكشوف',
-      };
+    LocationStatus.fixed => 'تم تحديد موقعك، وحُسبت المواقيت عليه',
+    LocationStatus.remembered =>
+      'تعذّر تحديث الموقع الآن، والمواقيت محسوبة على آخر موقع معروف',
+    LocationStatus.denied =>
+      'التطبيق يحتاج إذن الموقع ليحسب المواقيت على مدينتك',
+    LocationStatus.blocked =>
+      'إذن الموقع مرفوض من إعدادات الجهاز، ولن يظهر السؤال مرة أخرى',
+    LocationStatus.serviceOff => 'خدمة الموقع مغلقة في جهازك',
+    LocationStatus.unavailable =>
+      'تعذّر الوصول للموقع. جرّب قرب نافذة أو في مكان مكشوف',
+  };
 }
 
 class PrayerInfo {
+  /// Arabic name — used internally (e.g. by [SkyClock]) to identify which
+  /// prayer this is, so it stays Arabic regardless of locale.
   final String name;
+  final String nameEn;
   final DateTime time;
   final bool isNext;
 
-  const PrayerInfo({required this.name, required this.time, required this.isNext});
+  const PrayerInfo({
+    required this.name,
+    required this.nameEn,
+    required this.time,
+    required this.isNext,
+  });
+
+  /// What the reader actually sees — the one to use in UI text.
+  String get displayName => AppLocale.isEn ? nameEn : name;
 }
 
 class PrayerData {
   final List<PrayerInfo> prayers;
   final String nextName;
+  final String nextNameEn;
   final DateTime nextTime;
   final LocationStatus status;
+
+  String get nextDisplayName => AppLocale.isEn ? nextNameEn : nextName;
 
   /// The method these times were actually computed with, so the reader can be
   /// told rather than left to assume.
@@ -85,6 +100,7 @@ class PrayerData {
   const PrayerData({
     required this.prayers,
     required this.nextName,
+    required this.nextNameEn,
     required this.nextTime,
     required this.status,
     this.method = PrayerMethod.ummAlQura,
@@ -111,6 +127,15 @@ class PrayerService {
     Prayer.asr: 'العصر',
     Prayer.maghrib: 'المغرب',
     Prayer.isha: 'العشاء',
+  };
+
+  static const _namesEn = {
+    Prayer.fajr: 'Fajr',
+    Prayer.sunrise: 'Sunrise',
+    Prayer.dhuhr: 'Dhuhr',
+    Prayer.asr: 'Asr',
+    Prayer.maghrib: 'Maghrib',
+    Prayer.isha: 'Isha',
   };
 
   /// Prayer times for today.
@@ -145,29 +170,42 @@ class PrayerService {
 
     // The authority and the Asr rule come from the reader's settings, which
     // default to whichever method is used where they are standing.
-    final params = PrayerSettings.parametersFor(coords.latitude, coords.longitude);
+    final params = PrayerSettings.parametersFor(
+      coords.latitude,
+      coords.longitude,
+    );
 
     final today = PrayerTimes.today(coords, params);
     final next = today.nextPrayer();
 
     // After Isha, nextPrayer() returns Prayer.none — roll over to tomorrow's Fajr.
     late final String nextName;
+    late final String nextNameEn;
     late final DateTime nextTime;
     if (next == Prayer.none) {
       final tomorrow = DateTime.now().add(const Duration(days: 1));
-      nextTime = PrayerTimes(coords, DateComponents.from(tomorrow), params).fajr;
+      nextTime = PrayerTimes(
+        coords,
+        DateComponents.from(tomorrow),
+        params,
+      ).fajr;
       nextName = _names[Prayer.fajr]!;
+      nextNameEn = _namesEn[Prayer.fajr]!;
     } else {
       nextTime = today.timeForPrayer(next)!;
       nextName = _names[next]!;
+      nextNameEn = _namesEn[next]!;
     }
 
     final prayers = _order
-        .map((p) => PrayerInfo(
-              name: _names[p]!,
-              time: today.timeForPrayer(p)!,
-              isNext: p == next,
-            ))
+        .map(
+          (p) => PrayerInfo(
+            name: _names[p]!,
+            nameEn: _namesEn[p]!,
+            time: today.timeForPrayer(p)!,
+            isNext: p == next,
+          ),
+        )
         .toList();
 
     // The times move every day, so the alerts are laid down again on every
@@ -195,8 +233,12 @@ class PrayerService {
         AlertPrayer.maghrib: ahead.maghrib,
         AlertPrayer.isha: ahead.isha,
       };
-      unawaited(NotificationService.schedulePrayerAlerts(
-          PrayerAlerts.lastTimes, PrayerAlerts.tomorrow));
+      unawaited(
+        NotificationService.schedulePrayerAlerts(
+          PrayerAlerts.lastTimes,
+          PrayerAlerts.tomorrow,
+        ),
+      );
     }
     // Reminders tied to the prayers move with them, so they are laid down
     // again here rather than once when the setting was made.
@@ -208,6 +250,7 @@ class PrayerService {
     return PrayerData(
       prayers: prayers,
       nextName: nextName,
+      nextNameEn: nextNameEn,
       nextTime: nextTime,
       status: status,
       method: PrayerSettings.effective(coords.latitude, coords.longitude),

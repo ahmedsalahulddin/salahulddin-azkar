@@ -6,6 +6,7 @@ import 'package:share_plus/share_plus.dart';
 import '../constants/theme.dart';
 import '../data/ayah_boxes.dart';
 import '../data/quran_data.dart';
+import '../l10n/strings.dart';
 import '../services/bookmark_service.dart';
 import '../services/app_audio.dart';
 import '../services/mushaf_image_service.dart';
@@ -41,8 +42,9 @@ class MushafScreen extends StatefulWidget {
 }
 
 class _MushafScreenState extends State<MushafScreen> {
-  late final PageController _controller =
-      PageController(initialPage: widget.initialPage - 1);
+  late final PageController _controller = PageController(
+    initialPage: widget.initialPage - 1,
+  );
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   final _player = AppAudio.player;
 
@@ -152,27 +154,27 @@ class _MushafScreenState extends State<MushafScreen> {
         : [for (var n = start.ayah; n <= surah.ayahs.length; n++) n];
 
     try {
-      await _player.setAudioSources(
-        [
-          for (final ayah in order)
-            AudioSource.uri(
-              Uri.parse(RecitationService.urlFor(
+      await _player.setAudioSources([
+        for (final ayah in order)
+          AudioSource.uri(
+            Uri.parse(
+              RecitationService.urlFor(
                 reciterId: _reciter.id,
                 surah: start.surah,
                 ayah: ayah,
-              )),
-              // Names the track in the notification and on the lock screen,
-              // and is what lets playback survive leaving the app.
-              tag: MediaItem(
-                id: '${_reciter.id}:${start.surah}:$ayah',
-                title: '${surah.name} — الآية ${QuranService.toArabicDigits(ayah)}',
-                artist: _reciter.name,
-                album: 'القرآن الكريم',
               ),
             ),
-        ],
-        initialIndex: 0,
-      );
+            // Names the track in the notification and on the lock screen,
+            // and is what lets playback survive leaving the app.
+            tag: MediaItem(
+              id: '${_reciter.id}:${start.surah}:$ayah',
+              title:
+                  '${surah.name} — الآية ${QuranService.toArabicDigits(ayah)}',
+              artist: _reciter.displayName,
+              album: 'القرآن الكريم',
+            ),
+          ),
+      ], initialIndex: 0);
       await PlaybackSpeed.apply();
 
       // Follow the recitation: highlight the playing ayah and auto-turn the
@@ -181,8 +183,10 @@ class _MushafScreenState extends State<MushafScreen> {
       _indexSub = _player.currentIndexStream.listen((i) async {
         if (!mounted || i == null || i >= order.length) return;
         final targetAyah = order[i];
-        final targetPage =
-            await QuranService.pageOfAyah(start.surah, targetAyah);
+        final targetPage = await QuranService.pageOfAyah(
+          start.surah,
+          targetAyah,
+        );
 
         // Navigate automatically when the recitation crosses a page boundary.
         if (targetPage != _current && mounted) {
@@ -203,7 +207,8 @@ class _MushafScreenState extends State<MushafScreen> {
 
       await _player.play();
     } catch (_) {
-      if (mounted) _toast('تعذّر تشغيل التلاوة — تحقّق من الاتصال', error: true);
+      if (mounted)
+        _toast('تعذّر تشغيل التلاوة — تحقّق من الاتصال', error: true);
     }
   }
 
@@ -256,19 +261,27 @@ class _MushafScreenState extends State<MushafScreen> {
             children: [
               Padding(
                 padding: const EdgeInsets.all(14),
-                child: Text('علامة على ${_reference(a)}',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                        color: AppColors.gold,
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold)),
+                child: Text(
+                  'علامة على ${_reference(a)}',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: AppColors.gold,
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
               const Divider(color: AppColors.goldBorder, height: 1),
               for (final kind in BookmarkKind.values)
                 ListTile(
-                  leading: Text(kind.icon, style: const TextStyle(fontSize: 20)),
-                  title: Text(kind.label,
-                      style: const TextStyle(color: AppColors.textPrimary)),
+                  leading: Text(
+                    kind.icon,
+                    style: const TextStyle(fontSize: 20),
+                  ),
+                  title: Text(
+                    kind.label,
+                    style: const TextStyle(color: AppColors.textPrimary),
+                  ),
                   onTap: () => Navigator.pop(ctx, kind),
                 ),
               const SizedBox(height: 8),
@@ -285,15 +298,19 @@ class _MushafScreenState extends State<MushafScreen> {
       if (note == null) return;
     }
 
-    final marked = await BookmarkService.toggle(Bookmark(
-      kind: kind,
-      surah: a.surah,
-      ayah: a.ayah,
-      page: _current,
-      note: note,
-    ));
+    final marked = await BookmarkService.toggle(
+      Bookmark(
+        kind: kind,
+        surah: a.surah,
+        ayah: a.ayah,
+        page: _current,
+        note: note,
+      ),
+    );
     if (!mounted) return;
-    _toast(marked ? 'أُضيفت علامة ${kind.label}' : 'أُزيلت علامة ${kind.label}');
+    _toast(
+      marked ? 'أُضيفت علامة ${kind.label}' : 'أُزيلت علامة ${kind.label}',
+    );
   }
 
   Future<String?> _askForNote(AyahBoxes a) async {
@@ -304,8 +321,10 @@ class _MushafScreenState extends State<MushafScreen> {
         textDirection: TextDirection.rtl,
         child: AlertDialog(
           backgroundColor: AppColors.blackCard,
-          title: const Text('ملاحظة',
-              style: TextStyle(color: AppColors.gold, fontSize: 17)),
+          title: const Text(
+            'ملاحظة',
+            style: TextStyle(color: AppColors.gold, fontSize: 17),
+          ),
           content: TextField(
             controller: controller,
             autofocus: true,
@@ -319,16 +338,17 @@ class _MushafScreenState extends State<MushafScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('إلغاء',
-                  style: TextStyle(color: AppColors.textMuted)),
+              child: const Text(
+                'إلغاء',
+                style: TextStyle(color: AppColors.textMuted),
+              ),
             ),
             TextButton(
               onPressed: () {
                 final text = controller.text.trim();
                 Navigator.pop(ctx, text.isEmpty ? null : text);
               },
-              child: const Text('حفظ',
-                  style: TextStyle(color: AppColors.gold)),
+              child: const Text('حفظ', style: TextStyle(color: AppColors.gold)),
             ),
           ],
         ),
@@ -394,7 +414,8 @@ class _MushafScreenState extends State<MushafScreen> {
                 ),
           body: pages == null
               ? const Center(
-                  child: CircularProgressIndicator(color: AppColors.gold))
+                  child: CircularProgressIndicator(color: AppColors.gold),
+                )
               : Stack(
                   children: [
                     PageView.builder(
@@ -448,10 +469,16 @@ class _MushafScreenState extends State<MushafScreen> {
         into: MushafChrome.topHeight,
         child: Container(
           padding: EdgeInsets.fromLTRB(
-              4, MediaQuery.viewPaddingOf(context).top + 2, 4, 3),
+            4,
+            MediaQuery.viewPaddingOf(context).top + 2,
+            4,
+            3,
+          ),
           decoration: BoxDecoration(
             color: AppColors.blackCard.withValues(alpha: 0.97),
-            border: const Border(bottom: BorderSide(color: AppColors.goldBorder)),
+            border: const Border(
+              bottom: BorderSide(color: AppColors.goldBorder),
+            ),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -459,16 +486,20 @@ class _MushafScreenState extends State<MushafScreen> {
               // Where you are: surah leads, position trails it.
               Row(
                 children: [
-                  _barIcon(Icons.menu, 'التصفّح',
-                      () => _scaffoldKey.currentState?.openDrawer()),
+                  _barIcon(
+                    Icons.menu,
+                    'التصفّح',
+                    () => _scaffoldKey.currentState?.openDrawer(),
+                  ),
                   Flexible(
                     child: Text(
                       surahLine,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                          color: AppColors.gold,
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold),
+                        color: AppColors.gold,
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -477,7 +508,9 @@ class _MushafScreenState extends State<MushafScreen> {
                       'الجزء ${QuranService.toArabicDigits(page.juz)} · صفحة ${QuranService.toArabicDigits(page.number)}',
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                          color: AppColors.textMuted, fontSize: 12),
+                        color: AppColors.textMuted,
+                        fontSize: 12,
+                      ),
                     ),
                   ),
                   _barIcon(Icons.close, 'رجوع', () => Navigator.pop(context)),
@@ -502,10 +535,14 @@ class _MushafScreenState extends State<MushafScreen> {
                       // at the far end rather than between the two.
                       _playButton(),
                       const SpeedButton(),
-                      _barIcon(Icons.repeat, 'التكرار', _openRepeatSettings,
-                          label: 'تـكرار',
-                          active: _repeat.isActive,
-                          iconSize: 23),
+                      _barIcon(
+                        Icons.repeat,
+                        'التكرار',
+                        _openRepeatSettings,
+                        label: 'تـكرار',
+                        active: _repeat.isActive,
+                        iconSize: 23,
+                      ),
                     ],
                   ),
                 ),
@@ -519,8 +556,14 @@ class _MushafScreenState extends State<MushafScreen> {
 
   /// A bar control. Passing [label] spells the action out beside the icon —
   /// worth the width for the ones whose symbol alone is ambiguous.
-  Widget _barIcon(IconData icon, String tooltip, VoidCallback onTap,
-      {bool active = false, String? label, double iconSize = 21}) {
+  Widget _barIcon(
+    IconData icon,
+    String tooltip,
+    VoidCallback onTap, {
+    bool active = false,
+    String? label,
+    double iconSize = 21,
+  }) {
     final tint = active ? AppColors.gold : AppColors.textSecondary;
     return Tooltip(
       message: tooltip,
@@ -537,13 +580,14 @@ class _MushafScreenState extends State<MushafScreen> {
               Icon(icon, size: iconSize, color: tint),
               if (label != null) ...[
                 const SizedBox(width: 3),
-                Text(label,
-                    style: TextStyle(
-                      color: tint,
-                      fontSize: 11,
-                      fontWeight:
-                          active ? FontWeight.bold : FontWeight.normal,
-                    )),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: tint,
+                    fontSize: 11,
+                    fontWeight: active ? FontWeight.bold : FontWeight.normal,
+                  ),
+                ),
               ],
             ],
           ),
@@ -564,7 +608,7 @@ class _MushafScreenState extends State<MushafScreen> {
         ),
         alignment: Alignment.center,
         child: Text(
-          _reciter.name,
+          _reciter.displayName,
           overflow: TextOverflow.ellipsis,
           maxLines: 1,
           style: const TextStyle(color: AppColors.textGold, fontSize: 12),
@@ -574,18 +618,21 @@ class _MushafScreenState extends State<MushafScreen> {
   }
 
   Widget _reciterMenu() => _reciterPopup(
-        child: const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 6),
-          child: Icon(Icons.record_voice_over,
-              size: 22, color: AppColors.textSecondary),
-        ),
-      );
+    child: const Padding(
+      padding: EdgeInsets.symmetric(horizontal: 6),
+      child: Icon(
+        Icons.record_voice_over,
+        size: 22,
+        color: AppColors.textSecondary,
+      ),
+    ),
+  );
 
   /// Drops the reciter list below whatever it wraps — a sheet rising from the
   /// bottom of the screen put the choices as far from the button as possible.
   Widget _reciterPopup({required Widget child}) {
     return PopupMenuButton<Reciter>(
-      tooltip: 'اختر القارئ',
+      tooltip: t('playback.pickReciter'),
       color: AppColors.blackCard,
       position: PopupMenuPosition.under,
       shape: RoundedRectangleBorder(
@@ -618,14 +665,16 @@ class _MushafScreenState extends State<MushafScreen> {
                   // be trimmed here, never allowed to overflow the row it
                   // sits in and paint over what is beside it.
                   Flexible(
-                    child: Text(r.name,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: r.id == _reciter.id
-                              ? AppColors.gold
-                              : AppColors.textPrimary,
-                          fontSize: 13,
-                        )),
+                    child: Text(
+                      r.displayName,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: r.id == _reciter.id
+                            ? AppColors.gold
+                            : AppColors.textPrimary,
+                        fontSize: 13,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -651,7 +700,7 @@ class _MushafScreenState extends State<MushafScreen> {
         final playing = snapshot.data?.playing ?? false;
         final loading =
             snapshot.data?.processingState == ProcessingState.loading ||
-                snapshot.data?.processingState == ProcessingState.buffering;
+            snapshot.data?.processingState == ProcessingState.buffering;
 
         if (loading) {
           // Same padding as _barIcon, so the row keeps its height.
@@ -661,7 +710,9 @@ class _MushafScreenState extends State<MushafScreen> {
               width: 19,
               height: 19,
               child: CircularProgressIndicator(
-                  strokeWidth: 2, color: AppColors.gold),
+                strokeWidth: 2,
+                color: AppColors.gold,
+              ),
             ),
           );
         }
@@ -700,21 +751,37 @@ class _MushafScreenState extends State<MushafScreen> {
           // Half a line of Mushaf text lower, so the page clears it above and
           // below rather than sitting against it.
           padding: EdgeInsets.fromLTRB(
-              8, 6, 8, 6 + (inset > 0 ? inset : 8) - 11),
+            8,
+            6,
+            8,
+            6 + (inset > 0 ? inset : 8) - 11,
+          ),
           decoration: BoxDecoration(
             color: AppColors.blackCard.withValues(alpha: 0.97),
             border: const Border(top: BorderSide(color: AppColors.goldBorder)),
           ),
           child: Row(
             children: [
-              _action(Icons.bookmark_border, 'علامة',
-                  selected == null ? null : () => _markAyah(selected)),
-              _action(Icons.menu_book, 'التفسير',
-                  selected == null ? null : () => _showTafsir(selected)),
-              _action(Icons.copy, 'نسخ',
-                  selected == null ? null : () => _copyAyah(selected)),
-              _action(Icons.share, 'مشاركة',
-                  selected == null ? null : () => _shareAyah(selected)),
+              _action(
+                Icons.bookmark_border,
+                'علامة',
+                selected == null ? null : () => _markAyah(selected),
+              ),
+              _action(
+                Icons.menu_book,
+                'التفسير',
+                selected == null ? null : () => _showTafsir(selected),
+              ),
+              _action(
+                Icons.copy,
+                'نسخ',
+                selected == null ? null : () => _copyAyah(selected),
+              ),
+              _action(
+                Icons.share,
+                'مشاركة',
+                selected == null ? null : () => _shareAyah(selected),
+              ),
             ],
           ),
         ),
@@ -733,16 +800,21 @@ class _MushafScreenState extends State<MushafScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon,
-                  color: enabled ? AppColors.gold : AppColors.textMuted,
-                  size: 21),
+              Icon(
+                icon,
+                color: enabled ? AppColors.gold : AppColors.textMuted,
+                size: 21,
+              ),
               const SizedBox(height: 3),
-              Text(label,
-                  style: TextStyle(
-                      color: enabled
-                          ? AppColors.textSecondary
-                          : AppColors.textMuted,
-                      fontSize: 10)),
+              Text(
+                label,
+                style: TextStyle(
+                  color: enabled
+                      ? AppColors.textSecondary
+                      : AppColors.textMuted,
+                  fontSize: 10,
+                ),
+              ),
             ],
           ),
         ),

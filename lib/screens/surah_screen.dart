@@ -7,6 +7,7 @@ import '../constants/theme.dart';
 import '../services/app_audio.dart';
 import '../data/quran_data.dart';
 import '../data/tafsir_data.dart';
+import '../l10n/strings.dart';
 import '../services/playback_speed.dart';
 import '../services/recitation_service.dart';
 import '../services/storage_service.dart';
@@ -115,7 +116,10 @@ class _SurahScreenState extends State<SurahScreen> {
     }
   }
 
-  Future<void> _playPerAyah({required dynamic surah, required int fromAyah}) async {
+  Future<void> _playPerAyah({
+    required dynamic surah,
+    required int fromAyah,
+  }) async {
     // Whose playlist is loaded, not merely whether one is: the radio leaves
     // its own source in place, and seeking into that plays the broadcast
     // under this screen's reciter name.
@@ -123,26 +127,25 @@ class _SurahScreenState extends State<SurahScreen> {
     try {
       if (!AppAudio.ownsCurrent(mine)) {
         await _player.stop();
-        await _player.setAudioSources(
-          [
-            for (final a in surah.ayahs)
-              AudioSource.uri(
-                Uri.parse(RecitationService.urlFor(
+        await _player.setAudioSources([
+          for (final a in surah.ayahs)
+            AudioSource.uri(
+              Uri.parse(
+                RecitationService.urlFor(
                   reciterId: _reciter.id,
                   surah: surah.number,
                   ayah: a.number,
-                )),
-                tag: MediaItem(
-                  id: '${_reciter.id}:${surah.number}:${a.number}',
-                  title:
-                      '${surah.name} — الآية ${QuranService.toArabicDigits(a.number)}',
-                  artist: _reciter.name,
-                  album: 'القرآن الكريم',
                 ),
               ),
-          ],
-          initialIndex: fromAyah - 1,
-        );
+              tag: MediaItem(
+                id: '${_reciter.id}:${surah.number}:${a.number}',
+                title:
+                    '${surah.name} — الآية ${QuranService.toArabicDigits(a.number)}',
+                artist: _reciter.displayName,
+                album: 'القرآن الكريم',
+              ),
+            ),
+        ], initialIndex: fromAyah - 1);
       } else {
         await _player.seek(Duration.zero, index: fromAyah - 1);
       }
@@ -162,7 +165,10 @@ class _SurahScreenState extends State<SurahScreen> {
   // Per-surah reciters (mp3quran.net): one MP3 for the whole surah.
   // Ayah highlighting is unavailable; _playingAyah stays null.
   Future<void> _playPerSurah({required dynamic surah}) async {
-    final url = RecitationService.surahUrlFor(reciter: _reciter, surah: surah.number);
+    final url = RecitationService.surahUrlFor(
+      reciter: _reciter,
+      surah: surah.number,
+    );
     if (url == null) return;
     final mine = '${_reciter.id}:${surah.number}';
     try {
@@ -174,7 +180,7 @@ class _SurahScreenState extends State<SurahScreen> {
             tag: MediaItem(
               id: mine,
               title: surah.name,
-              artist: _reciter.name,
+              artist: _reciter.displayName,
               album: 'القرآن الكريم',
             ),
           ),
@@ -212,13 +218,16 @@ class _SurahScreenState extends State<SurahScreen> {
           maxChildSize: 0.85,
           builder: (ctx, scroll) => Column(
             children: [
-              const Padding(
-                padding: EdgeInsets.all(16),
-                child: Text('اختر القارئ',
-                    style: TextStyle(
-                        color: AppColors.gold,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold)),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  t('playback.pickReciter'),
+                  style: const TextStyle(
+                    color: AppColors.gold,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
               Expanded(
                 child: ListView(
@@ -226,8 +235,10 @@ class _SurahScreenState extends State<SurahScreen> {
                   children: [
                     for (final r in RecitationService.reciters)
                       ListTile(
-                        title: Text(r.name,
-                            style: const TextStyle(color: AppColors.textPrimary)),
+                        title: Text(
+                          r.displayName,
+                          style: const TextStyle(color: AppColors.textPrimary),
+                        ),
                         trailing: r.id == _reciter.id
                             ? const Icon(Icons.check, color: AppColors.gold)
                             : null,
@@ -332,9 +343,10 @@ class _SurahScreenState extends State<SurahScreen> {
               Text(
                 '${TafsirService.name} — الآية ${QuranService.toArabicDigits(a.number)}',
                 style: const TextStyle(
-                    color: AppColors.gold,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold),
+                  color: AppColors.gold,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 10),
               const Divider(color: AppColors.goldBorder, height: 1),
@@ -377,7 +389,9 @@ class _SurahScreenState extends State<SurahScreen> {
                       TafsirService.publisher,
                       textAlign: TextAlign.center,
                       style: const TextStyle(
-                          color: AppColors.textMuted, fontSize: 11),
+                        color: AppColors.textMuted,
+                        fontSize: 11,
+                      ),
                     ),
                   ],
                 ),
@@ -400,9 +414,11 @@ class _SurahScreenState extends State<SurahScreen> {
   }
 
   Future<void> _copyAyah(Ayah a) async {
-    await Clipboard.setData(ClipboardData(
-      text: '${a.text}\n\n[سورة ${widget.info.name} — الآية ${a.number}]',
-    ));
+    await Clipboard.setData(
+      ClipboardData(
+        text: '${a.text}\n\n[سورة ${widget.info.name} — الآية ${a.number}]',
+      ),
+    );
     if (!mounted) return;
     HapticFeedback.lightImpact();
     ScaffoldMessenger.of(context).showSnackBar(
@@ -431,22 +447,24 @@ class _SurahScreenState extends State<SurahScreen> {
             IconButton(
               icon: const Icon(Icons.record_voice_over, size: 20),
               onPressed: _pickReciter,
-              tooltip: 'اختر القارئ',
+              tooltip: t('playback.pickReciter'),
             ),
             IconButton(
               icon: const Icon(Icons.text_decrease, size: 20),
               onPressed: () => _adjustFont(-2),
-              tooltip: 'تصغير الخط',
+              tooltip: t('playback.decreaseFont'),
             ),
             IconButton(
               icon: const Icon(Icons.text_increase, size: 20),
               onPressed: () => _adjustFont(2),
-              tooltip: 'تكبير الخط',
+              tooltip: t('playback.increaseFont'),
             ),
           ],
         ),
         body: surah == null
-            ? const Center(child: CircularProgressIndicator(color: AppColors.gold))
+            ? const Center(
+                child: CircularProgressIndicator(color: AppColors.gold),
+              )
             : Column(
                 children: [
                   Expanded(
@@ -475,8 +493,10 @@ class _SurahScreenState extends State<SurahScreen> {
         // Playing *this* surah, not merely playing: otherwise the bar offers
         // to pause a broadcast it does not own, under this reciter's name.
         final playing =
-            (state?.playing ?? false) && AppAudio.ownsCurrent('${_reciter.id}:');
-        final loading = state?.processingState == ProcessingState.loading ||
+            (state?.playing ?? false) &&
+            AppAudio.ownsCurrent('${_reciter.id}:');
+        final loading =
+            state?.processingState == ProcessingState.loading ||
             state?.processingState == ProcessingState.buffering;
 
         return Container(
@@ -493,12 +513,20 @@ class _SurahScreenState extends State<SurahScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text('القارئ',
-                        style:
-                            TextStyle(color: AppColors.textMuted, fontSize: 10)),
-                    Text(_reciter.name,
-                        style: const TextStyle(
-                            color: AppColors.textGold, fontSize: 13)),
+                    const Text(
+                      'القارئ',
+                      style: TextStyle(
+                        color: AppColors.textMuted,
+                        fontSize: 10,
+                      ),
+                    ),
+                    Text(
+                      _reciter.displayName,
+                      style: const TextStyle(
+                        color: AppColors.textGold,
+                        fontSize: 13,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -515,7 +543,9 @@ class _SurahScreenState extends State<SurahScreen> {
                   child: Text(
                     'الآية ${QuranService.toArabicDigits(_playingAyah!)}',
                     style: const TextStyle(
-                        color: AppColors.textMuted, fontSize: 12),
+                      color: AppColors.textMuted,
+                      fontSize: 12,
+                    ),
                   ),
                 ),
               IconButton(
@@ -524,7 +554,9 @@ class _SurahScreenState extends State<SurahScreen> {
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(
-                            strokeWidth: 2, color: AppColors.gold),
+                          strokeWidth: 2,
+                          color: AppColors.gold,
+                        ),
                       )
                     : Icon(
                         playing
@@ -535,7 +567,9 @@ class _SurahScreenState extends State<SurahScreen> {
                       ),
                 onPressed: loading
                     ? null
-                    : () => playing ? _pause() : _play(fromAyah: _playingAyah ?? 1),
+                    : () => playing
+                          ? _pause()
+                          : _play(fromAyah: _playingAyah ?? 1),
                 tooltip: playing ? 'إيقاف' : 'تشغيل السورة',
               ),
             ],
@@ -563,7 +597,10 @@ class _SurahScreenState extends State<SurahScreen> {
           Text(
             'سورة ${info.name}',
             style: const TextStyle(
-                color: AppColors.gold, fontSize: 24, fontWeight: FontWeight.bold),
+              color: AppColors.gold,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
@@ -572,7 +609,12 @@ class _SurahScreenState extends State<SurahScreen> {
           ),
           if (info.hasBasmala) ...[
             const SizedBox(height: 14),
-            const Divider(color: AppColors.goldBorder, height: 1, indent: 30, endIndent: 30),
+            const Divider(
+              color: AppColors.goldBorder,
+              height: 1,
+              indent: 30,
+              endIndent: 30,
+            ),
             const SizedBox(height: 14),
             Text(
               QuranService.basmala,
@@ -608,8 +650,8 @@ class _SurahScreenState extends State<SurahScreen> {
             color: isPlaying
                 ? AppColors.gold
                 : a.isSajda
-                    ? AppColors.emerald
-                    : AppColors.goldBorder,
+                ? AppColors.emerald
+                : AppColors.goldBorder,
             width: isPlaying ? 1.5 : 1,
           ),
         ),
@@ -644,13 +686,20 @@ class _SurahScreenState extends State<SurahScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.star, color: AppColors.emeraldLight, size: 13),
+                  const Icon(
+                    Icons.star,
+                    color: AppColors.emeraldLight,
+                    size: 13,
+                  ),
                   const SizedBox(width: 5),
-                  Text('موضع سجدة',
-                      style: TextStyle(
-                          color: AppColors.emeraldLight,
-                          fontSize: _fontSize * 0.5,
-                          fontWeight: FontWeight.bold)),
+                  Text(
+                    'موضع سجدة',
+                    style: TextStyle(
+                      color: AppColors.emeraldLight,
+                      fontSize: _fontSize * 0.5,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ],
               ),
             ],

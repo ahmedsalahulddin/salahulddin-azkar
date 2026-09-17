@@ -6,6 +6,7 @@ import 'package:timezone/timezone.dart' as tz;
 
 import '../data/adhkar_data.dart';
 import '../data/quran_data.dart';
+import 'app_locale.dart';
 import 'daily_reminders.dart';
 import 'prayer_alerts.dart';
 
@@ -95,15 +96,15 @@ class NotificationService {
     }
     try {
       final offset = DateTime.now().timeZoneOffset;
-      tz.setLocalLocation(tz.Location(
-        'local',
-        const [tz.minTime],
-        const [0],
-        [
-          tz.TimeZone(offset.inMilliseconds,
-              isDst: false, abbreviation: DateTime.now().timeZoneName),
-        ],
-      ));
+      tz.setLocalLocation(
+        tz.Location('local', const [tz.minTime], const [0], [
+          tz.TimeZone(
+            offset.inMilliseconds,
+            isDst: false,
+            abbreviation: DateTime.now().timeZoneName,
+          ),
+        ]),
+      );
     } catch (_) {
       // UTC, and the times will be wrong — but nothing here may throw and
       // take the whole notification system down with it.
@@ -138,12 +139,16 @@ class NotificationService {
   static Future<bool?> allowed() async {
     if (kIsWeb) return false;
     try {
-      final android = _plugin.resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>();
+      final android = _plugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >();
       if (android != null) return android.areNotificationsEnabled();
 
-      final ios = _plugin.resolvePlatformSpecificImplementation<
-          IOSFlutterLocalNotificationsPlugin>();
+      final ios = _plugin
+          .resolvePlatformSpecificImplementation<
+            IOSFlutterLocalNotificationsPlugin
+          >();
       if (ios != null) {
         final granted = await ios.requestPermissions(alert: true);
         return granted;
@@ -223,8 +228,15 @@ class NotificationService {
     try {
       await init();
       final soon = tz.TZDateTime.now(tz.local).add(const Duration(minutes: 1));
-      final at = tz.TZDateTime(tz.local, soon.year, soon.month, soon.day,
-          soon.hour, soon.minute, soon.second);
+      final at = tz.TZDateTime(
+        tz.local,
+        soon.year,
+        soon.month,
+        soon.day,
+        soon.hour,
+        soon.minute,
+        soon.second,
+      );
 
       const testDetails = NotificationDetails(
         android: AndroidNotificationDetails(
@@ -243,7 +255,8 @@ class NotificationService {
           _scheduledTestId,
           'التنبيه المجدول وصل',
           'أُرسل قبل دقيقة بنفس طريقة تنبيهات الصلاة والأذكار.',
-          at, testDetails,
+          at,
+          testDetails,
           androidScheduleMode: AndroidScheduleMode.alarmClock,
           uiLocalNotificationDateInterpretation:
               UILocalNotificationDateInterpretation.absoluteTime,
@@ -253,7 +266,8 @@ class NotificationService {
           _scheduledTestId,
           'التنبيه المجدول وصل',
           'أُرسل قبل دقيقة بنفس طريقة تنبيهات الصلاة والأذكار.',
-          at, testDetails,
+          at,
+          testDetails,
           androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
           uiLocalNotificationDateInterpretation:
               UILocalNotificationDateInterpretation.absoluteTime,
@@ -334,10 +348,14 @@ class NotificationService {
     if (kIsWeb) return;
     try {
       await _plugin
-          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >()
           ?.requestNotificationsPermission();
       await _plugin
-          .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>()
+          .resolvePlatformSpecificImplementation<
+            IOSFlutterLocalNotificationsPlugin
+          >()
           ?.requestPermissions(alert: true, badge: true, sound: true);
     } catch (_) {
       // Refused, or the plugin never started. Either way the reader is told
@@ -384,8 +402,10 @@ class NotificationService {
       'salahulddin_prayer_sound_v3_default',
     ];
     try {
-      final android = _plugin.resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>();
+      final android = _plugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >();
       if (android == null) return;
       for (final id in gone) {
         await android.deleteNotificationChannel(id);
@@ -443,12 +463,20 @@ class NotificationService {
         try {
           await _scheduleAt(
             id: id,
-            title: when == AlertWhen.before
-                ? 'اقتربت صلاة ${prayer.name}'
-                : 'حان الآن وقت صلاة ${prayer.name}',
-            body: when == AlertWhen.before
-                ? 'بقيت ${PrayerAlerts.lead.value} دقيقة'
-                : 'أقم الصلاة لذكري',
+            title: AppLocale.isEn
+                ? (when == AlertWhen.before
+                      ? '${prayer.displayName} is approaching'
+                      : 'It is now time for ${prayer.displayName}')
+                : (when == AlertWhen.before
+                      ? 'اقتربت صلاة ${prayer.displayName}'
+                      : 'حان الآن وقت صلاة ${prayer.displayName}'),
+            body: AppLocale.isEn
+                ? (when == AlertWhen.before
+                      ? '${PrayerAlerts.lead.value} minutes remaining'
+                      : 'Establish the prayer in remembrance of Me')
+                : (when == AlertWhen.before
+                      ? 'بقيت ${PrayerAlerts.lead.value} دقيقة'
+                      : 'أقم الصلاة لذكري'),
             at: moment,
             mode: mode,
             // The adhan belongs to the call to prayer, not to the warning
@@ -499,7 +527,10 @@ class NotificationService {
       visibility: NotificationVisibility.public,
     );
     final iosDetails = DarwinNotificationDetails(presentSound: mode.sound);
-    final details = NotificationDetails(android: androidDetails, iOS: iosDetails);
+    final details = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
     final tzAt = tz.TZDateTime.from(at, tz.local);
 
     // alarmClock uses AlarmManager.setAlarmClock(), which is exempt from Doze
@@ -508,7 +539,11 @@ class NotificationService {
     // inexactly so the alert is never silently lost.
     try {
       await _plugin.zonedSchedule(
-        id, title, body, tzAt, details,
+        id,
+        title,
+        body,
+        tzAt,
+        details,
         androidScheduleMode: AndroidScheduleMode.alarmClock,
         uiLocalNotificationDateInterpretation:
             UILocalNotificationDateInterpretation.absoluteTime,
@@ -518,7 +553,11 @@ class NotificationService {
       // Exact alarms not permitted on this device/OS version; fall through.
     }
     await _plugin.zonedSchedule(
-      id, title, body, tzAt, details,
+      id,
+      title,
+      body,
+      tzAt,
+      details,
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
@@ -562,8 +601,14 @@ class NotificationService {
     for (var i = 0; i < minutes.length && i < 24; i++) {
       final dhikr = pool[i % pool.length];
       final now = tz.TZDateTime.now(tz.local);
-      var at = tz.TZDateTime(tz.local, now.year, now.month, now.day,
-          minutes[i] ~/ 60, minutes[i] % 60);
+      var at = tz.TZDateTime(
+        tz.local,
+        now.year,
+        now.month,
+        now.day,
+        minutes[i] ~/ 60,
+        minutes[i] % 60,
+      );
       if (at.isBefore(now)) at = at.add(const Duration(days: 1));
 
       await _plugin.zonedSchedule(
@@ -594,18 +639,34 @@ class NotificationService {
 
     if (DailyReminders.verseOn.value) {
       // Two different verses, so the second arrival is not the first repeated.
-      await _daily(400, 'آية وتفسيرها', await _verseLine(0),
-          DailyReminders.verseFirst.value);
-      await _daily(401, 'آية وتفسيرها', await _verseLine(1),
-          DailyReminders.verseSecond.value);
+      await _daily(
+        400,
+        'آية وتفسيرها',
+        await _verseLine(0),
+        DailyReminders.verseFirst.value,
+      );
+      await _daily(
+        401,
+        'آية وتفسيرها',
+        await _verseLine(1),
+        DailyReminders.verseSecond.value,
+      );
     }
     if (DailyReminders.morningOn.value) {
-      await _daily(410, 'أذكار الصباح', 'حان وقت أذكار الصباح',
-          DailyReminders.morningAt.value);
+      await _daily(
+        410,
+        'أذكار الصباح',
+        'حان وقت أذكار الصباح',
+        DailyReminders.morningAt.value,
+      );
     }
     if (DailyReminders.eveningOn.value) {
-      await _daily(411, 'أذكار المساء', 'حان وقت أذكار المساء',
-          DailyReminders.eveningAt.value);
+      await _daily(
+        411,
+        'أذكار المساء',
+        'حان وقت أذكار المساء',
+        DailyReminders.eveningAt.value,
+      );
     }
   }
 
@@ -627,10 +688,20 @@ class NotificationService {
   }
 
   static Future<void> _daily(
-      int id, String title, String body, DayTime at) async {
+    int id,
+    String title,
+    String body,
+    DayTime at,
+  ) async {
     final now = tz.TZDateTime.now(tz.local);
     var when = tz.TZDateTime(
-        tz.local, now.year, now.month, now.day, at.hour, at.minute);
+      tz.local,
+      now.year,
+      now.month,
+      now.day,
+      at.hour,
+      at.minute,
+    );
     if (when.isBefore(now)) when = when.add(const Duration(days: 1));
 
     await _plugin.zonedSchedule(

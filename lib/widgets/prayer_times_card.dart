@@ -95,23 +95,32 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> {
         textDirection: TextDirection.rtl,
         child: AlertDialog(
           backgroundColor: AppColors.blackCard,
-          title: const Text('تحديد الموقع',
-              style: TextStyle(color: AppColors.gold, fontSize: 17)),
+          title: const Text(
+            'تحديد الموقع',
+            style: TextStyle(color: AppColors.gold, fontSize: 17),
+          ),
           content: Text(
             '${status.explanation}.\nافتح الإعدادات لتفعيله، ثم ارجع واضغط على علامة الموقع.',
             style: const TextStyle(
-                color: AppColors.textSecondary, fontSize: 14, height: 1.6),
+              color: AppColors.textSecondary,
+              fontSize: 14,
+              height: 1.6,
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('لاحقاً',
-                  style: TextStyle(color: AppColors.textMuted)),
+              child: const Text(
+                'لاحقاً',
+                style: TextStyle(color: AppColors.textMuted),
+              ),
             ),
             TextButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('فتح الإعدادات',
-                  style: TextStyle(color: AppColors.gold)),
+              child: const Text(
+                'فتح الإعدادات',
+                style: TextStyle(color: AppColors.gold),
+              ),
             ),
           ],
         ),
@@ -205,16 +214,22 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> {
           size: 16,
           color: p.isNext ? AppColors.gold : Colors.transparent,
         ),
-        Text(p.name,
-            style: TextStyle(
-                color: color,
-                fontSize: 12,
-                fontWeight: p.isNext ? FontWeight.bold : FontWeight.normal)),
+        Text(
+          p.displayName,
+          style: TextStyle(
+            color: color,
+            fontSize: 12,
+            fontWeight: p.isNext ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
         const SizedBox(height: 2),
-        Text(PrayerService.formatTime(p.time),
-            style: TextStyle(
-                color: p.isNext ? AppColors.textGold : AppColors.textMuted,
-                fontSize: 11)),
+        Text(
+          PrayerService.formatTime(p.time),
+          style: TextStyle(
+            color: p.isNext ? AppColors.textGold : AppColors.textMuted,
+            fontSize: 11,
+          ),
+        ),
       ],
     );
   }
@@ -235,7 +250,8 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> {
           color: mine ? Colors.transparent : AppColors.goldMuted,
           borderRadius: BorderRadius.circular(30),
           border: Border.all(
-              color: mine ? Colors.transparent : AppColors.goldBorder),
+            color: mine ? Colors.transparent : AppColors.goldBorder,
+          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -245,22 +261,29 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> {
                 width: 12,
                 height: 12,
                 child: CircularProgressIndicator(
-                    strokeWidth: 1.6, color: AppColors.gold),
+                  strokeWidth: 1.6,
+                  color: AppColors.gold,
+                ),
               )
             else
-              Icon(mine ? Icons.my_location : Icons.location_searching,
-                  size: 13, color: tint),
+              Icon(
+                mine ? Icons.my_location : Icons.location_searching,
+                size: 13,
+                color: tint,
+              ),
             const SizedBox(width: 5),
             Flexible(
               child: Text(
                 _locating
                     ? 'جاري تحديد موقعك…'
                     : mine
-                        ? status.label
-                        : '${status.label} · حدّد موقعك',
+                    ? status.label
+                    : '${status.label} · حدّد موقعك',
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                    color: _locating ? AppColors.textGold : tint, fontSize: 11),
+                  color: _locating ? AppColors.textGold : tint,
+                  fontSize: 11,
+                ),
               ),
             ),
           ],
@@ -268,6 +291,4 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> {
       ),
     );
   }
-
-
 }
