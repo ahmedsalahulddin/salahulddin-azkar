@@ -268,35 +268,39 @@ class _MainNavigationState extends State<MainNavigation> {
     final items = isEn
         ? [
             (
-              '🌍',
-              'Quran Translations',
-              'Choose from 8 languages with auto-playback',
+              '🎓',
+              'Memorisation tab',
+              'Circles, weekly timetable and per-student assessment',
+            ),
+            ('🧭', 'Qibla compass', 'Points straight to the Kaaba'),
+            (
+              '📚',
+              'Hadith Encyclopedia',
+              'Hadiths by topic with explanations, in 8 languages',
             ),
             (
-              '🎙️',
-              'Full Recitation',
-              'Reciter → Translation → next verse, automatically',
-            ),
-            ('📜', 'Auto-scroll', 'The current verse always stays in view'),
-            (
-              '🌐',
-              'Full English UI',
-              'Every section of the app is now translated',
+              '🔄',
+              'Check for updates',
+              'One tap in Account to see if a newer version is out',
             ),
           ]
         : [
             (
-              '🌍',
-              'ترجمات القرآن',
-              'اختر من ٨ لغات مع التلاوة والترجمة الصوتية',
+              '🎓',
+              'تبويب التحفيظ',
+              'حلقات وجدول أسبوعي وتقييم لكل طالب في الحصة',
+            ),
+            ('🧭', 'بوصلة القبلة', 'تشير للكعبة مباشرة'),
+            (
+              '📚',
+              'موسوعة الحديث',
+              'أحاديث مبوّبة بالموضوع مع شرحها، بـ٨ لغات',
             ),
             (
-              '🎙️',
-              'تلاوة متكاملة',
-              'مقرئ ثم ترجمة، انتقال تلقائي للآية التالية',
+              '🔄',
+              'التحقق من التحديث',
+              'ضغطة واحدة في حسابي تعرف بها إن كان هناك إصدار أحدث',
             ),
-            ('📜', 'تمرير تلقائي', 'الآية الجارية دائماً في المنظور'),
-            ('🌐', 'واجهة بالإنجليزي', 'كل أقسام التطبيق مترجمة بالكامل'),
           ];
 
     showModalBottomSheet<void>(
