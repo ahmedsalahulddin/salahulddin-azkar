@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../constants/theme.dart';
 import '../l10n/strings.dart';
 import '../services/app_locale.dart';
 import '../services/auth_service.dart';
 import '../services/sync_service.dart';
 import '../services/section_config.dart';
+import '../services/update_checker.dart';
 import '../widgets/sign_in_buttons.dart';
 import 'admin_screen.dart';
 import 'settings_screen.dart';
@@ -28,6 +30,7 @@ class _AccountScreenState extends State<AccountScreen> {
   bool _deleting = false;
   bool _isAdmin = false;
   String _version = '';
+  bool _checkingUpdate = false;
 
   @override
   void initState() {
@@ -50,6 +53,86 @@ class _AccountScreenState extends State<AccountScreen> {
     if (mounted && admin != _isAdmin) setState(() => _isAdmin = admin);
   }
 
+  Future<void> _checkForUpdate() async {
+    setState(() => _checkingUpdate = true);
+    final result = await UpdateChecker.check();
+    if (!mounted) return;
+    setState(() => _checkingUpdate = false);
+
+    if (result.failed) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(t('account.updateCheckFailed'))));
+      return;
+    }
+
+    if (!result.available) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(t('account.updateUpToDate'))));
+      return;
+    }
+
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      builder: (ctx) => Directionality(
+        textDirection: AppLocale.isEn ? TextDirection.ltr : TextDirection.rtl,
+        child: AlertDialog(
+          backgroundColor: AppColors.blackCard,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: const BorderSide(color: AppColors.goldBorder),
+          ),
+          title: Text(
+            t('account.updateAvailable'),
+            style: const TextStyle(
+              color: AppColors.gold,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: Text(
+            result.latestVersion == null
+                ? t('account.updateAvailableBody')
+                : '${t('account.updateAvailableBody')} (${result.latestVersion})',
+            style: const TextStyle(color: AppColors.textSecondary),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(
+                t('account.cancel'),
+                style: const TextStyle(color: AppColors.textMuted),
+              ),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(ctx);
+                if (result.source == UpdateSource.playStore) {
+                  await UpdateChecker.startPlayStoreUpdate();
+                } else {
+                  await launchUrl(
+                    Uri.parse(UpdateChecker.downloadPageUrl),
+                    mode: LaunchMode.externalApplication,
+                  );
+                }
+              },
+              child: Text(
+                result.source == UpdateSource.playStore
+                    ? t('account.updateNow')
+                    : t('account.updateDownload'),
+                style: const TextStyle(
+                  color: AppColors.gold,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _signIn(SignInProvider provider) async {
     setState(() => _busyWith = provider);
     final ok = await AuthService.signInWith(provider);
@@ -70,8 +153,10 @@ class _AccountScreenState extends State<AccountScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.blackCard,
-        title: Text(t('account.signOut'),
-            style: const TextStyle(color: AppColors.gold, fontSize: 17)),
+        title: Text(
+          t('account.signOut'),
+          style: const TextStyle(color: AppColors.gold, fontSize: 17),
+        ),
         content: Text(
           t('account.signOutMsg'),
           style: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
@@ -79,13 +164,17 @@ class _AccountScreenState extends State<AccountScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text(t('account.cancel'),
-                style: const TextStyle(color: AppColors.textMuted)),
+            child: Text(
+              t('account.cancel'),
+              style: const TextStyle(color: AppColors.textMuted),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text(t('account.signOutConfirm'),
-                style: const TextStyle(color: AppColors.error)),
+            child: Text(
+              t('account.signOutConfirm'),
+              style: const TextStyle(color: AppColors.error),
+            ),
           ),
         ],
       ),
@@ -163,24 +252,38 @@ class _AccountScreenState extends State<AccountScreen> {
         ),
         child: Row(
           children: [
-            const Icon(Icons.menu_book_outlined,
-                color: AppColors.gold, size: 20),
+            const Icon(
+              Icons.menu_book_outlined,
+              color: AppColors.gold,
+              size: 20,
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(t('account.sources'),
-                      style: const TextStyle(
-                          color: AppColors.textPrimary, fontSize: 14)),
-                  Text(t('account.sourcesSub'),
-                      style: const TextStyle(
-                          color: AppColors.textMuted, fontSize: 11)),
+                  Text(
+                    t('account.sources'),
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 14,
+                    ),
+                  ),
+                  Text(
+                    t('account.sourcesSub'),
+                    style: const TextStyle(
+                      color: AppColors.textMuted,
+                      fontSize: 11,
+                    ),
+                  ),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_left,
-                color: AppColors.textMuted, size: 20),
+            const Icon(
+              Icons.chevron_left,
+              color: AppColors.textMuted,
+              size: 20,
+            ),
           ],
         ),
       ),
@@ -208,16 +311,22 @@ class _AccountScreenState extends State<AccountScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(t('account.sync'),
-                        style: const TextStyle(
-                            color: AppColors.textPrimary, fontSize: 14)),
+                    Text(
+                      t('account.sync'),
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 14,
+                      ),
+                    ),
                     const SizedBox(height: 2),
                     Text(
                       at == null
                           ? t('account.syncNever')
                           : '${t('account.syncLast')} ${_clock(at)}',
                       style: const TextStyle(
-                          color: AppColors.textMuted, fontSize: 11),
+                        color: AppColors.textMuted,
+                        fontSize: 11,
+                      ),
                     ),
                   ],
                 ),
@@ -227,22 +336,30 @@ class _AccountScreenState extends State<AccountScreen> {
                       width: 18,
                       height: 18,
                       child: CircularProgressIndicator(
-                          strokeWidth: 2, color: AppColors.gold),
+                        strokeWidth: 2,
+                        color: AppColors.gold,
+                      ),
                     )
                   : TextButton(
                       onPressed: () async {
                         final ok = await SyncService.sync();
                         if (!context.mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text(ok
-                              ? t('account.syncDone')
-                              : t('account.syncFail')),
-                          backgroundColor: AppColors.blackCard,
-                          behavior: SnackBarBehavior.floating,
-                        ));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              ok
+                                  ? t('account.syncDone')
+                                  : t('account.syncFail'),
+                            ),
+                            backgroundColor: AppColors.blackCard,
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
                       },
-                      child: Text(t('account.syncNow'),
-                          style: const TextStyle(color: AppColors.gold)),
+                      child: Text(
+                        t('account.syncNow'),
+                        style: const TextStyle(color: AppColors.gold),
+                      ),
                     ),
             ],
           ),
@@ -276,15 +393,17 @@ class _AccountScreenState extends State<AccountScreen> {
           Text(
             user?.displayName ?? t('account.guest'),
             style: const TextStyle(
-                color: AppColors.gold,
-                fontSize: 19,
-                fontWeight: FontWeight.bold),
+              color: AppColors.gold,
+              fontSize: 19,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           if (user?.email != null) ...[
             const SizedBox(height: 3),
-            Text(user!.email!,
-                style: const TextStyle(
-                    color: AppColors.textMuted, fontSize: 12)),
+            Text(
+              user!.email!,
+              style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+            ),
           ],
           const SizedBox(height: 16),
           if (user == null) _guestActions() else _signedInActions(),
@@ -298,8 +417,8 @@ class _AccountScreenState extends State<AccountScreen> {
       valueListenable: AuthService.availableProviders,
       builder: (context, providers, _) =>
           providers.isEmpty || !AuthService.isConfigured
-              ? _guestOnlyNote()
-              : _signInPrompt(providers),
+          ? _guestOnlyNote()
+          : _signInPrompt(providers),
     );
   }
 
@@ -312,7 +431,10 @@ class _AccountScreenState extends State<AccountScreen> {
           t('account.guestNote'),
           textAlign: TextAlign.center,
           style: const TextStyle(
-              color: AppColors.textSecondary, fontSize: 13, height: 1.7),
+            color: AppColors.textSecondary,
+            fontSize: 13,
+            height: 1.7,
+          ),
         ),
         const SizedBox(height: 12),
         Container(
@@ -341,7 +463,10 @@ class _AccountScreenState extends State<AccountScreen> {
           t('account.signInPrompt'),
           textAlign: TextAlign.center,
           style: const TextStyle(
-              color: AppColors.textSecondary, fontSize: 13, height: 1.7),
+            color: AppColors.textSecondary,
+            fontSize: 13,
+            height: 1.7,
+          ),
         ),
         const SizedBox(height: 14),
         for (final provider in ordered)
@@ -351,8 +476,10 @@ class _AccountScreenState extends State<AccountScreen> {
             onPressed: _busyWith != null ? null : () => _signIn(provider),
           ),
         const SizedBox(height: 2),
-        Text(t('account.optional'),
-            style: const TextStyle(color: AppColors.textMuted, fontSize: 11)),
+        Text(
+          t('account.optional'),
+          style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+        ),
       ],
     );
   }
@@ -383,11 +510,15 @@ class _AccountScreenState extends State<AccountScreen> {
                     width: 15,
                     height: 15,
                     child: CircularProgressIndicator(
-                        strokeWidth: 2, color: AppColors.error),
+                      strokeWidth: 2,
+                      color: AppColors.error,
+                    ),
                   )
                 : const Icon(Icons.delete_forever, size: 17),
             style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            label: Text(_deleting ? t('account.deleting') : t('account.delete')),
+            label: Text(
+              _deleting ? t('account.deleting') : t('account.delete'),
+            ),
           ),
         ),
       ],
@@ -401,8 +532,10 @@ class _AccountScreenState extends State<AccountScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.blackCard,
-        title: Text(t('account.deleteTitle'),
-            style: const TextStyle(color: AppColors.error, fontSize: 17)),
+        title: Text(
+          t('account.deleteTitle'),
+          style: const TextStyle(color: AppColors.error, fontSize: 17),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -410,26 +543,36 @@ class _AccountScreenState extends State<AccountScreen> {
             Text(
               t('account.deleteMsg'),
               style: const TextStyle(
-                  color: AppColors.textPrimary, fontSize: 14, height: 1.7),
+                color: AppColors.textPrimary,
+                fontSize: 14,
+                height: 1.7,
+              ),
             ),
             const SizedBox(height: 10),
             Text(
               t('account.deleteNote'),
               style: const TextStyle(
-                  color: AppColors.textMuted, fontSize: 12, height: 1.7),
+                color: AppColors.textMuted,
+                fontSize: 12,
+                height: 1.7,
+              ),
             ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text(t('account.cancel'),
-                style: const TextStyle(color: AppColors.textSecondary)),
+            child: Text(
+              t('account.cancel'),
+              style: const TextStyle(color: AppColors.textSecondary),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text(t('account.continue'),
-                style: const TextStyle(color: AppColors.error)),
+            child: Text(
+              t('account.continue'),
+              style: const TextStyle(color: AppColors.error),
+            ),
           ),
         ],
       ),
@@ -461,15 +604,21 @@ class _AccountScreenState extends State<AccountScreen> {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setLocal) => AlertDialog(
           backgroundColor: AppColors.blackCard,
-          title: Text(t('account.lastConfirm'),
-              style: const TextStyle(color: AppColors.error, fontSize: 17)),
+          title: Text(
+            t('account.lastConfirm'),
+            style: const TextStyle(color: AppColors.error, fontSize: 17),
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(t('account.deleteConfirm'),
-                  style: const TextStyle(
-                      color: AppColors.textSecondary, fontSize: 13)),
+              Text(
+                t('account.deleteConfirm'),
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 13,
+                ),
+              ),
               const SizedBox(height: 10),
               TextField(
                 controller: controller,
@@ -488,19 +637,23 @@ class _AccountScreenState extends State<AccountScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: Text(t('account.cancel'),
-                  style: const TextStyle(color: AppColors.textSecondary)),
+              child: Text(
+                t('account.cancel'),
+                style: const TextStyle(color: AppColors.textSecondary),
+              ),
             ),
             TextButton(
               onPressed: controller.text.trim() == word
                   ? () => Navigator.pop(ctx, true)
                   : null,
-              child: Text(t('account.deleteBtn'),
-                  style: TextStyle(
-                    color: controller.text.trim() == word
-                        ? AppColors.error
-                        : AppColors.textMuted,
-                  )),
+              child: Text(
+                t('account.deleteBtn'),
+                style: TextStyle(
+                  color: controller.text.trim() == word
+                      ? AppColors.error
+                      : AppColors.textMuted,
+                ),
+              ),
             ),
           ],
         ),
@@ -509,13 +662,16 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 
   Widget _sectionTitle(String title) => Padding(
-        padding: const EdgeInsets.only(bottom: 8, right: 4),
-        child: Text(title,
-            style: const TextStyle(
-                color: AppColors.textGold,
-                fontSize: 15,
-                fontWeight: FontWeight.bold)),
-      );
+    padding: const EdgeInsets.only(bottom: 8, right: 4),
+    child: Text(
+      title,
+      style: const TextStyle(
+        color: AppColors.textGold,
+        fontSize: 15,
+        fontWeight: FontWeight.bold,
+      ),
+    ),
+  );
 
   Widget _tile({
     required IconData icon,
@@ -541,18 +697,29 @@ class _AccountScreenState extends State<AccountScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title,
-                      style: const TextStyle(
-                          color: AppColors.textPrimary, fontSize: 14)),
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 14,
+                    ),
+                  ),
                   const SizedBox(height: 2),
-                  Text(subtitle,
-                      style: const TextStyle(
-                          color: AppColors.textMuted, fontSize: 11)),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      color: AppColors.textMuted,
+                      fontSize: 11,
+                    ),
+                  ),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_left,
-                color: AppColors.textMuted, size: 20),
+            const Icon(
+              Icons.chevron_left,
+              color: AppColors.textMuted,
+              size: 20,
+            ),
           ],
         ),
       ),
@@ -569,14 +736,43 @@ class _AccountScreenState extends State<AccountScreen> {
       ),
       child: Column(
         children: [
-          Text('${t('account.version')} $_version',
-              style: const TextStyle(color: AppColors.textMuted, fontSize: 12)),
-          const SizedBox(height: 8),
+          Text(
+            '${t('account.version')} $_version',
+            style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+          ),
+          const SizedBox(height: 6),
+          TextButton.icon(
+            onPressed: _checkingUpdate ? null : _checkForUpdate,
+            icon: _checkingUpdate
+                ? const SizedBox(
+                    width: 14,
+                    height: 14,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppColors.gold,
+                    ),
+                  )
+                : const Icon(Icons.system_update, size: 16),
+            label: Text(
+              t('account.checkUpdate'),
+              style: const TextStyle(fontSize: 12),
+            ),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.gold,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+          ),
+          const SizedBox(height: 4),
           Text(
             t('account.aboutText'),
             textAlign: TextAlign.center,
             style: const TextStyle(
-                color: AppColors.textSecondary, fontSize: 11, height: 1.7),
+              color: AppColors.textSecondary,
+              fontSize: 11,
+              height: 1.7,
+            ),
           ),
         ],
       ),
@@ -617,8 +813,11 @@ class UserAvatar extends StatelessWidget {
 
   Widget _fallback() {
     if (user == null) {
-      return Icon(Icons.person_outline,
-          color: AppColors.gold, size: size * 0.55);
+      return Icon(
+        Icons.person_outline,
+        color: AppColors.gold,
+        size: size * 0.55,
+      );
     }
     return Center(
       child: Text(

@@ -300,6 +300,15 @@ const _ar = <String, String>{
 
   // Home shelves
   'home.seeAll': 'الكل',
+
+  // Update check
+  'account.checkUpdate': 'التحقق من وجود تحديث',
+  'account.updateUpToDate': 'التطبيق مُحدَّث لآخر إصدار',
+  'account.updateCheckFailed': 'تعذّر التحقق من التحديث — تحقّق من الاتصال',
+  'account.updateAvailable': 'يوجد إصدار جديد',
+  'account.updateAvailableBody': 'إصدار جديد من التطبيق متاح للتحميل',
+  'account.updateNow': 'حدّث الآن',
+  'account.updateDownload': 'تحميل',
 };
 
 // ─── English ───────────────────────────────────────────────────────────────
@@ -576,4 +585,15 @@ const _en = <String, String>{
 
   // Home shelves
   'home.seeAll': 'See all',
+
+  // Update check
+  'account.checkUpdate': 'Check for updates',
+  'account.updateUpToDate': 'You\'re on the latest version',
+  'account.updateCheckFailed':
+      'Could not check for updates — check your connection',
+  'account.updateAvailable': 'New version available',
+  'account.updateAvailableBody':
+      'A new version of the app is available to download',
+  'account.updateNow': 'Update now',
+  'account.updateDownload': 'Download',
 };
