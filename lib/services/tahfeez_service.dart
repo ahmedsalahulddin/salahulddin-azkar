@@ -44,6 +44,19 @@ class TahfeezProfile {
 
   bool get isTeacher => role == TahfeezRole.teacher;
 
+  TahfeezProfile copyWith({String? displayName}) => TahfeezProfile(
+    userId: userId,
+    displayName: displayName ?? this.displayName,
+    photoUrl: photoUrl,
+    role: role,
+    teacherCode: teacherCode,
+    bio: bio,
+    city: city,
+    planPeriod: planPeriod,
+    freeSessions: freeSessions,
+    priceNote: priceNote,
+  );
+
   factory TahfeezProfile.fromJson(Map<String, dynamic> j) => TahfeezProfile(
     userId: j['user_id'] as String,
     displayName: j['display_name'] as String,
@@ -352,12 +365,14 @@ class TahfeezService {
   // ---- profile & role -----------------------------------------------------
 
   /// Copies the account's current name and photo where a teacher can read
-  /// them, then returns the profile with its server-held role.
-  static Future<TahfeezProfile> ensureProfile() async {
+  /// them, then returns the profile with its server-held role, plus whether
+  /// this call is what just created it — the caller's cue to offer naming
+  /// it right away instead of defaulting silently to the Google name.
+  static Future<(TahfeezProfile, bool)> ensureProfile() async {
     final user = AuthService.user.value!;
     try {
       final c = await _client;
-      await c.rpc(
+      final created = await c.rpc(
         'upsert_tahfeez_profile',
         params: {'p_name': user.displayName, 'p_photo': user.photoUrl},
       );
@@ -366,7 +381,7 @@ class TahfeezService {
           .select()
           .eq('user_id', user.id)
           .single();
-      return TahfeezProfile.fromJson(row);
+      return (TahfeezProfile.fromJson(row), created == true);
     } catch (e) {
       _throw(e);
     }

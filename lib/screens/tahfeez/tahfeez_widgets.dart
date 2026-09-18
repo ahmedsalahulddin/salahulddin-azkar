@@ -258,6 +258,7 @@ Future<String?> promptText(
   required String hint,
   String initial = '',
   String? confirmLabel,
+  String? subtitle,
   int maxLines = 1,
   TextCapitalization capitalization = TextCapitalization.none,
 }) async {
@@ -272,25 +273,42 @@ Future<String?> promptText(
           title,
           style: const TextStyle(color: AppColors.gold, fontSize: 17),
         ),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          maxLines: maxLines,
-          textCapitalization: capitalization,
-          style: const TextStyle(color: AppColors.textPrimary),
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: const TextStyle(color: AppColors.textMuted),
-            enabledBorder: const UnderlineInputBorder(
-              borderSide: BorderSide(color: AppColors.goldBorder),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (subtitle != null) ...[
+              Text(
+                subtitle,
+                style: const TextStyle(
+                  color: AppColors.textMuted,
+                  fontSize: 12,
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 10),
+            ],
+            TextField(
+              controller: controller,
+              autofocus: true,
+              maxLines: maxLines,
+              textCapitalization: capitalization,
+              style: const TextStyle(color: AppColors.textPrimary),
+              decoration: InputDecoration(
+                hintText: hint,
+                hintStyle: const TextStyle(color: AppColors.textMuted),
+                enabledBorder: const UnderlineInputBorder(
+                  borderSide: BorderSide(color: AppColors.goldBorder),
+                ),
+                focusedBorder: const UnderlineInputBorder(
+                  borderSide: BorderSide(color: AppColors.gold),
+                ),
+              ),
+              onSubmitted: maxLines == 1
+                  ? (v) => Navigator.pop(ctx, v.trim())
+                  : null,
             ),
-            focusedBorder: const UnderlineInputBorder(
-              borderSide: BorderSide(color: AppColors.gold),
-            ),
-          ),
-          onSubmitted: maxLines == 1
-              ? (v) => Navigator.pop(ctx, v.trim())
-              : null,
+          ],
         ),
         actions: [
           TextButton(

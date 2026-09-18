@@ -11,6 +11,7 @@ import '../services/tahfeez_service.dart';
 import '../services/update_checker.dart';
 import '../widgets/sign_in_buttons.dart';
 import 'admin_screen.dart';
+import 'tahfeez/tahfeez_widgets.dart';
 import 'tahfeez/teacher_requests_screen.dart';
 import 'settings_screen.dart';
 import 'sources_screen.dart';
@@ -33,12 +34,13 @@ class _AccountScreenState extends State<AccountScreen> {
   bool _isAdmin = false;
   String _version = '';
   bool _checkingUpdate = false;
+  TahfeezProfile? _tahfeezProfile;
 
   @override
   void initState() {
     super.initState();
-    _checkAdmin();
-    AuthService.user.addListener(_checkAdmin);
+    _onAuthChanged();
+    AuthService.user.addListener(_onAuthChanged);
     PackageInfo.fromPlatform().then((i) {
       if (mounted) setState(() => _version = i.version);
     });
@@ -46,13 +48,60 @@ class _AccountScreenState extends State<AccountScreen> {
 
   @override
   void dispose() {
-    AuthService.user.removeListener(_checkAdmin);
+    AuthService.user.removeListener(_onAuthChanged);
     super.dispose();
+  }
+
+  void _onAuthChanged() {
+    _checkAdmin();
+    _loadTahfeezName();
   }
 
   Future<void> _checkAdmin() async {
     final admin = await SectionConfig.isAdmin();
     if (mounted && admin != _isAdmin) setState(() => _isAdmin = admin);
+  }
+
+  /// Silent on failure — the row is created lazily here too, for someone
+  /// who wants to pick their Tahfeez name before ever opening that tab.
+  Future<void> _loadTahfeezName() async {
+    if (AuthService.user.value == null) {
+      if (mounted) setState(() => _tahfeezProfile = null);
+      return;
+    }
+    try {
+      final (profile, _) = await TahfeezService.ensureProfile();
+      if (mounted) setState(() => _tahfeezProfile = profile);
+    } catch (_) {
+      // Offline, or the reader has yet to sign in properly — the row just
+      // stays hidden until the next successful load.
+    }
+  }
+
+  Future<void> _editTahfeezName() async {
+    final current =
+        _tahfeezProfile?.displayName ??
+        AuthService.user.value?.displayName ??
+        '';
+    final name = await promptText(
+      context,
+      title: t('tahfeez.editName'),
+      subtitle: t('tahfeez.editNameNote'),
+      hint: t('tahfeez.editNameHint'),
+      initial: current,
+      confirmLabel: t('tahfeez.save'),
+    );
+    if (name == null || name.isEmpty || !mounted) return;
+    try {
+      await TahfeezService.setDisplayName(name);
+      if (!mounted) return;
+      setState(
+        () => _tahfeezProfile = _tahfeezProfile?.copyWith(displayName: name),
+      );
+      showNote(context, t('tahfeez.nameUpdated'));
+    } catch (e) {
+      if (mounted) showNote(context, describeError(e), error: true);
+    }
   }
 
   Future<void> _checkForUpdate() async {
@@ -427,9 +476,51 @@ class _AccountScreenState extends State<AccountScreen> {
               style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
             ),
           ],
+          if (user != null) ...[const SizedBox(height: 10), _tahfeezNameRow()],
           const SizedBox(height: 16),
           if (user == null) _guestActions() else _signedInActions(),
         ],
+      ),
+    );
+  }
+
+  Widget _tahfeezNameRow() {
+    final name = _tahfeezProfile?.displayName;
+    return GestureDetector(
+      onTap: _editTahfeezName,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        decoration: BoxDecoration(
+          color: AppColors.blackSurface,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: AppColors.goldBorder),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.badge_outlined,
+              size: 14,
+              color: AppColors.textMuted,
+            ),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                name == null
+                    ? t('tahfeez.editName')
+                    : '${t('tahfeez.displayedAs')} $name',
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+            const SizedBox(width: 4),
+            const Icon(Icons.edit, size: 12, color: AppColors.textMuted),
+          ],
+        ),
       ),
     );
   }

@@ -72,7 +72,7 @@ class _TahfeezTabState extends State<TahfeezTab> {
       _failed = false;
     });
     try {
-      final profile = await TahfeezService.ensureProfile();
+      final (profile, isNewProfile) = await TahfeezService.ensureProfile();
       final results = await Future.wait([
         TahfeezService.visibleHalaqat(),
         TahfeezService.visibleSessions(),
@@ -90,6 +90,7 @@ class _TahfeezTabState extends State<TahfeezTab> {
         _enrollments = results[3] as List<Enrollment>;
         _loading = false;
       });
+      if (isNewProfile && mounted) _welcomeNameDialog(profile);
     } catch (_) {
       if (mounted) {
         setState(() {
@@ -664,6 +665,30 @@ class _TahfeezTabState extends State<TahfeezTab> {
         ],
       ),
     );
+  }
+
+  /// Shown once, right when the reader's Tahfeez profile is first created —
+  /// their chance to pick what a teacher or student sees before it defaults
+  /// silently to their Google name.
+  Future<void> _welcomeNameDialog(TahfeezProfile profile) async {
+    final name = await promptText(
+      context,
+      title: t('tahfeez.welcomeNameTitle'),
+      subtitle: t('tahfeez.editNameNote'),
+      hint: t('tahfeez.editNameHint'),
+      initial: profile.displayName,
+      confirmLabel: t('tahfeez.save'),
+    );
+    if (name == null || name.isEmpty || name == profile.displayName) return;
+    if (!mounted) return;
+    try {
+      await TahfeezService.setDisplayName(name);
+      if (mounted) {
+        setState(() => _profile = _profile?.copyWith(displayName: name));
+      }
+    } catch (e) {
+      if (mounted) showNote(context, describeError(e), error: true);
+    }
   }
 
   Future<void> _editName(TahfeezProfile profile) async {
