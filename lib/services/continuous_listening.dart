@@ -136,16 +136,27 @@ class ContinuousListening {
     required int fromAyah,
   }) async {
     // Capture the start index as a local variable BEFORE any awaits.
-    // _indexSub can fire during AppAudio.player.stop() and overwrite
-    // ayah.value with a stale index from the old surah; reading ayah.value
-    // again at the setAudioSources call would then start the new surah at
-    // the wrong ayah. The local variable is immune to that race.
+    // _indexSub can fire while setAudioSources below is still replacing the
+    // sequence and overwrite ayah.value with a stale index from the old
+    // surah; reading ayah.value again at the setAudioSources call would then
+    // start the new surah at the wrong ayah. The local variable is immune to
+    // that race.
     final startIndex = fromAyah.clamp(1, info.ayahCount) - 1;
     ayah.value = startIndex + 1;
     await _remember();
     try {
       _loadedSurah = 0;
-      await AppAudio.player.stop();
+      // just_audio_background's stop() disposes the underlying native player
+      // and hands back a fresh, uncompleted one — a full teardown, not a
+      // pause. Calling it on every automatic surah-to-surah transition (as
+      // this used to) tore down the foreground service's player on a
+      // schedule of the app's own making, which is exactly the kind of
+      // disruption Android's background limits are least forgiving of: the
+      // first rebuild would usually still land, and the next one, still
+      // inside the same backgrounded session, would not — matching reports
+      // of playback advancing once and then going silent. setAudioSources
+      // replaces the source on the SAME live player, which is the supported
+      // way to move to the next track and never drops the session.
       await AppAudio.player.setAudioSources([
         for (var n = 1; n <= info.ayahCount; n++)
           AudioSource.uri(
@@ -205,7 +216,8 @@ class ContinuousListening {
     await _remember();
     try {
       _loadedSurah = 0;
-      await AppAudio.player.stop();
+      // See _playPerAyah: no stop() here either, for the same reason — it
+      // disposes the native player rather than merely pausing it.
       await AppAudio.player.setAudioSource(
         AudioSource.uri(
           Uri.parse(url),
