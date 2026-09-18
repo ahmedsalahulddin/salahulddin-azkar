@@ -372,6 +372,15 @@ class TahfeezService {
     }
   }
 
+  static Future<void> setDisplayName(String name) async {
+    try {
+      final c = await _client;
+      await c.rpc('set_tahfeez_display_name', params: {'p_name': name});
+    } catch (e) {
+      _throw(e);
+    }
+  }
+
   static Future<bool> hasPendingRequest() async {
     try {
       final c = await _client;

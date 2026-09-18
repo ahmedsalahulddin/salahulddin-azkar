@@ -609,13 +609,29 @@ class _TahfeezTabState extends State<TahfeezTab> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  profile.displayName,
-                  style: const TextStyle(
-                    color: AppColors.gold,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        profile.displayName,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: AppColors.gold,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    GestureDetector(
+                      onTap: () => _editName(profile),
+                      child: const Icon(
+                        Icons.edit,
+                        size: 15,
+                        color: AppColors.textMuted,
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 4),
                 Container(
@@ -648,6 +664,25 @@ class _TahfeezTabState extends State<TahfeezTab> {
         ],
       ),
     );
+  }
+
+  Future<void> _editName(TahfeezProfile profile) async {
+    final name = await promptText(
+      context,
+      title: t('tahfeez.editName'),
+      hint: t('tahfeez.editNameHint'),
+      initial: profile.displayName,
+      confirmLabel: t('tahfeez.save'),
+    );
+    if (name == null || name.isEmpty || !mounted) return;
+    try {
+      await TahfeezService.setDisplayName(name);
+      if (!mounted) return;
+      showNote(context, t('tahfeez.nameUpdated'));
+      await _load();
+    } catch (e) {
+      if (mounted) showNote(context, describeError(e), error: true);
+    }
   }
 
   Widget _halaqaCard(Halaqa h, {required bool teacher}) {
