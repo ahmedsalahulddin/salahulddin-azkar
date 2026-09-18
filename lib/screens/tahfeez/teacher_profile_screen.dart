@@ -26,6 +26,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
   late int _free = widget.profile.freeSessions;
   late final List<String> _languages = List.of(widget.profile.languages);
   late TeachesGender _teaches = widget.profile.teachesGender;
+  late bool _listed = widget.profile.listed;
   bool _saving = false;
 
   @override
@@ -182,6 +183,28 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                 height: 1.5,
               ),
             ),
+            const SizedBox(height: 14),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              value: _listed,
+              activeThumbColor: AppColors.gold,
+              activeTrackColor: AppColors.goldMuted,
+              title: Text(
+                t('tahfeez.listed'),
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 14,
+                ),
+              ),
+              subtitle: Text(
+                _listed ? t('tahfeez.listedOn') : t('tahfeez.listedOff'),
+                style: const TextStyle(
+                  color: AppColors.textMuted,
+                  fontSize: 12,
+                ),
+              ),
+              onChanged: (v) => setState(() => _listed = v),
+            ),
             const SizedBox(height: 24),
             GoldButton(
               label: t('tahfeez.save'),
@@ -258,6 +281,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
         priceNote: _price.text,
         languages: _languages,
         teaches: _teaches,
+        listed: _listed,
       );
       if (!mounted) return;
       showNote(context, t('tahfeez.saved'));

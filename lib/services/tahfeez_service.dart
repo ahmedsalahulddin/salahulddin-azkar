@@ -62,6 +62,7 @@ class TahfeezProfile {
   final TeachesGender teachesGender;
   final Gender? gender;
   final bool blocked;
+  final bool listed;
 
   const TahfeezProfile({
     required this.userId,
@@ -78,6 +79,7 @@ class TahfeezProfile {
     this.teachesGender = TeachesGender.both,
     this.gender,
     this.blocked = false,
+    this.listed = true,
   });
 
   bool get isTeacher => role == TahfeezRole.teacher;
@@ -103,6 +105,7 @@ class TahfeezProfile {
         teachesGender: teachesGender,
         gender: gender ?? this.gender,
         blocked: blocked,
+        listed: listed,
       );
 
   factory TahfeezProfile.fromJson(Map<String, dynamic> j) => TahfeezProfile(
@@ -128,6 +131,7 @@ class TahfeezProfile {
             orElse: () => Gender.male,
           ),
     blocked: j['blocked'] == true,
+    listed: j['listed'] != false,
   );
 }
 
@@ -886,6 +890,7 @@ class TahfeezService {
     required String priceNote,
     required List<String> languages,
     required TeachesGender teaches,
+    required bool listed,
   }) async {
     try {
       final c = await _client;
@@ -899,6 +904,7 @@ class TahfeezService {
           'p_price': priceNote,
           'p_languages': languages,
           'p_teaches': teaches.name,
+          'p_listed': listed,
         },
       );
     } catch (e) {
