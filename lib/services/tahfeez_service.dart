@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../l10n/strings.dart';
 import 'auth_service.dart';
 
 /// A raised server-side rule, carried by the short code the SQL uses
@@ -319,7 +320,7 @@ class HalaqaMember {
     this.profile,
   });
 
-  String get name => profile?.displayName ?? 'طالب';
+  String get name => profile?.displayName ?? t('tahfeez.student');
 }
 
 /// One weekly slot. [weekday] follows Postgres: 0 = Sunday … 6 = Saturday.
