@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/theme.dart';
 import '../data/stories_data.dart';
+import '../l10n/strings.dart';
 import '../widgets/speak_button.dart';
 
 /// One story: its full text, read aloud on request by the device's voice,
@@ -38,10 +39,12 @@ class _StoryScreenState extends State<StoryScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Padding(
-                padding: EdgeInsets.fromLTRB(20, 16, 20, 4),
-                child: Text('لغة القصة',
-                    style: TextStyle(color: AppColors.gold, fontSize: 15)),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
+                child: Text(
+                  t('crd.storyLanguageSheetTitle'),
+                  style: const TextStyle(color: AppColors.gold, fontSize: 15),
+                ),
               ),
               ListTile(
                 leading: Icon(
@@ -51,43 +54,53 @@ class _StoryScreenState extends State<StoryScreen> {
                   color: _lang == 'ar' ? AppColors.gold : AppColors.textMuted,
                   size: 19,
                 ),
-                title: const Text('العربية (الأصل)',
-                    style: TextStyle(color: AppColors.textPrimary, fontSize: 14)),
+                title: Text(
+                  t('crd.arabicOriginalOption'),
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 14,
+                  ),
+                ),
                 onTap: () {
                   Navigator.pop(ctx);
                   setState(() => _lang = 'ar');
                 },
               ),
               for (final (code, name) in supportedStoryLanguages)
-                Builder(builder: (_) {
-                  final has = translationFor(widget.story.id, code) != null;
-                  return ListTile(
-                    enabled: has,
-                    leading: Icon(
-                      _lang == code
-                          ? Icons.radio_button_checked
-                          : Icons.radio_button_unchecked,
-                      color: !has
-                          ? AppColors.textMuted.withValues(alpha: 0.3)
-                          : _lang == code
-                              ? AppColors.gold
-                              : AppColors.textMuted,
-                      size: 19,
-                    ),
-                    title: Text(has ? name : '$name (قريباً)',
+                Builder(
+                  builder: (_) {
+                    final has = translationFor(widget.story.id, code) != null;
+                    return ListTile(
+                      enabled: has,
+                      leading: Icon(
+                        _lang == code
+                            ? Icons.radio_button_checked
+                            : Icons.radio_button_unchecked,
+                        color: !has
+                            ? AppColors.textMuted.withValues(alpha: 0.3)
+                            : _lang == code
+                            ? AppColors.gold
+                            : AppColors.textMuted,
+                        size: 19,
+                      ),
+                      title: Text(
+                        has ? name : '$name (${t('crd.comingSoon')})',
                         style: TextStyle(
-                            color: has
-                                ? AppColors.textPrimary
-                                : AppColors.textMuted,
-                            fontSize: 14)),
-                    onTap: !has
-                        ? null
-                        : () {
-                            Navigator.pop(ctx);
-                            setState(() => _lang = code);
-                          },
-                  );
-                }),
+                          color: has
+                              ? AppColors.textPrimary
+                              : AppColors.textMuted,
+                          fontSize: 14,
+                        ),
+                      ),
+                      onTap: !has
+                          ? null
+                          : () {
+                              Navigator.pop(ctx);
+                              setState(() => _lang = code);
+                            },
+                    );
+                  },
+                ),
               const SizedBox(height: 8),
             ],
           ),
@@ -110,17 +123,22 @@ class _StoryScreenState extends State<StoryScreen> {
             TextButton.icon(
               icon: const Icon(Icons.language, size: 17),
               label: Text(
-                  _isArabic
-                      ? 'العربية'
-                      : supportedStoryLanguages
+                _isArabic
+                    ? t('crd.arabicLanguageLabel')
+                    : supportedStoryLanguages
                           .firstWhere((l) => l.$1 == _lang)
                           .$2,
-                  style: const TextStyle(fontSize: 13)),
+                style: const TextStyle(fontSize: 13),
+              ),
               style: TextButton.styleFrom(foregroundColor: AppColors.gold),
               onPressed: _pickLang,
             ),
             if (_isArabic)
-              SpeakButton(id: widget.story.id, text: '$_title. $_body', size: 22),
+              SpeakButton(
+                id: widget.story.id,
+                text: '$_title. $_body',
+                size: 22,
+              ),
             const SizedBox(width: 8),
           ],
         ),
@@ -141,25 +159,31 @@ class _StoryScreenState extends State<StoryScreen> {
                     _body,
                     textAlign: _isArabic ? TextAlign.right : TextAlign.left,
                     style: const TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 16,
-                        height: 2.0),
+                      color: AppColors.textSecondary,
+                      fontSize: 16,
+                      height: 2.0,
+                    ),
                   ),
                   const SizedBox(height: 14),
                   Container(
                     padding: const EdgeInsets.only(top: 10),
                     decoration: const BoxDecoration(
-                      border:
-                          Border(top: BorderSide(color: AppColors.goldBorder)),
+                      border: Border(
+                        top: BorderSide(color: AppColors.goldBorder),
+                      ),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Text(
                           '📖 $_source',
-                          textAlign: _isArabic ? TextAlign.right : TextAlign.left,
+                          textAlign: _isArabic
+                              ? TextAlign.right
+                              : TextAlign.left,
                           style: const TextStyle(
-                              color: AppColors.textGold, fontSize: 12),
+                            color: AppColors.textGold,
+                            fontSize: 12,
+                          ),
                         ),
                         if (_translation != null) ...[
                           const SizedBox(height: 4),
@@ -167,7 +191,9 @@ class _StoryScreenState extends State<StoryScreen> {
                             'Translated by ${_translation!.translator}',
                             textAlign: TextAlign.left,
                             style: const TextStyle(
-                                color: AppColors.textMuted, fontSize: 10),
+                              color: AppColors.textMuted,
+                              fontSize: 10,
+                            ),
                           ),
                         ],
                       ],
@@ -180,13 +206,16 @@ class _StoryScreenState extends State<StoryScreen> {
             Text(
               _isArabic
                   ? 'القصة مرويّة بأسلوب مبسّط؛ نص الآيات والأحاديث كما وردت '
-                    'موجود في قسمَي القرآن والأحاديث بالتطبيق.'
+                        'موجود في قسمَي القرآن والأحاديث بالتطبيق.'
                   : 'This is a plain-language retelling, machine-translated '
-                    'by Claude AI — not a scholarly translation. The Arabic '
-                    'original is the version to rely on.',
+                        'by Claude AI — not a scholarly translation. The Arabic '
+                        'original is the version to rely on.',
               textAlign: TextAlign.center,
               style: const TextStyle(
-                  color: AppColors.textMuted, fontSize: 11, height: 1.7),
+                color: AppColors.textMuted,
+                fontSize: 11,
+                height: 1.7,
+              ),
             ),
           ],
         ),

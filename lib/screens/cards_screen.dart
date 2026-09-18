@@ -11,6 +11,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 
 import '../constants/theme.dart';
 import '../data/greeting_cards.dart';
+import '../l10n/strings.dart';
 import '../services/my_cards_meta.dart';
 import '../widgets/greeting_card_view.dart';
 import 'my_cards_screen.dart';
@@ -57,9 +58,11 @@ class _CardsScreenState extends State<CardsScreen> {
       final files = await MyCards.addTo(widget.shelf.id, style);
       if (files == 0) return;
       await _refresh();
-      if (mounted && files > 1) _toast('أُضيفت $files صور');
+      if (mounted && files > 1) {
+        _toast('${t('crd.addedPrefix')} $files ${t('crd.photosWord')}');
+      }
     } catch (_) {
-      if (mounted) _toast('تعذّر إضافة الصور');
+      if (mounted) _toast(t('crd.failedAddPhotos'));
     }
   }
 
@@ -76,10 +79,12 @@ class _CardsScreenState extends State<CardsScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Padding(
-                padding: EdgeInsets.fromLTRB(20, 16, 20, 2),
-                child: Text('الصورة التي ستضيفها',
-                    style: TextStyle(color: AppColors.gold, fontSize: 15)),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 2),
+                child: Text(
+                  t('crd.addPhotoSheetTitle'),
+                  style: const TextStyle(color: AppColors.gold, fontSize: 15),
+                ),
               ),
               for (final style in CardStyle.values)
                 ListTile(
@@ -90,12 +95,20 @@ class _CardsScreenState extends State<CardsScreen> {
                     color: AppColors.gold,
                     size: 21,
                   ),
-                  title: Text(style.label,
-                      style: const TextStyle(
-                          color: AppColors.textPrimary, fontSize: 14)),
-                  subtitle: Text(style.note,
-                      style: const TextStyle(
-                          color: AppColors.textMuted, fontSize: 11)),
+                  title: Text(
+                    style.label,
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 14,
+                    ),
+                  ),
+                  subtitle: Text(
+                    style.note,
+                    style: const TextStyle(
+                      color: AppColors.textMuted,
+                      fontSize: 11,
+                    ),
+                  ),
                   onTap: () => Navigator.pop(ctx, style),
                 ),
               const SizedBox(height: 8),
@@ -109,11 +122,13 @@ class _CardsScreenState extends State<CardsScreen> {
   void _toast(String message) {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(
-        content: Text(message, textAlign: TextAlign.right),
-        backgroundColor: AppColors.blackCard,
-        behavior: SnackBarBehavior.floating,
-      ));
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message, textAlign: TextAlign.right),
+          backgroundColor: AppColors.blackCard,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
   }
 
   /// Removing one of the reader's own pictures. The built-in cards cannot be
@@ -125,20 +140,31 @@ class _CardsScreenState extends State<CardsScreen> {
         textDirection: TextDirection.rtl,
         child: AlertDialog(
           backgroundColor: AppColors.blackCard,
-          title: const Text('حذف الصورة؟',
-              style: TextStyle(color: AppColors.gold, fontSize: 17)),
-          content: const Text('تُحذف من هذا الرفّ نهائياً.',
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
+          title: Text(
+            t('crd.deletePhotoTitle'),
+            style: const TextStyle(color: AppColors.gold, fontSize: 17),
+          ),
+          content: Text(
+            t('crd.deleteShelfPhotoBody'),
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 14,
+            ),
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('إبقاء',
-                  style: TextStyle(color: AppColors.textMuted)),
+              child: Text(
+                t('crd.keepAction'),
+                style: const TextStyle(color: AppColors.textMuted),
+              ),
             ),
             TextButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child:
-                  const Text('حذف', style: TextStyle(color: AppColors.error)),
+              child: Text(
+                t('crd.deleteAction'),
+                style: const TextStyle(color: AppColors.error),
+              ),
             ),
           ],
         ),
@@ -171,7 +197,7 @@ class _CardsScreenState extends State<CardsScreen> {
                 backgroundColor: AppColors.goldDark,
                 foregroundColor: AppColors.white,
                 icon: const Icon(Icons.add_photo_alternate),
-                label: const Text('أضف صورة'),
+                label: Text(t('crd.addPhotoFab')),
               ),
         body: GridView.builder(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 90),
@@ -204,15 +230,15 @@ class _CardsScreenState extends State<CardsScreen> {
           onTap: resolved == null
               ? null
               : () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => CardViewerScreen(
-                        resolved: resolved,
-                        background: file,
-                        bare: style == CardStyle.asIs,
-                      ),
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => CardViewerScreen(
+                      resolved: resolved,
+                      background: file,
+                      bare: style == CardStyle.asIs,
                     ),
                   ),
+                ),
           onLongPress: () => _confirmDelete(file),
           child: Stack(
             fit: StackFit.expand,
@@ -232,16 +258,22 @@ class _CardsScreenState extends State<CardsScreen> {
                 top: 6,
                 right: 6,
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 7,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.55),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    style == CardStyle.asIs ? 'صورتك' : 'صورتك · يُكتب عليها',
+                    style == CardStyle.asIs
+                        ? t('crd.yourPhotoBadge')
+                        : t('crd.yourPhotoWritableBadge'),
                     style: const TextStyle(
-                        color: AppColors.textGold, fontSize: 8.5),
+                      color: AppColors.textGold,
+                      fontSize: 8.5,
+                    ),
                   ),
                 ),
               ),
@@ -261,10 +293,11 @@ class _CardsScreenState extends State<CardsScreen> {
           onTap: resolved == null
               ? null
               : () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => CardViewerScreen(resolved: resolved)),
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => CardViewerScreen(resolved: resolved),
                   ),
+                ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(14),
             child: resolved == null
@@ -370,8 +403,9 @@ class _CardViewerScreenState extends State<CardViewerScreen> {
     if (_sending) return;
     setState(() => _sending = true);
     try {
-      final boundary = _exportKey.currentContext!.findRenderObject()
-          as RenderRepaintBoundary;
+      final boundary =
+          _exportKey.currentContext!.findRenderObject()
+              as RenderRepaintBoundary;
 
       // Sized to a fixed width rather than to a multiple of the screen.
       //
@@ -385,8 +419,9 @@ class _CardViewerScreenState extends State<CardViewerScreen> {
       // Handing it a much larger original leaves the text legible after that
       // pass. The ratio is capped so an unusually large screen cannot ask for
       // an image too big to hold.
-      final image =
-          await boundary.toImage(pixelRatio: CardViewerScreen.exportRatio(boundary.size.width));
+      final image = await boundary.toImage(
+        pixelRatio: CardViewerScreen.exportRatio(boundary.size.width),
+      );
       final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
       if (bytes == null) throw StateError('empty image');
 
@@ -397,10 +432,12 @@ class _CardViewerScreenState extends State<CardViewerScreen> {
       final file = File('${dir.path}/$name.png');
       await file.writeAsBytes(bytes.buffer.asUint8List());
 
-      await SharePlus.instance.share(ShareParams(
-        files: [XFile(file.path)],
-        text: widget.resolved.card.greeting,
-      ));
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(file.path)],
+          text: widget.resolved.card.greeting,
+        ),
+      );
 
       // Remember the signature for the next card.
       if (_name.text.trim().isNotEmpty) {
@@ -409,11 +446,16 @@ class _CardViewerScreenState extends State<CardViewerScreen> {
       }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('تعذّر تجهيز البطاقة', textAlign: TextAlign.right),
-          backgroundColor: AppColors.blackCard,
-          behavior: SnackBarBehavior.floating,
-        ));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              t('crd.failedPrepareCard'),
+              textAlign: TextAlign.right,
+            ),
+            backgroundColor: AppColors.blackCard,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
       }
     } finally {
       if (mounted) setState(() => _sending = false);
@@ -426,8 +468,10 @@ class _CardViewerScreenState extends State<CardViewerScreen> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Text('مكان التوقيع',
-            style: TextStyle(color: AppColors.textMuted, fontSize: 10)),
+        Text(
+          t('crd.signaturePlacementLabel'),
+          style: const TextStyle(color: AppColors.textMuted, fontSize: 10),
+        ),
         const SizedBox(height: 4),
         Container(
           padding: const EdgeInsets.all(3),
@@ -459,7 +503,9 @@ class _CardViewerScreenState extends State<CardViewerScreen> {
                                 : AppColors.blackCard,
                             borderRadius: BorderRadius.circular(3),
                             border: Border.all(
-                                color: AppColors.goldBorder, width: 0.5),
+                              color: AppColors.goldBorder,
+                              width: 0.5,
+                            ),
                           ),
                         ),
                       ),
@@ -472,8 +518,11 @@ class _CardViewerScreenState extends State<CardViewerScreen> {
     );
   }
 
-  Widget _field(TextEditingController controller, String hint,
-      {int? maxLength}) {
+  Widget _field(
+    TextEditingController controller,
+    String hint, {
+    int? maxLength,
+  }) {
     return TextField(
       controller: controller,
       maxLength: maxLength,
@@ -506,82 +555,91 @@ class _CardViewerScreenState extends State<CardViewerScreen> {
         backgroundColor: AppColors.black,
         resizeToAvoidBottomInset: true,
         appBar: AppBar(
-          title: Text(widget.resolved.card.greeting,
-              style: const TextStyle(fontSize: 16)),
+          title: Text(
+            widget.resolved.card.greeting,
+            style: const TextStyle(fontSize: 16),
+          ),
           backgroundColor: AppColors.black,
           foregroundColor: AppColors.gold,
         ),
         body: SafeArea(
           top: false,
           child: Column(
-          children: [
-            Expanded(
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    // What gets exported is this very widget, so the card the
-                    // reader sends is the card they were looking at.
-                    child: RepaintBoundary(
-                      key: _exportKey,
-                      child: GreetingCardView(
-                        resolved: widget.resolved,
-                        background: widget.background,
-                        bare: widget.bare,
-                        forSharing: true,
-                        senderName: _name.text,
-                        senderNote: _note.text,
-                        signColumn: _signColumn,
-                        signRow: _signRow,
+            children: [
+              Expanded(
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      // What gets exported is this very widget, so the card the
+                      // reader sends is the card they were looking at.
+                      child: RepaintBoundary(
+                        key: _exportKey,
+                        child: GreetingCardView(
+                          resolved: widget.resolved,
+                          background: widget.background,
+                          bare: widget.bare,
+                          forSharing: true,
+                          senderName: _name.text,
+                          senderNote: _note.text,
+                          signColumn: _signColumn,
+                          signRow: _signRow,
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  _placementPicker(),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      children: [
-                        _field(_name, 'اسمك على البطاقة', maxLength: 24),
-                        const SizedBox(height: 6),
-                        _field(_note, 'جملة منك (حتى ٧ كلمات)'),
-                      ],
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    _placementPicker(),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        children: [
+                          _field(_name, t('crd.yourNameHint'), maxLength: 24),
+                          const SizedBox(height: 6),
+                          _field(_note, t('crd.yourNoteHint')),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: _sending ? null : _share,
-                  icon: _sending
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(
-                              strokeWidth: 2, color: AppColors.white))
-                      : const Icon(Icons.share, size: 18),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.goldDark,
-                    foregroundColor: AppColors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                  label: Text(_sending ? 'جاري التجهيز…' : 'إرسال البطاقة'),
+                  ],
                 ),
               ),
-            ),
-          ],
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: _sending ? null : _share,
+                    icon: _sending
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: AppColors.white,
+                            ),
+                          )
+                        : const Icon(Icons.share, size: 18),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.goldDark,
+                      foregroundColor: AppColors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    label: Text(
+                      _sending
+                          ? t('crd.preparingLabel')
+                          : t('crd.sendCardLabel'),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

@@ -4,6 +4,7 @@ import '../../constants/theme.dart';
 import '../../data/ayah_boxes.dart';
 import '../../data/hizb_data.dart';
 import '../../data/quran_data.dart';
+import '../../l10n/strings.dart';
 import '../../services/mushaf_image_service.dart';
 import '../../widgets/frame_tuning.dart';
 import '../../widgets/mushaf_chrome.dart';
@@ -99,59 +100,66 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
         builder: (context, palette, _) => ValueListenableBuilder<MushafFrame>(
           valueListenable: MushafFrames.current,
           builder: (context, frame, _) => Container(
-          margin: const EdgeInsets.all(_sheetMargin),
-          decoration: BoxDecoration(
-            color: palette.paper,
-            borderRadius: BorderRadius.circular(6),
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final size = Size(constraints.maxWidth, constraints.maxHeight);
-              // Exactly what the ornament needs, and no more. Inflating this
-              // to fit the captions gave them a line of their own and pushed
-              // the page up off centre; they are drawn over the border now,
-              // on its own level, the way a printed page prints them.
-              final band = frame.insetFor(size) * FrameTuning.of('scale');
+            margin: const EdgeInsets.all(_sheetMargin),
+            decoration: BoxDecoration(
+              color: palette.paper,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final size = Size(constraints.maxWidth, constraints.maxHeight);
+                // Exactly what the ornament needs, and no more. Inflating this
+                // to fit the captions gave them a line of their own and pushed
+                // the page up off centre; they are drawn over the border now,
+                // on its own level, the way a printed page prints them.
+                final band = frame.insetFor(size) * FrameTuning.of('scale');
 
-              // The screen is three parts and nothing else: the top bar, the
-              // page, the bottom bar. The border sits on the bottom edge of
-              // one and the top edge of the other, and the ayat fill
-              // everything between — so the bars are not covering the border,
-              // they are where it begins and ends.
-              // Both bars are measured from the edge of the screen, while
-              // everything here is laid out inside the sheet's own margin —
-              // so that margin comes off, or the border sits three low.
-              MushafChrome.seed(MediaQuery.viewPaddingOf(context));
-              final chromeTop =
-                  (MushafChrome.topHeight.value - _sheetMargin).clamp(0.0, size.height);
-              final chromeBottom =
-                  (MushafChrome.bottomHeight.value - _sheetMargin).clamp(0.0, size.height);
+                // The screen is three parts and nothing else: the top bar, the
+                // page, the bottom bar. The border sits on the bottom edge of
+                // one and the top edge of the other, and the ayat fill
+                // everything between — so the bars are not covering the border,
+                // they are where it begins and ends.
+                // Both bars are measured from the edge of the screen, while
+                // everything here is laid out inside the sheet's own margin —
+                // so that margin comes off, or the border sits three low.
+                MushafChrome.seed(MediaQuery.viewPaddingOf(context));
+                final chromeTop = (MushafChrome.topHeight.value - _sheetMargin)
+                    .clamp(0.0, size.height);
+                final chromeBottom =
+                    (MushafChrome.bottomHeight.value - _sheetMargin).clamp(
+                      0.0,
+                      size.height,
+                    );
 
-              return Stack(
-                // Expand, or the page is handed loose constraints and sizes
-                // itself to the image's own thousand-odd pixels. It then lays
-                // out against a box that is not the one on screen, and every
-                // tap maps to the wrong ayah — which is how the action bar
-                // stopped responding.
-                fit: StackFit.expand,
-                children: [
-                  Padding(
-                    // Named so a test can read where the page actually landed
-                    // rather than assume the knobs reached it.
-                    key: const Key('mushaf-page-inset'),
-                    padding: EdgeInsets.fromLTRB(
-                      0,
-                      (chromeTop + FrameTuning.of('top'))
-                          .clamp(0.0, size.height / 3),
-                      0,
-                      (chromeBottom + FrameTuning.of('bottom'))
-                          .clamp(0.0, size.height / 3),
+                return Stack(
+                  // Expand, or the page is handed loose constraints and sizes
+                  // itself to the image's own thousand-odd pixels. It then lays
+                  // out against a box that is not the one on screen, and every
+                  // tap maps to the wrong ayah — which is how the action bar
+                  // stopped responding.
+                  fit: StackFit.expand,
+                  children: [
+                    Padding(
+                      // Named so a test can read where the page actually landed
+                      // rather than assume the knobs reached it.
+                      key: const Key('mushaf-page-inset'),
+                      padding: EdgeInsets.fromLTRB(
+                        0,
+                        (chromeTop + FrameTuning.of('top')).clamp(
+                          0.0,
+                          size.height / 3,
+                        ),
+                        0,
+                        (chromeBottom + FrameTuning.of('bottom')).clamp(
+                          0.0,
+                          size.height / 3,
+                        ),
+                      ),
+                      child: _page(palette),
                     ),
-                    child: _page(palette),
-                  ),
-                  _frame(frame, palette, band, size, chromeTop, chromeBottom),
-                ],
+                    _frame(frame, palette, band, size, chromeTop, chromeBottom),
+                  ],
                 );
               },
             ),
@@ -167,8 +175,10 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
           return Center(
-            child:
-                CircularProgressIndicator(color: palette.ink, strokeWidth: 2),
+            child: CircularProgressIndicator(
+              color: palette.ink,
+              strokeWidth: 2,
+            ),
           );
         }
         final file = snapshot.data;
@@ -234,8 +244,14 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
   double get _captionBox =>
       _captionHeight + (FrameTuning.of('caption') - 16).clamp(0.0, 14.0);
 
-  Widget _frame(MushafFrame frame, MushafPalette palette, double band,
-      Size size, double chromeTop, double chromeBottom) {
+  Widget _frame(
+    MushafFrame frame,
+    MushafPalette palette,
+    double band,
+    Size size,
+    double chromeTop,
+    double chromeBottom,
+  ) {
     final surah = widget.surahInfo(widget.page.runs.first.surah);
     // The Mushaf's own face, a size above the ayah text: these are the page's
     // own markings, and setting them in the interface font made them read as
@@ -316,7 +332,8 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
             // Surah on the right, juz on the left — the printed page's own
             // header, each in its own cartouche.
             Positioned(
-              top: headerCentre -
+              top:
+                  headerCentre -
                   _captionBox / 2 +
                   FrameTuning.of('header') -
                   _headerLift,
@@ -333,23 +350,29 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Flexible(
-                      child: _cartouche(surah.name, palette, caption,
-                          boxKey: const Key('mushaf-cartouche-surah'),
-                          lift: _surahInk),
+                      child: _cartouche(
+                        surah.name,
+                        palette,
+                        caption,
+                        boxKey: const Key('mushaf-cartouche-surah'),
+                        lift: _surahInk,
+                      ),
                     ),
                     const SizedBox(width: 8),
                     _cartouche(
-                        'الجزء ${QuranService.toArabicDigits(widget.page.juz)}',
-                        palette,
-                        caption,
-                        boxKey: const Key('mushaf-cartouche-juz'),
-                        lift: _juzInk),
+                      '${t('mushaf.juz')} ${QuranService.toArabicDigits(widget.page.juz)}',
+                      palette,
+                      caption,
+                      boxKey: const Key('mushaf-cartouche-juz'),
+                      lift: _juzInk,
+                    ),
                   ],
                 ),
               ),
             ),
             Positioned(
-              bottom: numberCentre -
+              bottom:
+                  numberCentre -
                   _captionBox / 2 -
                   FrameTuning.of('number') -
                   _numberDrop,
@@ -358,11 +381,12 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
               height: _captionBox,
               child: Center(
                 child: _cartouche(
-                    QuranService.toArabicDigits(widget.page.number),
-                    palette,
-                    caption,
-                    boxKey: const Key('mushaf-cartouche-number'),
-                    lift: _numberInk),
+                  QuranService.toArabicDigits(widget.page.number),
+                  palette,
+                  caption,
+                  boxKey: const Key('mushaf-cartouche-number'),
+                  lift: _numberInk,
+                ),
               ),
             ),
           ],
@@ -378,8 +402,13 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
   /// what breaks the ornament behind it and makes the label read as part of
   /// the border instead of as writing laid over it. The double rule is the
   /// printed convention — a single line looks like a text field.
-  Widget _cartouche(String text, MushafPalette palette, TextStyle caption,
-      {Key? boxKey, required double lift}) {
+  Widget _cartouche(
+    String text,
+    MushafPalette palette,
+    TextStyle caption, {
+    Key? boxKey,
+    required double lift,
+  }) {
     return Container(
       key: boxKey,
       padding: const EdgeInsets.all(1.5),
@@ -428,9 +457,11 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
           children: [
             for (final run in widget.page.runs) ..._runWidgets(run, palette),
             const SizedBox(height: 8),
-            Text('صفحة ${QuranService.toArabicDigits(widget.page.number)}',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: palette.onPaperMuted, fontSize: 12)),
+            Text(
+              '${t('mushaf.page')} ${QuranService.toArabicDigits(widget.page.number)}',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: palette.onPaperMuted, fontSize: 12),
+            ),
           ],
         ),
       ),
@@ -449,24 +480,29 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
             borderRadius: BorderRadius.circular(8),
             border: Border.all(color: palette.ink.withValues(alpha: 0.45)),
           ),
-          child: Text('سورة ${info.name}',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  color: palette.ink,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold)),
+          child: Text(
+            '${t('mushaf.surah')} ${info.name}',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: palette.ink,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
         if (info.hasBasmala)
           Padding(
             padding: const EdgeInsets.only(bottom: 10),
-            child: Text(QuranService.basmala,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: mushafFont,
-                  color: palette.ink,
-                  fontSize: 20,
-                  height: 1.9,
-                )),
+            child: Text(
+              QuranService.basmala,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: mushafFont,
+                color: palette.ink,
+                fontSize: 20,
+                height: 1.9,
+              ),
+            ),
           ),
       ],
       FutureBuilder<Surah>(
@@ -475,15 +511,17 @@ class _MushafPageSheetState extends State<MushafPageSheet> {
           final surah = snapshot.data;
           if (surah == null) return const SizedBox(height: 40);
           return Text.rich(
-            TextSpan(children: [
-              for (var n = run.first; n <= run.last; n++) ...[
-                TextSpan(text: surah.ayahs[n - 1].text),
-                TextSpan(
-                  text: ' ﴿${QuranService.toArabicDigits(n)}﴾ ',
-                  style: TextStyle(color: palette.ink, fontSize: 15),
-                ),
+            TextSpan(
+              children: [
+                for (var n = run.first; n <= run.last; n++) ...[
+                  TextSpan(text: surah.ayahs[n - 1].text),
+                  TextSpan(
+                    text: ' ﴿${QuranService.toArabicDigits(n)}﴾ ',
+                    style: TextStyle(color: palette.ink, fontSize: 15),
+                  ),
+                ],
               ],
-            ]),
+            ),
             textAlign: TextAlign.justify,
             style: TextStyle(
               fontFamily: mushafFont,

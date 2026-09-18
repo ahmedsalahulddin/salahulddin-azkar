@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../l10n/strings.dart';
+
 /// One adjustable number of the page border.
 ///
 /// Each is an offset from what the app draws on its own, so zero everywhere is
@@ -8,20 +10,38 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// second guess at it.
 class FrameKnob {
   final String id;
-  final String label;
-  final String note;
   final double min;
   final double max;
   final double normal;
 
   const FrameKnob({
     required this.id,
-    required this.label,
-    required this.note,
     required this.min,
     required this.max,
     required this.normal,
   });
+
+  String get label => switch (id) {
+    'top' => t('mushaf.frameTuningTop'),
+    'bottom' => t('mushaf.frameTuningBottom'),
+    'side' => t('mushaf.frameTuningSides'),
+    'scale' => t('mushaf.frameTuningScale'),
+    'header' => t('mushaf.frameTuningHeader'),
+    'number' => t('mushaf.frameTuningNumber'),
+    'caption' => t('mushaf.frameTuningCaption'),
+    _ => id,
+  };
+
+  String get note => switch (id) {
+    'top' => t('mushaf.frameTuningTopNote'),
+    'bottom' => t('mushaf.frameTuningBottomNote'),
+    'side' => t('mushaf.frameTuningSidesNote'),
+    'scale' => t('mushaf.frameTuningScaleNote'),
+    'header' => t('mushaf.frameTuningHeaderNote'),
+    'number' => t('mushaf.frameTuningNumberNote'),
+    'caption' => t('mushaf.frameTuningCaptionNote'),
+    _ => '',
+  };
 }
 
 /// Where the border sits, in the reader's own hands.
@@ -33,62 +53,13 @@ class FrameKnob {
 /// drags, watches the page behind the panel, and stops when it looks right.
 class FrameTuning {
   static const knobs = <FrameKnob>[
-    FrameKnob(
-      id: 'top',
-      label: 'من فوق',
-      note: 'المسافة بين الإطار وأول سطر',
-      min: -40,
-      max: 60,
-      normal: 0,
-    ),
-    FrameKnob(
-      id: 'bottom',
-      label: 'من تحت',
-      note: 'المسافة بين الإطار وآخر سطر',
-      min: -40,
-      max: 60,
-      normal: 0,
-    ),
-    FrameKnob(
-      id: 'side',
-      label: 'الجانبان',
-      note: 'كم يظهر من الإطار يميناً ويساراً',
-      min: -30,
-      max: 60,
-      normal: 0,
-    ),
-    FrameKnob(
-      id: 'scale',
-      label: 'حجم الزخرفة',
-      note: 'غِلَظ الإطار ونقشه',
-      min: 0.5,
-      max: 1.8,
-      normal: 1,
-    ),
-    FrameKnob(
-      id: 'header',
-      label: 'اسم السورة والجزء',
-      note: 'ارتفاعهما داخل الإطار',
-      min: -30,
-      max: 30,
-      normal: 0,
-    ),
-    FrameKnob(
-      id: 'number',
-      label: 'رقم الصفحة',
-      note: 'ارتفاعه داخل الإطار',
-      min: -30,
-      max: 30,
-      normal: 0,
-    ),
-    FrameKnob(
-      id: 'caption',
-      label: 'حجم الكتابة',
-      note: 'خط اسم السورة والجزء والرقم',
-      min: 10,
-      max: 26,
-      normal: 16,
-    ),
+    FrameKnob(id: 'top', min: -40, max: 60, normal: 0),
+    FrameKnob(id: 'bottom', min: -40, max: 60, normal: 0),
+    FrameKnob(id: 'side', min: -30, max: 60, normal: 0),
+    FrameKnob(id: 'scale', min: 0.5, max: 1.8, normal: 1),
+    FrameKnob(id: 'header', min: -30, max: 30, normal: 0),
+    FrameKnob(id: 'number', min: -30, max: 30, normal: 0),
+    FrameKnob(id: 'caption', min: 10, max: 26, normal: 16),
   ];
 
   /// Bumped on every change, so the page redraws while the panel is open.
@@ -151,9 +122,8 @@ class FrameTuning {
   /// The numbers as one line, for a reader who wants their settings made the
   /// app's own defaults and has to get them to whoever can do that.
   static String asText() => [
-        for (final knob in knobs)
-          '${knob.id}=${of(knob.id).toStringAsFixed(1)}',
-      ].join('، ');
+    for (final knob in knobs) '${knob.id}=${of(knob.id).toStringAsFixed(1)}',
+  ].join('، ');
 
   @visibleForTesting
   static void debugReset() {

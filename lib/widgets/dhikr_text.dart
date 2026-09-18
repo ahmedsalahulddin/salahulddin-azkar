@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/theme.dart';
+import '../l10n/strings.dart';
 
 /// Display names for the machine-translated languages a caller may pass in
 /// [DhikrText.moreTranslations], in picker order.
@@ -60,14 +61,14 @@ class DhikrLangButton extends StatelessWidget {
             builder: (ctx, current, _) => Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Padding(
-                  padding: EdgeInsets.fromLTRB(20, 16, 20, 4),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
                   child: Text(
-                    'لغة الترجمة',
-                    style: TextStyle(color: AppColors.gold, fontSize: 15),
+                    t('adh.translationLanguageTitle'),
+                    style: const TextStyle(color: AppColors.gold, fontSize: 15),
                   ),
                 ),
-                _tile(ctx, null, 'بدون ترجمة — عربي فقط', current),
+                _tile(ctx, null, t('adh.noTranslationOption'), current),
                 _tile(ctx, 'en', 'English', current),
                 for (final code in dhikrMoreLanguageNames.keys)
                   _tile(ctx, code, dhikrMoreLanguageNames[code]!, current),
@@ -108,7 +109,7 @@ class DhikrLangButton extends StatelessWidget {
         icon: const Icon(Icons.translate, size: 17),
         label: Text(
           lang == null
-              ? 'ترجمة'
+              ? t('adh.translationButtonLabel')
               : (lang == 'en' ? 'English' : dhikrMoreLanguageNames[lang]!),
           style: const TextStyle(fontSize: 13),
         ),
@@ -188,11 +189,11 @@ class DhikrText extends StatelessWidget {
                     ),
                     if (lang != 'en') ...[
                       const SizedBox(height: 6),
-                      const Text(
-                        'ترجمة آلية بواسطة Claude AI — وليست ترجمة معتمدة',
+                      Text(
+                        t('adh.machineTranslationDisclaimer'),
                         textDirection: TextDirection.rtl,
                         textAlign: TextAlign.right,
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: AppColors.textMuted,
                           fontSize: 10,
                         ),

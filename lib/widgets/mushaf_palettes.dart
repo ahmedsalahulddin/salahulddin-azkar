@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../constants/theme.dart';
+import '../l10n/strings.dart';
 
 /// The paper a page is printed on, and the colour of everything drawn over it.
 ///
@@ -10,21 +11,30 @@ import '../constants/theme.dart';
 /// papers invert the text rather than tinting it, because black ink on a dark
 /// sheet is not dim — it is gone.
 enum MushafPalette {
-  cream('cream', 'ورقي', Color(0xFFF7F1E1), AppColors.gold, false),
-  ivory('ivory', 'عاجي', Color(0xFFFDFBF4), Color(0xFF9A7B25), false),
-  sepia('sepia', 'سِبيا', Color(0xFFEFE0C4), Color(0xFF8B5E24), false),
-  mint('mint', 'أخضر فاتح', Color(0xFFE6F0E2), Color(0xFF2F6B3A), false),
-  azure('azure', 'أزرق فاتح', Color(0xFFE4ECF5), Color(0xFF23507F), false),
-  slate('slate', 'رمادي داكن', Color(0xFF23262B), Color(0xFFD4A843), true),
-  night('night', 'ليلي', Color(0xFF11131A), Color(0xFFC8A24C), true),
-  black('black', 'أسود', Color(0xFF000000), Color(0xFFB8860B), true);
+  cream('cream', Color(0xFFF7F1E1), AppColors.gold, false),
+  ivory('ivory', Color(0xFFFDFBF4), Color(0xFF9A7B25), false),
+  sepia('sepia', Color(0xFFEFE0C4), Color(0xFF8B5E24), false),
+  mint('mint', Color(0xFFE6F0E2), Color(0xFF2F6B3A), false),
+  azure('azure', Color(0xFFE4ECF5), Color(0xFF23507F), false),
+  slate('slate', Color(0xFF23262B), Color(0xFFD4A843), true),
+  night('night', Color(0xFF11131A), Color(0xFFC8A24C), true),
+  black('black', Color(0xFF000000), Color(0xFFB8860B), true);
 
-  const MushafPalette(this.id, this.label, this.paper, this.ink, this.invert);
+  const MushafPalette(this.id, this.paper, this.ink, this.invert);
 
   final String id;
 
   /// Shown in the picker.
-  final String label;
+  String get label => switch (this) {
+    MushafPalette.cream => t('mushaf.paletteCream'),
+    MushafPalette.ivory => t('mushaf.paletteIvory'),
+    MushafPalette.sepia => t('mushaf.paletteSepia'),
+    MushafPalette.mint => t('mushaf.paletteMint'),
+    MushafPalette.azure => t('mushaf.paletteAzure'),
+    MushafPalette.slate => t('mushaf.paletteSlate'),
+    MushafPalette.night => t('mushaf.paletteNight'),
+    MushafPalette.black => t('mushaf.paletteBlack'),
+  };
 
   /// The page background.
   final Color paper;
@@ -40,9 +50,8 @@ enum MushafPalette {
   Color get onPaper =>
       invert ? const Color(0xFFE8E2D4) : const Color(0xFF1A1408);
 
-  Color get onPaperMuted => invert
-      ? const Color(0xFF9A937F)
-      : const Color(0xFF8A7C5C);
+  Color get onPaperMuted =>
+      invert ? const Color(0xFF9A937F) : const Color(0xFF8A7C5C);
 
   static MushafPalette byId(String? id) =>
       values.firstWhere((p) => p.id == id, orElse: () => cream);

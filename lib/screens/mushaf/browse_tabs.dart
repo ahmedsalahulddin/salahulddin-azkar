@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../constants/theme.dart';
 import '../../data/quran_data.dart';
+import '../../l10n/strings.dart';
 import '../../services/bookmark_service.dart';
 
 /// The search box the drawer's two search tabs share — same shape, same
@@ -40,8 +41,11 @@ class MushafSearchField extends StatelessWidget {
           isDense: true,
           border: border,
           enabledBorder: border,
-          suffixIcon:
-              const Icon(Icons.search, color: AppColors.textMuted, size: 18),
+          suffixIcon: const Icon(
+            Icons.search,
+            color: AppColors.textMuted,
+            size: 18,
+          ),
         ),
       ),
     );
@@ -66,14 +70,12 @@ class _SurahTabState extends State<SurahTab> {
     final q = _query.trim();
     final filtered = q.isEmpty
         ? widget.index
-        : widget.index
-            .where((s) => QuranService.surahMatches(s, q))
-            .toList();
+        : widget.index.where((s) => QuranService.surahMatches(s, q)).toList();
 
     return Column(
       children: [
         MushafSearchField(
-          hint: 'ابحث عن سورة…',
+          hint: t('mushaf.searchSurahHint'),
           onChanged: (v) => setState(() => _query = v),
         ),
         Expanded(
@@ -81,15 +83,24 @@ class _SurahTabState extends State<SurahTab> {
             itemCount: filtered.length,
             itemBuilder: (context, i) => ListTile(
               dense: true,
-              leading: Text(QuranService.toArabicDigits(filtered[i].number),
-                  style: const TextStyle(color: AppColors.gold, fontSize: 13)),
-              title: Text(filtered[i].name,
-                  style: const TextStyle(
-                      color: AppColors.textPrimary, fontSize: 14)),
+              leading: Text(
+                QuranService.toArabicDigits(filtered[i].number),
+                style: const TextStyle(color: AppColors.gold, fontSize: 13),
+              ),
+              title: Text(
+                filtered[i].name,
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 14,
+                ),
+              ),
               subtitle: Text(
-                  '${filtered[i].type} • ${filtered[i].ayahCount} آية',
-                  style: const TextStyle(
-                      color: AppColors.textMuted, fontSize: 11)),
+                '${filtered[i].type} • ${filtered[i].ayahCount} ${t('mushaf.ayah')}',
+                style: const TextStyle(
+                  color: AppColors.textMuted,
+                  fontSize: 11,
+                ),
+              ),
               onTap: () => widget.onSurah(filtered[i]),
             ),
           ),
@@ -117,14 +128,18 @@ class JuzTab extends StatelessWidget {
       itemCount: juz.length,
       itemBuilder: (context, i) => ListTile(
         dense: true,
-        leading: Text(QuranService.toArabicDigits(juz[i]),
-            style: const TextStyle(color: AppColors.gold, fontSize: 13)),
-        title: Text('الجزء ${QuranService.toArabicDigits(juz[i])}',
-            style:
-                const TextStyle(color: AppColors.textPrimary, fontSize: 14)),
+        leading: Text(
+          QuranService.toArabicDigits(juz[i]),
+          style: const TextStyle(color: AppColors.gold, fontSize: 13),
+        ),
+        title: Text(
+          '${t('mushaf.juz')} ${QuranService.toArabicDigits(juz[i])}',
+          style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
+        ),
         subtitle: Text(
-            'يبدأ في صفحة ${QuranService.toArabicDigits(firstPage[juz[i]]!)}',
-            style: const TextStyle(color: AppColors.textMuted, fontSize: 11)),
+          '${t('mushaf.startsAtPage')} ${QuranService.toArabicDigits(firstPage[juz[i]]!)}',
+          style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+        ),
         onTap: () => onPage(firstPage[juz[i]]!),
       ),
     );
@@ -201,7 +216,7 @@ class _WordSearchTabState extends State<WordSearchTab> {
     return Column(
       children: [
         MushafSearchField(
-          hint: 'اكتب كلمة…',
+          hint: t('mushaf.searchWordHint'),
           controller: _controller,
           onChanged: _onChanged,
         ),
@@ -212,7 +227,9 @@ class _WordSearchTabState extends State<WordSearchTab> {
               width: 18,
               height: 18,
               child: CircularProgressIndicator(
-                  strokeWidth: 2, color: AppColors.gold),
+                strokeWidth: 2,
+                color: AppColors.gold,
+              ),
             ),
           )
         else if (_lastQuery.isNotEmpty)
@@ -222,25 +239,36 @@ class _WordSearchTabState extends State<WordSearchTab> {
               children: [
                 Text(
                   _hits.isEmpty
-                      ? 'لا نتائج'
-                      : 'وردت ${QuranService.toArabicDigits(_occurrences)} مرة '
-                          'في ${QuranService.toArabicDigits(_hits.length)} آية',
+                      ? t('mushaf.noResults')
+                      : t('mushaf.occurrencesResult')
+                            .replaceFirst(
+                              '{count}',
+                              QuranService.toArabicDigits(_occurrences),
+                            )
+                            .replaceFirst(
+                              '{ayahs}',
+                              QuranService.toArabicDigits(_hits.length),
+                            ),
                   style: const TextStyle(
-                      color: AppColors.textGold, fontSize: 12),
+                    color: AppColors.textGold,
+                    fontSize: 12,
+                  ),
                 ),
               ],
             ),
           ),
         Expanded(
           child: _lastQuery.isEmpty
-              ? const Center(
+              ? Center(
                   child: Padding(
-                    padding: EdgeInsets.all(24),
+                    padding: const EdgeInsets.all(24),
                     child: Text(
-                      'ابحث عن أي كلمة في المصحف.\nلا حاجة لكتابة التشكيل.',
+                      t('mushaf.wordSearchEmptyHint'),
                       textAlign: TextAlign.center,
-                      style:
-                          TextStyle(color: AppColors.textMuted, fontSize: 13),
+                      style: const TextStyle(
+                        color: AppColors.textMuted,
+                        fontSize: 13,
+                      ),
                     ),
                   ),
                 )
@@ -257,8 +285,9 @@ class _WordSearchTabState extends State<WordSearchTab> {
   Widget _hitCard(AyahHit hit) {
     return GestureDetector(
       onTap: () {
-        final info =
-            widget.index.where((s) => s.number == hit.surah).firstOrNull;
+        final info = widget.index
+            .where((s) => s.number == hit.surah)
+            .firstOrNull;
         if (info != null) widget.onGoTo(info);
       },
       child: Container(
@@ -286,9 +315,8 @@ class _WordSearchTabState extends State<WordSearchTab> {
             ),
             const SizedBox(height: 6),
             Text(
-              '${hit.surahName} — آية ${QuranService.toArabicDigits(hit.ayah)}',
-              style:
-                  const TextStyle(color: AppColors.textMuted, fontSize: 11),
+              '${hit.surahName} — ${t('mushaf.ayah')} ${QuranService.toArabicDigits(hit.ayah)}',
+              style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
             ),
           ],
         ),
@@ -301,8 +329,11 @@ class BookmarksTab extends StatefulWidget {
   final List<SurahInfo> index;
   final ValueChanged<Bookmark> onBookmark;
 
-  const BookmarksTab(
-      {super.key, required this.index, required this.onBookmark});
+  const BookmarksTab({
+    super.key,
+    required this.index,
+    required this.onBookmark,
+  });
 
   @override
   State<BookmarksTab> createState() => _BookmarksTabState();
@@ -323,27 +354,25 @@ class _BookmarksTabState extends State<BookmarksTab> {
   /// number. Losing the name is a blemish; throwing here would take the whole
   /// list of marks down with it.
   String _name(int surah) =>
-      widget.index
-          .where((s) => s.number == surah)
-          .firstOrNull
-          ?.name ??
-      'سورة ${QuranService.toArabicDigits(surah)}';
+      widget.index.where((s) => s.number == surah).firstOrNull?.name ??
+      '${t('mushaf.surah')} ${QuranService.toArabicDigits(surah)}';
 
   @override
   Widget build(BuildContext context) {
     final marks = _marks;
     if (marks == null) {
       return const Center(
-          child: CircularProgressIndicator(color: AppColors.gold));
+        child: CircularProgressIndicator(color: AppColors.gold),
+      );
     }
     if (marks.isEmpty) {
-      return const Center(
+      return Center(
         child: Padding(
-          padding: EdgeInsets.all(24),
+          padding: const EdgeInsets.all(24),
           child: Text(
-            'لا توجد علامات بعد.\nاضغط على آية ثم «علامة».',
+            t('mushaf.noBookmarksYet').replaceFirst('%s', t('mushaf.bookmark')),
             textAlign: TextAlign.center,
-            style: TextStyle(color: AppColors.textMuted, fontSize: 13),
+            style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
           ),
         ),
       );
@@ -356,18 +385,23 @@ class _BookmarksTabState extends State<BookmarksTab> {
         return ListTile(
           dense: true,
           leading: Text(b.kind.icon, style: const TextStyle(fontSize: 18)),
-          title: Text('${_name(b.surah)} — آية ${b.ayah}',
-              style:
-                  const TextStyle(color: AppColors.textPrimary, fontSize: 14)),
+          title: Text(
+            '${_name(b.surah)} — ${t('mushaf.ayah')} ${b.ayah}',
+            style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
+          ),
           subtitle: Text(
-              b.note ??
-                  '${b.kind.label} • صفحة ${QuranService.toArabicDigits(b.page)}',
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: AppColors.textMuted, fontSize: 11)),
+            b.note ??
+                '${b.kind.label} • ${t('mushaf.page')} ${QuranService.toArabicDigits(b.page)}',
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+          ),
           trailing: IconButton(
-            icon: const Icon(Icons.delete_outline,
-                color: AppColors.textMuted, size: 18),
+            icon: const Icon(
+              Icons.delete_outline,
+              color: AppColors.textMuted,
+              size: 18,
+            ),
             onPressed: () async {
               await BookmarkService.remove(b.kind, b.surah, b.ayah);
               final refreshed = await BookmarkService.all();

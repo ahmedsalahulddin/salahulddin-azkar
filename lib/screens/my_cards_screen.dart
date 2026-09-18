@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../constants/theme.dart';
+import '../l10n/strings.dart';
 import '../services/my_cards_meta.dart';
 
 /// The reader's own cards: pictures added from the phone, kept in the app's
@@ -39,8 +40,7 @@ class MyCards {
   /// of Eid cards is a set, and picking them one at a time meant reopening the
   /// gallery for each.
   static Future<int> add() async {
-    final picked = await ImagePicker()
-        .pickMultiImage(imageQuality: 92);
+    final picked = await ImagePicker().pickMultiImage(imageQuality: 92);
     if (picked.isEmpty) return 0;
 
     final dir = await _dir();
@@ -78,8 +78,9 @@ class MyCards {
     for (final image in picked) {
       final extension = image.path.split('.').last.toLowerCase();
       try {
-        final file =
-            await File(image.path).copy('${dir.path}/card_$stamp.$extension');
+        final file = await File(
+          image.path,
+        ).copy('${dir.path}/card_$stamp.$extension');
         await MyCardsMeta.set(nameOf(file), shelf: shelf, style: style);
         saved++;
       } catch (_) {
@@ -104,15 +105,17 @@ class MyCards {
     if (title.isNotEmpty) return title;
 
     final stamp = int.tryParse(
-        RegExp(r'card_(\d+)').firstMatch(nameOf(file))?.group(1) ?? '');
-    if (stamp == null) return 'بطاقة';
+      RegExp(r'card_(\d+)').firstMatch(nameOf(file))?.group(1) ?? '',
+    );
+    if (stamp == null) return t('crd.cardFallbackLabel');
     final at = DateTime.fromMillisecondsSinceEpoch(stamp);
     return '${at.year}/${at.month}/${at.day}';
   }
 
   static int _stampOf(File file) =>
       int.tryParse(
-          RegExp(r'card_(\d+)').firstMatch(nameOf(file))?.group(1) ?? '') ??
+        RegExp(r'card_(\d+)').firstMatch(nameOf(file))?.group(1) ?? '',
+      ) ??
       0;
 
   /// Applies the reader's search, group filter and order — in that order, so
@@ -126,17 +129,17 @@ class MyCards {
     var out = cards;
 
     if (group.isNotEmpty) {
-      out = out
-          .where((f) => MyCardsMeta.groupOf(nameOf(f)) == group)
-          .toList();
+      out = out.where((f) => MyCardsMeta.groupOf(nameOf(f)) == group).toList();
     }
 
     final needle = query.trim();
     if (needle.isNotEmpty) {
       out = out
-          .where((f) =>
-              labelFor(f).contains(needle) ||
-              MyCardsMeta.groupOf(nameOf(f)).contains(needle))
+          .where(
+            (f) =>
+                labelFor(f).contains(needle) ||
+                MyCardsMeta.groupOf(nameOf(f)).contains(needle),
+          )
           .toList();
     } else {
       out = [...out];
@@ -216,7 +219,8 @@ class _MyCardsScreenState extends State<MyCardsScreen> {
         _cards = cards;
         _loaded = true;
         _picked.removeWhere(
-            (name) => !cards.any((f) => MyCards.nameOf(f) == name));
+          (name) => !cards.any((f) => MyCards.nameOf(f) == name),
+        );
       });
     }
   }
@@ -226,9 +230,11 @@ class _MyCardsScreenState extends State<MyCardsScreen> {
       final added = await MyCards.add();
       if (added == 0) return;
       await _refresh();
-      if (added > 1) _say('أُضيفت $added بطاقات');
+      if (added > 1) {
+        _say('${t('crd.addedPrefix')} $added ${t('crd.cardsWord')}');
+      }
     } catch (_) {
-      _say('تعذّر إضافة الصور');
+      _say(t('crd.failedAddPhotos'));
     }
   }
 
@@ -236,11 +242,13 @@ class _MyCardsScreenState extends State<MyCardsScreen> {
     if (!mounted) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(
-        content: Text(message, textAlign: TextAlign.right),
-        backgroundColor: AppColors.blackCard,
-        behavior: SnackBarBehavior.floating,
-      ));
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message, textAlign: TextAlign.right),
+          backgroundColor: AppColors.blackCard,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
   }
 
   Future<void> _share(File file) async {
@@ -271,19 +279,23 @@ class _MyCardsScreenState extends State<MyCardsScreen> {
                   style: const TextStyle(color: AppColors.gold, fontSize: 15),
                 ),
               ),
-              _sheetItem(Icons.share, 'إرسال', () {
+              _sheetItem(Icons.share, t('crd.shareAction'), () {
                 Navigator.pop(ctx);
                 _share(file);
               }),
-              _sheetItem(Icons.drive_file_rename_outline, 'تسمية', () {
-                Navigator.pop(ctx);
-                _rename(file);
-              }),
-              _sheetItem(Icons.folder_outlined, 'المجموعة', () {
+              _sheetItem(
+                Icons.drive_file_rename_outline,
+                t('crd.renameAction'),
+                () {
+                  Navigator.pop(ctx);
+                  _rename(file);
+                },
+              ),
+              _sheetItem(Icons.folder_outlined, t('crd.groupLabel'), () {
                 Navigator.pop(ctx);
                 _setGroup(file);
               }),
-              _sheetItem(Icons.delete_outline, 'حذف', () {
+              _sheetItem(Icons.delete_outline, t('crd.deleteAction'), () {
                 Navigator.pop(ctx);
                 _confirmDelete([file]);
               }, danger: true),
@@ -295,8 +307,12 @@ class _MyCardsScreenState extends State<MyCardsScreen> {
     );
   }
 
-  Widget _sheetItem(IconData icon, String label, VoidCallback onTap,
-      {bool danger = false}) {
+  Widget _sheetItem(
+    IconData icon,
+    String label,
+    VoidCallback onTap, {
+    bool danger = false,
+  }) {
     final tint = danger ? AppColors.error : AppColors.textPrimary;
     return ListTile(
       leading: Icon(icon, color: tint, size: 20),
@@ -308,9 +324,9 @@ class _MyCardsScreenState extends State<MyCardsScreen> {
   Future<void> _rename(File file) async {
     final name = MyCards.nameOf(file);
     final value = await _ask(
-      title: 'اسم البطاقة',
+      title: t('crd.cardNameTitle'),
       initial: MyCardsMeta.titleOf(name),
-      hint: 'عيد الفطر ٤٦',
+      hint: t('crd.cardNameHint'),
     );
     if (value == null) return;
     await MyCardsMeta.set(name, title: value);
@@ -319,9 +335,9 @@ class _MyCardsScreenState extends State<MyCardsScreen> {
   Future<void> _setGroup(File file) async {
     final name = MyCards.nameOf(file);
     final value = await _ask(
-      title: 'المجموعة',
+      title: t('crd.groupLabel'),
       initial: MyCardsMeta.groupOf(name),
-      hint: 'الأعياد',
+      hint: t('crd.groupHint'),
       suggestions: MyCardsMeta.groups(),
     );
     if (value == null) return;
@@ -344,8 +360,10 @@ class _MyCardsScreenState extends State<MyCardsScreen> {
         textDirection: TextDirection.rtl,
         child: AlertDialog(
           backgroundColor: AppColors.blackCard,
-          title: Text(title,
-              style: const TextStyle(color: AppColors.gold, fontSize: 16)),
+          title: Text(
+            title,
+            style: const TextStyle(color: AppColors.gold, fontSize: 16),
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -359,9 +377,11 @@ class _MyCardsScreenState extends State<MyCardsScreen> {
                   hintText: hint,
                   hintStyle: const TextStyle(color: AppColors.textMuted),
                   enabledBorder: const UnderlineInputBorder(
-                      borderSide: BorderSide(color: AppColors.goldBorder)),
+                    borderSide: BorderSide(color: AppColors.goldBorder),
+                  ),
                   focusedBorder: const UnderlineInputBorder(
-                      borderSide: BorderSide(color: AppColors.gold)),
+                    borderSide: BorderSide(color: AppColors.gold),
+                  ),
                 ),
                 onSubmitted: (v) => Navigator.pop(ctx, v),
               ),
@@ -376,15 +396,21 @@ class _MyCardsScreenState extends State<MyCardsScreen> {
                         onTap: () => Navigator.pop(ctx, s),
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 4),
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.goldMuted,
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(color: AppColors.goldBorder),
                           ),
-                          child: Text(s,
-                              style: const TextStyle(
-                                  color: AppColors.textGold, fontSize: 12)),
+                          child: Text(
+                            s,
+                            style: const TextStyle(
+                              color: AppColors.textGold,
+                              fontSize: 12,
+                            ),
+                          ),
                         ),
                       ),
                   ],
@@ -395,13 +421,17 @@ class _MyCardsScreenState extends State<MyCardsScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('إلغاء',
-                  style: TextStyle(color: AppColors.textMuted)),
+              child: Text(
+                t('crd.cancelAction'),
+                style: const TextStyle(color: AppColors.textMuted),
+              ),
             ),
             TextButton(
               onPressed: () => Navigator.pop(ctx, controller.text),
-              child:
-                  const Text('حفظ', style: TextStyle(color: AppColors.gold)),
+              child: Text(
+                t('crd.saveAction'),
+                style: const TextStyle(color: AppColors.gold),
+              ),
             ),
           ],
         ),
@@ -419,20 +449,33 @@ class _MyCardsScreenState extends State<MyCardsScreen> {
         textDirection: TextDirection.rtl,
         child: AlertDialog(
           backgroundColor: AppColors.blackCard,
-          title: Text(many ? 'حذف ${files.length} بطاقات؟' : 'حذف البطاقة؟',
-              style: const TextStyle(color: AppColors.gold, fontSize: 17)),
-          content: const Text('تُحذف من كروتك نهائياً.',
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
+          title: Text(
+            many
+                ? '${t('crd.deleteAction')} ${files.length} ${t('crd.cardsWord')}${t('crd.questionMark')}'
+                : t('crd.deleteCardTitle'),
+            style: const TextStyle(color: AppColors.gold, fontSize: 17),
+          ),
+          content: Text(
+            t('crd.deleteCardsBody'),
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 14,
+            ),
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('إبقاء',
-                  style: TextStyle(color: AppColors.textMuted)),
+              child: Text(
+                t('crd.keepAction'),
+                style: const TextStyle(color: AppColors.textMuted),
+              ),
             ),
             TextButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child:
-                  const Text('حذف', style: TextStyle(color: AppColors.error)),
+              child: Text(
+                t('crd.deleteAction'),
+                style: const TextStyle(color: AppColors.error),
+              ),
             ),
           ],
         ),
@@ -451,8 +494,12 @@ class _MyCardsScreenState extends State<MyCardsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final visible = MyCards.arrange(_cards,
-        query: _query, group: _group, sort: _sort);
+    final visible = MyCards.arrange(
+      _cards,
+      query: _query,
+      group: _group,
+      sort: _sort,
+    );
     final selecting = _picked.isNotEmpty;
 
     return Directionality(
@@ -460,24 +507,30 @@ class _MyCardsScreenState extends State<MyCardsScreen> {
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
-          title: Text(selecting ? 'اخترت ${_picked.length}' : 'كروتي'),
+          title: Text(
+            selecting
+                ? '${t('crd.selectedPrefix')} ${_picked.length}'
+                : t('crd.myCardsTitle'),
+          ),
           backgroundColor: AppColors.black,
           foregroundColor: AppColors.gold,
           leading: selecting
               ? IconButton(
                   icon: const Icon(Icons.close),
                   onPressed: () => setState(_picked.clear),
-                  tooltip: 'إلغاء الاختيار',
+                  tooltip: t('crd.cancelSelectionTooltip'),
                 )
               : null,
           actions: [
             if (selecting)
               IconButton(
                 icon: const Icon(Icons.delete_outline, color: AppColors.error),
-                tooltip: 'حذف المختار',
-                onPressed: () => _confirmDelete(visible
-                    .where((f) => _picked.contains(MyCards.nameOf(f)))
-                    .toList()),
+                tooltip: t('crd.deleteSelectedTooltip'),
+                onPressed: () => _confirmDelete(
+                  visible
+                      .where((f) => _picked.contains(MyCards.nameOf(f)))
+                      .toList(),
+                ),
               )
             else if (_cards.isNotEmpty) ...[
               _zoomButton(),
@@ -492,67 +545,75 @@ class _MyCardsScreenState extends State<MyCardsScreen> {
                 backgroundColor: AppColors.goldDark,
                 foregroundColor: AppColors.white,
                 icon: const Icon(Icons.add_photo_alternate),
-                label: const Text('أضف كرتاً'),
+                label: Text(t('crd.addCardFab')),
               ),
         body: kIsWeb
-            ? const Center(
+            ? Center(
                 child: Padding(
-                  padding: EdgeInsets.all(28),
+                  padding: const EdgeInsets.all(28),
                   child: Text(
-                    'كروتك تُحفظ على جوالك — هذا القسم يعمل في التطبيق لا في المتصفح.',
+                    t('crd.webUnsupportedMessage'),
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 14,
-                        height: 1.7),
+                    style: const TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 14,
+                      height: 1.7,
+                    ),
                   ),
                 ),
               )
             : !_loaded
-                ? const Center(
-                    child: CircularProgressIndicator(color: AppColors.gold))
-                : _cards.isEmpty
-                    ? _empty()
-                    : Column(
-                        children: [
-                          // The tools only appear once there is enough to sort:
-                          // three cards need no search box.
-                          if (_cards.length > 5) _searchField(),
-                          if (MyCardsMeta.groups().isNotEmpty) _groupChips(),
-                          Expanded(
-                            child: visible.isEmpty
-                                ? _nothingFound()
-                                : ValueListenableBuilder<int>(
-                                    valueListenable: MyCardsMeta.columns,
-                                    builder: (context, columns, _) {
-                                      // The gaps close as the cards shrink;
-                                      // a fourteen-pixel gutter between five
-                                      // columns is mostly gutter.
-                                      final gap = columns <= 2
-                                          ? 14.0
-                                          : columns == 3
-                                              ? 10.0
-                                              : 7.0;
-                                      return GridView.builder(
-                                        padding: const EdgeInsets.fromLTRB(
-                                            16, 12, 16, 90),
-                                        gridDelegate:
-                                            SliverGridDelegateWithFixedCrossAxisCount(
-                                          crossAxisCount: columns,
-                                          mainAxisSpacing: gap,
-                                          crossAxisSpacing: gap,
-                                          childAspectRatio: 4 / 5,
-                                        ),
-                                        itemCount: visible.length,
-                                        itemBuilder: (context, i) => _tile(
-                                            visible[i], selecting,
-                                            columns: columns),
-                                      );
-                                    },
-                                  ),
+            ? const Center(
+                child: CircularProgressIndicator(color: AppColors.gold),
+              )
+            : _cards.isEmpty
+            ? _empty()
+            : Column(
+                children: [
+                  // The tools only appear once there is enough to sort:
+                  // three cards need no search box.
+                  if (_cards.length > 5) _searchField(),
+                  if (MyCardsMeta.groups().isNotEmpty) _groupChips(),
+                  Expanded(
+                    child: visible.isEmpty
+                        ? _nothingFound()
+                        : ValueListenableBuilder<int>(
+                            valueListenable: MyCardsMeta.columns,
+                            builder: (context, columns, _) {
+                              // The gaps close as the cards shrink;
+                              // a fourteen-pixel gutter between five
+                              // columns is mostly gutter.
+                              final gap = columns <= 2
+                                  ? 14.0
+                                  : columns == 3
+                                  ? 10.0
+                                  : 7.0;
+                              return GridView.builder(
+                                padding: const EdgeInsets.fromLTRB(
+                                  16,
+                                  12,
+                                  16,
+                                  90,
+                                ),
+                                gridDelegate:
+                                    SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: columns,
+                                      mainAxisSpacing: gap,
+                                      crossAxisSpacing: gap,
+                                      childAspectRatio: 4 / 5,
+                                    ),
+                                itemCount: visible.length,
+                                itemBuilder: (context, i) => _tile(
+                                  visible[i],
+                                  selecting,
+                                  columns: columns,
+                                ),
+                              );
+                            },
                           ),
-                        ],
-                      ),
+                  ),
+                ],
+              ),
       ),
     );
   }
@@ -566,7 +627,7 @@ class _MyCardsScreenState extends State<MyCardsScreen> {
         final choices = MyCardsMeta.columnChoices;
         final next = choices[(choices.indexOf(columns) + 1) % choices.length];
         return IconButton(
-          tooltip: 'حجم العرض',
+          tooltip: t('crd.gridSizeTooltip'),
           icon: Icon(
             // Points the way it will go: more across means smaller cards.
             next > columns ? Icons.zoom_out_map : Icons.zoom_in_map,
@@ -580,7 +641,7 @@ class _MyCardsScreenState extends State<MyCardsScreen> {
 
   Widget _sortButton() {
     return PopupMenuButton<CardSort>(
-      tooltip: 'الترتيب',
+      tooltip: t('crd.sortTooltip'),
       icon: const Icon(Icons.sort, size: 21),
       color: AppColors.blackCard,
       position: PopupMenuPosition.under,
@@ -597,11 +658,13 @@ class _MyCardsScreenState extends State<MyCardsScreen> {
                 else
                   const SizedBox(width: 15),
                 const SizedBox(width: 8),
-                Text(s.label,
-                    style: TextStyle(
-                      color: s == _sort ? AppColors.gold : AppColors.textPrimary,
-                      fontSize: 13,
-                    )),
+                Text(
+                  s.label,
+                  style: TextStyle(
+                    color: s == _sort ? AppColors.gold : AppColors.textPrimary,
+                    fontSize: 13,
+                  ),
+                ),
               ],
             ),
           ),
@@ -619,15 +682,21 @@ class _MyCardsScreenState extends State<MyCardsScreen> {
         onChanged: (v) => setState(() => _query = v),
         decoration: InputDecoration(
           isDense: true,
-          hintText: 'ابحث في كروتك',
+          hintText: t('crd.searchCardsHint'),
           hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 13),
-          prefixIcon:
-              const Icon(Icons.search, color: AppColors.textMuted, size: 19),
+          prefixIcon: const Icon(
+            Icons.search,
+            color: AppColors.textMuted,
+            size: 19,
+          ),
           suffixIcon: _query.isEmpty
               ? null
               : IconButton(
-                  icon: const Icon(Icons.clear,
-                      color: AppColors.textMuted, size: 17),
+                  icon: const Icon(
+                    Icons.clear,
+                    color: AppColors.textMuted,
+                    size: 17,
+                  ),
                   onPressed: () {
                     _search.clear();
                     setState(() => _query = '');
@@ -654,10 +723,17 @@ class _MyCardsScreenState extends State<MyCardsScreen> {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         children: [
-          _chip('الكل', _group.isEmpty, () => setState(() => _group = '')),
+          _chip(
+            t('crd.allChip'),
+            _group.isEmpty,
+            () => setState(() => _group = ''),
+          ),
           for (final g in groups)
-            _chip(g, _group == g,
-                () => setState(() => _group = _group == g ? '' : g)),
+            _chip(
+              g,
+              _group == g,
+              () => setState(() => _group = _group == g ? '' : g),
+            ),
         ],
       ),
     );
@@ -675,28 +751,31 @@ class _MyCardsScreenState extends State<MyCardsScreen> {
             color: on ? AppColors.goldMuted : Colors.transparent,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-                color: on ? AppColors.gold : AppColors.goldBorder),
+              color: on ? AppColors.gold : AppColors.goldBorder,
+            ),
           ),
-          child: Text(label,
-              style: TextStyle(
-                color: on ? AppColors.gold : AppColors.textMuted,
-                fontSize: 12,
-                fontWeight: on ? FontWeight.bold : FontWeight.normal,
-              )),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: on ? AppColors.gold : AppColors.textMuted,
+              fontSize: 12,
+              fontWeight: on ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
         ),
       ),
     );
   }
 
-  Widget _nothingFound() => const Center(
-        child: Padding(
-          padding: EdgeInsets.all(28),
-          child: Text(
-            'لا بطاقة بهذا الاسم.',
-            style: TextStyle(color: AppColors.textMuted, fontSize: 14),
-          ),
-        ),
-      );
+  Widget _nothingFound() => Center(
+    child: Padding(
+      padding: const EdgeInsets.all(28),
+      child: Text(
+        t('crd.noCardFoundMessage'),
+        style: const TextStyle(color: AppColors.textMuted, fontSize: 14),
+      ),
+    ),
+  );
 
   Widget _empty() {
     return Center(
@@ -704,14 +783,17 @@ class _MyCardsScreenState extends State<MyCardsScreen> {
         padding: const EdgeInsets.all(28),
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          children: const [
-            Text('💌', style: TextStyle(fontSize: 40)),
-            SizedBox(height: 12),
+          children: [
+            const Text('💌', style: TextStyle(fontSize: 40)),
+            const SizedBox(height: 12),
             Text(
-              'أضف صورة من جوالك وستبقى هنا، جاهزة للإرسال في كل مناسبة.',
+              t('crd.emptyStateMessage'),
               textAlign: TextAlign.center,
-              style: TextStyle(
-                  color: AppColors.textSecondary, fontSize: 14, height: 1.7),
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 14,
+                height: 1.7,
+              ),
             ),
           ],
         ),
@@ -729,8 +811,7 @@ class _MyCardsScreenState extends State<MyCardsScreen> {
       // card can do. Nothing is destroyed by a tap either way.
       onTap: () {
         if (selecting) {
-          setState(() =>
-              chosen ? _picked.remove(name) : _picked.add(name));
+          setState(() => chosen ? _picked.remove(name) : _picked.add(name));
         } else {
           _actions(file);
         }
@@ -765,8 +846,9 @@ class _MyCardsScreenState extends State<MyCardsScreen> {
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                          color: AppColors.textGold,
-                          fontSize: columns >= 4 ? 8 : 11),
+                        color: AppColors.textGold,
+                        fontSize: columns >= 4 ? 8 : 11,
+                      ),
                     ),
                     // The group is the first thing to go: at five across there
                     // is room for a name or for nothing.
@@ -776,7 +858,9 @@ class _MyCardsScreenState extends State<MyCardsScreen> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                            color: AppColors.textMuted, fontSize: 9),
+                          color: AppColors.textMuted,
+                          fontSize: 9,
+                        ),
                       ),
                   ],
                 ),

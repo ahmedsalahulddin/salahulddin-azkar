@@ -5,6 +5,7 @@ import 'package:just_audio_background/just_audio_background.dart';
 import '../services/app_audio.dart';
 
 import '../constants/theme.dart';
+import '../l10n/strings.dart';
 import '../services/playback_speed.dart';
 
 /// A live Qur'an radio station.
@@ -97,15 +98,17 @@ class _RadioScreenState extends State<RadioScreen> {
     });
     try {
       await _player.stop();
-      await _player.setAudioSource(AudioSource.uri(
-        Uri.parse(station.url),
-        tag: MediaItem(
-          id: 'radio:${station.id}',
-          title: station.name,
-          artist: station.place,
-          album: 'الإذاعة',
+      await _player.setAudioSource(
+        AudioSource.uri(
+          Uri.parse(station.url),
+          tag: MediaItem(
+            id: 'radio:${station.id}',
+            title: station.name,
+            artist: station.place,
+            album: t('misc.radioAlbumLabel'),
+          ),
         ),
-      ));
+      );
       // A live stream has no timeline to compress; asking for anything but
       // normal speed only starves the buffer.
       await PlaybackSpeed.apply(live: true);
@@ -113,12 +116,16 @@ class _RadioScreenState extends State<RadioScreen> {
       if (mounted) setState(() => _playingId = station.id);
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('تعذّر الاتصال بـ${station.name}',
-              textAlign: TextAlign.right),
-          backgroundColor: AppColors.blackCard,
-          behavior: SnackBarBehavior.floating,
-        ));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              t('misc.radioConnectFailed').replaceAll('{name}', station.name),
+              textAlign: TextAlign.right,
+            ),
+            backgroundColor: AppColors.blackCard,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
       }
     } finally {
       if (mounted) setState(() => _loadingId = null);
@@ -132,17 +139,16 @@ class _RadioScreenState extends State<RadioScreen> {
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
-          title: const Text('الإذاعة'),
+          title: Text(t('misc.radioTitle')),
           backgroundColor: AppColors.black,
           foregroundColor: AppColors.gold,
         ),
         body: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            const Text(
-              'بث مباشر. يستمر التشغيل خارج التطبيق، وتجد أزرار التحكم في '
-              'شريط الإشعارات.',
-              style: TextStyle(color: AppColors.textMuted, fontSize: 12),
+            Text(
+              t('misc.radioLiveInfo'),
+              style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
             ),
             const SizedBox(height: 14),
             for (final station in RadioScreen.stations) ...[
@@ -168,7 +174,8 @@ class _RadioScreenState extends State<RadioScreen> {
           color: playing ? AppColors.goldMuted : AppColors.blackCard,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-              color: playing ? AppColors.gold : AppColors.goldBorder),
+            color: playing ? AppColors.gold : AppColors.goldBorder,
+          ),
         ),
         child: Row(
           children: [
@@ -184,7 +191,9 @@ class _RadioScreenState extends State<RadioScreen> {
                   ? const Padding(
                       padding: EdgeInsets.all(12),
                       child: CircularProgressIndicator(
-                          strokeWidth: 2, color: AppColors.gold),
+                        strokeWidth: 2,
+                        color: AppColors.gold,
+                      ),
                     )
                   : Icon(
                       playing ? Icons.stop_rounded : Icons.play_arrow_rounded,
@@ -197,17 +206,22 @@ class _RadioScreenState extends State<RadioScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(station.name,
-                      style: TextStyle(
-                          color: playing
-                              ? AppColors.gold
-                              : AppColors.textPrimary,
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold)),
+                  Text(
+                    station.name,
+                    style: TextStyle(
+                      color: playing ? AppColors.gold : AppColors.textPrimary,
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   const SizedBox(height: 2),
-                  Text(station.place,
-                      style: const TextStyle(
-                          color: AppColors.textMuted, fontSize: 11.5)),
+                  Text(
+                    station.place,
+                    style: const TextStyle(
+                      color: AppColors.textMuted,
+                      fontSize: 11.5,
+                    ),
+                  ),
                 ],
               ),
             ),

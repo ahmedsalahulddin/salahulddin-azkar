@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import '../constants/theme.dart';
+import '../l10n/strings.dart';
 import '../services/app_audio.dart';
 import '../services/playback_speed.dart';
 import '../data/hisn_data.dart';
@@ -91,14 +92,18 @@ class DhikrAudioController extends ChangeNotifier {
 
     try {
       await _player.stop();
-      await _player.setAudioSource(AudioSource.uri(
-        Uri.parse(url),
-        tag: MediaItem(
-          id: 'hisn:${dhikr.audioId}',
-          title: 'ذكر ${dhikr.number}',
-          album: 'الأذكار',
+      await _player.setAudioSource(
+        AudioSource.uri(
+          Uri.parse(url),
+          tag: MediaItem(
+            id: 'hisn:${dhikr.audioId}',
+            title: t(
+              'adh.mediaItemTitleNumberedTemplate',
+            ).replaceFirst('%s', '${dhikr.number}'),
+            album: t('adh.mediaItemAlbum'),
+          ),
         ),
-      ));
+      );
       await PlaybackSpeed.apply();
       await _player.play();
     } catch (_) {
@@ -178,7 +183,7 @@ class DhikrListenButton extends StatelessWidget {
                 ),
                 const SizedBox(width: 5),
                 Text(
-                  playing ? 'إيقاف' : 'استمع',
+                  playing ? t('adh.pauseLabel') : t('adh.listenLabel'),
                   style: TextStyle(
                     color: playing ? AppColors.gold : AppColors.textMuted,
                     fontSize: 11,

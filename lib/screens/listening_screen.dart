@@ -140,10 +140,13 @@ class _ListeningScreenState extends State<ListeningScreen> {
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
                 child: Row(
                   children: [
-                    const Expanded(
+                    Expanded(
                       child: Text(
-                        'اختر الجزء',
-                        style: TextStyle(color: AppColors.gold, fontSize: 15),
+                        t('qs.chooseJuz'),
+                        style: const TextStyle(
+                          color: AppColors.gold,
+                          fontSize: 15,
+                        ),
                       ),
                     ),
                     if (_juzFilter != null)
@@ -155,8 +158,8 @@ class _ListeningScreenState extends State<ListeningScreen> {
                             (_) => _followRecitation(animate: false),
                           );
                         },
-                        child: const Text(
-                          'الكل',
+                        child: Text(
+                          t('qs.allLabel'),
                           style: TextStyle(
                             color: AppColors.textMuted,
                             fontSize: 12,
@@ -243,11 +246,11 @@ class _ListeningScreenState extends State<ListeningScreen> {
           expand: false,
           builder: (_, sc) => Column(
             children: [
-              const Padding(
-                padding: EdgeInsets.fromLTRB(20, 16, 20, 8),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
                 child: Text(
-                  'اختر السورة',
-                  style: TextStyle(color: AppColors.gold, fontSize: 15),
+                  t('qs.chooseSurah'),
+                  style: const TextStyle(color: AppColors.gold, fontSize: 15),
                 ),
               ),
               Expanded(
@@ -312,7 +315,7 @@ class _ListeningScreenState extends State<ListeningScreen> {
                               ),
                             ),
                             Text(
-                              '${QuranService.toArabicDigits(info.ayahCount)} آية',
+                              '${QuranService.toArabicDigits(info.ayahCount)} ${t('qs.ayahUnit')}',
                               style: const TextStyle(
                                 color: AppColors.textMuted,
                                 fontSize: 10,
@@ -357,7 +360,7 @@ class _ListeningScreenState extends State<ListeningScreen> {
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
                 child: Text(
-                  'ابدأ من أي آية — ${info.name}',
+                  '${t('qs.startFromAnyAyah')} — ${info.name}',
                   style: const TextStyle(color: AppColors.gold, fontSize: 15),
                 ),
               ),
@@ -432,11 +435,11 @@ class _ListeningScreenState extends State<ListeningScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Padding(
-                padding: EdgeInsets.fromLTRB(20, 16, 20, 4),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
                 child: Text(
-                  'اختر القارئ',
-                  style: TextStyle(color: AppColors.gold, fontSize: 15),
+                  t('qs.chooseQari'),
+                  style: const TextStyle(color: AppColors.gold, fontSize: 15),
                 ),
               ),
               for (final r in RecitationService.reciters)
@@ -479,7 +482,7 @@ class _ListeningScreenState extends State<ListeningScreen> {
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
-          title: const Text('الاستماع الدائم'),
+          title: Text(t('qs.continuousListeningTitle')),
           backgroundColor: AppColors.black,
           foregroundColor: AppColors.gold,
           actions: const [SpeedButton(showLabel: false)],
@@ -508,23 +511,23 @@ class _ListeningScreenState extends State<ListeningScreen> {
           children: [
             _chip(
               label: _juzFilter == null
-                  ? 'الجزء'
-                  : 'جزء ${QuranService.toArabicDigits(_juzFilter!)}',
+                  ? t('qs.juzLabel')
+                  : '${t('qs.juzPrefix')} ${QuranService.toArabicDigits(_juzFilter!)}',
               icon: Icons.filter_list,
               active: _juzFilter != null,
               onTap: _pickJuz,
             ),
             const SizedBox(width: 6),
             _chip(
-              label: 'السورة',
+              label: t('qs.surahLabel'),
               icon: Icons.menu_book_outlined,
               onTap: _pickSurah,
             ),
             const SizedBox(width: 6),
             _chip(
               label: _startAyah == 1
-                  ? 'الآية'
-                  : 'من ${QuranService.toArabicDigits(_startAyah)}',
+                  ? t('qs.ayahWord')
+                  : '${t('qs.fromLabel')} ${QuranService.toArabicDigits(_startAyah)}',
               icon: Icons.format_list_numbered,
               active: _startAyah != 1,
               onTap: _pickAyah,
@@ -639,8 +642,8 @@ class _ListeningScreenState extends State<ListeningScreen> {
                     final total =
                         ContinuousListening.infoFor(number)?.ayahCount ?? 0;
                     return Text(
-                      'الآية ${QuranService.toArabicDigits(ayah)}'
-                      ' من ${QuranService.toArabicDigits(total)}',
+                      '${t('qs.ayahWord')} ${QuranService.toArabicDigits(ayah)}'
+                      ' ${t('qs.ofLabel')} ${QuranService.toArabicDigits(total)}',
                       style: const TextStyle(
                         color: AppColors.textMuted,
                         fontSize: 12,
@@ -754,7 +757,7 @@ class _ListeningScreenState extends State<ListeningScreen> {
         if (visible.isEmpty) {
           return Center(
             child: Text(
-              'لا توجد سور في هذا الجزء',
+              t('qs.noSurahsInJuz'),
               style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
             ),
           );
@@ -807,7 +810,7 @@ class _ListeningScreenState extends State<ListeningScreen> {
                       ),
                     ),
                     Text(
-                      '${QuranService.toArabicDigits(info.ayahCount)} آية',
+                      '${QuranService.toArabicDigits(info.ayahCount)} ${t('qs.ayahUnit')}',
                       style: const TextStyle(
                         color: AppColors.textMuted,
                         fontSize: 11,

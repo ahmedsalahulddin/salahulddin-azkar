@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../constants/theme.dart';
+import '../l10n/strings.dart';
 import '../services/prayer_service.dart';
 import '../services/prayer_settings.dart';
 import 'rotating_verse.dart';
@@ -95,12 +96,12 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> {
         textDirection: TextDirection.rtl,
         child: AlertDialog(
           backgroundColor: AppColors.blackCard,
-          title: const Text(
-            'تحديد الموقع',
-            style: TextStyle(color: AppColors.gold, fontSize: 17),
+          title: Text(
+            t('adh.locationDialogTitle'),
+            style: const TextStyle(color: AppColors.gold, fontSize: 17),
           ),
           content: Text(
-            '${status.explanation}.\nافتح الإعدادات لتفعيله، ثم ارجع واضغط على علامة الموقع.',
+            '${status.explanation}.\n${t('adh.openSettingsInstructions')}',
             style: const TextStyle(
               color: AppColors.textSecondary,
               fontSize: 14,
@@ -110,16 +111,16 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text(
-                'لاحقاً',
-                style: TextStyle(color: AppColors.textMuted),
+              child: Text(
+                t('adh.laterButton'),
+                style: const TextStyle(color: AppColors.textMuted),
               ),
             ),
             TextButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: const Text(
-                'فتح الإعدادات',
-                style: TextStyle(color: AppColors.gold),
+              child: Text(
+                t('adh.openSettingsButton'),
+                style: const TextStyle(color: AppColors.gold),
               ),
             ),
           ],
@@ -153,7 +154,9 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> {
         height: 200,
         child: Center(
           child: Text(
-            _failed ? 'تعذّر حساب أوقات الصلاة' : 'جاري حساب أوقات الصلاة…',
+            _failed
+                ? t('adh.prayerCalcFailedMsg')
+                : t('adh.prayerCalcLoadingMsg'),
             style: const TextStyle(color: AppColors.textMuted, fontSize: 14),
           ),
         ),
@@ -275,10 +278,12 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> {
             Flexible(
               child: Text(
                 _locating
-                    ? 'جاري تحديد موقعك…'
+                    ? t('adh.locatingMessage')
                     : mine
                     ? status.label
-                    : '${status.label} · حدّد موقعك',
+                    : t(
+                        'adh.locationHintTemplate',
+                      ).replaceFirst('%s', status.label),
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   color: _locating ? AppColors.textGold : tint,

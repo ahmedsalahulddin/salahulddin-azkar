@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import '../constants/theme.dart';
+import '../l10n/strings.dart';
 import '../services/app_audio.dart';
 import '../services/playback_speed.dart';
 import '../data/adhkar_data.dart';
@@ -72,7 +73,11 @@ class _AdhkarCardState extends State<AdhkarCard> {
         await player.setAudioSource(
           AudioSource.uri(
             Uri.parse(url),
-            tag: MediaItem(id: _tagId, title: 'ذكر', album: 'الأذكار'),
+            tag: MediaItem(
+              id: _tagId,
+              title: t('adh.mediaItemTitle'),
+              album: t('adh.mediaItemAlbum'),
+            ),
           ),
         );
       }
@@ -239,9 +244,9 @@ class _AdhkarCardState extends State<AdhkarCard> {
                                           color: AppColors.goldBorder,
                                         ),
                                       ),
-                                      child: const Text(
-                                        'عداد التسبيح',
-                                        style: TextStyle(
+                                      child: Text(
+                                        t('adh.tasbihCounterTitle'),
+                                        style: const TextStyle(
                                           color: AppColors.gold,
                                           fontSize: 13,
                                           fontWeight: FontWeight.bold,

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/theme.dart';
 import '../data/adhkar_data.dart';
+import '../l10n/strings.dart';
 import '../widgets/adhkar_card.dart';
 import '../widgets/dhikr_text.dart';
 import '../widgets/tasbih_counter.dart';
@@ -92,9 +93,9 @@ class _DeceasedScreenState extends State<DeceasedScreen> {
             borderRadius: BorderRadius.circular(16),
             side: const BorderSide(color: AppColors.goldBorder),
           ),
-          title: const Text(
-            'إضافة متوفى',
-            style: TextStyle(
+          title: Text(
+            t('misc.addDeceasedTitle'),
+            style: const TextStyle(
               color: AppColors.gold,
               fontWeight: FontWeight.bold,
             ),
@@ -107,7 +108,7 @@ class _DeceasedScreenState extends State<DeceasedScreen> {
                 textAlign: TextAlign.right,
                 style: const TextStyle(color: AppColors.textPrimary),
                 decoration: InputDecoration(
-                  hintText: 'اسم المتوفى',
+                  hintText: t('misc.deceasedNameHint'),
                   hintStyle: const TextStyle(color: AppColors.textMuted),
                   filled: true,
                   fillColor: AppColors.blackSurface,
@@ -127,7 +128,7 @@ class _DeceasedScreenState extends State<DeceasedScreen> {
                 textAlign: TextAlign.right,
                 style: const TextStyle(color: AppColors.textPrimary),
                 decoration: InputDecoration(
-                  hintText: 'صلة القرابة (اختياري)',
+                  hintText: t('misc.relationHintOptional'),
                   hintStyle: const TextStyle(color: AppColors.textMuted),
                   filled: true,
                   fillColor: AppColors.blackSurface,
@@ -146,9 +147,9 @@ class _DeceasedScreenState extends State<DeceasedScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text(
-                'إلغاء',
-                style: TextStyle(color: AppColors.textMuted),
+              child: Text(
+                t('misc.cancel'),
+                style: const TextStyle(color: AppColors.textMuted),
               ),
             ),
             ElevatedButton(
@@ -176,9 +177,9 @@ class _DeceasedScreenState extends State<DeceasedScreen> {
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
-              child: const Text(
-                'إضافة',
-                style: TextStyle(color: AppColors.white),
+              child: Text(
+                t('misc.add'),
+                style: const TextStyle(color: AppColors.white),
               ),
             ),
           ],
@@ -198,17 +199,20 @@ class _DeceasedScreenState extends State<DeceasedScreen> {
             borderRadius: BorderRadius.circular(16),
             side: const BorderSide(color: AppColors.goldBorder),
           ),
-          title: const Text('حذف', style: TextStyle(color: AppColors.gold)),
+          title: Text(
+            t('misc.delete'),
+            style: const TextStyle(color: AppColors.gold),
+          ),
           content: Text(
-            'هل تريد حذف "${person.name}" من القائمة؟',
+            t('misc.deleteConfirmMessage').replaceAll('{name}', person.name),
             style: const TextStyle(color: AppColors.textPrimary),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text(
-                'إلغاء',
-                style: TextStyle(color: AppColors.textMuted),
+              child: Text(
+                t('misc.cancel'),
+                style: const TextStyle(color: AppColors.textMuted),
               ),
             ),
             ElevatedButton(
@@ -218,9 +222,9 @@ class _DeceasedScreenState extends State<DeceasedScreen> {
                 Navigator.pop(ctx);
               },
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
-              child: const Text(
-                'حذف',
-                style: TextStyle(color: AppColors.white),
+              child: Text(
+                t('misc.delete'),
+                style: const TextStyle(color: AppColors.white),
               ),
             ),
           ],
@@ -240,7 +244,7 @@ class _DeceasedScreenState extends State<DeceasedScreen> {
         appBar: AppBar(
           backgroundColor: AppColors.black,
           foregroundColor: AppColors.gold,
-          title: const Text('الوفيات'),
+          title: Text(t('misc.deceasedTitle')),
           centerTitle: true,
           actions: const [DhikrLangButton()],
         ),
@@ -262,10 +266,10 @@ class _DeceasedScreenState extends State<DeceasedScreen> {
                     bottom: BorderSide(color: AppColors.goldBorder),
                   ),
                 ),
-                child: const Text(
-                  'ادعُ لهم بالرحمة والمغفرة',
+                child: Text(
+                  t('misc.deceasedPrayerHeader'),
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 13,
                   ),
@@ -274,11 +278,11 @@ class _DeceasedScreenState extends State<DeceasedScreen> {
 
               // Persons list
               if (_persons.isNotEmpty) ...[
-                const Padding(
-                  padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                   child: Text(
-                    'قائمة المتوفين',
-                    style: TextStyle(
+                    t('misc.deceasedListTitle'),
+                    style: const TextStyle(
                       color: AppColors.textGold,
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -346,17 +350,17 @@ class _DeceasedScreenState extends State<DeceasedScreen> {
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: AppColors.goldBorder),
                   ),
-                  child: const Column(
+                  child: Column(
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.person_add_alt_1,
                         color: AppColors.textMuted,
                         size: 40,
                       ),
-                      SizedBox(height: 12),
+                      const SizedBox(height: 12),
                       Text(
-                        'اضغط + لإضافة أسماء من تودّ الدعاء لهم',
-                        style: TextStyle(
+                        t('misc.deceasedEmptyState'),
+                        style: const TextStyle(
                           color: AppColors.textMuted,
                           fontSize: 14,
                         ),
@@ -368,11 +372,11 @@ class _DeceasedScreenState extends State<DeceasedScreen> {
               ],
 
               // Duas section
-              const Padding(
-                padding: EdgeInsets.fromLTRB(16, 20, 16, 8),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
                 child: Text(
-                  'أدعية للمتوفى',
-                  style: TextStyle(
+                  t('misc.deceasedDuasTitle'),
+                  style: const TextStyle(
                     color: AppColors.textGold,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

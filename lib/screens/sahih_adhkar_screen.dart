@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/theme.dart';
 import '../data/hisn_data.dart';
+import '../l10n/strings.dart';
 import '../widgets/bilingual_text.dart';
 import 'hisn_chapter_screen.dart';
 
@@ -44,8 +45,9 @@ class _SahihAdhkarScreenState extends State<SahihAdhkarScreen> {
     if (q.isEmpty) return _all;
     // Match the chapter title or the text of any dhikr inside it.
     return _all
-        .where((c) =>
-            c.title.contains(q) || c.items.any((d) => d.text.contains(q)))
+        .where(
+          (c) => c.title.contains(q) || c.items.any((d) => d.text.contains(q)),
+        )
         .toList();
   }
 
@@ -64,7 +66,8 @@ class _SahihAdhkarScreenState extends State<SahihAdhkarScreen> {
         ),
         body: _loading
             ? const Center(
-                child: CircularProgressIndicator(color: AppColors.gold))
+                child: CircularProgressIndicator(color: AppColors.gold),
+              )
             : Column(
                 children: [
                   Padding(
@@ -75,29 +78,37 @@ class _SahihAdhkarScreenState extends State<SahihAdhkarScreen> {
                       textAlign: TextAlign.right,
                       style: const TextStyle(color: AppColors.textPrimary),
                       decoration: InputDecoration(
-                        hintText: 'ابحث في الأبواب والأذكار…',
+                        hintText: t('adh.sahihSearchHint'),
                         hintStyle: const TextStyle(
-                            color: AppColors.textMuted, fontSize: 14),
+                          color: AppColors.textMuted,
+                          fontSize: 14,
+                        ),
                         filled: true,
                         fillColor: AppColors.blackSurface,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide:
-                              const BorderSide(color: AppColors.goldBorder),
+                          borderSide: const BorderSide(
+                            color: AppColors.goldBorder,
+                          ),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide:
-                              const BorderSide(color: AppColors.goldBorder),
+                          borderSide: const BorderSide(
+                            color: AppColors.goldBorder,
+                          ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: const BorderSide(color: AppColors.gold),
                         ),
                         contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 10),
-                        suffixIcon:
-                            const Icon(Icons.search, color: AppColors.textMuted),
+                          horizontal: 14,
+                          vertical: 10,
+                        ),
+                        suffixIcon: const Icon(
+                          Icons.search,
+                          color: AppColors.textMuted,
+                        ),
                       ),
                     ),
                   ),
@@ -107,20 +118,26 @@ class _SahihAdhkarScreenState extends State<SahihAdhkarScreen> {
                       children: [
                         Text(
                           _search.isEmpty
-                              ? '${_all.length} باباً'
-                              : '${filtered.length} نتيجة',
+                              ? '${_all.length} ${t('adh.chapterCountSuffix')}'
+                              : '${filtered.length} ${t('adh.resultCountSuffix')}',
                           style: const TextStyle(
-                              color: AppColors.textMuted, fontSize: 12),
+                            color: AppColors.textMuted,
+                            fontSize: 12,
+                          ),
                         ),
                       ],
                     ),
                   ),
                   Expanded(
                     child: filtered.isEmpty
-                        ? const Center(
-                            child: Text('لا توجد نتائج',
-                                style: TextStyle(
-                                    color: AppColors.textMuted, fontSize: 16)),
+                        ? Center(
+                            child: Text(
+                              t('adh.noResultsMessage'),
+                              style: const TextStyle(
+                                color: AppColors.textMuted,
+                                fontSize: 16,
+                              ),
+                            ),
                           )
                         : ListView.builder(
                             padding: const EdgeInsets.fromLTRB(12, 8, 12, 20),
@@ -133,8 +150,9 @@ class _SahihAdhkarScreenState extends State<SahihAdhkarScreen> {
                                     HisnService.attribution,
                                     textAlign: TextAlign.center,
                                     style: const TextStyle(
-                                        color: AppColors.textMuted,
-                                        fontSize: 11),
+                                      color: AppColors.textMuted,
+                                      fontSize: 11,
+                                    ),
                                   ),
                                 );
                               }
@@ -168,24 +186,34 @@ class _SahihAdhkarScreenState extends State<SahihAdhkarScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  BilingualText(c.displayTitle,
-                      textAlign: TextAlign.right,
-                      maxLines: 2,
-                      style: const TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600)),
+                  BilingualText(
+                    c.displayTitle,
+                    textAlign: TextAlign.right,
+                    maxLines: 2,
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                   const SizedBox(height: 3),
                   Text(
-                    c.items.length == 1 ? 'ذكر واحد' : '${c.items.length} أذكار',
+                    c.items.length == 1
+                        ? t('adh.singleDhikrLabel')
+                        : '${c.items.length} ${t('adh.dhikrPluralSuffix')}',
                     style: const TextStyle(
-                        color: AppColors.textMuted, fontSize: 11),
+                      color: AppColors.textMuted,
+                      fontSize: 11,
+                    ),
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_left,
-                color: AppColors.textMuted, size: 20),
+            const Icon(
+              Icons.chevron_left,
+              color: AppColors.textMuted,
+              size: 20,
+            ),
           ],
         ),
       ),

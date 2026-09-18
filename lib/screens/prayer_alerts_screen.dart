@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../constants/theme.dart';
 import '../data/adhans.dart';
 import '../data/quran_data.dart';
+import '../l10n/strings.dart';
 import '../services/adhan_downloads.dart';
 import '../services/notification_service.dart';
 import '../services/prayer_alerts.dart';
@@ -26,7 +27,7 @@ class _PrayerAlertsScreenState extends State<PrayerAlertsScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          sent ? 'يصلك صوت الأذان الآن.' : 'تعذّر إرسال التنبيه.',
+          sent ? t('adh.adhanTestSentMsg') : t('adh.adhanTestFailedMsg'),
           textDirection: TextDirection.rtl,
         ),
         duration: const Duration(seconds: 3),
@@ -41,7 +42,7 @@ class _PrayerAlertsScreenState extends State<PrayerAlertsScreen> {
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
-          title: const Text('مواقيت الصلاة'),
+          title: Text(t('adh.prayerAlertsScreenTitle')),
           backgroundColor: AppColors.black,
           foregroundColor: AppColors.gold,
         ),
@@ -67,10 +68,10 @@ class _PrayerAlertsScreenState extends State<PrayerAlertsScreen> {
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(color: AppColors.goldBorder),
                   ),
-                  child: const Text(
-                    'جرّب صوت الأذان',
+                  child: Text(
+                    t('adh.tryAdhanSoundButton'),
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: AppColors.gold,
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
@@ -79,10 +80,10 @@ class _PrayerAlertsScreenState extends State<PrayerAlertsScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
-                'التنبيهات تُضبط على مواقيت يومك وتُجدَّد كل يوم.',
+              Text(
+                t('adh.alertsAutoUpdateNote'),
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   color: AppColors.textMuted,
                   fontSize: 11,
                   height: 1.7,
@@ -117,13 +118,13 @@ class _PrayerAlertsScreenState extends State<PrayerAlertsScreen> {
             ),
           ),
           const SizedBox(height: 4),
-          const Text(
-            'اضغط العنوان لضبط الخمس صلوات معاً',
-            style: TextStyle(color: AppColors.textMuted, fontSize: 10.5),
+          Text(
+            t('adh.tapHeadingHint'),
+            style: const TextStyle(color: AppColors.textMuted, fontSize: 10.5),
           ),
           const SizedBox(height: 10),
           _row(
-            label: 'الكل',
+            label: t('adh.allLabel'),
             mode: _commonMode(when),
             onNotify: (v) =>
                 PrayerAlerts.setAll(when, _commonMode(when).withNotify(v)),
@@ -185,9 +186,13 @@ class _PrayerAlertsScreenState extends State<PrayerAlertsScreen> {
             ),
           ),
         ),
-        Expanded(child: _toggle('📳 إشعار', mode.notify, onNotify)),
+        Expanded(
+          child: _toggle(t('adh.notifyToggleLabel'), mode.notify, onNotify),
+        ),
         const SizedBox(width: 6),
-        Expanded(child: _toggle('🔔 صوت', mode.sound, onSound)),
+        Expanded(
+          child: _toggle(t('adh.soundToggleLabel'), mode.sound, onSound),
+        ),
       ],
     );
   }
@@ -232,7 +237,9 @@ class _PrayerAlertsScreenState extends State<PrayerAlertsScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'يأتي قبل الأذان بـ ${QuranService.toArabicDigits(lead)} دقيقة',
+              t(
+                'adh.leadTimeTemplate',
+              ).replaceFirst('%s', QuranService.toArabicDigits(lead)),
               style: const TextStyle(
                 color: AppColors.textSecondary,
                 fontSize: 13,
@@ -306,20 +313,18 @@ class _PrayerAlertsScreenState extends State<PrayerAlertsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text(
-                  'الأذان',
-                  style: TextStyle(
+                Text(
+                  t('adh.adhanSectionTitle'),
+                  style: const TextStyle(
                     color: AppColors.gold,
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 2),
-                const Text(
-                  'المُرفقان يعملان في التنبيه. الباقي يُنزَّل للاستماع داخل '
-                  'التطبيق — أندرويد يقرأ صوت التنبيه من داخل التطبيق ولا '
-                  'يجلبه من التنزيلات.',
-                  style: TextStyle(
+                Text(
+                  t('adh.adhanBundledNote'),
+                  style: const TextStyle(
                     color: AppColors.textMuted,
                     fontSize: 10.5,
                     height: 1.6,
@@ -343,9 +348,7 @@ class _PrayerAlertsScreenState extends State<PrayerAlertsScreen> {
       ..showSnackBar(
         SnackBar(
           content: Text(
-            '${adhan.name} للاستماع داخل التطبيق فقط. '
-            'أصوات التنبيه يقرأها النظام من داخل التطبيق نفسه، '
-            'فاختر أذان مكة أو المدينة.',
+            t('adh.adhanListenOnlyTemplate').replaceFirst('%s', adhan.name),
             textAlign: TextAlign.right,
           ),
           backgroundColor: AppColors.blackCard,
@@ -416,7 +419,7 @@ class _PrayerAlertsScreenState extends State<PrayerAlertsScreen> {
                       adhan.isBundled
                           ? adhan.place
                           : here
-                          ? 'على جهازك — للاستماع'
+                          ? t('adh.onDeviceListenOnly')
                           : adhan.place,
                       style: const TextStyle(
                         color: AppColors.textMuted,
@@ -450,7 +453,9 @@ class _PrayerAlertsScreenState extends State<PrayerAlertsScreen> {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
                                       content: Text(
-                                        'تعذّر تنزيل ${adhan.name}',
+                                        t(
+                                          'adh.downloadFailedTemplate',
+                                        ).replaceFirst('%s', adhan.name),
                                         textAlign: TextAlign.right,
                                       ),
                                       backgroundColor: AppColors.blackCard,
@@ -460,7 +465,9 @@ class _PrayerAlertsScreenState extends State<PrayerAlertsScreen> {
                                 }
                               },
                         child: Text(
-                          here ? 'حذف' : 'تنزيل',
+                          here
+                              ? t('adh.deleteButtonLabel')
+                              : t('adh.downloadButtonLabel'),
                           style: TextStyle(
                             color: here ? AppColors.textMuted : AppColors.gold,
                             fontSize: 12,

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_compass/flutter_compass.dart';
 
 import '../constants/theme.dart';
+import '../l10n/strings.dart';
 import '../services/prayer_service.dart';
 
 /// Points to the Kaaba using the device's magnetometer and the reader's
@@ -75,7 +76,7 @@ class _QiblaScreenState extends State<QiblaScreen> {
         appBar: AppBar(
           backgroundColor: AppColors.black,
           foregroundColor: AppColors.gold,
-          title: const Text('اتجاه القبلة'),
+          title: Text(t('adh.qiblaScreenTitle')),
         ),
         body: status == null
             ? const Center(
@@ -113,8 +114,8 @@ class _QiblaScreenState extends State<QiblaScreen> {
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold),
               child: Text(
                 status == LocationStatus.denied
-                    ? 'السماح بالموقع'
-                    : 'فتح الإعدادات',
+                    ? t('adh.allowLocationButton')
+                    : t('adh.openSettingsButton'),
                 style: const TextStyle(color: AppColors.black),
               ),
             ),
@@ -138,9 +139,9 @@ class _QiblaScreenState extends State<QiblaScreen> {
               if (!_compassTimedOut) ...[
                 const CircularProgressIndicator(color: AppColors.gold),
                 const SizedBox(height: 16),
-                const Text(
-                  'جارٍ قراءة البوصلة…',
-                  style: TextStyle(color: AppColors.textSecondary),
+                Text(
+                  t('adh.compassLoadingText'),
+                  style: const TextStyle(color: AppColors.textSecondary),
                 ),
               ] else ...[
                 const Icon(
@@ -149,11 +150,10 @@ class _QiblaScreenState extends State<QiblaScreen> {
                   color: AppColors.textMuted,
                 ),
                 const SizedBox(height: 16),
-                const Text(
-                  'تعذّر الوصول لبوصلة الجهاز.\nقد لا يدعم جهازك هذه الميزة، '
-                  'أو تحتاج لتجربتها على جهاز حقيقي بدل المحاكي.',
+                Text(
+                  t('adh.compassUnavailableMessage'),
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 13,
                     height: 1.6,
@@ -186,9 +186,7 @@ class _QiblaScreenState extends State<QiblaScreen> {
             ),
           ),
           child: Text(
-            aligned
-                ? 'أنت متّجه نحو القبلة الآن'
-                : 'وجّه أعلى الجهاز نحو السهم',
+            aligned ? t('adh.facingQiblaMessage') : t('adh.pointDeviceMessage'),
             textAlign: TextAlign.center,
             style: TextStyle(
               color: aligned ? AppColors.emeraldLight : AppColors.textSecondary,
@@ -221,7 +219,12 @@ class _QiblaScreenState extends State<QiblaScreen> {
                         child: Padding(
                           padding: const EdgeInsets.only(top: 10),
                           child: Text(
-                            const {0: 'ش', 90: 'ق', 180: 'ج', 270: 'غ'}[deg]!,
+                            {
+                              0: t('adh.compassNorth'),
+                              90: t('adh.compassEast'),
+                              180: t('adh.compassSouth'),
+                              270: t('adh.compassWest'),
+                            }[deg]!,
                             style: const TextStyle(
                               color: AppColors.textMuted,
                               fontSize: 13,
@@ -272,7 +275,11 @@ class _QiblaScreenState extends State<QiblaScreen> {
         Padding(
           padding: const EdgeInsets.only(bottom: 28),
           child: Text(
-            qibla == null ? '' : 'القبلة: ${qibla.round()}° من الشمال',
+            qibla == null
+                ? ''
+                : t(
+                    'adh.qiblaDegreeTemplate',
+                  ).replaceFirst('%s', '${qibla.round()}'),
             style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
           ),
         ),

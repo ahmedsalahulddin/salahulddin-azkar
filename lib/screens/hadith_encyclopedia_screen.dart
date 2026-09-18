@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/theme.dart';
 import '../data/hadith_encyclopedia_data.dart';
+import '../l10n/strings.dart';
 import 'hadith_encyclopedia_list_screen.dart';
 
 /// Browses hadeethenc.com's topic tree — 7 top-level subjects fanning out
@@ -9,13 +10,13 @@ import 'hadith_encyclopedia_list_screen.dart';
 /// hadith list.
 class HadithEncyclopediaScreen extends StatefulWidget {
   final String? parentId;
-  final String title;
+  final String? title;
   final String lang;
 
   const HadithEncyclopediaScreen({
     super.key,
     this.parentId,
-    this.title = 'موسوعة الحديث',
+    this.title,
     this.lang = 'en',
   });
 
@@ -47,7 +48,7 @@ class _HadithEncyclopediaScreenState extends State<HadithEncyclopediaScreen> {
       setState(() => _all = all);
     } catch (_) {
       if (!mounted) return;
-      setState(() => _error = 'تعذّر تحميل الأقسام — تحقّق من الاتصال');
+      setState(() => _error = t('lib2.failedToLoadSectionsMessage'));
     }
   }
 
@@ -64,11 +65,11 @@ class _HadithEncyclopediaScreenState extends State<HadithEncyclopediaScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Padding(
-                padding: EdgeInsets.fromLTRB(20, 16, 20, 4),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
                 child: Text(
-                  'لغة الترجمة',
-                  style: TextStyle(color: AppColors.gold, fontSize: 15),
+                  t('lib2.translationLanguageLabel'),
+                  style: const TextStyle(color: AppColors.gold, fontSize: 15),
                 ),
               ),
               for (final l in HadithEncyclopediaService.supportedLanguages)
@@ -137,7 +138,7 @@ class _HadithEncyclopediaScreenState extends State<HadithEncyclopediaScreen> {
           backgroundColor: AppColors.black,
           foregroundColor: AppColors.gold,
           title: Text(
-            widget.title,
+            widget.title ?? t('lib2.hadithEncyclopediaTitle'),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
@@ -170,9 +171,9 @@ class _HadithEncyclopediaScreenState extends State<HadithEncyclopediaScreen> {
                       const SizedBox(height: 12),
                       TextButton(
                         onPressed: _load,
-                        child: const Text(
-                          'إعادة المحاولة',
-                          style: TextStyle(color: AppColors.gold),
+                        child: Text(
+                          t('lib2.retryButton'),
+                          style: const TextStyle(color: AppColors.gold),
                         ),
                       ),
                     ],
@@ -191,10 +192,10 @@ class _HadithEncyclopediaScreenState extends State<HadithEncyclopediaScreen> {
   Widget _list(List<HadeethCategory> all) {
     final items = HadithEncyclopediaService.childrenOf(all, widget.parentId);
     if (items.isEmpty) {
-      return const Center(
+      return Center(
         child: Text(
-          'لا توجد أقسام هنا',
-          style: TextStyle(color: AppColors.textMuted),
+          t('lib2.noSectionsHereMessage'),
+          style: const TextStyle(color: AppColors.textMuted),
         ),
       );
     }
@@ -220,7 +221,7 @@ class _HadithEncyclopediaScreenState extends State<HadithEncyclopediaScreen> {
               ),
             ),
             subtitle: Text(
-              '${c.hadeethsCount} حديث',
+              '${c.hadeethsCount} ${t('lib2.hadithUnit')}',
               style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
             ),
             trailing: const Icon(

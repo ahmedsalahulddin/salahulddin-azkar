@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../constants/theme.dart';
 import '../data/adhkar_data.dart';
 import '../data/quran_data.dart' show QuranService;
+import '../l10n/strings.dart';
 import '../services/favourites.dart';
 import '../services/storage_service.dart';
 import '../widgets/adhkar_card.dart';
@@ -70,14 +71,14 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: AppColors.goldBorder),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.play_arrow, color: AppColors.gold, size: 18),
-                  SizedBox(width: 6),
+                  const Icon(Icons.play_arrow, color: AppColors.gold, size: 18),
+                  const SizedBox(width: 6),
                   Text(
-                    'اقرأ الكل',
-                    style: TextStyle(
+                    t('misc.readAll'),
+                    style: const TextStyle(
                       color: AppColors.gold,
                       fontSize: 13,
                       fontWeight: FontWeight.bold,
@@ -99,11 +100,15 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                 size: 24,
               ),
               onPressed: Tts.stop,
-              tooltip: 'إيقاف',
+              tooltip: t('misc.stop'),
             ),
             Text(
-              'يقرأ ${QuranService.toArabicDigits(at + 1)}'
-              ' من ${QuranService.toArabicDigits(_favorites.length)}',
+              t('misc.readingProgress')
+                  .replaceAll('{current}', QuranService.toArabicDigits(at + 1))
+                  .replaceAll(
+                    '{total}',
+                    QuranService.toArabicDigits(_favorites.length),
+                  ),
               style: const TextStyle(color: AppColors.textGold, fontSize: 12),
             ),
             IconButton(
@@ -113,7 +118,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                 size: 22,
               ),
               onPressed: Tts.skip,
-              tooltip: 'التالي',
+              tooltip: t('misc.next'),
             ),
           ],
         );
@@ -222,9 +227,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                   children: [
                     const Text('⭐', style: TextStyle(fontSize: 32)),
                     const SizedBox(height: 4),
-                    const Text(
-                      'أذكاري',
-                      style: TextStyle(
+                    Text(
+                      t('misc.myAdhkarTitle'),
+                      style: const TextStyle(
                         color: AppColors.gold,
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -232,7 +237,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${_favorites.length} أذكار محفوظة',
+                      t(
+                        'misc.savedAdhkarCount',
+                      ).replaceAll('{count}', '${_favorites.length}'),
                       style: const TextStyle(
                         color: AppColors.textMuted,
                         fontSize: 13,
@@ -254,29 +261,31 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                     ? Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Text(
+                          children: [
+                            const Text(
                               '☆',
                               style: TextStyle(
                                 fontSize: 64,
                                 color: AppColors.textMuted,
                               ),
                             ),
-                            SizedBox(height: 16),
+                            const SizedBox(height: 16),
                             Text(
-                              'لا توجد أذكار محفوظة',
-                              style: TextStyle(
+                              t('misc.noSavedAdhkar'),
+                              style: const TextStyle(
                                 color: AppColors.textSecondary,
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            SizedBox(height: 8),
+                            const SizedBox(height: 8),
                             Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 40),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 40,
+                              ),
                               child: Text(
-                                'اضغط على النجمة ★ في أي ذكر لإضافته إلى المفضلة',
-                                style: TextStyle(
+                                t('misc.favoritesEmptyHint'),
+                                style: const TextStyle(
                                   color: AppColors.textMuted,
                                   fontSize: 14,
                                   height: 1.6,

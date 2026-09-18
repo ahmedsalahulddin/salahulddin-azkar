@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/theme.dart';
 import '../data/tafsir_data.dart';
+import '../l10n/strings.dart';
 import 'translation_panel.dart';
 
 const _mushafFont = 'AmiriQuran';
@@ -88,8 +89,10 @@ class _TafsirSheetState extends State<TafsirSheet> {
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('تعذّر تنزيل $failed سورة — أعد المحاولة لإكمالها',
-              textDirection: TextDirection.rtl),
+          content: Text(
+            t('mushaf.downloadSurahsFailed').replaceFirst('%s', '$failed'),
+            textDirection: TextDirection.rtl,
+          ),
           backgroundColor: AppColors.error,
         ),
       );
@@ -106,64 +109,71 @@ class _TafsirSheetState extends State<TafsirSheet> {
       builder: (context, scrollController) => DefaultTabController(
         length: 2,
         child: Column(
-        children: [
-          Container(
-            width: 40,
-            height: 4,
-            margin: const EdgeInsets.symmetric(vertical: 10),
-            decoration: BoxDecoration(
-              color: AppColors.textMuted,
-              borderRadius: BorderRadius.circular(2),
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.symmetric(vertical: 10),
+              decoration: BoxDecoration(
+                color: AppColors.textMuted,
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
-          ),
-          Text(widget.reference,
+            Text(
+              widget.reference,
               style: const TextStyle(
-                  color: AppColors.gold,
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold)),
-          const SizedBox(height: 6),
-          const TabBar(
-            labelColor: AppColors.gold,
-            unselectedLabelColor: AppColors.textMuted,
-            indicatorColor: AppColors.gold,
-            labelStyle: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-            tabs: [
-              Tab(height: 34, text: 'التفسير'),
-              Tab(height: 34, text: 'التراجم والمعاني'),
-            ],
-          ),
-          Expanded(
-            child: TabBarView(
-              children: [
-                // Tafsir
-                ListView(
-                  controller: scrollController,
-                  padding: const EdgeInsets.fromLTRB(18, 12, 18, 26),
-                  children: [
-                    _ayahCard(),
-                    const SizedBox(height: 14),
-                    _editionPicker(),
-                    const SizedBox(height: 16),
-                    _body(),
-                    const SizedBox(height: 20),
-                    Text(_edition.author,
+                color: AppColors.gold,
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 6),
+            TabBar(
+              labelColor: AppColors.gold,
+              unselectedLabelColor: AppColors.textMuted,
+              indicatorColor: AppColors.gold,
+              labelStyle: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+              ),
+              tabs: [
+                Tab(height: 34, text: t('mushaf.tafsir')),
+                Tab(height: 34, text: t('mushaf.translationsAndMeaningsTab')),
+              ],
+            ),
+            Expanded(
+              child: TabBarView(
+                children: [
+                  // Tafsir
+                  ListView(
+                    controller: scrollController,
+                    padding: const EdgeInsets.fromLTRB(18, 12, 18, 26),
+                    children: [
+                      _ayahCard(),
+                      const SizedBox(height: 14),
+                      _editionPicker(),
+                      const SizedBox(height: 16),
+                      _body(),
+                      const SizedBox(height: 20),
+                      Text(
+                        _edition.author,
                         textAlign: TextAlign.center,
                         style: const TextStyle(
-                            color: AppColors.textMuted, fontSize: 11)),
-                  ],
-                ),
-                // Translations
-                ListView(
-                  padding: const EdgeInsets.fromLTRB(18, 12, 18, 26),
-                  children: [
-                    _ayahCard(),
-                    const SizedBox(height: 14),
-                    TranslationPanel(
-                      surah: widget.surah,
-                      ayah: widget.ayah,
-                    ),
-                  ],
-                ),
+                          color: AppColors.textMuted,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ),
+                  // Translations
+                  ListView(
+                    padding: const EdgeInsets.fromLTRB(18, 12, 18, 26),
+                    children: [
+                      _ayahCard(),
+                      const SizedBox(height: 14),
+                      TranslationPanel(surah: widget.surah, ayah: widget.ayah),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -181,14 +191,16 @@ class _TafsirSheetState extends State<TafsirSheet> {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.goldBorder),
       ),
-      child: Text(widget.ayahText,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            fontFamily: _mushafFont,
-            color: AppColors.textGold,
-            fontSize: 21,
-            height: 2.0,
-          )),
+      child: Text(
+        widget.ayahText,
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+          fontFamily: _mushafFont,
+          color: AppColors.textGold,
+          fontSize: 21,
+          height: 2.0,
+        ),
+      ),
     );
   }
 
@@ -207,22 +219,29 @@ class _TafsirSheetState extends State<TafsirSheet> {
             child: GestureDetector(
               onTap: _downloading ? null : () => _switchTo(e),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: active ? AppColors.goldMuted : AppColors.blackSurface,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                      color: active ? AppColors.gold : AppColors.goldBorder),
+                    color: active ? AppColors.gold : AppColors.goldBorder,
+                  ),
                 ),
                 child: Row(
                   children: [
-                    Text(e.name,
-                        style: TextStyle(
-                          color: active ? AppColors.gold : AppColors.textMuted,
-                          fontSize: 12,
-                          fontWeight:
-                              active ? FontWeight.bold : FontWeight.normal,
-                        )),
+                    Text(
+                      e.name,
+                      style: TextStyle(
+                        color: active ? AppColors.gold : AppColors.textMuted,
+                        fontSize: 12,
+                        fontWeight: active
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                      ),
+                    ),
                     if (!e.isBundled) ...[
                       const SizedBox(width: 5),
                       FutureBuilder<bool>(
@@ -250,9 +269,13 @@ class _TafsirSheetState extends State<TafsirSheet> {
     if (_downloading) {
       return Column(
         children: [
-          Text('جاري تنزيل ${_edition.name}…',
-              style: const TextStyle(
-                  color: AppColors.textSecondary, fontSize: 14)),
+          Text(
+            '${t('mushaf.downloadingInProgress')} ${_edition.name}…',
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 14,
+            ),
+          ),
           const SizedBox(height: 10),
           ClipRRect(
             borderRadius: BorderRadius.circular(3),
@@ -264,8 +287,10 @@ class _TafsirSheetState extends State<TafsirSheet> {
             ),
           ),
           const SizedBox(height: 6),
-          Text('$_downloaded / ١١٤ سورة',
-              style: const TextStyle(color: AppColors.textMuted, fontSize: 12)),
+          Text(
+            '$_downloaded / ${t('mushaf.totalSurahsCount')}',
+            style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+          ),
         ],
       );
     }
@@ -274,7 +299,10 @@ class _TafsirSheetState extends State<TafsirSheet> {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 30),
         child: Center(
-          child: CircularProgressIndicator(color: AppColors.gold, strokeWidth: 2),
+          child: CircularProgressIndicator(
+            color: AppColors.gold,
+            strokeWidth: 2,
+          ),
         ),
       );
     }
@@ -282,15 +310,19 @@ class _TafsirSheetState extends State<TafsirSheet> {
     if (_needsDownload) {
       return Column(
         children: [
-          const Icon(Icons.cloud_download_outlined,
-              color: AppColors.textMuted, size: 34),
+          const Icon(
+            Icons.cloud_download_outlined,
+            color: AppColors.textMuted,
+            size: 34,
+          ),
           const SizedBox(height: 10),
-          Text('${_edition.name} غير منزَّل بعد',
-              style: const TextStyle(
-                  color: AppColors.textPrimary, fontSize: 15)),
+          Text(
+            '${_edition.name} ${t('mushaf.editionNotDownloadedYet')}',
+            style: const TextStyle(color: AppColors.textPrimary, fontSize: 15),
+          ),
           const SizedBox(height: 4),
           Text(
-            'حجمه ${_edition.downloadSize ?? ''} — بعد تنزيله يعمل بلا إنترنت',
+            '${t('mushaf.itsSize')} ${_edition.downloadSize ?? ''} — ${t('mushaf.worksOfflineAfterDownload')}',
             textAlign: TextAlign.center,
             style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
           ),
@@ -302,14 +334,14 @@ class _TafsirSheetState extends State<TafsirSheet> {
               backgroundColor: AppColors.emerald,
               foregroundColor: AppColors.white,
             ),
-            label: const Text('تنزيل'),
+            label: Text(t('mushaf.download')),
           ),
         ],
       );
     }
 
     return Text(
-      _text ?? 'لا يتوفر تفسير لهذه الآية في هذا الإصدار',
+      _text ?? t('mushaf.noTafsirForThisAyah'),
       textAlign: TextAlign.justify,
       style: const TextStyle(
         color: AppColors.textPrimary,

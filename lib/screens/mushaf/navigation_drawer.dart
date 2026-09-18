@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../constants/theme.dart';
 import '../../data/quran_data.dart';
+import '../../l10n/strings.dart';
 import '../../services/bookmark_service.dart';
 import 'appearance_tabs.dart';
 import 'browse_tabs.dart';
@@ -70,14 +71,14 @@ class _DrawerBody extends StatefulWidget {
 class _DrawerBodyState extends State<_DrawerBody> {
   int _tab = 0;
 
-  static const _tabs = [
-    (icon: Icons.menu_book, label: 'السور'),
-    (icon: Icons.auto_stories, label: 'الأجزاء'),
-    (icon: Icons.search, label: 'الكلمات'),
-    (icon: Icons.bookmark, label: 'العلامات'),
-    (icon: Icons.download, label: 'التنزيل'),
-    (icon: Icons.filter_frames, label: 'الإطار'),
-    (icon: Icons.palette, label: 'اللون'),
+  List<({IconData icon, String label})> get _tabs => [
+    (icon: Icons.menu_book, label: t('mushaf.tabSurahs')),
+    (icon: Icons.auto_stories, label: t('mushaf.tabJuz')),
+    (icon: Icons.search, label: t('mushaf.tabWords')),
+    (icon: Icons.bookmark, label: t('mushaf.tabBookmarks')),
+    (icon: Icons.download, label: t('mushaf.tabDownloads')),
+    (icon: Icons.filter_frames, label: t('mushaf.tabFrame')),
+    (icon: Icons.palette, label: t('mushaf.tabColor')),
   ];
 
   @override
@@ -93,8 +94,7 @@ class _DrawerBodyState extends State<_DrawerBody> {
               SurahTab(index: widget.index, onSurah: widget.onSurah),
               JuzTab(pages: widget.pages, onPage: widget.onPage),
               WordSearchTab(onGoTo: widget.onSurah, index: widget.index),
-              BookmarksTab(
-                  index: widget.index, onBookmark: widget.onBookmark),
+              BookmarksTab(index: widget.index, onBookmark: widget.onBookmark),
               const DownloadsTab(),
               const FrameTab(),
               const PaletteTab(),
@@ -112,11 +112,14 @@ class _DrawerBodyState extends State<_DrawerBody> {
       child: Column(
         children: [
           const SizedBox(height: 10),
-          const Text('التصفّح',
-              style: TextStyle(
-                  color: AppColors.gold,
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold)),
+          Text(
+            t('mushaf.browse'),
+            style: const TextStyle(
+              color: AppColors.gold,
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const SizedBox(height: 10),
           for (var i = 0; i < _tabs.length; i++) _railItem(i),
         ],
@@ -143,16 +146,20 @@ class _DrawerBodyState extends State<_DrawerBody> {
         ),
         child: Column(
           children: [
-            Icon(_tabs[i].icon,
-                size: 20,
-                color: active ? AppColors.gold : AppColors.textMuted),
+            Icon(
+              _tabs[i].icon,
+              size: 20,
+              color: active ? AppColors.gold : AppColors.textMuted,
+            ),
             const SizedBox(height: 4),
-            Text(_tabs[i].label,
-                style: TextStyle(
-                  color: active ? AppColors.gold : AppColors.textMuted,
-                  fontSize: 11,
-                  fontWeight: active ? FontWeight.bold : FontWeight.normal,
-                )),
+            Text(
+              _tabs[i].label,
+              style: TextStyle(
+                color: active ? AppColors.gold : AppColors.textMuted,
+                fontSize: 11,
+                fontWeight: active ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
           ],
         ),
       ),

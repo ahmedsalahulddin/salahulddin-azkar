@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/theme.dart';
+import '../l10n/strings.dart';
 import '../services/section_config.dart';
 
 /// Turns home-screen sections on and off, and reorders them, without shipping
@@ -47,7 +48,7 @@ class _AdminScreenState extends State<AdminScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          ok ? 'تم الحفظ — سيظهر التغيير للجميع' : 'تعذّر الحفظ — حاول مجدداً',
+          ok ? t('misc.saveSuccessMessage') : t('misc.saveFailureMessage'),
           textDirection: TextDirection.rtl,
         ),
         backgroundColor: ok ? AppColors.emerald : AppColors.error,
@@ -64,22 +65,27 @@ class _AdminScreenState extends State<AdminScreen> {
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
-          title: const Text('إدارة الأقسام'),
+          title: Text(t('misc.manageSectionsTitle')),
           backgroundColor: AppColors.black,
           foregroundColor: AppColors.gold,
           actions: [
             if (_dirty)
               TextButton(
                 onPressed: _saving ? null : _save,
-                child: Text(_saving ? 'جاري الحفظ…' : 'حفظ',
-                    style: const TextStyle(
-                        color: AppColors.gold, fontWeight: FontWeight.bold)),
+                child: Text(
+                  _saving ? t('misc.saving') : t('misc.save'),
+                  style: const TextStyle(
+                    color: AppColors.gold,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
           ],
         ),
         body: _loading
             ? const Center(
-                child: CircularProgressIndicator(color: AppColors.gold))
+                child: CircularProgressIndicator(color: AppColors.gold),
+              )
             : Column(
                 children: [
                   Container(
@@ -91,16 +97,22 @@ class _AdminScreenState extends State<AdminScreen> {
                       children: [
                         Text(
                           hiddenCount == 0
-                              ? 'كل الأقسام ظاهرة'
-                              : '$hiddenCount قسم مخفي',
+                              ? t('misc.allSectionsVisible')
+                              : t(
+                                  'misc.hiddenSectionsCount',
+                                ).replaceAll('{count}', '$hiddenCount'),
                           style: const TextStyle(
-                              color: AppColors.textGold, fontSize: 13),
+                            color: AppColors.textGold,
+                            fontSize: 13,
+                          ),
                         ),
                         const SizedBox(height: 4),
-                        const Text(
-                          'اسحب لإعادة الترتيب · التغيير يصل الجميع بلا تحديث',
-                          style: TextStyle(
-                              color: AppColors.textMuted, fontSize: 11),
+                        Text(
+                          t('misc.dragToReorderHint'),
+                          style: const TextStyle(
+                            color: AppColors.textMuted,
+                            fontSize: 11,
+                          ),
                         ),
                       ],
                     ),
@@ -132,30 +144,39 @@ class _AdminScreenState extends State<AdminScreen> {
         color: AppColors.blackCard,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-            color: s.enabled ? AppColors.goldBorder : AppColors.blackSurface),
+          color: s.enabled ? AppColors.goldBorder : AppColors.blackSurface,
+        ),
       ),
       child: Row(
         children: [
           const Icon(Icons.drag_handle, color: AppColors.textMuted, size: 20),
           const SizedBox(width: 10),
-          Text('${index + 1}',
-              style: const TextStyle(color: AppColors.textMuted, fontSize: 12)),
+          Text(
+            '${index + 1}',
+            style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+          ),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(s.title,
-                    style: TextStyle(
-                      color: s.enabled
-                          ? AppColors.textPrimary
-                          : AppColors.textMuted,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                    )),
-                Text(s.key,
-                    style: const TextStyle(
-                        color: AppColors.textMuted, fontSize: 10)),
+                Text(
+                  s.title,
+                  style: TextStyle(
+                    color: s.enabled
+                        ? AppColors.textPrimary
+                        : AppColors.textMuted,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                Text(
+                  s.key,
+                  style: const TextStyle(
+                    color: AppColors.textMuted,
+                    fontSize: 10,
+                  ),
+                ),
               ],
             ),
           ),

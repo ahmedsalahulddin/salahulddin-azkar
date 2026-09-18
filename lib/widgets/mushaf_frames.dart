@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../l10n/strings.dart';
 import '../services/section_config.dart';
 
 /// Ornamental borders for a Mushaf page.
@@ -17,23 +18,34 @@ import '../services/section_config.dart';
 /// a printed Mushaf — is centuries old and belongs to everyone. These are new
 /// renderings of it.
 enum MushafFrame {
-  none('none', 'بدون إطار'),
-  keyline('keyline', 'خط بسيط'),
-  madinah('madinah', 'مصحف المدينة'),
-  chain('chain', 'سلسلة معيّنات'),
-  interlace('interlace', 'ضفيرة متشابكة'),
-  arabesque('arabesque', 'أرابيسك'),
-  stars('stars', 'نجوم ثمانية'),
-  rosette('rosette', 'شمسات مذهّبة'),
-  filigree('filigree', 'تذهيب مورّق'),
-  illuminated('illuminated', 'تذهيب المصحف');
+  none('none'),
+  keyline('keyline'),
+  madinah('madinah'),
+  chain('chain'),
+  interlace('interlace'),
+  arabesque('arabesque'),
+  stars('stars'),
+  rosette('rosette'),
+  filigree('filigree'),
+  illuminated('illuminated');
 
-  const MushafFrame(this.id, this.label);
+  const MushafFrame(this.id);
 
   final String id;
 
   /// Shown in the picker.
-  final String label;
+  String get label => switch (this) {
+    MushafFrame.none => t('mushaf.frameNone'),
+    MushafFrame.keyline => t('mushaf.frameKeyline'),
+    MushafFrame.madinah => t('mushaf.frameMadinah'),
+    MushafFrame.chain => t('mushaf.frameChain'),
+    MushafFrame.interlace => t('mushaf.frameInterlace'),
+    MushafFrame.arabesque => t('mushaf.frameArabesque'),
+    MushafFrame.stars => t('mushaf.frameStars'),
+    MushafFrame.rosette => t('mushaf.frameRosette'),
+    MushafFrame.filigree => t('mushaf.frameFiligree'),
+    MushafFrame.illuminated => t('mushaf.frameIlluminated'),
+  };
 
   /// What a reader who has never chosen gets, and what an unreadable setting
   /// falls back to.
@@ -52,11 +64,16 @@ enum MushafFrame {
   /// order. Fails open like everything else that reads the remote config: an
   /// unreachable project leaves every frame on the list.
   static List<MushafFrame> get available {
-    final shown = [
-      for (var i = 0; i < values.length; i++)
-        if (SectionConfig.isVisible(values[i].sectionKey)) (values[i], i),
-    ]..sort((a, b) => SectionConfig.orderOf(a.$1.sectionKey, a.$2)
-        .compareTo(SectionConfig.orderOf(b.$1.sectionKey, b.$2)));
+    final shown =
+        [
+          for (var i = 0; i < values.length; i++)
+            if (SectionConfig.isVisible(values[i].sectionKey)) (values[i], i),
+        ]..sort(
+          (a, b) => SectionConfig.orderOf(
+            a.$1.sectionKey,
+            a.$2,
+          ).compareTo(SectionConfig.orderOf(b.$1.sectionKey, b.$2)),
+        );
     // Never an empty picker: a page has to have some border, even none.
     return shown.isEmpty ? [none, keyline] : [for (final (f, _) in shown) f];
   }
@@ -64,17 +81,17 @@ enum MushafFrame {
   /// How far the page text must stay clear of the edge, in design units. The
   /// heavier the ornament, the more room it needs.
   double get _inset => switch (this) {
-        MushafFrame.none => 2,
-        MushafFrame.keyline => 11,
-        MushafFrame.madinah => 26,
-        MushafFrame.chain => 33,
-        MushafFrame.interlace => 33,
-        MushafFrame.arabesque => 34,
-        MushafFrame.stars => 34,
-        MushafFrame.rosette => 33,
-        MushafFrame.filigree => 46,
-        MushafFrame.illuminated => 50,
-      };
+    MushafFrame.none => 2,
+    MushafFrame.keyline => 11,
+    MushafFrame.madinah => 26,
+    MushafFrame.chain => 33,
+    MushafFrame.interlace => 33,
+    MushafFrame.arabesque => 34,
+    MushafFrame.stars => 34,
+    MushafFrame.rosette => 33,
+    MushafFrame.filigree => 46,
+    MushafFrame.illuminated => 50,
+  };
 
   /// The ornament is drawn at a size that suits a phone page, then scaled, so
   /// the same painter serves both the page and a small preview swatch.
@@ -160,7 +177,10 @@ class MushafFrameBox extends StatelessWidget {
               child: IgnorePointer(
                 child: CustomPaint(
                   painter: MushafFramePainter(
-                      frame: frame, color: color, scale: scale),
+                    frame: frame,
+                    color: color,
+                    scale: scale,
+                  ),
                 ),
               ),
             ),
@@ -209,11 +229,23 @@ class MushafFramePainter extends CustomPainter {
       case MushafFrame.rosette:
         _banded(canvas, size, s, _petalStrip, corner: _rosetteCorner);
       case MushafFrame.filigree:
-        _banded(canvas, size, s, _filigreeStrip,
-            corner: _scrollCorner, thickness: 34);
+        _banded(
+          canvas,
+          size,
+          s,
+          _filigreeStrip,
+          corner: _scrollCorner,
+          thickness: 34,
+        );
       case MushafFrame.illuminated:
-        _banded(canvas, size, s, _scrollStrip,
-            corner: _rosetteCorner, thickness: 38);
+        _banded(
+          canvas,
+          size,
+          s,
+          _scrollStrip,
+          corner: _rosetteCorner,
+          thickness: 38,
+        );
         _cartouche(canvas, size, s);
     }
   }
@@ -245,7 +277,11 @@ class MushafFramePainter extends CustomPainter {
 
   void _rule(Canvas canvas, Size size, double inset, double width, Color c) {
     final rect = Rect.fromLTWH(
-        inset, inset, size.width - inset * 2, size.height - inset * 2);
+      inset,
+      inset,
+      size.width - inset * 2,
+      size.height - inset * 2,
+    );
     if (rect.width <= 0 || rect.height <= 0) return;
     canvas.drawRRect(
       RRect.fromRectAndRadius(rect, Radius.circular(4 * width)),
@@ -323,8 +359,15 @@ class MushafFramePainter extends CustomPainter {
     return (n, length / n);
   }
 
-  void _star(Canvas canvas, Offset centre, double r, int points, Paint paint,
-      {double innerRatio = 0.45, double rotation = 0}) {
+  void _star(
+    Canvas canvas,
+    Offset centre,
+    double r,
+    int points,
+    Paint paint, {
+    double innerRatio = 0.45,
+    double rotation = 0,
+  }) {
     final path = Path();
     for (var i = 0; i < points * 2; i++) {
       final angle = rotation + i * math.pi / points;
@@ -360,8 +403,14 @@ class MushafFramePainter extends CustomPainter {
     _forEachSide(canvas, size, o, (length) {
       final centre = Offset(length / 2, 0);
       _star(canvas, centre, 7.5 * s, 6, _fill(_soft), innerRatio: 0.4);
-      _star(canvas, centre, 7.5 * s, 6, _stroke(1.1 * s, color),
-          innerRatio: 0.4);
+      _star(
+        canvas,
+        centre,
+        7.5 * s,
+        6,
+        _stroke(1.1 * s, color),
+        innerRatio: 0.4,
+      );
     });
   }
 
@@ -373,15 +422,15 @@ class MushafFramePainter extends CustomPainter {
     // Outer row of scallops, each hung with a bead.
     final scallops = Path();
     for (var i = 0; i < n; i++) {
-      scallops.addArc(
-        Rect.fromLTWH(i * p, -p * 0.28, p, p * 0.56),
-        0,
-        math.pi,
-      );
+      scallops.addArc(Rect.fromLTWH(i * p, -p * 0.28, p, p * 0.56), 0, math.pi);
     }
     canvas.drawPath(scallops, _stroke(1.1 * s, _soft));
     for (var i = 0; i < n; i++) {
-      canvas.drawCircle(Offset((i + 0.5) * p, p * 0.34), 1.4 * s, _fill(_faint));
+      canvas.drawCircle(
+        Offset((i + 0.5) * p, p * 0.34),
+        1.4 * s,
+        _fill(_faint),
+      );
     }
 
     // The palmette row: a lily flanked by two curls, repeated.
@@ -397,8 +446,11 @@ class MushafFramePainter extends CustomPainter {
         ..quadraticBezierTo(cx + w, (top + base) / 2, cx, top)
         ..quadraticBezierTo(cx - w, (top + base) / 2, cx, base);
       canvas.drawPath(lily, petal);
-      canvas.drawCircle(Offset(cx, top + (base - top) * 0.42), 1.6 * s,
-          _fill(color));
+      canvas.drawCircle(
+        Offset(cx, top + (base - top) * 0.42),
+        1.6 * s,
+        _fill(color),
+      );
 
       // Curls falling away on either side.
       for (final dir in [-1.0, 1.0]) {
@@ -417,8 +469,11 @@ class MushafFramePainter extends CustomPainter {
       canvas.drawCircle(Offset(i * p, base * 0.9), 1.5 * s, _fill(_soft));
     }
 
-    canvas.drawLine(Offset(0, base * 1.03), Offset(length, base * 1.03),
-        _stroke(0.8 * s, _faint));
+    canvas.drawLine(
+      Offset(0, base * 1.03),
+      Offset(length, base * 1.03),
+      _stroke(0.8 * s, _faint),
+    );
   }
 
   /// Facing C-scrolls with a jewel at every joint — the running ornament of an
@@ -428,10 +483,16 @@ class MushafFramePainter extends CustomPainter {
     final spine = t * 0.52;
 
     // The rails the scrollwork runs between.
-    canvas.drawLine(Offset(0, t * 0.1), Offset(length, t * 0.1),
-        _stroke(1.0 * s, _soft));
-    canvas.drawLine(Offset(0, t * 0.93), Offset(length, t * 0.93),
-        _stroke(1.3 * s, color));
+    canvas.drawLine(
+      Offset(0, t * 0.1),
+      Offset(length, t * 0.1),
+      _stroke(1.0 * s, _soft),
+    );
+    canvas.drawLine(
+      Offset(0, t * 0.93),
+      Offset(length, t * 0.93),
+      _stroke(1.3 * s, color),
+    );
 
     final vine = _stroke(1.5 * s, color);
     final fine = _stroke(0.9 * s, _soft);
@@ -444,27 +505,55 @@ class MushafFramePainter extends CustomPainter {
       for (final dir in [-1.0, 1.0]) {
         final scroll = Path()
           ..moveTo(cx, t * 0.16)
-          ..cubicTo(cx + dir * p * 0.34, t * 0.18, cx + dir * p * 0.46,
-              spine * 1.15, cx + dir * p * 0.16, t * 0.82)
-          ..cubicTo(cx + dir * p * 0.06, t * 0.9, cx + dir * p * 0.2,
-              t * 0.92, cx + dir * p * 0.3, t * 0.84);
+          ..cubicTo(
+            cx + dir * p * 0.34,
+            t * 0.18,
+            cx + dir * p * 0.46,
+            spine * 1.15,
+            cx + dir * p * 0.16,
+            t * 0.82,
+          )
+          ..cubicTo(
+            cx + dir * p * 0.06,
+            t * 0.9,
+            cx + dir * p * 0.2,
+            t * 0.92,
+            cx + dir * p * 0.3,
+            t * 0.84,
+          );
         canvas.drawPath(scroll, vine);
 
         // The inner curl that fills the eye of the scroll.
         final eye = Path()
           ..moveTo(cx + dir * p * 0.12, t * 0.36)
-          ..quadraticBezierTo(cx + dir * p * 0.3, spine,
-              cx + dir * p * 0.12, t * 0.68);
+          ..quadraticBezierTo(
+            cx + dir * p * 0.3,
+            spine,
+            cx + dir * p * 0.12,
+            t * 0.68,
+          );
         canvas.drawPath(eye, fine);
       }
 
       // A bud on the axis of the unit, and the jewel at the joint between
       // units — the violet accent of the original.
       canvas.drawCircle(Offset(cx, t * 0.3), 2.2 * s, _fill(_soft));
-      _star(canvas, Offset(x0, spine), 4.6 * s, 4, _fill(_jewel),
-          innerRatio: 0.42);
-      _star(canvas, Offset(x0, spine), 4.6 * s, 4, _stroke(0.8 * s, color),
-          innerRatio: 0.42);
+      _star(
+        canvas,
+        Offset(x0, spine),
+        4.6 * s,
+        4,
+        _fill(_jewel),
+        innerRatio: 0.42,
+      );
+      _star(
+        canvas,
+        Offset(x0, spine),
+        4.6 * s,
+        4,
+        _stroke(0.8 * s, color),
+        innerRatio: 0.42,
+      );
     }
   }
 
@@ -481,8 +570,14 @@ class MushafFramePainter extends CustomPainter {
     canvas.drawRRect(box, Paint()..color = const Color(0xFFF7F1E1));
     canvas.drawRRect(box, _stroke(1.2 * s, color));
     for (final dir in [-1.0, 1.0]) {
-      _star(canvas, centre + Offset(dir * (w / 2 + 5 * s), 0), 3.4 * s, 4,
-          _fill(_jewel), innerRatio: 0.4);
+      _star(
+        canvas,
+        centre + Offset(dir * (w / 2 + 5 * s), 0),
+        3.4 * s,
+        4,
+        _fill(_jewel),
+        innerRatio: 0.4,
+      );
     }
   }
 
@@ -493,8 +588,14 @@ class MushafFramePainter extends CustomPainter {
     canvas.save();
     canvas.translate(c.dx, c.dy);
     _star(canvas, Offset.zero, 9.0 * s, 8, _fill(_soft), innerRatio: 0.4);
-    _star(canvas, Offset.zero, 9.0 * s, 8, _stroke(1.0 * s, color),
-        innerRatio: 0.4);
+    _star(
+      canvas,
+      Offset.zero,
+      9.0 * s,
+      8,
+      _stroke(1.0 * s, color),
+      innerRatio: 0.4,
+    );
     for (var k = 0; k < 4; k++) {
       canvas.save();
       canvas.rotate(k * math.pi / 2);
@@ -526,11 +627,14 @@ class MushafFramePainter extends CustomPainter {
     canvas.save();
     canvas.translate(c.dx, c.dy);
     canvas.rotate(math.pi / 4);
-    canvas.drawRect(Rect.fromCenter(center: Offset.zero, width: r * 2, height: r * 2),
-        _fill(_soft));
     canvas.drawRect(
-        Rect.fromCenter(center: Offset.zero, width: r * 2, height: r * 2),
-        _stroke(0.9 * s, color));
+      Rect.fromCenter(center: Offset.zero, width: r * 2, height: r * 2),
+      _fill(_soft),
+    );
+    canvas.drawRect(
+      Rect.fromCenter(center: Offset.zero, width: r * 2, height: r * 2),
+      _stroke(0.9 * s, color),
+    );
     canvas.restore();
   }
 
@@ -612,7 +716,11 @@ class MushafFramePainter extends CustomPainter {
       canvas.drawCircle(Offset(cx, cy), 3.6 * s, _fill(_soft));
       canvas.drawCircle(Offset(cx, cy), 3.6 * s, _stroke(1.0 * s, color));
     }
-    canvas.drawLine(Offset(0, mid), Offset(length, mid), _stroke(0.5 * s, _faint));
+    canvas.drawLine(
+      Offset(0, mid),
+      Offset(length, mid),
+      _stroke(0.5 * s, _faint),
+    );
   }
 
   /// Eight-point stars — the khatim — set between small links.
@@ -624,12 +732,19 @@ class MushafFramePainter extends CustomPainter {
     for (var i = 0; i < n; i++) {
       final cx = (i + 0.5) * p;
       _star(canvas, Offset(cx, y), t * 0.42, 8, _fill(_soft), innerRatio: 0.46);
-      _star(canvas, Offset(cx, y), t * 0.42, 8, _stroke(1.3 * s, color),
-          innerRatio: 0.46);
+      _star(
+        canvas,
+        Offset(cx, y),
+        t * 0.42,
+        8,
+        _stroke(1.3 * s, color),
+        innerRatio: 0.46,
+      );
       final link = Offset(i * p, y);
       canvas.drawRect(
-          Rect.fromCenter(center: link, width: 4.6 * s, height: 4.6 * s),
-          _fill(color));
+        Rect.fromCenter(center: link, width: 4.6 * s, height: 4.6 * s),
+        _fill(color),
+      );
     }
   }
 

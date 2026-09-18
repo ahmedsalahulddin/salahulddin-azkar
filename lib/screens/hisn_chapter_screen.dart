@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import '../constants/theme.dart';
 import '../data/hisn_data.dart';
 import '../data/quran_data.dart' show QuranService;
+import '../l10n/strings.dart';
 import '../services/favourites.dart';
 import '../widgets/bilingual_text.dart';
 import '../widgets/dhikr_audio.dart';
@@ -59,10 +60,13 @@ class _HisnChapterScreenState extends State<HisnChapterScreen> {
     );
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('تم نسخ الذكر', textDirection: TextDirection.rtl),
+      SnackBar(
+        content: Text(
+          t('lib2.dhikrCopiedMessage'),
+          textDirection: TextDirection.rtl,
+        ),
         backgroundColor: AppColors.emerald,
-        duration: Duration(seconds: 2),
+        duration: const Duration(seconds: 2),
       ),
     );
   }
@@ -91,7 +95,7 @@ class _HisnChapterScreenState extends State<HisnChapterScreen> {
               IconButton(
                 icon: const Icon(Icons.refresh, size: 20),
                 onPressed: _resetAll,
-                tooltip: 'إعادة العد',
+                tooltip: t('lib2.resetCountTooltip'),
               ),
           ],
         ),
@@ -107,14 +111,14 @@ class _HisnChapterScreenState extends State<HisnChapterScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          '${chapter.items.length} أذكار',
+                          '${chapter.items.length} ${t('lib2.adhkarUnit')}',
                           style: const TextStyle(
                             color: AppColors.textMuted,
                             fontSize: 12,
                           ),
                         ),
                         Text(
-                          'أتممت $done',
+                          '${t('lib2.completedPrefix')} $done',
                           style: const TextStyle(
                             color: AppColors.textGold,
                             fontSize: 12,
@@ -204,9 +208,9 @@ class _HisnChapterScreenState extends State<HisnChapterScreen> {
                   ),
                   child: Text(
                     done
-                        ? '✓ تمّ'
+                        ? '✓ ${t('lib2.doneLabel')}'
                         : d.repeat == 1
-                        ? 'مرة واحدة'
+                        ? t('lib2.onceLabel')
                         : '${QuranService.toArabicDigits(count)} / ${QuranService.toArabicDigits(d.repeat)}',
                     style: TextStyle(
                       color: done ? AppColors.white : AppColors.textGold,

@@ -3,6 +3,7 @@ import '../../constants/theme.dart';
 import '../../data/quran_data.dart';
 import '../../data/tafsir_data.dart';
 import '../../data/translation_data.dart';
+import '../../l10n/strings.dart';
 import '../../services/mushaf_image_service.dart';
 
 /// Pulls the whole Mushaf down so it reads with no connection at all.
@@ -50,8 +51,8 @@ class _DownloadsTabState extends State<DownloadsTab> {
       SnackBar(
         content: Text(
           failed == 0
-              ? 'اكتمل تنزيل المصحف — يعمل الآن بلا إنترنت'
-              : 'تعذّر تنزيل $failed صفحة — أعد المحاولة لإكمالها',
+              ? t('mushaf.downloadAllComplete')
+              : t('mushaf.downloadPagesFailed').replaceFirst('%s', '$failed'),
           textDirection: TextDirection.rtl,
         ),
         backgroundColor: failed == 0 ? AppColors.emerald : AppColors.error,
@@ -67,12 +68,9 @@ class _DownloadsTabState extends State<DownloadsTab> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        const _SectionTitle('تنزيل الملحقات'),
+        _SectionTitle(t('mushaf.downloadExtrasTitle')),
         const SizedBox(height: 6),
-        const _SectionNote(
-          'نزّل صفحات المصحف مرة واحدة لتقرأها بلا إنترنت. '
-          'الصفحة التي تفتحها تُحفظ تلقائياً على أي حال.',
-        ),
+        _SectionNote(t('mushaf.downloadPagesNote')),
         const SizedBox(height: 14),
         Container(
           padding: const EdgeInsets.all(14),
@@ -87,13 +85,19 @@ class _DownloadsTabState extends State<DownloadsTab> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('الصفحات',
-                      style: TextStyle(
-                          color: AppColors.textPrimary, fontSize: 14)),
+                  Text(
+                    t('mushaf.pagesLabel'),
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 14,
+                    ),
+                  ),
                   Text(
                     _running ? '$_done / $total' : '$_cached / $total',
                     style: const TextStyle(
-                        color: AppColors.textGold, fontSize: 13),
+                      color: AppColors.textGold,
+                      fontSize: 13,
+                    ),
                   ),
                 ],
               ),
@@ -114,8 +118,10 @@ class _DownloadsTabState extends State<DownloadsTab> {
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: AppColors.goldBorder),
                   ),
-                  child: const Text('إيقاف',
-                      style: TextStyle(color: AppColors.textMuted)),
+                  child: Text(
+                    t('mushaf.stopDownload'),
+                    style: const TextStyle(color: AppColors.textMuted),
+                  ),
                 )
               else
                 ElevatedButton(
@@ -125,7 +131,9 @@ class _DownloadsTabState extends State<DownloadsTab> {
                     disabledBackgroundColor: AppColors.blackSurface,
                   ),
                   child: Text(
-                    complete ? '✓ مكتمل' : 'نزّل المصحف كاملاً (~٥٩ م.ب)',
+                    complete
+                        ? t('mushaf.downloadComplete')
+                        : t('mushaf.downloadAllMushaf'),
                     style: const TextStyle(color: AppColors.white),
                   ),
                 ),
@@ -133,11 +141,9 @@ class _DownloadsTabState extends State<DownloadsTab> {
           ),
         ),
         const SizedBox(height: 18),
-        const _SectionTitle('التفاسير والتراجم'),
+        _SectionTitle(t('mushaf.tafsirsAndTranslationsTitle')),
         const SizedBox(height: 6),
-        const _SectionNote(
-          'الميسّر والمختصر مضمّنان أصلاً. نزّل البقية لتعمل بلا إنترنت.',
-        ),
+        _SectionNote(t('mushaf.tafsirsBundledNote')),
         const SizedBox(height: 10),
         for (final edition in TafsirService.editions.where((e) => !e.isBundled))
           _RemoteItem(
@@ -145,8 +151,10 @@ class _DownloadsTabState extends State<DownloadsTab> {
             subtitle: '${edition.author} · ${edition.downloadSize}',
             isDownloaded: () => TafsirService.isDownloaded(edition),
             download: (onProgress) async {
-              final failed = await TafsirService.download(edition,
-                  onProgress: (done, total) => onProgress(done, total));
+              final failed = await TafsirService.download(
+                edition,
+                onProgress: (done, total) => onProgress(done, total),
+              );
               return failed == 0;
             },
           ),
@@ -156,19 +164,18 @@ class _DownloadsTabState extends State<DownloadsTab> {
             subtitle: translation.translator,
             isDownloaded: () => TranslationService.isDownloaded(translation),
             download: (onProgress) async {
-              final failed = await TranslationService.download(translation,
-                  onProgress: (done, total) => onProgress(done, total));
+              final failed = await TranslationService.download(
+                translation,
+                onProgress: (done, total) => onProgress(done, total),
+              );
               return failed == 0;
             },
           ),
 
         const SizedBox(height: 18),
-        const _SectionTitle('التلاوات'),
+        _SectionTitle(t('mushaf.recitationsTitle')),
         const SizedBox(height: 6),
-        const _SectionNote(
-          'تُبَث عند التشغيل ولا تُنزَّل بعد — تلاوة قارئ واحد للمصحف كامل '
-          'تقارب ٣٠٠ م.ب، وتنزيلها يحتاج إدارة مساحة لم تُبنَ.',
-        ),
+        _SectionNote(t('mushaf.recitationsStreamingNote')),
       ],
     );
   }
@@ -180,9 +187,14 @@ class _SectionTitle extends StatelessWidget {
   const _SectionTitle(this.text);
 
   @override
-  Widget build(BuildContext context) => Text(text,
-      style: const TextStyle(
-          color: AppColors.gold, fontSize: 15, fontWeight: FontWeight.bold));
+  Widget build(BuildContext context) => Text(
+    text,
+    style: const TextStyle(
+      color: AppColors.gold,
+      fontSize: 15,
+      fontWeight: FontWeight.bold,
+    ),
+  );
 }
 
 class _SectionNote extends StatelessWidget {
@@ -191,9 +203,14 @@ class _SectionNote extends StatelessWidget {
   const _SectionNote(this.text);
 
   @override
-  Widget build(BuildContext context) => Text(text,
-      style: const TextStyle(
-          color: AppColors.textMuted, fontSize: 12, height: 1.6));
+  Widget build(BuildContext context) => Text(
+    text,
+    style: const TextStyle(
+      color: AppColors.textMuted,
+      fontSize: 12,
+      height: 1.6,
+    ),
+  );
 }
 
 /// A downloadable extra: shows whether it is already on the device, and its
@@ -246,9 +263,11 @@ class _RemoteItemState extends State<_RemoteItem> {
 
     if (!ok) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('لم يكتمل التنزيل — أعد المحاولة',
-              textDirection: TextDirection.rtl),
+        SnackBar(
+          content: Text(
+            t('mushaf.downloadIncomplete'),
+            textDirection: TextDirection.rtl,
+          ),
           backgroundColor: AppColors.error,
         ),
       );
@@ -273,14 +292,22 @@ class _RemoteItemState extends State<_RemoteItem> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(widget.title,
-                        style: const TextStyle(
-                            color: AppColors.textPrimary, fontSize: 14)),
-                    Text(widget.subtitle,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                            color: AppColors.textMuted, fontSize: 11)),
+                    Text(
+                      widget.title,
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 14,
+                      ),
+                    ),
+                    Text(
+                      widget.subtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: AppColors.textMuted,
+                        fontSize: 11,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -289,19 +316,27 @@ class _RemoteItemState extends State<_RemoteItem> {
                   width: 18,
                   height: 18,
                   child: CircularProgressIndicator(
-                      strokeWidth: 2, color: AppColors.gold),
+                    strokeWidth: 2,
+                    color: AppColors.gold,
+                  ),
                 )
               else if (_ready == true)
-                const Icon(Icons.offline_pin,
-                    color: AppColors.emeraldLight, size: 20)
+                const Icon(
+                  Icons.offline_pin,
+                  color: AppColors.emeraldLight,
+                  size: 20,
+                )
               else
                 GestureDetector(
                   onTap: _start,
                   behavior: HitTestBehavior.opaque,
                   child: const Padding(
                     padding: EdgeInsets.all(4),
-                    child: Icon(Icons.download,
-                        color: AppColors.gold, size: 20),
+                    child: Icon(
+                      Icons.download,
+                      color: AppColors.gold,
+                      size: 20,
+                    ),
                   ),
                 ),
             ],

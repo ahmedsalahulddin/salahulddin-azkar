@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../constants/theme.dart';
 import '../data/library_data.dart';
 import '../data/quran_data.dart' show QuranService;
+import '../l10n/strings.dart';
 import 'book_reader_screen.dart';
 
 /// The shelf: three short collections ready to read, the canonical books a tap
@@ -49,23 +50,29 @@ class _BooksScreenState extends State<BooksScreen> {
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
-          title: const Text('المكتبة الإسلامية'),
+          title: Text(t('lib2.booksScreenTitle')),
           backgroundColor: AppColors.black,
           foregroundColor: AppColors.gold,
         ),
         body: ListView(
           padding: const EdgeInsets.fromLTRB(12, 12, 12, 28),
           children: [
-            _sectionTitle('جاهزة للقراءة', 'تعمل بدون إنترنت'),
+            _sectionTitle(
+              t('lib2.readyToReadSection'),
+              t('lib2.worksOfflineSubtitle'),
+            ),
             for (final book in ready) _bookCard(book),
             const SizedBox(height: 18),
-            _sectionTitle('الكتب الستة والموطأ', 'نزّل ما تريد ليعمل بلا إنترنت'),
+            _sectionTitle(
+              t('lib2.sixBooksMuwattaSection'),
+              t('lib2.downloadForOfflineSubtitle'),
+            ),
             for (final book in rest) _bookCard(book),
             const SizedBox(height: 16),
-            const Text(
-              'جميع هذه الكتب من التراث الإسلامي',
+            Text(
+              t('lib2.booksHeritageFooter'),
               textAlign: TextAlign.center,
-              style: TextStyle(color: AppColors.textMuted, fontSize: 11),
+              style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
             ),
           ],
         ),
@@ -74,21 +81,25 @@ class _BooksScreenState extends State<BooksScreen> {
   }
 
   Widget _sectionTitle(String title, String subtitle) => Padding(
-        padding: const EdgeInsets.fromLTRB(4, 6, 4, 10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title,
-                style: const TextStyle(
-                    color: AppColors.textGold,
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold)),
-            Text(subtitle,
-                style: const TextStyle(
-                    color: AppColors.textMuted, fontSize: 11)),
-          ],
+    padding: const EdgeInsets.fromLTRB(4, 6, 4, 10),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            color: AppColors.textGold,
+            fontSize: 15,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-      );
+        Text(
+          subtitle,
+          style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+        ),
+      ],
+    ),
+  );
 
   Widget _bookCard(IslamicBook book) {
     final ready = _downloaded[book.id] ?? book.isBundled;
@@ -102,7 +113,8 @@ class _BooksScreenState extends State<BooksScreen> {
           color: AppColors.blackCard,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-              color: ready ? AppColors.goldBorder : AppColors.goldBorder),
+            color: ready ? AppColors.goldBorder : AppColors.goldBorder,
+          ),
         ),
         child: Row(
           children: [
@@ -115,30 +127,41 @@ class _BooksScreenState extends State<BooksScreen> {
                 border: Border.all(color: AppColors.goldBorder),
               ),
               child: const Center(
-                  child: Text('📕', style: TextStyle(fontSize: 22))),
+                child: Text('📕', style: TextStyle(fontSize: 22)),
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(book.title,
-                      style: const TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600)),
+                  Text(
+                    book.title,
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                   const SizedBox(height: 2),
-                  Text(book.author,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                          color: AppColors.textMuted, fontSize: 11)),
+                  Text(
+                    book.author,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: AppColors.textMuted,
+                      fontSize: 11,
+                    ),
+                  ),
                   const SizedBox(height: 3),
                   Text(
-                    '${QuranService.toArabicDigits(book.hadithCount)} حديث'
+                    '${QuranService.toArabicDigits(book.hadithCount)} '
+                    '${t('lib2.hadithUnit')}'
                     '${book.isBundled ? '' : ' · ${book.downloadSize}'}',
                     style: const TextStyle(
-                        color: AppColors.textSecondary, fontSize: 11),
+                      color: AppColors.textSecondary,
+                      fontSize: 11,
+                    ),
                   ),
                 ],
               ),

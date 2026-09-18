@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../constants/theme.dart';
+import '../l10n/strings.dart';
 import '../widgets/speed_button.dart';
 import '../data/lessons.dart';
 import '../widgets/speak_button.dart';
@@ -27,9 +28,10 @@ class LessonScreen extends StatelessWidget {
         body: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            Text(lesson.summary,
-                style: const TextStyle(
-                    color: AppColors.textMuted, fontSize: 13)),
+            Text(
+              lesson.summary,
+              style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+            ),
             if (lesson.opening != null) ...[
               const SizedBox(height: 14),
               _SourceCard(source: lesson.opening!, leading: true),
@@ -40,12 +42,14 @@ class LessonScreen extends StatelessWidget {
               const SizedBox(height: 14),
             ],
             const SizedBox(height: 8),
-            const Text(
-              'كل نصٍّ في هذا الدرس مقروء من مصحف التطبيق أو من كتبه، '
-              'لا منقولاً هنا — فما تقرأه هو ما في المصدر حرفاً بحرف.',
+            Text(
+              t('lib2.lessonSourceDisclaimer'),
               textAlign: TextAlign.center,
-              style: TextStyle(
-                  color: AppColors.textMuted, fontSize: 11, height: 1.7),
+              style: const TextStyle(
+                color: AppColors.textMuted,
+                fontSize: 11,
+                height: 1.7,
+              ),
             ),
             const SizedBox(height: 20),
           ],
@@ -77,22 +81,28 @@ class LessonScreen extends StatelessWidget {
                   border: Border.all(color: AppColors.goldBorder),
                 ),
                 child: Center(
-                  child: Text('$number',
-                      style: const TextStyle(
-                          color: AppColors.gold,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold)),
+                  child: Text(
+                    '$number',
+                    style: const TextStyle(
+                      color: AppColors.gold,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.only(top: 3),
-                  child: Text(point.title,
-                      style: const TextStyle(
-                          color: AppColors.gold,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold)),
+                  child: Text(
+                    point.title,
+                    style: const TextStyle(
+                      color: AppColors.gold,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
               SpeakButton(
@@ -102,9 +112,14 @@ class LessonScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
-          Text(point.body,
-              style: const TextStyle(
-                  color: AppColors.textSecondary, fontSize: 14, height: 1.9)),
+          Text(
+            point.body,
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 14,
+              height: 1.9,
+            ),
+          ),
           if (point.source != null) ...[
             const SizedBox(height: 12),
             _SourceCard(source: point.source!),
@@ -161,10 +176,11 @@ class _SourceCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 8),
-              Text(resolved.citation,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                      color: AppColors.textGold, fontSize: 11)),
+              Text(
+                resolved.citation,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: AppColors.textGold, fontSize: 11),
+              ),
             ],
           ),
         );

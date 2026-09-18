@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../constants/theme.dart';
 import '../../data/quran_data.dart';
+import '../../l10n/strings.dart';
 import '../../services/repeat_settings.dart';
 
 /// Sets up a memorisation drill: how many times each ayah repeats, how many
@@ -28,21 +29,26 @@ class _RepeatSheetState extends State<RepeatSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text('التكرار للحفظ',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    color: AppColors.gold,
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold)),
+            Text(
+              t('mushaf.repeatForMemorisationTitle'),
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: AppColors.gold,
+                fontSize: 17,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             const SizedBox(height: 4),
-            const Text('تبدأ من الآية التي تحددها',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
+            Text(
+              t('mushaf.repeatStartsFromSelected'),
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+            ),
             const SizedBox(height: 16),
 
             _counter(
-              label: 'عدد الآيات',
-              hint: 'كم آية يشملها التكرار',
+              label: t('mushaf.ayahCountLabel'),
+              hint: t('mushaf.ayahCountHint'),
               value: _value.rangeLength,
               min: 1,
               max: 20,
@@ -50,8 +56,8 @@ class _RepeatSheetState extends State<RepeatSheet> {
                   setState(() => _value = _value.copyWith(rangeLength: v)),
             ),
             _counter(
-              label: 'تكرار كل آية',
-              hint: 'كم مرة تُعاد الآية الواحدة',
+              label: t('mushaf.perAyahRepeatLabel'),
+              hint: t('mushaf.perAyahRepeatHint'),
               value: _value.perAyah,
               min: 1,
               max: 20,
@@ -59,8 +65,8 @@ class _RepeatSheetState extends State<RepeatSheet> {
                   setState(() => _value = _value.copyWith(perAyah: v)),
             ),
             _counter(
-              label: 'تكرار المقطع',
-              hint: 'كم مرة يُعاد المقطع كاملاً',
+              label: t('mushaf.wholeRangeRepeatLabel'),
+              hint: t('mushaf.wholeRangeRepeatHint'),
               value: _value.wholeRange,
               min: 1,
               max: 20,
@@ -78,11 +84,10 @@ class _RepeatSheetState extends State<RepeatSheet> {
               ),
               child: Text(
                 _value.isActive
-                    ? 'إجمالاً: $total تلاوة'
-                    : 'التكرار مُطفأ — تُقرأ السورة من الآية المحددة',
+                    ? t('mushaf.totalRecitations').replaceFirst('%s', '$total')
+                    : t('mushaf.repetitionOffNote'),
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                    color: AppColors.textGold, fontSize: 13),
+                style: const TextStyle(color: AppColors.textGold, fontSize: 13),
               ),
             ),
             const SizedBox(height: 14),
@@ -91,13 +96,15 @@ class _RepeatSheetState extends State<RepeatSheet> {
               children: [
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: () => Navigator.pop(
-                        context, const RepeatSettings()),
+                    onPressed: () =>
+                        Navigator.pop(context, const RepeatSettings()),
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(color: AppColors.goldBorder),
                     ),
-                    child: const Text('إيقاف التكرار',
-                        style: TextStyle(color: AppColors.textMuted)),
+                    child: Text(
+                      t('mushaf.stopRepetition'),
+                      style: const TextStyle(color: AppColors.textMuted),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -108,7 +115,7 @@ class _RepeatSheetState extends State<RepeatSheet> {
                       backgroundColor: AppColors.emerald,
                       foregroundColor: AppColors.white,
                     ),
-                    child: const Text('حفظ'),
+                    child: Text(t('mushaf.save')),
                   ),
                 ),
               ],
@@ -135,25 +142,38 @@ class _RepeatSheetState extends State<RepeatSheet> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label,
-                    style: const TextStyle(
-                        color: AppColors.textPrimary, fontSize: 14)),
-                Text(hint,
-                    style: const TextStyle(
-                        color: AppColors.textMuted, fontSize: 11)),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 14,
+                  ),
+                ),
+                Text(
+                  hint,
+                  style: const TextStyle(
+                    color: AppColors.textMuted,
+                    fontSize: 11,
+                  ),
+                ),
               ],
             ),
           ),
-          _stepper(Icons.remove,
-              value > min ? () => onChanged(value - 1) : null),
+          _stepper(
+            Icons.remove,
+            value > min ? () => onChanged(value - 1) : null,
+          ),
           SizedBox(
             width: 40,
-            child: Text(QuranService.toArabicDigits(value),
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                    color: AppColors.gold,
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold)),
+            child: Text(
+              QuranService.toArabicDigits(value),
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: AppColors.gold,
+                fontSize: 17,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
           _stepper(Icons.add, value < max ? () => onChanged(value + 1) : null),
         ],
@@ -173,9 +193,11 @@ class _RepeatSheetState extends State<RepeatSheet> {
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: AppColors.goldBorder),
         ),
-        child: Icon(icon,
-            size: 17,
-            color: onTap == null ? AppColors.textMuted : AppColors.gold),
+        child: Icon(
+          icon,
+          size: 17,
+          color: onTap == null ? AppColors.textMuted : AppColors.gold,
+        ),
       ),
     );
   }

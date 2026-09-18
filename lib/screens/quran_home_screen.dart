@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/theme.dart';
 import '../data/quran_data.dart';
+import '../l10n/strings.dart';
 import '../services/storage_service.dart';
 import 'memorisation_test_screen.dart';
 import 'mushaf_screen.dart';
@@ -75,7 +76,7 @@ class _QuranHomeScreenState extends State<QuranHomeScreen> {
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
-          title: const Text('القرآن الكريم'),
+          title: Text(t('qs.quranTitle')),
           backgroundColor: AppColors.black,
           foregroundColor: AppColors.gold,
         ),
@@ -84,25 +85,28 @@ class _QuranHomeScreenState extends State<QuranHomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
-                'كيف تحب أن تقرأ؟',
+              Text(
+                t('qs.howToRead'),
                 textAlign: TextAlign.center,
-                style: TextStyle(color: AppColors.textMuted, fontSize: 14),
+                style: const TextStyle(
+                  color: AppColors.textMuted,
+                  fontSize: 14,
+                ),
               ),
               const SizedBox(height: 18),
 
               _modeCard(
                 icon: '📖',
-                title: 'القرآن الكريم',
-                subtitle: 'صفحات',
-                details: const [
-                  'الـ ٦٠٤ صفحة بترتيب مصحف المدينة',
-                  'اسحب لتقليب الصفحات',
-                  'رقم الجزء والصفحة أمامك دائماً',
+                title: t('qs.quranTitle'),
+                subtitle: t('qs.pagesLabel'),
+                details: [
+                  t('qs.mushafPagesDetail'),
+                  t('qs.swipePagesDetail'),
+                  t('qs.juzPageAlwaysVisible'),
                 ],
                 progress: _lastPage == null
                     ? null
-                    : 'آخر صفحة: ${QuranService.toArabicDigits(_lastPage!)}',
+                    : '${t('qs.lastPageLabel')} ${QuranService.toArabicDigits(_lastPage!)}',
                 onTap: _openMushaf,
                 highlighted: true,
               ),
@@ -111,11 +115,11 @@ class _QuranHomeScreenState extends State<QuranHomeScreen> {
               _modeCard(
                 icon: '🌍',
                 title: 'Quran',
-                subtitle: 'languages — ترجمات',
-                details: const [
-                  'النص العربي مع ترجمة بلغات متعددة',
+                subtitle: t('qs.translationsSubtitle'),
+                details: [
+                  t('qs.multilingualArabicText'),
                   'English · Français · Türkçe · اردو · وأكثر',
-                  'الترجمة تُحفظ للاستخدام بلا إنترنت',
+                  t('qs.offlineTranslationSaved'),
                 ],
                 onTap: _openTranslation,
               ),
@@ -123,28 +127,28 @@ class _QuranHomeScreenState extends State<QuranHomeScreen> {
 
               _modeCard(
                 icon: '🕌',
-                title: 'تلاوة وتدبّر',
-                subtitle: 'آية آية، مع التفسير والتلاوة',
-                details: const [
-                  'التفسير الميسّر لكل آية',
-                  'استمع للآية بصوت ستة قرّاء',
-                  'بحث ونسخ ومواضع السجود',
+                title: t('qs.recitationReflectionTitle'),
+                subtitle: t('qs.ayahByAyahSubtitle'),
+                details: [
+                  t('qs.tafsirEveryAyahDetail'),
+                  t('qs.sixRecitersDetail'),
+                  t('qs.searchCopySajdaDetail'),
                 ],
                 progress: _lastSurahName == null
                     ? null
-                    : 'آخر قراءة: سورة $_lastSurahName',
+                    : '${t('qs.lastReadLabel')} ${t('qs.surahPrefix')} $_lastSurahName',
                 onTap: _openTadabbur,
               ),
               const SizedBox(height: 14),
 
               _modeCard(
                 icon: '🧠',
-                title: 'اختبارات الحفظ',
-                subtitle: 'مسابقات وأسئلة',
-                details: const [
-                  'ثلاثة مستويات — من إخفاء كلمة إلى الآية كاملة',
-                  'اكشف بعد الاسترجاع وسجّل نتيجتك',
-                  'نتيجة بالنسبة المئوية في نهاية السورة',
+                title: t('qs.memorisationTestsTitle'),
+                subtitle: t('qs.quizzesQuestionsSubtitle'),
+                details: [
+                  t('qs.threeLevelsDetail'),
+                  t('qs.revealAfterRecallDetail'),
+                  t('qs.percentageScoreDetail'),
                 ],
                 onTap: _openMemorisationTest,
               ),
@@ -198,27 +202,38 @@ class _QuranHomeScreenState extends State<QuranHomeScreen> {
                     border: Border.all(color: AppColors.goldBorder),
                   ),
                   child: Center(
-                      child: Text(icon, style: const TextStyle(fontSize: 26))),
+                    child: Text(icon, style: const TextStyle(fontSize: 26)),
+                  ),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(title,
-                          style: const TextStyle(
-                              color: AppColors.gold,
-                              fontSize: 21,
-                              fontWeight: FontWeight.bold)),
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          color: AppColors.gold,
+                          fontSize: 21,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       const SizedBox(height: 2),
-                      Text(subtitle,
-                          style: const TextStyle(
-                              color: AppColors.textSecondary, fontSize: 13)),
+                      Text(
+                        subtitle,
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 13,
+                        ),
+                      ),
                     ],
                   ),
                 ),
-                const Icon(Icons.chevron_left,
-                    color: AppColors.textMuted, size: 22),
+                const Icon(
+                  Icons.chevron_left,
+                  color: AppColors.textMuted,
+                  size: 22,
+                ),
               ],
             ),
             const SizedBox(height: 14),
@@ -227,14 +242,19 @@ class _QuranHomeScreenState extends State<QuranHomeScreen> {
                 padding: const EdgeInsets.only(bottom: 5),
                 child: Row(
                   children: [
-                    const Text('✦',
-                        style: TextStyle(
-                            color: AppColors.goldDark, fontSize: 11)),
+                    const Text(
+                      '✦',
+                      style: TextStyle(color: AppColors.goldDark, fontSize: 11),
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: Text(d,
-                          style: const TextStyle(
-                              color: AppColors.textMuted, fontSize: 12)),
+                      child: Text(
+                        d,
+                        style: const TextStyle(
+                          color: AppColors.textMuted,
+                          fontSize: 12,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -242,8 +262,10 @@ class _QuranHomeScreenState extends State<QuranHomeScreen> {
             if (progress != null) ...[
               const SizedBox(height: 10),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.goldMuted,
                   borderRadius: BorderRadius.circular(20),
@@ -252,12 +274,15 @@ class _QuranHomeScreenState extends State<QuranHomeScreen> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.bookmark,
-                        color: AppColors.gold, size: 14),
+                    const Icon(Icons.bookmark, color: AppColors.gold, size: 14),
                     const SizedBox(width: 6),
-                    Text(progress,
-                        style: const TextStyle(
-                            color: AppColors.textGold, fontSize: 12)),
+                    Text(
+                      progress,
+                      style: const TextStyle(
+                        color: AppColors.textGold,
+                        fontSize: 12,
+                      ),
+                    ),
                   ],
                 ),
               ),

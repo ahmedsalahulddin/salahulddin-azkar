@@ -24,7 +24,7 @@ class AdhkarHomeScreen extends StatelessWidget {
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
-          title: const Text('الأذكار'),
+          title: Text(t('adh.adhkarScreenTitle')),
           backgroundColor: AppColors.black,
           foregroundColor: AppColors.gold,
         ),
@@ -75,8 +75,13 @@ class AdhkarHomeScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text('${cat.count} ذكر',
-                        style: const TextStyle(color: AppColors.textMuted, fontSize: 11)),
+                    Text(
+                      '${cat.count} ${t('adh.dhikrCountSuffix')}',
+                      style: const TextStyle(
+                        color: AppColors.textMuted,
+                        fontSize: 11,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -94,7 +99,8 @@ class AdhkarHomeScreen extends StatelessWidget {
       onTap: () => Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (_) => const TasbihCounter(dhikr: freeTasbih)),
+          builder: (_) => const TasbihCounter(dhikr: freeTasbih),
+        ),
       ),
       child: Container(
         padding: const EdgeInsets.all(12),
@@ -103,20 +109,25 @@ class AdhkarHomeScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AppColors.goldBorder),
         ),
-        child: const Column(
+        child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('🔢', style: TextStyle(fontSize: 32)),
-            SizedBox(height: 8),
-            Text('عداد التسبيح',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600)),
-            SizedBox(height: 4),
-            Text('سبّح واحتسب',
-                style: TextStyle(color: AppColors.textMuted, fontSize: 11)),
+            const Text('🔢', style: TextStyle(fontSize: 32)),
+            const SizedBox(height: 8),
+            Text(
+              t('adh.tasbihCounterTitle'),
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              t('adh.tasbihCounterSubtitle'),
+              style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+            ),
           ],
         ),
       ),
@@ -145,10 +156,10 @@ class AdhkarHomeScreen extends StatelessWidget {
           children: [
             const Text('🕋', style: TextStyle(fontSize: 32)),
             const SizedBox(height: 8),
-            const Text(
-              'أدعية العمرة',
+            Text(
+              t('adh.umrahCardTitle'),
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 color: AppColors.gold,
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
@@ -159,10 +170,12 @@ class AdhkarHomeScreen extends StatelessWidget {
               future: UmrahGuide.totalDuas(),
               builder: (context, snapshot) => Text(
                 snapshot.data == null
-                    ? 'على خطوات النسك'
-                    : '${snapshot.data} دعاءً',
+                    ? t('adh.umrahStepsFallback')
+                    : '${snapshot.data} ${t('adh.duaCountSuffix')}',
                 style: const TextStyle(
-                    color: AppColors.textSecondary, fontSize: 11),
+                  color: AppColors.textSecondary,
+                  fontSize: 11,
+                ),
               ),
             ),
           ],
@@ -210,10 +223,12 @@ class AdhkarHomeScreen extends StatelessWidget {
                 final chapters = snapshot.data;
                 return Text(
                   chapters == null
-                      ? 'حصن المسلم'
-                      : '${chapters.length} باباً',
+                      ? t('adh.hisnMuslimFallback')
+                      : '${chapters.length} ${t('adh.chapterCountSuffix')}',
                   style: const TextStyle(
-                      color: AppColors.textSecondary, fontSize: 11),
+                    color: AppColors.textSecondary,
+                    fontSize: 11,
+                  ),
                 );
               },
             ),

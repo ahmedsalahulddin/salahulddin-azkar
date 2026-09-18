@@ -130,7 +130,7 @@ class _MushafScreenState extends State<MushafScreen> {
   }
 
   String _reference(AyahBoxes a) =>
-      'سورة ${_surahInfo(a.surah).name} — الآية ${a.ayah}';
+      '${t('mushaf.surah')} ${_surahInfo(a.surah).name} — ${t('mushaf.theAyah')} ${a.ayah}';
 
   void _toast(String message, {bool error = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -169,9 +169,9 @@ class _MushafScreenState extends State<MushafScreen> {
             tag: MediaItem(
               id: '${_reciter.id}:${start.surah}:$ayah',
               title:
-                  '${surah.name} — الآية ${QuranService.toArabicDigits(ayah)}',
+                  '${surah.name} — ${t('mushaf.theAyah')} ${QuranService.toArabicDigits(ayah)}',
               artist: _reciter.displayName,
-              album: 'القرآن الكريم',
+              album: t('mushaf.theNobleQuran'),
             ),
           ),
       ], initialIndex: 0);
@@ -207,8 +207,7 @@ class _MushafScreenState extends State<MushafScreen> {
 
       await _player.play();
     } catch (_) {
-      if (mounted)
-        _toast('تعذّر تشغيل التلاوة — تحقّق من الاتصال', error: true);
+      if (mounted) _toast(t('mushaf.recitationPlaybackFailed'), error: true);
     }
   }
 
@@ -229,7 +228,9 @@ class _MushafScreenState extends State<MushafScreen> {
 
     await updated.save();
     setState(() => _repeat = updated);
-    _toast(updated.isActive ? 'تم ضبط التكرار' : 'أُلغي التكرار');
+    _toast(
+      updated.isActive ? t('mushaf.repeatEnabled') : t('mushaf.repeatDisabled'),
+    );
   }
 
   Future<void> _copyAyah(AyahBoxes a) async {
@@ -238,7 +239,7 @@ class _MushafScreenState extends State<MushafScreen> {
     );
     if (!mounted) return;
     HapticFeedback.lightImpact();
-    _toast('تم نسخ الآية');
+    _toast(t('mushaf.ayahCopied'));
   }
 
   Future<void> _shareAyah(AyahBoxes a) async {
@@ -262,7 +263,7 @@ class _MushafScreenState extends State<MushafScreen> {
               Padding(
                 padding: const EdgeInsets.all(14),
                 child: Text(
-                  'علامة على ${_reference(a)}',
+                  '${t('mushaf.bookmarkOn')} ${_reference(a)}',
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: AppColors.gold,
@@ -309,7 +310,9 @@ class _MushafScreenState extends State<MushafScreen> {
     );
     if (!mounted) return;
     _toast(
-      marked ? 'أُضيفت علامة ${kind.label}' : 'أُزيلت علامة ${kind.label}',
+      marked
+          ? '${t('mushaf.bookmarkAdded')} ${kind.label}'
+          : '${t('mushaf.bookmarkRemoved')} ${kind.label}',
     );
   }
 
@@ -321,26 +324,29 @@ class _MushafScreenState extends State<MushafScreen> {
         textDirection: TextDirection.rtl,
         child: AlertDialog(
           backgroundColor: AppColors.blackCard,
-          title: const Text(
-            'ملاحظة',
-            style: TextStyle(color: AppColors.gold, fontSize: 17),
+          title: Text(
+            t('mushaf.noteTitle'),
+            style: const TextStyle(color: AppColors.gold, fontSize: 17),
           ),
           content: TextField(
             controller: controller,
             autofocus: true,
             maxLines: 4,
             style: const TextStyle(color: AppColors.textPrimary),
-            decoration: const InputDecoration(
-              hintText: 'اكتب ملاحظتك على هذه الآية…',
-              hintStyle: TextStyle(color: AppColors.textMuted, fontSize: 13),
+            decoration: InputDecoration(
+              hintText: t('mushaf.noteHint'),
+              hintStyle: const TextStyle(
+                color: AppColors.textMuted,
+                fontSize: 13,
+              ),
             ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text(
-                'إلغاء',
-                style: TextStyle(color: AppColors.textMuted),
+              child: Text(
+                t('mushaf.cancel'),
+                style: const TextStyle(color: AppColors.textMuted),
               ),
             ),
             TextButton(
@@ -348,7 +354,10 @@ class _MushafScreenState extends State<MushafScreen> {
                 final text = controller.text.trim();
                 Navigator.pop(ctx, text.isEmpty ? null : text);
               },
-              child: const Text('حفظ', style: TextStyle(color: AppColors.gold)),
+              child: Text(
+                t('mushaf.save'),
+                style: const TextStyle(color: AppColors.gold),
+              ),
             ),
           ],
         ),
@@ -457,8 +466,8 @@ class _MushafScreenState extends State<MushafScreen> {
     final selected = _selected;
 
     final surahLine = selected == null
-        ? 'سورة ${names.join(' · ')}'
-        : 'سورة ${_surahInfo(selected.surah).name} — آية ${QuranService.toArabicDigits(selected.ayah)}';
+        ? '${t('mushaf.surah')} ${names.join(' · ')}'
+        : '${t('mushaf.surah')} ${_surahInfo(selected.surah).name} — ${t('mushaf.ayah')} ${QuranService.toArabicDigits(selected.ayah)}';
 
     return Positioned(
       top: 0,
@@ -488,7 +497,7 @@ class _MushafScreenState extends State<MushafScreen> {
                 children: [
                   _barIcon(
                     Icons.menu,
-                    'التصفّح',
+                    t('mushaf.browse'),
                     () => _scaffoldKey.currentState?.openDrawer(),
                   ),
                   Flexible(
@@ -505,7 +514,7 @@ class _MushafScreenState extends State<MushafScreen> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      'الجزء ${QuranService.toArabicDigits(page.juz)} · صفحة ${QuranService.toArabicDigits(page.number)}',
+                      '${t('mushaf.juz')} ${QuranService.toArabicDigits(page.juz)} · ${t('mushaf.page')} ${QuranService.toArabicDigits(page.number)}',
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: AppColors.textMuted,
@@ -513,7 +522,11 @@ class _MushafScreenState extends State<MushafScreen> {
                       ),
                     ),
                   ),
-                  _barIcon(Icons.close, 'رجوع', () => Navigator.pop(context)),
+                  _barIcon(
+                    Icons.close,
+                    t('mushaf.back'),
+                    () => Navigator.pop(context),
+                  ),
                 ],
               ),
               // Who is reciting, then the controls.
@@ -537,9 +550,9 @@ class _MushafScreenState extends State<MushafScreen> {
                       const SpeedButton(),
                       _barIcon(
                         Icons.repeat,
-                        'التكرار',
+                        t('mushaf.repetition'),
                         _openRepeatSettings,
-                        label: 'تـكرار',
+                        label: t('mushaf.repetitionShort'),
                         active: _repeat.isActive,
                         iconSize: 23,
                       ),
@@ -719,17 +732,17 @@ class _MushafScreenState extends State<MushafScreen> {
 
         return _barIcon(
           playing ? Icons.pause : Icons.play_arrow,
-          playing ? 'إيقاف' : 'تلاوة الآية المحددة',
+          playing ? t('mushaf.pause') : t('mushaf.playSelectedAyah'),
           () {
             if (playing) {
               _player.pause();
             } else if (_selected != null) {
               _playFrom(_selected!);
             } else {
-              _toast('اضغط على آية أولاً لتبدأ التلاوة منها');
+              _toast(t('mushaf.tapAyahFirst'));
             }
           },
-          label: playing ? 'إيـقاف' : 'تـشغيل',
+          label: playing ? t('mushaf.pauseShort') : t('mushaf.playShort'),
           iconSize: 26,
           active: true,
         );
@@ -764,22 +777,22 @@ class _MushafScreenState extends State<MushafScreen> {
             children: [
               _action(
                 Icons.bookmark_border,
-                'علامة',
+                t('mushaf.bookmark'),
                 selected == null ? null : () => _markAyah(selected),
               ),
               _action(
                 Icons.menu_book,
-                'التفسير',
+                t('mushaf.tafsir'),
                 selected == null ? null : () => _showTafsir(selected),
               ),
               _action(
                 Icons.copy,
-                'نسخ',
+                t('mushaf.copy'),
                 selected == null ? null : () => _copyAyah(selected),
               ),
               _action(
                 Icons.share,
-                'مشاركة',
+                t('mushaf.share'),
                 selected == null ? null : () => _shareAyah(selected),
               ),
             ],

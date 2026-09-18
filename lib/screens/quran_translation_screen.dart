@@ -10,6 +10,7 @@ import 'package:path_provider/path_provider.dart';
 
 import '../constants/theme.dart';
 import '../data/quran_data.dart';
+import '../l10n/strings.dart';
 import '../services/app_audio.dart';
 import '../services/recitation_service.dart';
 
@@ -163,11 +164,11 @@ class _QuranTranslationScreenState extends State<QuranTranslationScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Padding(
-                padding: EdgeInsets.fromLTRB(20, 16, 20, 4),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
                 child: Text(
-                  'اختر اللغة',
-                  style: TextStyle(color: AppColors.gold, fontSize: 15),
+                  t('qs.chooseLanguage'),
+                  style: const TextStyle(color: AppColors.gold, fontSize: 15),
                 ),
               ),
               for (final lang in _langs)
@@ -208,7 +209,7 @@ class _QuranTranslationScreenState extends State<QuranTranslationScreen> {
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
-          title: const Text('القرآن الكريم'),
+          title: Text(t('qs.quranTitle')),
           backgroundColor: AppColors.black,
           foregroundColor: AppColors.gold,
           actions: [
@@ -285,7 +286,7 @@ class _QuranTranslationScreenState extends State<QuranTranslationScreen> {
                             ),
                           ),
                           Text(
-                            '${QuranService.toArabicDigits(info.ayahCount)} آية',
+                            '${QuranService.toArabicDigits(info.ayahCount)} ${t('qs.ayahUnit')}',
                             style: const TextStyle(
                               color: AppColors.textMuted,
                               fontSize: 11,
@@ -395,9 +396,9 @@ class _QuranTranslationSurahScreenState
         tag: MediaItem(
           id: 'trans:${_reciter.id}:${widget.info.number}:${ayah.number}',
           title:
-              '${widget.info.name} — الآية ${QuranService.toArabicDigits(ayah.number)}',
+              '${widget.info.name} — ${t('qs.ayahWord')} ${QuranService.toArabicDigits(ayah.number)}',
           artist: _reciter.displayName,
-          album: 'القرآن الكريم',
+          album: t('qs.quranTitle'),
         ),
       ),
     );
@@ -420,7 +421,7 @@ class _QuranTranslationSurahScreenState
       } catch (_) {
         if (!_audioErrorShown) {
           _audioErrorShown = true;
-          _toast('تعذّر تشغيل التلاوة — تحقّق من الاتصال');
+          _toast(t('qs.recitationPlaybackFailed'));
         }
         return false;
       }
@@ -567,11 +568,11 @@ class _QuranTranslationSurahScreenState
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Padding(
-                padding: EdgeInsets.fromLTRB(20, 16, 20, 4),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
                 child: Text(
-                  'اختر اللغة',
-                  style: TextStyle(color: AppColors.gold, fontSize: 15),
+                  t('qs.chooseLanguage'),
+                  style: const TextStyle(color: AppColors.gold, fontSize: 15),
                 ),
               ),
               for (final lang in _langs)
@@ -626,11 +627,11 @@ class _QuranTranslationSurahScreenState
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Padding(
-                padding: EdgeInsets.fromLTRB(20, 16, 20, 4),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
                 child: Text(
-                  'اختر المقرئ',
-                  style: TextStyle(color: AppColors.gold, fontSize: 15),
+                  t('qs.chooseReciter'),
+                  style: const TextStyle(color: AppColors.gold, fontSize: 15),
                 ),
               ),
               for (final r in RecitationService.reciters.where(
@@ -751,7 +752,7 @@ class _QuranTranslationSurahScreenState
           ),
           const Spacer(),
           IconButton(
-            tooltip: 'صوت المقرئ',
+            tooltip: t('qs.reciterVoiceTooltip'),
             visualDensity: VisualDensity.compact,
             icon: Icon(
               Icons.record_voice_over,
@@ -788,7 +789,7 @@ class _QuranTranslationSurahScreenState
             ),
           ),
           IconButton(
-            tooltip: 'صوت الترجمة',
+            tooltip: t('qs.translationVoiceTooltip'),
             visualDensity: VisualDensity.compact,
             icon: Icon(
               Icons.translate,
@@ -824,10 +825,10 @@ class _QuranTranslationSurahScreenState
         children: [
           const Icon(Icons.wifi_off, color: AppColors.textMuted, size: 16),
           const SizedBox(width: 8),
-          const Expanded(
+          Expanded(
             child: Text(
-              'تعذّر تحميل الترجمة — تحقق من الاتصال.',
-              style: TextStyle(color: AppColors.textMuted, fontSize: 12),
+              t('qs.translationLoadFailed'),
+              style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
             ),
           ),
           TextButton(
@@ -838,9 +839,9 @@ class _QuranTranslationSurahScreenState
               });
               _loadTranslation();
             },
-            child: const Text(
-              'أعد',
-              style: TextStyle(color: AppColors.gold, fontSize: 12),
+            child: Text(
+              t('qs.retryLabel'),
+              style: const TextStyle(color: AppColors.gold, fontSize: 12),
             ),
           ),
         ],
@@ -907,7 +908,7 @@ class _QuranTranslationSurahScreenState
               if (_reciter.isPerAyah) ...[
                 _cardButton(
                   icon: Icons.record_voice_over,
-                  tooltip: 'تشغيل المقرئ',
+                  tooltip: t('qs.playReciterTooltip'),
                   onTap: () => _playAyahArabic(index, ayah),
                 ),
                 GestureDetector(
@@ -940,7 +941,7 @@ class _QuranTranslationSurahScreenState
               if (trans != null)
                 _cardButton(
                   icon: Icons.translate,
-                  tooltip: 'تشغيل الترجمة',
+                  tooltip: t('qs.playTranslationTooltip'),
                   onTap: () => _playAyahTranslation(index, ayah, trans),
                 ),
               if (canPlay) ...[

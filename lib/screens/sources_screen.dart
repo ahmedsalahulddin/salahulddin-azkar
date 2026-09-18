@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../constants/theme.dart';
 import '../data/sources.dart';
+import '../l10n/strings.dart';
 
 /// Whose work this app is carrying.
 ///
@@ -18,18 +19,20 @@ class SourcesScreen extends StatelessWidget {
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
-          title: const Text('المصادر والحقوق'),
+          title: Text(t('lib2.sourcesAndRightsTitle')),
           backgroundColor: AppColors.black,
           foregroundColor: AppColors.gold,
         ),
         body: ListView(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
           children: [
-            const Text(
-              'كل ما في هذا التطبيق من نصّ وصوت وخطّ منسوب إلى أصحابه. ما سقطت '
-              'حقوقه بالتقادم مذكور بذلك، وما كان لصاحبٍ حيّ فهو باسمه.',
-              style: TextStyle(
-                  color: AppColors.textSecondary, fontSize: 13, height: 1.8),
+            Text(
+              t('lib2.sourcesIntroText'),
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 13,
+                height: 1.8,
+              ),
             ),
             const SizedBox(height: 18),
             for (final kind in SourceKind.values) ...[
@@ -45,13 +48,16 @@ class SourcesScreen extends StatelessWidget {
   }
 
   Widget _heading(String label) => Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: Text(
-          label,
-          style: const TextStyle(
-              color: AppColors.gold, fontSize: 15, fontWeight: FontWeight.bold),
-        ),
-      );
+    padding: const EdgeInsets.only(bottom: 8),
+    child: Text(
+      label,
+      style: const TextStyle(
+        color: AppColors.gold,
+        fontSize: 15,
+        fontWeight: FontWeight.bold,
+      ),
+    ),
+  );
 
   Widget _card(AppSource source) {
     return Container(
@@ -65,20 +71,33 @@ class SourcesScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(source.title,
-              style: const TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold)),
+          Text(
+            source.title,
+            style: const TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const SizedBox(height: 3),
-          Text(source.holder,
-              style: const TextStyle(
-                  color: AppColors.textSecondary, fontSize: 12, height: 1.6)),
+          Text(
+            source.holder,
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 12,
+              height: 1.6,
+            ),
+          ),
           if (source.detail != null) ...[
             const SizedBox(height: 3),
-            Text(source.detail!,
-                style: const TextStyle(
-                    color: AppColors.textMuted, fontSize: 11, height: 1.6)),
+            Text(
+              source.detail!,
+              style: const TextStyle(
+                color: AppColors.textMuted,
+                fontSize: 11,
+                height: 1.6,
+              ),
+            ),
           ],
           const SizedBox(height: 8),
           Align(
@@ -106,24 +125,28 @@ class SourcesScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: AppColors.goldBorder),
         ),
-        child: Text(standing.label,
-            style: TextStyle(color: tint, fontSize: 10.5)),
+        child: Text(
+          standing.label,
+          style: TextStyle(color: tint, fontSize: 10.5),
+        ),
       ),
     );
   }
 
   Widget _footer() => Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: AppColors.goldMuted,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.goldBorder),
-        ),
-        child: const Text(
-          'التطبيق مجّاني، لا إعلان فيه ولا بيع. وإن رأى صاحب حقٍّ أنّ عملَه '
-          'وُضع هنا على غير وجهه، فليُراسلنا ويُرفع أو يُصحَّح.',
-          style: TextStyle(
-              color: AppColors.textSecondary, fontSize: 12, height: 1.9),
-        ),
-      );
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      color: AppColors.goldMuted,
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: AppColors.goldBorder),
+    ),
+    child: Text(
+      t('lib2.sourcesFooterText'),
+      style: const TextStyle(
+        color: AppColors.textSecondary,
+        fontSize: 12,
+        height: 1.9,
+      ),
+    ),
+  );
 }

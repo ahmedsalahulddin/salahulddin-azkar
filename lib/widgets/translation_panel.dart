@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/theme.dart';
 import '../data/translation_data.dart';
+import '../l10n/strings.dart';
 
 /// Shows the meanings of one ayah in another language, and lets the reader
 /// pick which translation to read. None ship with the app, so an unfetched
@@ -85,8 +86,10 @@ class _TranslationPanelState extends State<TranslationPanel> {
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('تعذّر تنزيل $failed سورة — أعد المحاولة لإكمالها',
-              textDirection: TextDirection.rtl),
+          content: Text(
+            t('mushaf.downloadSurahsFailed').replaceFirst('%s', '$failed'),
+            textDirection: TextDirection.rtl,
+          ),
           backgroundColor: AppColors.error,
         ),
       );
@@ -103,9 +106,11 @@ class _TranslationPanelState extends State<TranslationPanel> {
         _body(),
         if (_translation != null && !_needsDownload && !_downloading) ...[
           const SizedBox(height: 16),
-          Text(_translation!.translator,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.textMuted, fontSize: 11)),
+          Text(
+            _translation!.translator,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+          ),
         ],
       ],
     );
@@ -125,22 +130,29 @@ class _TranslationPanelState extends State<TranslationPanel> {
             child: GestureDetector(
               onTap: _downloading ? null : () => _switchTo(t),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: active ? AppColors.goldMuted : AppColors.blackSurface,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                      color: active ? AppColors.gold : AppColors.goldBorder),
+                    color: active ? AppColors.gold : AppColors.goldBorder,
+                  ),
                 ),
                 child: Row(
                   children: [
-                    Text(t.language,
-                        style: TextStyle(
-                          color: active ? AppColors.gold : AppColors.textMuted,
-                          fontSize: 12,
-                          fontWeight:
-                              active ? FontWeight.bold : FontWeight.normal,
-                        )),
+                    Text(
+                      t.language,
+                      style: TextStyle(
+                        color: active ? AppColors.gold : AppColors.textMuted,
+                        fontSize: 12,
+                        fontWeight: active
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                      ),
+                    ),
                     const SizedBox(width: 5),
                     FutureBuilder<bool>(
                       future: TranslationService.isDownloaded(t),
@@ -166,9 +178,13 @@ class _TranslationPanelState extends State<TranslationPanel> {
     if (_downloading) {
       return Column(
         children: [
-          Text('جاري تنزيل ${_translation!.language}…',
-              style: const TextStyle(
-                  color: AppColors.textSecondary, fontSize: 14)),
+          Text(
+            '${t('mushaf.downloadingInProgress')} ${_translation!.language}…',
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 14,
+            ),
+          ),
           const SizedBox(height: 10),
           ClipRRect(
             borderRadius: BorderRadius.circular(3),
@@ -180,8 +196,10 @@ class _TranslationPanelState extends State<TranslationPanel> {
             ),
           ),
           const SizedBox(height: 6),
-          Text('$_done / ١١٤ سورة',
-              style: const TextStyle(color: AppColors.textMuted, fontSize: 12)),
+          Text(
+            '$_done / ${t('mushaf.totalSurahsCount')}',
+            style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+          ),
         ],
       );
     }
@@ -190,18 +208,21 @@ class _TranslationPanelState extends State<TranslationPanel> {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 30),
         child: Center(
-          child: CircularProgressIndicator(color: AppColors.gold, strokeWidth: 2),
+          child: CircularProgressIndicator(
+            color: AppColors.gold,
+            strokeWidth: 2,
+          ),
         ),
       );
     }
 
     if (_translation == null) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 24),
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 24),
         child: Text(
-          'اختر لغة من الأعلى لعرض معاني الآية بها',
+          t('mushaf.chooseLanguageAbove'),
           textAlign: TextAlign.center,
-          style: TextStyle(color: AppColors.textMuted, fontSize: 13),
+          style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
         ),
       );
     }
@@ -209,15 +230,21 @@ class _TranslationPanelState extends State<TranslationPanel> {
     if (_needsDownload) {
       return Column(
         children: [
-          const Icon(Icons.cloud_download_outlined,
-              color: AppColors.textMuted, size: 34),
+          const Icon(
+            Icons.cloud_download_outlined,
+            color: AppColors.textMuted,
+            size: 34,
+          ),
           const SizedBox(height: 10),
-          Text('${_translation!.language} غير منزَّلة بعد',
-              style:
-                  const TextStyle(color: AppColors.textPrimary, fontSize: 15)),
+          Text(
+            '${_translation!.language} ${t('mushaf.translationNotDownloadedYet')}',
+            style: const TextStyle(color: AppColors.textPrimary, fontSize: 15),
+          ),
           const SizedBox(height: 4),
-          const Text('بعد التنزيل تعمل بلا إنترنت',
-              style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
+          Text(
+            t('mushaf.worksOfflineAfterDownloadShort'),
+            style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+          ),
           const SizedBox(height: 14),
           ElevatedButton.icon(
             onPressed: _download,
@@ -226,19 +253,19 @@ class _TranslationPanelState extends State<TranslationPanel> {
               backgroundColor: AppColors.emerald,
               foregroundColor: AppColors.white,
             ),
-            label: const Text('تنزيل'),
+            label: Text(t('mushaf.download')),
           ),
         ],
       );
     }
 
-    final t = _translation!;
+    final translation = _translation!;
     return Directionality(
       // Urdu and the like read right-to-left; the rest do not.
-      textDirection: t.isRtl ? TextDirection.rtl : TextDirection.ltr,
+      textDirection: translation.isRtl ? TextDirection.rtl : TextDirection.ltr,
       child: Text(
-        _text ?? 'لا تتوفر ترجمة لهذه الآية',
-        textAlign: t.isRtl ? TextAlign.right : TextAlign.left,
+        _text ?? t('mushaf.noTranslationForThisAyah'),
+        textAlign: translation.isRtl ? TextAlign.right : TextAlign.left,
         style: const TextStyle(
           color: AppColors.textPrimary,
           fontSize: 15,

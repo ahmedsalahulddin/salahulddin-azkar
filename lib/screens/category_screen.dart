@@ -99,7 +99,9 @@ class _CategoryScreenState extends State<CategoryScreen> {
                 textDirection: TextDirection.rtl,
                 style: const TextStyle(color: AppColors.textPrimary),
                 decoration: InputDecoration(
-                  hintText: 'ابحث في ${cat.name}...',
+                  hintText: t(
+                    'misc.searchInCategoryHint',
+                  ).replaceAll('{name}', cat.name),
                   hintStyle: const TextStyle(
                     color: AppColors.textMuted,
                     fontSize: 14,
@@ -133,10 +135,10 @@ class _CategoryScreenState extends State<CategoryScreen> {
             // List
             Expanded(
               child: filtered.isEmpty
-                  ? const Center(
+                  ? Center(
                       child: Text(
-                        'لا توجد نتائج',
-                        style: TextStyle(
+                        t('misc.noResults'),
+                        style: const TextStyle(
                           color: AppColors.textMuted,
                           fontSize: 16,
                         ),

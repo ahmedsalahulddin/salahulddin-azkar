@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/theme.dart';
 import '../data/quran_data.dart';
+import '../l10n/strings.dart';
 import '../services/storage_service.dart';
 import 'surah_screen.dart';
 
@@ -68,13 +69,14 @@ class _QuranScreenState extends State<QuranScreen> {
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
-          title: const Text('القرآن الكريم'),
+          title: Text(t('qs.quranTitle')),
           backgroundColor: AppColors.black,
           foregroundColor: AppColors.gold,
         ),
         body: _loading
             ? const Center(
-                child: CircularProgressIndicator(color: AppColors.gold))
+                child: CircularProgressIndicator(color: AppColors.gold),
+              )
             : Column(
                 children: [
                   // Continue reading
@@ -93,26 +95,40 @@ class _QuranScreenState extends State<QuranScreen> {
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.bookmark, color: AppColors.gold, size: 22),
+                            const Icon(
+                              Icons.bookmark,
+                              color: AppColors.gold,
+                              size: 22,
+                            ),
                             const SizedBox(width: 10),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text('متابعة القراءة',
-                                      style: TextStyle(
-                                          color: AppColors.textMuted, fontSize: 11)),
+                                  Text(
+                                    t('qs.continueReading'),
+                                    style: const TextStyle(
+                                      color: AppColors.textMuted,
+                                      fontSize: 11,
+                                    ),
+                                  ),
                                   const SizedBox(height: 2),
-                                  Text('سورة ${last.name}',
-                                      style: const TextStyle(
-                                          color: AppColors.textGold,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold)),
+                                  Text(
+                                    '${t('qs.surahPrefix')} ${last.name}',
+                                    style: const TextStyle(
+                                      color: AppColors.textGold,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
-                            const Icon(Icons.chevron_left,
-                                color: AppColors.textMuted, size: 22),
+                            const Icon(
+                              Icons.chevron_left,
+                              color: AppColors.textMuted,
+                              size: 22,
+                            ),
                           ],
                         ),
                       ),
@@ -127,42 +143,57 @@ class _QuranScreenState extends State<QuranScreen> {
                       textAlign: TextAlign.right,
                       style: const TextStyle(color: AppColors.textPrimary),
                       decoration: InputDecoration(
-                        hintText: 'ابحث عن سورة…',
+                        hintText: t('qs.searchSurahHint'),
                         hintStyle: const TextStyle(
-                            color: AppColors.textMuted, fontSize: 14),
+                          color: AppColors.textMuted,
+                          fontSize: 14,
+                        ),
                         filled: true,
                         fillColor: AppColors.blackSurface,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: AppColors.goldBorder),
+                          borderSide: const BorderSide(
+                            color: AppColors.goldBorder,
+                          ),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: AppColors.goldBorder),
+                          borderSide: const BorderSide(
+                            color: AppColors.goldBorder,
+                          ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: const BorderSide(color: AppColors.gold),
                         ),
-                        contentPadding:
-                            const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                        suffixIcon:
-                            const Icon(Icons.search, color: AppColors.textMuted),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 10,
+                        ),
+                        suffixIcon: const Icon(
+                          Icons.search,
+                          color: AppColors.textMuted,
+                        ),
                       ),
                     ),
                   ),
 
                   Expanded(
                     child: filtered.isEmpty
-                        ? const Center(
-                            child: Text('لا توجد نتائج',
-                                style: TextStyle(
-                                    color: AppColors.textMuted, fontSize: 16)),
+                        ? Center(
+                            child: Text(
+                              t('qs.noResults'),
+                              style: const TextStyle(
+                                color: AppColors.textMuted,
+                                fontSize: 16,
+                              ),
+                            ),
                           )
                         : ListView.builder(
                             padding: const EdgeInsets.only(bottom: 16),
                             itemCount: filtered.length,
-                            itemBuilder: (context, i) => _surahTile(filtered[i]),
+                            itemBuilder: (context, i) =>
+                                _surahTile(filtered[i]),
                           ),
                   ),
                 ],
@@ -197,9 +228,10 @@ class _QuranScreenState extends State<QuranScreen> {
                 child: Text(
                   QuranService.toArabicDigits(s.number),
                   style: const TextStyle(
-                      color: AppColors.gold,
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold),
+                    color: AppColors.gold,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
@@ -208,21 +240,29 @@ class _QuranScreenState extends State<QuranScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(s.name,
-                      style: const TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 17,
-                          fontWeight: FontWeight.w600)),
+                  Text(
+                    s.name,
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                   const SizedBox(height: 2),
-                  Text('${s.type} • ${s.ayahCount} آية',
-                      style: const TextStyle(
-                          color: AppColors.textMuted, fontSize: 12)),
+                  Text(
+                    '${s.type} • ${s.ayahCount} ${t('qs.ayahUnit')}',
+                    style: const TextStyle(
+                      color: AppColors.textMuted,
+                      fontSize: 12,
+                    ),
+                  ),
                 ],
               ),
             ),
-            Text(s.nameEn,
-                style: const TextStyle(
-                    color: AppColors.textMuted, fontSize: 11)),
+            Text(
+              s.nameEn,
+              style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+            ),
           ],
         ),
       ),

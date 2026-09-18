@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import '../constants/theme.dart';
 import '../data/memorisation.dart';
 import '../data/quran_data.dart';
+import '../l10n/strings.dart';
 
 const _mushafFont = 'AmiriQuran';
 
@@ -29,13 +30,16 @@ Future<void> openMemorisationPicker(BuildContext context) async {
         initialChildSize: 0.75,
         builder: (ctx, controller) => Column(
           children: [
-            const Padding(
-              padding: EdgeInsets.all(14),
-              child: Text('اختر سورة للاختبار',
-                  style: TextStyle(
-                      color: AppColors.gold,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold)),
+            Padding(
+              padding: const EdgeInsets.all(14),
+              child: Text(
+                t('misc.chooseSurahToTest'),
+                style: const TextStyle(
+                  color: AppColors.gold,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
             const Divider(color: AppColors.goldBorder, height: 1),
             Expanded(
@@ -44,14 +48,23 @@ Future<void> openMemorisationPicker(BuildContext context) async {
                 itemCount: index.length,
                 itemBuilder: (ctx, i) => ListTile(
                   dense: true,
-                  leading: Text(QuranService.toArabicDigits(index[i].number),
-                      style: const TextStyle(
-                          color: AppColors.gold, fontSize: 13)),
-                  title: Text(index[i].name,
-                      style: const TextStyle(color: AppColors.textPrimary)),
-                  subtitle: Text('${index[i].ayahCount} آية',
-                      style: const TextStyle(
-                          color: AppColors.textMuted, fontSize: 11)),
+                  leading: Text(
+                    QuranService.toArabicDigits(index[i].number),
+                    style: const TextStyle(color: AppColors.gold, fontSize: 13),
+                  ),
+                  title: Text(
+                    index[i].name,
+                    style: const TextStyle(color: AppColors.textPrimary),
+                  ),
+                  subtitle: Text(
+                    t(
+                      'misc.ayahCount',
+                    ).replaceAll('{count}', '${index[i].ayahCount}'),
+                    style: const TextStyle(
+                      color: AppColors.textMuted,
+                      fontSize: 11,
+                    ),
+                  ),
                   onTap: () => Navigator.pop(ctx, index[i]),
                 ),
               ),
@@ -151,12 +164,17 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
         appBar: AppBar(
           backgroundColor: AppColors.black,
           foregroundColor: AppColors.gold,
-          title: Text('اختبار الحفظ — ${widget.info.name}',
-              style: const TextStyle(fontSize: 16)),
+          title: Text(
+            t(
+              'misc.memorisationTestTitle',
+            ).replaceAll('{name}', widget.info.name),
+            style: const TextStyle(fontSize: 16),
+          ),
         ),
         body: bank == null
             ? const Center(
-                child: CircularProgressIndicator(color: AppColors.gold))
+                child: CircularProgressIndicator(color: AppColors.gold),
+              )
             : Column(
                 children: [
                   _modeBar(bank),
@@ -165,8 +183,8 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
                     child: _finished
                         ? _results()
                         : !bank.supports(_mode)
-                            ? _tooShort()
-                            : _body(_question),
+                        ? _tooShort()
+                        : _body(_question),
                   ),
                 ],
               ),
@@ -190,8 +208,10 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
                 onTap: () => _switchMode(mode),
                 behavior: HitTestBehavior.opaque,
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: mode == _mode
                         ? AppColors.goldMuted
@@ -234,13 +254,21 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                  'السؤال ${QuranService.toArabicDigits(_position + 1)} من ${QuranService.toArabicDigits(_total)}',
-                  style: const TextStyle(
-                      color: AppColors.textMuted, fontSize: 12)),
+                t('misc.questionProgress')
+                    .replaceAll(
+                      '{current}',
+                      QuranService.toArabicDigits(_position + 1),
+                    )
+                    .replaceAll('{total}', QuranService.toArabicDigits(_total)),
+                style: const TextStyle(
+                  color: AppColors.textMuted,
+                  fontSize: 12,
+                ),
+              ),
               Text(
-                  '✓ ${QuranService.toArabicDigits(_correct)}   ✗ ${QuranService.toArabicDigits(_missed)}',
-                  style: const TextStyle(
-                      color: AppColors.textGold, fontSize: 12)),
+                '✓ ${QuranService.toArabicDigits(_correct)}   ✗ ${QuranService.toArabicDigits(_missed)}',
+                style: const TextStyle(color: AppColors.textGold, fontSize: 12),
+              ),
             ],
           ),
           const SizedBox(height: 6),
@@ -263,11 +291,13 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
       child: Padding(
         padding: const EdgeInsets.all(28),
         child: Text(
-          'سورة ${widget.info.name} أقصر من أن تُسأل بهذه الطريقة. '
-          'جرّب طريقة أخرى من الشريط أعلاه.',
+          t('misc.surahTooShort').replaceAll('{name}', widget.info.name),
           textAlign: TextAlign.center,
           style: const TextStyle(
-              color: AppColors.textMuted, fontSize: 14, height: 1.7),
+            color: AppColors.textMuted,
+            fontSize: 14,
+            height: 1.7,
+          ),
         ),
       ),
     );
@@ -290,11 +320,11 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
   }
 
   Widget _body(Question q) => switch (q.mode) {
-        TestMode.complete => _complete(q),
-        TestMode.order => _order(q),
-        TestMode.missing => _missing(q),
-        TestMode.next => _nextAyah(q),
-      };
+    TestMode.complete => _complete(q),
+    TestMode.order => _order(q),
+    TestMode.missing => _missing(q),
+    TestMode.next => _nextAyah(q),
+  };
 
   // ---- إكمال الآية --------------------------------------------------------
 
@@ -318,12 +348,15 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
                     runSpacing: 8,
                     children: [
                       for (final word in q.shown)
-                        Text(word,
-                            style: const TextStyle(
-                                fontFamily: _mushafFont,
-                                fontSize: 23,
-                                height: 1.9,
-                                color: AppColors.textPrimary)),
+                        Text(
+                          word,
+                          style: const TextStyle(
+                            fontFamily: _mushafFont,
+                            fontSize: 23,
+                            height: 1.9,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
                       for (final word in q.hidden)
                         _revealed ? _revealedWord(word) : _blank(word),
                     ],
@@ -331,12 +364,17 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
                   const SizedBox(height: 14),
                   Text(
                     _revealed
-                        ? 'آية ${QuranService.toArabicDigits(q.ayah.number)}'
+                        ? t('misc.ayahNumber').replaceAll(
+                            '{number}',
+                            QuranService.toArabicDigits(q.ayah.number),
+                          )
                         : q.shown.isEmpty
-                            ? 'استرجع الآية كاملة ثم اكشف'
-                            : 'أكمل الآية ثم اكشف',
+                        ? t('misc.recallFullAyahThenReveal')
+                        : t('misc.completeAyahThenReveal'),
                     style: const TextStyle(
-                        color: AppColors.textMuted, fontSize: 12),
+                      color: AppColors.textMuted,
+                      fontSize: 12,
+                    ),
                   ),
                 ],
               ),
@@ -357,7 +395,7 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
                       foregroundColor: AppColors.white,
                       padding: const EdgeInsets.symmetric(vertical: 13),
                     ),
-                    label: const Text('اكشف'),
+                    label: Text(t('misc.reveal')),
                   ),
                 ),
         ),
@@ -367,7 +405,10 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
 
   Widget _blank(String word) {
     // Wide enough to hint at the word's length without spelling it out.
-    final width = (QuranService.searchKey(word).runes.length * 11.0).clamp(34.0, 110.0);
+    final width = (QuranService.searchKey(word).runes.length * 11.0).clamp(
+      34.0,
+      110.0,
+    );
     return Container(
       width: width,
       height: 30,
@@ -376,19 +417,24 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
         borderRadius: BorderRadius.circular(6),
         border: Border.all(color: AppColors.gold),
       ),
-      child: const Center(
-        child: Text('؟',
-            style: TextStyle(color: AppColors.gold, fontSize: 15)),
+      child: Center(
+        child: Text(
+          t('misc.blankPlaceholder'),
+          style: const TextStyle(color: AppColors.gold, fontSize: 15),
+        ),
       ),
     );
   }
 
-  Widget _revealedWord(String word) => Text(word,
-      style: const TextStyle(
-          fontFamily: _mushafFont,
-          fontSize: 23,
-          height: 1.9,
-          color: AppColors.gold));
+  Widget _revealedWord(String word) => Text(
+    word,
+    style: const TextStyle(
+      fontFamily: _mushafFont,
+      fontSize: 23,
+      height: 1.9,
+      color: AppColors.gold,
+    ),
+  );
 
   Widget _difficultyPicker() {
     return Padding(
@@ -413,22 +459,30 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
                           : Colors.transparent,
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
-                          color: d == _difficulty
-                              ? AppColors.gold
-                              : AppColors.goldBorder),
+                        color: d == _difficulty
+                            ? AppColors.gold
+                            : AppColors.goldBorder,
+                      ),
                     ),
                     child: Column(
                       children: [
-                        Text(d.label,
-                            style: TextStyle(
-                                color: d == _difficulty
-                                    ? AppColors.gold
-                                    : AppColors.textMuted,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold)),
-                        Text(d.hint,
-                            style: const TextStyle(
-                                color: AppColors.textMuted, fontSize: 9)),
+                        Text(
+                          d.label,
+                          style: TextStyle(
+                            color: d == _difficulty
+                                ? AppColors.gold
+                                : AppColors.textMuted,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          d.hint,
+                          style: const TextStyle(
+                            color: AppColors.textMuted,
+                            fontSize: 9,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -452,7 +506,7 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
               side: const BorderSide(color: AppColors.error),
               padding: const EdgeInsets.symmetric(vertical: 12),
             ),
-            label: const Text('لم أتذكّر'),
+            label: Text(t('misc.didNotRemember')),
           ),
         ),
         const SizedBox(width: 10),
@@ -465,7 +519,7 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
               foregroundColor: AppColors.white,
               padding: const EdgeInsets.symmetric(vertical: 12),
             ),
-            label: const Text('تذكّرتها'),
+            label: Text(t('misc.rememberedIt')),
           ),
         ),
       ],
@@ -486,9 +540,13 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
               children: [
                 _card(
                   child: _placed.isEmpty
-                      ? const Text('اضغط الكلمات بترتيبها الصحيح',
-                          style: TextStyle(
-                              color: AppColors.textMuted, fontSize: 13))
+                      ? Text(
+                          t('misc.tapWordsInOrder'),
+                          style: const TextStyle(
+                            color: AppColors.textMuted,
+                            fontSize: 13,
+                          ),
+                        )
                       : Wrap(
                           alignment: WrapAlignment.center,
                           textDirection: TextDirection.rtl,
@@ -496,12 +554,15 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
                           runSpacing: 8,
                           children: [
                             for (final slot in _placed)
-                              Text(q.scrambled[slot],
-                                  style: const TextStyle(
-                                      fontFamily: _mushafFont,
-                                      fontSize: 22,
-                                      height: 1.8,
-                                      color: AppColors.textPrimary)),
+                              Text(
+                                q.scrambled[slot],
+                                style: const TextStyle(
+                                  fontFamily: _mushafFont,
+                                  fontSize: 22,
+                                  height: 1.8,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
                           ],
                         ),
                 ),
@@ -518,17 +579,22 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
                           onTap: () => _placeWord(q, slot),
                           child: Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 8),
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
                             decoration: BoxDecoration(
                               color: AppColors.blackCard,
                               borderRadius: BorderRadius.circular(10),
                               border: Border.all(color: AppColors.goldBorder),
                             ),
-                            child: Text(q.scrambled[slot],
-                                style: const TextStyle(
-                                    fontFamily: _mushafFont,
-                                    fontSize: 20,
-                                    color: AppColors.textGold)),
+                            child: Text(
+                              q.scrambled[slot],
+                              style: const TextStyle(
+                                fontFamily: _mushafFont,
+                                fontSize: 20,
+                                color: AppColors.textGold,
+                              ),
+                            ),
                           ),
                         ),
                   ],
@@ -536,9 +602,15 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
                 if (_slips > 0) ...[
                   const SizedBox(height: 14),
                   Text(
-                      'أخطاء: ${QuranService.toArabicDigits(_slips)}',
-                      style: const TextStyle(
-                          color: AppColors.error, fontSize: 12)),
+                    t('misc.mistakesCount').replaceAll(
+                      '{count}',
+                      QuranService.toArabicDigits(_slips),
+                    ),
+                    style: const TextStyle(
+                      color: AppColors.error,
+                      fontSize: 12,
+                    ),
+                  ),
                 ],
               ],
             ),
@@ -549,17 +621,17 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
           child: SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed:
-                  done ? () => _answer(remembered: _slips == 0) : null,
+              onPressed: done ? () => _answer(remembered: _slips == 0) : null,
               style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    _slips == 0 ? AppColors.emerald : AppColors.goldDark,
+                backgroundColor: _slips == 0
+                    ? AppColors.emerald
+                    : AppColors.goldDark,
                 foregroundColor: AppColors.white,
                 disabledBackgroundColor: AppColors.blackSurface,
                 disabledForegroundColor: AppColors.textMuted,
                 padding: const EdgeInsets.symmetric(vertical: 13),
               ),
-              child: Text(done ? 'التالي' : 'رتّب كل الكلمات'),
+              child: Text(done ? t('misc.next') : t('misc.arrangeAllWords')),
             ),
           ),
         ),
@@ -592,12 +664,15 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
         runSpacing: 8,
         children: [
           for (final word in q.before)
-            Text(word,
-                style: const TextStyle(
-                    fontFamily: _mushafFont,
-                    fontSize: 22,
-                    height: 1.9,
-                    color: AppColors.textPrimary)),
+            Text(
+              word,
+              style: const TextStyle(
+                fontFamily: _mushafFont,
+                fontSize: 22,
+                height: 1.9,
+                color: AppColors.textPrimary,
+              ),
+            ),
           Container(
             width: 70,
             height: 28,
@@ -606,17 +681,23 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
               borderRadius: BorderRadius.circular(6),
               border: Border.all(color: AppColors.gold),
             ),
-            child: const Center(
-                child: Text('؟',
-                    style: TextStyle(color: AppColors.gold, fontSize: 15))),
+            child: Center(
+              child: Text(
+                t('misc.blankPlaceholder'),
+                style: const TextStyle(color: AppColors.gold, fontSize: 15),
+              ),
+            ),
           ),
           for (final word in q.after)
-            Text(word,
-                style: const TextStyle(
-                    fontFamily: _mushafFont,
-                    fontSize: 22,
-                    height: 1.9,
-                    color: AppColors.textPrimary)),
+            Text(
+              word,
+              style: const TextStyle(
+                fontFamily: _mushafFont,
+                fontSize: 22,
+                height: 1.9,
+                color: AppColors.textPrimary,
+              ),
+            ),
         ],
       ),
       optionText: (option) => option,
@@ -631,16 +712,21 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
       q: q,
       prompt: Column(
         children: [
-          Text(q.ayah.text,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                  fontFamily: _mushafFont,
-                  fontSize: 22,
-                  height: 2.0,
-                  color: AppColors.textPrimary)),
+          Text(
+            q.ayah.text,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontFamily: _mushafFont,
+              fontSize: 22,
+              height: 2.0,
+              color: AppColors.textPrimary,
+            ),
+          ),
           const SizedBox(height: 10),
-          const Text('ما الآية التي تليها؟',
-              style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
+          Text(
+            t('misc.whichAyahFollows'),
+            style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+          ),
         ],
       ),
       // The whole ayah would give the game away by its length alone.
@@ -691,7 +777,9 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
                 disabledForegroundColor: AppColors.textMuted,
                 padding: const EdgeInsets.symmetric(vertical: 13),
               ),
-              child: Text(_chosen == null ? 'اختر إجابة' : 'التالي'),
+              child: Text(
+                _chosen == null ? t('misc.chooseAnAnswer') : t('misc.next'),
+              ),
             ),
           ),
         ),
@@ -709,10 +797,10 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
     final border = !answered
         ? AppColors.goldBorder
         : isAnswer
-            ? AppColors.success
-            : picked
-                ? AppColors.error
-                : AppColors.goldBorder;
+        ? AppColors.success
+        : picked
+        ? AppColors.error
+        : AppColors.goldBorder;
 
     return GestureDetector(
       onTap: answered ? null : () => setState(() => _chosen = index),
@@ -723,21 +811,30 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
         decoration: BoxDecoration(
           color: AppColors.blackCard,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: border, width: answered && (isAnswer || picked) ? 2 : 1),
+          border: Border.all(
+            color: border,
+            width: answered && (isAnswer || picked) ? 2 : 1,
+          ),
         ),
         child: Row(
           children: [
             Expanded(
-              child: Text(label,
-                  style: TextStyle(
-                      fontFamily: font,
-                      fontSize: 19,
-                      height: 1.7,
-                      color: AppColors.textPrimary)),
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontFamily: font,
+                  fontSize: 19,
+                  height: 1.7,
+                  color: AppColors.textPrimary,
+                ),
+              ),
             ),
             if (answered && isAnswer)
-              const Icon(Icons.check_circle,
-                  color: AppColors.success, size: 20),
+              const Icon(
+                Icons.check_circle,
+                color: AppColors.success,
+                size: 20,
+              ),
             if (answered && picked && !isAnswer)
               const Icon(Icons.cancel, color: AppColors.error, size: 20),
           ],
@@ -758,20 +855,32 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('%${QuranService.toArabicDigits(score)}',
-                style: const TextStyle(
-                    color: AppColors.gold,
-                    fontSize: 46,
-                    fontWeight: FontWeight.bold)),
+            Text(
+              '%${QuranService.toArabicDigits(score)}',
+              style: const TextStyle(
+                color: AppColors.gold,
+                fontSize: 46,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             const SizedBox(height: 8),
-            Text('${_mode.label} — سورة ${widget.info.name}',
-                style: const TextStyle(
-                    color: AppColors.textSecondary, fontSize: 14)),
+            Text(
+              '${_mode.label} — ${t('misc.surahPrefix')} ${widget.info.name}',
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 14,
+              ),
+            ),
             const SizedBox(height: 6),
             Text(
-                'تذكّرت ${QuranService.toArabicDigits(_correct)} من ${QuranService.toArabicDigits(total)}',
-                style:
-                    const TextStyle(color: AppColors.textMuted, fontSize: 13)),
+              t('misc.rememberedCountOf')
+                  .replaceAll(
+                    '{correct}',
+                    QuranService.toArabicDigits(_correct),
+                  )
+                  .replaceAll('{total}', QuranService.toArabicDigits(total)),
+              style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+            ),
             const SizedBox(height: 26),
             SizedBox(
               width: double.infinity,
@@ -783,12 +892,14 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
                   foregroundColor: AppColors.white,
                   padding: const EdgeInsets.symmetric(vertical: 13),
                 ),
-                label: const Text('أعد الاختبار'),
+                label: Text(t('misc.retakeTest')),
               ),
             ),
             const SizedBox(height: 10),
-            const Text('أو اختر طريقة أخرى من الشريط أعلاه',
-                style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
+            Text(
+              t('misc.orChooseAnotherMethod'),
+              style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+            ),
           ],
         ),
       ),

@@ -23,7 +23,10 @@ class StoryCategoryScreen extends StatelessWidget {
           title: BilingualText(
             tBoth('story.cat.${category.id}'),
             style: const TextStyle(
-                color: AppColors.gold, fontSize: 17, fontWeight: FontWeight.w600),
+              color: AppColors.gold,
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
+            ),
             maxLines: 2,
           ),
           centerTitle: true,
@@ -41,7 +44,9 @@ class StoryCategoryScreen extends StatelessWidget {
                 category.description,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                    color: AppColors.textSecondary, fontSize: 13),
+                  color: AppColors.textSecondary,
+                  fontSize: 13,
+                ),
               ),
             ),
             Expanded(
@@ -60,7 +65,9 @@ class StoryCategoryScreen extends StatelessWidget {
                     child: Container(
                       margin: const EdgeInsets.only(bottom: 10),
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 14),
+                        horizontal: 14,
+                        vertical: 14,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.blackCard,
                         borderRadius: BorderRadius.circular(12),
@@ -72,13 +79,17 @@ class StoryCategoryScreen extends StatelessWidget {
                             child: Text(
                               story.title,
                               style: const TextStyle(
-                                  color: AppColors.textPrimary,
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600),
+                                color: AppColors.textPrimary,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
-                          const Icon(Icons.chevron_left,
-                              color: AppColors.textMuted, size: 18),
+                          const Icon(
+                            Icons.chevron_left,
+                            color: AppColors.textMuted,
+                            size: 18,
+                          ),
                         ],
                       ),
                     ),

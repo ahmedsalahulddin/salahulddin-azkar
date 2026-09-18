@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../constants/theme.dart';
+import '../l10n/strings.dart';
 import '../services/storage_service.dart';
 
 /// The star that keeps a dhikr, wherever it is read.
@@ -57,14 +58,16 @@ class _FavouriteStarState extends State<FavouriteStar> {
     if (!widget.announce) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(
-        content: Text(
-          added ? 'أُضيف إلى أذكاري' : 'أُزيل من أذكاري',
-          textDirection: TextDirection.rtl,
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            added ? t('misc.addedToMyAdhkar') : t('misc.removedFromMyAdhkar'),
+            textDirection: TextDirection.rtl,
+          ),
+          backgroundColor: added ? AppColors.emerald : AppColors.blackCard,
+          duration: const Duration(milliseconds: 1400),
         ),
-        backgroundColor: added ? AppColors.emerald : AppColors.blackCard,
-        duration: const Duration(milliseconds: 1400),
-      ));
+      );
   }
 
   @override

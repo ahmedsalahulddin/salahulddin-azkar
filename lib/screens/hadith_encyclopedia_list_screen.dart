@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/theme.dart';
 import '../data/hadith_encyclopedia_data.dart';
+import '../l10n/strings.dart';
 
 /// One category's hadiths, paginated. Each row expands in place to its full
 /// text — Arabic first, then the picked language, then the explanation and
@@ -57,7 +58,7 @@ class _HadithEncyclopediaListScreenState
       if (!mounted) return;
       setState(() {
         _loading = false;
-        _error = 'تعذّر تحميل الأحاديث — تحقّق من الاتصال';
+        _error = t('lib2.failedToLoadHadithsMessage');
       });
     }
   }
@@ -115,9 +116,9 @@ class _HadithEncyclopediaListScreenState
               const SizedBox(height: 8),
               TextButton(
                 onPressed: _loadPage,
-                child: const Text(
-                  'إعادة المحاولة',
-                  style: TextStyle(color: AppColors.gold),
+                child: Text(
+                  t('lib2.retryButton'),
+                  style: const TextStyle(color: AppColors.gold),
                 ),
               ),
             ],
@@ -137,12 +138,12 @@ class _HadithEncyclopediaListScreenState
       );
     }
     if (!_hasMore && _items.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.all(24),
+      return Padding(
+        padding: const EdgeInsets.all(24),
         child: Center(
           child: Text(
-            'لا توجد أحاديث في هذا القسم',
-            style: TextStyle(color: AppColors.textMuted),
+            t('lib2.noHadithsInSectionMessage'),
+            style: const TextStyle(color: AppColors.textMuted),
           ),
         ),
       );
@@ -256,15 +257,15 @@ class _HadeethCardState extends State<_HadeethCard> {
         padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
         child: Column(
           children: [
-            const Text(
-              'تعذّر تحميل النص',
-              style: TextStyle(color: AppColors.textMuted),
+            Text(
+              t('lib2.failedToLoadTextMessage'),
+              style: const TextStyle(color: AppColors.textMuted),
             ),
             TextButton(
               onPressed: _toggle,
-              child: const Text(
-                'إعادة المحاولة',
-                style: TextStyle(color: AppColors.gold),
+              child: Text(
+                t('lib2.retryButton'),
+                style: const TextStyle(color: AppColors.gold),
               ),
             ),
           ],
@@ -323,9 +324,9 @@ class _HadeethCardState extends State<_HadeethCard> {
           ],
           if (d.explanationAr != null && d.explanationAr!.isNotEmpty) ...[
             const SizedBox(height: 12),
-            const Text(
-              'الشرح',
-              style: TextStyle(
+            Text(
+              t('lib2.explanationSectionHeader'),
+              style: const TextStyle(
                 color: AppColors.gold,
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
@@ -358,9 +359,9 @@ class _HadeethCardState extends State<_HadeethCard> {
           ],
           if (d.hintsAr.isNotEmpty) ...[
             const SizedBox(height: 12),
-            const Text(
-              'فوائد',
-              style: TextStyle(
+            Text(
+              t('lib2.benefitsSectionHeader'),
+              style: const TextStyle(
                 color: AppColors.gold,
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
@@ -383,11 +384,11 @@ class _HadeethCardState extends State<_HadeethCard> {
               ),
           ],
           const SizedBox(height: 8),
-          const Text(
-            'ترجمة معتمدة — hadeethenc.com',
+          Text(
+            '${t('lib2.certifiedTranslationLabel')} — hadeethenc.com',
             textDirection: TextDirection.rtl,
             textAlign: TextAlign.right,
-            style: TextStyle(color: AppColors.textMuted, fontSize: 10),
+            style: const TextStyle(color: AppColors.textMuted, fontSize: 10),
           ),
         ],
       ),

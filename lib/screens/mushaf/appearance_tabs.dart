@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../constants/theme.dart';
+import '../../l10n/strings.dart';
 import '../../widgets/frame_tuning.dart';
 import '../../widgets/mushaf_frames.dart';
 import '../../widgets/mushaf_palettes.dart';
@@ -18,15 +19,18 @@ class FrameTab extends StatelessWidget {
         builder: (context, palette, _) => ListView(
           padding: const EdgeInsets.all(12),
           children: [
-            const Text('إطار الصفحة',
-                style: TextStyle(
-                    color: AppColors.gold,
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold)),
+            Text(
+              t('mushaf.frameSectionTitle'),
+              style: const TextStyle(
+                color: AppColors.gold,
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             const SizedBox(height: 4),
-            const Text(
-              'زخارف مرسومة داخل التطبيق، تأخذ لون السمة وتتغيّر معه.',
-              style: TextStyle(color: AppColors.textMuted, fontSize: 11),
+            Text(
+              t('mushaf.frameSectionNote'),
+              style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
             ),
             const SizedBox(height: 12),
             SwatchGrid(
@@ -69,30 +73,40 @@ class FrameTuningPanel extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Expanded(
-                child: Text('ضبط الإطار',
-                    style: TextStyle(
-                        color: AppColors.gold,
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold)),
+              Expanded(
+                child: Text(
+                  t('mushaf.frameTuningTitle'),
+                  style: const TextStyle(
+                    color: AppColors.gold,
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
               if (!FrameTuning.isDefault)
                 GestureDetector(
                   onTap: FrameTuning.reset,
                   behavior: HitTestBehavior.opaque,
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                    child: Text('إعادة الضبط',
-                        style: TextStyle(
-                            color: AppColors.textGold, fontSize: 11.5)),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 2,
+                    ),
+                    child: Text(
+                      t('mushaf.resetTuning'),
+                      style: const TextStyle(
+                        color: AppColors.textGold,
+                        fontSize: 11.5,
+                      ),
+                    ),
                   ),
                 ),
             ],
           ),
           const SizedBox(height: 2),
-          const Text(
-            'حرّك وأنت تنظر إلى الصفحة خلف هذه القائمة — يتغيّر فوراً ويُحفظ.',
-            style: TextStyle(color: AppColors.textMuted, fontSize: 11),
+          Text(
+            t('mushaf.frameTuningInstructions'),
+            style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
           ),
           const SizedBox(height: 6),
           for (final knob in FrameTuning.knobs) _slider(context, knob),
@@ -113,21 +127,27 @@ class FrameTuningPanel extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: Text(knob.label,
-                    style: TextStyle(
-                        color: off ? AppColors.gold : AppColors.textSecondary,
-                        fontSize: 12.5)),
+                child: Text(
+                  knob.label,
+                  style: TextStyle(
+                    color: off ? AppColors.gold : AppColors.textSecondary,
+                    fontSize: 12.5,
+                  ),
+                ),
               ),
               Text(
                 value.toStringAsFixed(value == value.roundToDouble() ? 0 : 1),
                 style: TextStyle(
-                    color: off ? AppColors.gold : AppColors.textMuted,
-                    fontSize: 11),
+                  color: off ? AppColors.gold : AppColors.textMuted,
+                  fontSize: 11,
+                ),
               ),
             ],
           ),
-          Text(knob.note,
-              style: const TextStyle(color: AppColors.textMuted, fontSize: 9.5)),
+          Text(
+            knob.note,
+            style: const TextStyle(color: AppColors.textMuted, fontSize: 9.5),
+          ),
           SliderTheme(
             data: SliderTheme.of(context).copyWith(
               trackHeight: 2,
@@ -164,16 +184,18 @@ class PaletteTab extends StatelessWidget {
         builder: (context, frame, _) => ListView(
           padding: const EdgeInsets.all(12),
           children: [
-            const Text('لون الصفحة',
-                style: TextStyle(
-                    color: AppColors.gold,
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold)),
+            Text(
+              t('mushaf.paletteSectionTitle'),
+              style: const TextStyle(
+                color: AppColors.gold,
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             const SizedBox(height: 4),
-            const Text(
-              'الإطار وأرقام الآيات تأخذ لون الورقة. الأوراق الداكنة تقلب لون '
-              'الخط ليبقى مقروءاً.',
-              style: TextStyle(color: AppColors.textMuted, fontSize: 11),
+            Text(
+              t('mushaf.paletteSectionNote'),
+              style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
             ),
             const SizedBox(height: 12),
             SwatchGrid(

@@ -140,9 +140,9 @@ class _SurahScreenState extends State<SurahScreen> {
               tag: MediaItem(
                 id: '${_reciter.id}:${surah.number}:${a.number}',
                 title:
-                    '${surah.name} — الآية ${QuranService.toArabicDigits(a.number)}',
+                    '${surah.name} — ${t('qs.ayahWord')} ${QuranService.toArabicDigits(a.number)}',
                 artist: _reciter.displayName,
-                album: 'القرآن الكريم',
+                album: t('qs.quranTitle'),
               ),
             ),
         ], initialIndex: fromAyah - 1);
@@ -158,7 +158,7 @@ class _SurahScreenState extends State<SurahScreen> {
         _audioFailed = true;
         _playingAyah = null;
       });
-      _toast('تعذّر تشغيل التلاوة — تحقّق من الاتصال');
+      _toast(t('qs.recitationPlaybackFailed'));
     }
   }
 
@@ -181,7 +181,7 @@ class _SurahScreenState extends State<SurahScreen> {
               id: mine,
               title: surah.name,
               artist: _reciter.displayName,
-              album: 'القرآن الكريم',
+              album: t('qs.quranTitle'),
             ),
           ),
         );
@@ -192,7 +192,7 @@ class _SurahScreenState extends State<SurahScreen> {
     } catch (_) {
       if (!mounted) return;
       setState(() => _audioFailed = true);
-      _toast('تعذّر تشغيل التلاوة — تحقّق من الاتصال');
+      _toast(t('qs.recitationPlaybackFailed'));
     }
   }
 
@@ -308,7 +308,7 @@ class _SurahScreenState extends State<SurahScreen> {
     try {
       tafsir = await TafsirService.forSurah(widget.info.number);
     } catch (_) {
-      if (mounted) _toast('تعذّر فتح التفسير');
+      if (mounted) _toast(t('qs.tafsirOpenFailed'));
       return;
     }
     if (!mounted) return;
@@ -341,7 +341,7 @@ class _SurahScreenState extends State<SurahScreen> {
                 ),
               ),
               Text(
-                '${TafsirService.name} — الآية ${QuranService.toArabicDigits(a.number)}',
+                '${TafsirService.name} — ${t('qs.ayahWord')} ${QuranService.toArabicDigits(a.number)}',
                 style: const TextStyle(
                   color: AppColors.gold,
                   fontSize: 16,
@@ -376,7 +376,7 @@ class _SurahScreenState extends State<SurahScreen> {
                     ),
                     const SizedBox(height: 18),
                     Text(
-                      text ?? 'لا يتوفر تفسير لهذه الآية',
+                      text ?? t('qs.noTafsirAvailable'),
                       textAlign: TextAlign.justify,
                       style: TextStyle(
                         color: AppColors.textPrimary,
@@ -416,14 +416,15 @@ class _SurahScreenState extends State<SurahScreen> {
   Future<void> _copyAyah(Ayah a) async {
     await Clipboard.setData(
       ClipboardData(
-        text: '${a.text}\n\n[سورة ${widget.info.name} — الآية ${a.number}]',
+        text:
+            '${a.text}\n\n[${t('qs.surahPrefix')} ${widget.info.name} — ${t('qs.ayahWord')} ${a.number}]',
       ),
     );
     if (!mounted) return;
     HapticFeedback.lightImpact();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text('تم نسخ الآية', textDirection: TextDirection.rtl),
+        content: Text(t('qs.ayahCopied'), textDirection: TextDirection.rtl),
         backgroundColor: AppColors.emerald,
         duration: const Duration(seconds: 2),
       ),
@@ -440,7 +441,7 @@ class _SurahScreenState extends State<SurahScreen> {
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
-          title: Text('سورة ${info.name}'),
+          title: Text('${t('qs.surahPrefix')} ${info.name}'),
           backgroundColor: AppColors.black,
           foregroundColor: AppColors.gold,
           actions: [
@@ -513,9 +514,9 @@ class _SurahScreenState extends State<SurahScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
-                      'القارئ',
-                      style: TextStyle(
+                    Text(
+                      t('qs.reciterLabel'),
+                      style: const TextStyle(
                         color: AppColors.textMuted,
                         fontSize: 10,
                       ),
@@ -541,7 +542,7 @@ class _SurahScreenState extends State<SurahScreen> {
                 Padding(
                   padding: const EdgeInsets.only(left: 10),
                   child: Text(
-                    'الآية ${QuranService.toArabicDigits(_playingAyah!)}',
+                    '${t('qs.ayahWord')} ${QuranService.toArabicDigits(_playingAyah!)}',
                     style: const TextStyle(
                       color: AppColors.textMuted,
                       fontSize: 12,
@@ -570,7 +571,7 @@ class _SurahScreenState extends State<SurahScreen> {
                     : () => playing
                           ? _pause()
                           : _play(fromAyah: _playingAyah ?? 1),
-                tooltip: playing ? 'إيقاف' : 'تشغيل السورة',
+                tooltip: playing ? t('qs.stopLabel') : t('qs.playSurahLabel'),
               ),
             ],
           ),
@@ -595,7 +596,7 @@ class _SurahScreenState extends State<SurahScreen> {
       child: Column(
         children: [
           Text(
-            'سورة ${info.name}',
+            '${t('qs.surahPrefix')} ${info.name}',
             style: const TextStyle(
               color: AppColors.gold,
               fontSize: 24,
@@ -604,7 +605,7 @@ class _SurahScreenState extends State<SurahScreen> {
           ),
           const SizedBox(height: 4),
           Text(
-            '${info.type} • ${info.ayahCount} آية',
+            '${info.type} • ${info.ayahCount} ${t('qs.ayahUnit')}',
             style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
           ),
           if (info.hasBasmala) ...[
@@ -693,7 +694,7 @@ class _SurahScreenState extends State<SurahScreen> {
                   ),
                   const SizedBox(width: 5),
                   Text(
-                    'موضع سجدة',
+                    t('qs.sajdaPosition'),
                     style: TextStyle(
                       color: AppColors.emeraldLight,
                       fontSize: _fontSize * 0.5,
@@ -709,7 +710,7 @@ class _SurahScreenState extends State<SurahScreen> {
               children: [
                 _ayahAction(
                   icon: Icons.menu_book,
-                  label: 'التفسير',
+                  label: t('qs.tafsirLabel'),
                   onTap: () => _showTafsir(a),
                 ),
                 const SizedBox(width: 6),
@@ -717,14 +718,14 @@ class _SurahScreenState extends State<SurahScreen> {
                 // way to silence a verse once it began.
                 _ayahAction(
                   icon: isPlaying ? Icons.stop : Icons.play_arrow,
-                  label: isPlaying ? 'إيقاف' : 'استمع',
+                  label: isPlaying ? t('qs.stopLabel') : t('qs.listenLabel'),
                   active: isPlaying,
                   onTap: () => isPlaying ? _stop() : _play(fromAyah: a.number),
                 ),
                 const SizedBox(width: 6),
                 _ayahAction(
                   icon: Icons.copy,
-                  label: 'نسخ',
+                  label: t('qs.copyLabel'),
                   onTap: () => _copyAyah(a),
                 ),
               ],

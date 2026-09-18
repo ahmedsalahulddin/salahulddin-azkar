@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 
 import '../data/greeting_cards.dart';
+import '../l10n/strings.dart';
 import 'mushaf_frames.dart';
 
 /// A card as it will be sent: ground, ornament, greeting, verse, citation.
@@ -242,7 +243,7 @@ class GreetingCardView extends StatelessWidget {
             if (name.isNotEmpty) ...[
               SizedBox(height: 3 * unit),
               Text(
-                'المرسل: $name',
+                '${t('crd.senderPrefix')} $name',
                 style: TextStyle(
                   color: nameInk,
                   fontSize: 11 * unit,

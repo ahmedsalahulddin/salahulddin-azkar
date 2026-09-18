@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../constants/theme.dart';
+import '../l10n/strings.dart';
 import '../widgets/speed_button.dart';
 import '../widgets/speak_button.dart';
 import '../data/library_data.dart';
@@ -87,9 +88,11 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
       await _load();
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('تعذّر التنزيل — تحقّق من الاتصال وحاول مرة أخرى',
-              textDirection: TextDirection.rtl),
+        SnackBar(
+          content: Text(
+            t('lib2.downloadFailedMessage'),
+            textDirection: TextDirection.rtl,
+          ),
           backgroundColor: AppColors.error,
         ),
       );
@@ -104,16 +107,23 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
   }
 
   Future<void> _copy(Hadith h) async {
-    await Clipboard.setData(ClipboardData(
-      text: '${h.text}\n\n[${widget.book.title} — حديث ${h.number}]',
-    ));
+    await Clipboard.setData(
+      ClipboardData(
+        text:
+            '${h.text}\n\n[${widget.book.title} — '
+            '${t('lib2.hadithUnit')} ${h.number}]',
+      ),
+    );
     if (!mounted) return;
     HapticFeedback.lightImpact();
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('تم نسخ الحديث', textDirection: TextDirection.rtl),
+      SnackBar(
+        content: Text(
+          t('lib2.hadithCopiedMessage'),
+          textDirection: TextDirection.rtl,
+        ),
         backgroundColor: AppColors.emerald,
-        duration: Duration(seconds: 2),
+        duration: const Duration(seconds: 2),
       ),
     );
   }
@@ -133,12 +143,12 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
         body: _downloading
             ? _downloadProgress()
             : _needsDownload
-                ? _downloadPrompt()
-                : _loading
-                    ? const Center(
-                        child:
-                            CircularProgressIndicator(color: AppColors.gold))
-                    : _reader(),
+            ? _downloadPrompt()
+            : _loading
+            ? const Center(
+                child: CircularProgressIndicator(color: AppColors.gold),
+              )
+            : _reader(),
       ),
     );
   }
@@ -153,9 +163,13 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('جاري تنزيل ${widget.book.title}',
-                style: const TextStyle(
-                    color: AppColors.textPrimary, fontSize: 16)),
+            Text(
+              '${t('lib2.downloadingPrefix')} ${widget.book.title}',
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 16,
+              ),
+            ),
             const SizedBox(height: 16),
             ClipRRect(
               borderRadius: BorderRadius.circular(3),
@@ -169,9 +183,10 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
               ),
             ),
             const SizedBox(height: 10),
-            Text('$mb م.ب',
-                style:
-                    const TextStyle(color: AppColors.textMuted, fontSize: 12)),
+            Text(
+              '$mb ${t('lib2.megabytesUnit')}',
+              style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+            ),
           ],
         ),
       ),
@@ -187,21 +202,33 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
           children: [
             const Text('📕', style: TextStyle(fontSize: 44)),
             const SizedBox(height: 14),
-            Text(widget.book.title,
-                style: const TextStyle(
-                    color: AppColors.gold,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold)),
+            Text(
+              widget.book.title,
+              style: const TextStyle(
+                color: AppColors.gold,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             const SizedBox(height: 4),
-            Text(widget.book.author,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                    color: AppColors.textSecondary, fontSize: 13)),
+            Text(
+              widget.book.author,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 13,
+              ),
+            ),
             const SizedBox(height: 10),
-            Text(widget.book.description,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                    color: AppColors.textMuted, fontSize: 12, height: 1.6)),
+            Text(
+              widget.book.description,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: AppColors.textMuted,
+                fontSize: 12,
+                height: 1.6,
+              ),
+            ),
             const SizedBox(height: 22),
             ElevatedButton.icon(
               onPressed: _download,
@@ -209,15 +236,22 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.emerald,
                 foregroundColor: AppColors.white,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 22,
+                  vertical: 12,
+                ),
               ),
               label: Text(
-                  'تنزيل (${widget.book.downloadSize}) — ${QuranService.toArabicDigits(widget.book.hadithCount)} حديث'),
+                '${t('lib2.downloadButtonPrefix')} (${widget.book.downloadSize}) — '
+                '${QuranService.toArabicDigits(widget.book.hadithCount)} '
+                '${t('lib2.hadithUnit')}',
+              ),
             ),
             const SizedBox(height: 10),
-            const Text('بعد التنزيل يعمل بلا إنترنت',
-                style: TextStyle(color: AppColors.textMuted, fontSize: 11)),
+            Text(
+              t('lib2.worksOfflineAfterDownload'),
+              style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+            ),
           ],
         ),
       ),
@@ -237,9 +271,11 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
             textAlign: TextAlign.right,
             style: const TextStyle(color: AppColors.textPrimary),
             decoration: InputDecoration(
-              hintText: 'ابحث في نصوص الأحاديث…',
-              hintStyle:
-                  const TextStyle(color: AppColors.textMuted, fontSize: 14),
+              hintText: t('lib2.searchHadithTextsHint'),
+              hintStyle: const TextStyle(
+                color: AppColors.textMuted,
+                fontSize: 14,
+              ),
               filled: true,
               fillColor: AppColors.blackSurface,
               isDense: true,
@@ -255,8 +291,7 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
                 borderRadius: BorderRadius.circular(12),
                 borderSide: const BorderSide(color: AppColors.gold),
               ),
-              suffixIcon:
-                  const Icon(Icons.search, color: AppColors.textMuted),
+              suffixIcon: const Icon(Icons.search, color: AppColors.textMuted),
             ),
           ),
         ),
@@ -266,20 +301,28 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
             children: [
               Text(
                 _search.isEmpty
-                    ? '${QuranService.toArabicDigits(filtered.length)} حديث'
-                    : '${QuranService.toArabicDigits(filtered.length)} نتيجة',
-                style:
-                    const TextStyle(color: AppColors.textMuted, fontSize: 12),
+                    ? '${QuranService.toArabicDigits(filtered.length)} '
+                          '${t('lib2.hadithUnit')}'
+                    : '${QuranService.toArabicDigits(filtered.length)} '
+                          '${t('lib2.resultsUnit')}',
+                style: const TextStyle(
+                  color: AppColors.textMuted,
+                  fontSize: 12,
+                ),
               ),
             ],
           ),
         ),
         Expanded(
           child: filtered.isEmpty
-              ? const Center(
-                  child: Text('لا توجد نتائج',
-                      style: TextStyle(
-                          color: AppColors.textMuted, fontSize: 15)),
+              ? Center(
+                  child: Text(
+                    t('lib2.noResultsFound'),
+                    style: const TextStyle(
+                      color: AppColors.textMuted,
+                      fontSize: 15,
+                    ),
+                  ),
                 )
               : ListView.builder(
                   padding: const EdgeInsets.fromLTRB(12, 8, 12, 24),
@@ -307,12 +350,15 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                child: Text(h.text,
-                    textAlign: TextAlign.justify,
-                    style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 16,
-                        height: 1.9)),
+                child: Text(
+                  h.text,
+                  textAlign: TextAlign.justify,
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 16,
+                    height: 1.9,
+                  ),
+                ),
               ),
               SpeakButton(id: '${widget.book.id}:${h.number}', text: h.text),
             ],
@@ -321,25 +367,35 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
           Row(
             children: [
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 3,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.goldMuted,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: AppColors.goldBorder),
                 ),
-                child: Text('حديث ${QuranService.toArabicDigits(h.number)}',
-                    style: const TextStyle(
-                        color: AppColors.textGold, fontSize: 11)),
+                child: Text(
+                  '${t('lib2.hadithUnit')} ${QuranService.toArabicDigits(h.number)}',
+                  style: const TextStyle(
+                    color: AppColors.textGold,
+                    fontSize: 11,
+                  ),
+                ),
               ),
               if (h.grade != null) ...[
                 const SizedBox(width: 6),
                 Flexible(
-                  child: Text(h.grade!,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                          color: AppColors.textMuted, fontSize: 11)),
+                  child: Text(
+                    h.grade!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: AppColors.textMuted,
+                      fontSize: 11,
+                    ),
+                  ),
                 ),
               ],
               const Spacer(),
@@ -348,8 +404,7 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
                 behavior: HitTestBehavior.opaque,
                 child: const Padding(
                   padding: EdgeInsets.all(4),
-                  child:
-                      Icon(Icons.copy, color: AppColors.textMuted, size: 17),
+                  child: Icon(Icons.copy, color: AppColors.textMuted, size: 17),
                 ),
               ),
             ],

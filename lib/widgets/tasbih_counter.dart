@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../constants/theme.dart';
 import '../data/adhkar_data.dart';
+import '../l10n/strings.dart';
 import '../services/storage_service.dart';
 
 class TasbihCounter extends StatefulWidget {
@@ -13,7 +14,8 @@ class TasbihCounter extends StatefulWidget {
   State<TasbihCounter> createState() => _TasbihCounterState();
 }
 
-class _TasbihCounterState extends State<TasbihCounter> with SingleTickerProviderStateMixin {
+class _TasbihCounterState extends State<TasbihCounter>
+    with SingleTickerProviderStateMixin {
   int _count = 0;
   bool _completed = false;
   late AnimationController _animController;
@@ -96,7 +98,14 @@ class _TasbihCounterState extends State<TasbihCounter> with SingleTickerProvider
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       _circleBtn('✕', () => Navigator.pop(context)),
-                      const Text('عداد التسبيح', style: TextStyle(color: AppColors.gold, fontSize: 20, fontWeight: FontWeight.bold)),
+                      Text(
+                        t('adh.tasbihCounterTitle'),
+                        style: const TextStyle(
+                          color: AppColors.gold,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       _circleBtn('↻', _handleReset),
                     ],
                   ),
@@ -105,7 +114,11 @@ class _TasbihCounterState extends State<TasbihCounter> with SingleTickerProvider
                   // Dhikr text
                   Text(
                     widget.dhikr.text,
-                    style: const TextStyle(color: AppColors.textPrimary, fontSize: 18, height: 1.8),
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 18,
+                      height: 1.8,
+                    ),
                     textAlign: TextAlign.center,
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
@@ -135,7 +148,9 @@ class _TasbihCounterState extends State<TasbihCounter> with SingleTickerProvider
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: _completed ? AppColors.success : AppColors.gold,
+                            color: _completed
+                                ? AppColors.success
+                                : AppColors.gold,
                             width: 3,
                           ),
                           color: _completed
@@ -147,11 +162,18 @@ class _TasbihCounterState extends State<TasbihCounter> with SingleTickerProvider
                           children: [
                             Text(
                               '$_count',
-                              style: const TextStyle(color: AppColors.gold, fontSize: 48, fontWeight: FontWeight.bold),
+                              style: const TextStyle(
+                                color: AppColors.gold,
+                                fontSize: 48,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             Text(
                               '/ $_target',
-                              style: const TextStyle(color: AppColors.textMuted, fontSize: 18),
+                              style: const TextStyle(
+                                color: AppColors.textMuted,
+                                fontSize: 18,
+                              ),
                             ),
                           ],
                         ),
@@ -163,9 +185,12 @@ class _TasbihCounterState extends State<TasbihCounter> with SingleTickerProvider
                   // Status
                   Text(
                     _completed
-                        ? '✨ أتممت الذكر - جزاك الله خيراً'
-                        : 'باقي $remaining ${remaining > 10 ? 'مرة' : 'مرات'}',
-                    style: const TextStyle(color: AppColors.textSecondary, fontSize: 16),
+                        ? t('adh.tasbihCompletedMsg')
+                        : '${t('adh.remainingPrefix')} $remaining ${remaining > 10 ? t('adh.timeSingularSuffix') : t('adh.timesCountSuffix')}',
+                    style: const TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 16,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 12),
@@ -175,10 +200,22 @@ class _TasbihCounterState extends State<TasbihCounter> with SingleTickerProvider
                       onPressed: () => Navigator.pop(context),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.emerald,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 32,
+                          vertical: 10,
+                        ),
                       ),
-                      child: const Text('تم ✓', style: TextStyle(color: AppColors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                      child: Text(
+                        t('adh.doneButtonLabel'),
+                        style: const TextStyle(
+                          color: AppColors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                 ],
               ),
@@ -200,7 +237,10 @@ class _TasbihCounterState extends State<TasbihCounter> with SingleTickerProvider
           shape: BoxShape.circle,
         ),
         child: Center(
-          child: Text(label, style: const TextStyle(color: AppColors.textMuted, fontSize: 20)),
+          child: Text(
+            label,
+            style: const TextStyle(color: AppColors.textMuted, fontSize: 20),
+          ),
         ),
       ),
     );
