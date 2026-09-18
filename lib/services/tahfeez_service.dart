@@ -15,17 +15,31 @@ class TahfeezException implements Exception {
 
 enum TahfeezRole { student, teacher }
 
+enum PlanPeriod { week, month }
+
 class TahfeezProfile {
   final String userId;
   final String displayName;
   final String? photoUrl;
   final TahfeezRole role;
+  final String? teacherCode;
+  final String? bio;
+  final String? city;
+  final PlanPeriod planPeriod;
+  final int freeSessions;
+  final String? priceNote;
 
   const TahfeezProfile({
     required this.userId,
     required this.displayName,
     this.photoUrl,
     required this.role,
+    this.teacherCode,
+    this.bio,
+    this.city,
+    this.planPeriod = PlanPeriod.month,
+    this.freeSessions = 0,
+    this.priceNote,
   });
 
   bool get isTeacher => role == TahfeezRole.teacher;
@@ -35,6 +49,101 @@ class TahfeezProfile {
     displayName: j['display_name'] as String,
     photoUrl: j['photo_url'] as String?,
     role: j['role'] == 'teacher' ? TahfeezRole.teacher : TahfeezRole.student,
+    teacherCode: j['teacher_code'] as String?,
+    bio: j['bio'] as String?,
+    city: j['city'] as String?,
+    planPeriod: j['plan_period'] == 'week' ? PlanPeriod.week : PlanPeriod.month,
+    freeSessions: (j['free_sessions'] as int?) ?? 0,
+    priceNote: j['price_note'] as String?,
+  );
+}
+
+enum EnrollmentStatus { pending, active, rejected }
+
+/// One student's term with one teacher.
+class Enrollment {
+  final String id;
+  final String teacherId;
+  final String studentId;
+  final EnrollmentStatus status;
+  final PlanPeriod? period;
+  final DateTime? startsAt;
+  final DateTime? endsAt;
+  final int freeSessionsLeft;
+  final bool paid;
+  final String? note;
+  final DateTime createdAt;
+  final TahfeezProfile? teacher;
+  final TahfeezProfile? student;
+
+  const Enrollment({
+    required this.id,
+    required this.teacherId,
+    required this.studentId,
+    required this.status,
+    this.period,
+    this.startsAt,
+    this.endsAt,
+    required this.freeSessionsLeft,
+    required this.paid,
+    this.note,
+    required this.createdAt,
+    this.teacher,
+    this.student,
+  });
+
+  bool get isPending => status == EnrollmentStatus.pending;
+
+  /// Days until the term ends; negative once it has.
+  int get daysLeft {
+    final end = endsAt;
+    if (end == null) return 0;
+    final today = DateTime.now();
+    return end.difference(DateTime(today.year, today.month, today.day)).inDays;
+  }
+
+  bool get isExpired => status == EnrollmentStatus.active && daysLeft < 0;
+  bool get isActive => status == EnrollmentStatus.active && daysLeft >= 0;
+  bool get endsSoon => isActive && daysLeft <= 3;
+
+  Enrollment withProfiles({TahfeezProfile? teacher, TahfeezProfile? student}) =>
+      Enrollment(
+        id: id,
+        teacherId: teacherId,
+        studentId: studentId,
+        status: status,
+        period: period,
+        startsAt: startsAt,
+        endsAt: endsAt,
+        freeSessionsLeft: freeSessionsLeft,
+        paid: paid,
+        note: note,
+        createdAt: createdAt,
+        teacher: teacher ?? this.teacher,
+        student: student ?? this.student,
+      );
+
+  factory Enrollment.fromJson(Map<String, dynamic> j) => Enrollment(
+    id: j['id'] as String,
+    teacherId: j['teacher_id'] as String,
+    studentId: j['student_id'] as String,
+    status: EnrollmentStatus.values.firstWhere(
+      (s) => s.name == j['status'],
+      orElse: () => EnrollmentStatus.pending,
+    ),
+    period: j['period'] == null
+        ? null
+        : (j['period'] == 'week' ? PlanPeriod.week : PlanPeriod.month),
+    startsAt: j['starts_at'] == null
+        ? null
+        : DateTime.parse(j['starts_at'] as String),
+    endsAt: j['ends_at'] == null
+        ? null
+        : DateTime.parse(j['ends_at'] as String),
+    freeSessionsLeft: (j['free_sessions_left'] as int?) ?? 0,
+    paid: j['paid'] == true,
+    note: j['note'] as String?,
+    createdAt: DateTime.parse(j['created_at'] as String),
   );
 }
 
@@ -231,6 +340,7 @@ class TahfeezService {
         'own_halaqa',
         'already_teacher',
         'empty_name',
+        'not_enrolled',
       ]) {
         if (msg.contains(code)) throw TahfeezException(code);
       }
@@ -513,6 +623,155 @@ class TahfeezService {
     try {
       final c = await _client;
       await c.from('tahfeez_sessions').delete().eq('id', id);
+    } catch (e) {
+      _throw(e);
+    }
+  }
+
+  // ---- directory & enrolment ---------------------------------------------
+
+  /// Every approved teacher, for the directory.
+  static Future<List<TahfeezProfile>> teachers() async {
+    try {
+      final c = await _client;
+      final rows = await c
+          .from('tahfeez_profiles')
+          .select()
+          .eq('role', 'teacher')
+          .order('display_name');
+      return rows.map(TahfeezProfile.fromJson).toList();
+    } catch (e) {
+      _throw(e);
+    }
+  }
+
+  static Future<void> updateTeacherProfile({
+    required String bio,
+    required String city,
+    required PlanPeriod plan,
+    required int freeSessions,
+    required String priceNote,
+  }) async {
+    try {
+      final c = await _client;
+      await c.rpc(
+        'update_teacher_profile',
+        params: {
+          'p_bio': bio,
+          'p_city': city,
+          'p_plan': plan.name,
+          'p_free': freeSessions,
+          'p_price': priceNote,
+        },
+      );
+    } catch (e) {
+      _throw(e);
+    }
+  }
+
+  static Future<void> requestEnrollment(String teacherId, String note) async {
+    try {
+      final c = await _client;
+      await c.rpc(
+        'request_enrollment',
+        params: {'p_teacher': teacherId, 'p_note': note},
+      );
+    } catch (e) {
+      _throw(e);
+    }
+  }
+
+  /// Returns the teacher's name.
+  static Future<String> requestEnrollmentByCode(
+    String code,
+    String note,
+  ) async {
+    try {
+      final c = await _client;
+      final name = await c.rpc(
+        'request_enrollment_by_code',
+        params: {'p_code': code, 'p_note': note},
+      );
+      return name as String;
+    } catch (e) {
+      _throw(e);
+    }
+  }
+
+  /// Every enrolment the reader is party to, with the other side's profile.
+  static Future<List<Enrollment>> enrollments() async {
+    try {
+      final c = await _client;
+      final rows = await c
+          .from('tahfeez_enrollments')
+          .select()
+          .order('created_at', ascending: false);
+      final list = rows.map(Enrollment.fromJson).toList();
+      final ids = <String>{
+        for (final e in list) ...[e.teacherId, e.studentId],
+      }..remove(_uid);
+      final profiles = await _profilesOf(c, ids.toList());
+      return [
+        for (final e in list)
+          e.withProfiles(
+            teacher: profiles[e.teacherId],
+            student: profiles[e.studentId],
+          ),
+      ];
+    } catch (e) {
+      _throw(e);
+    }
+  }
+
+  static Future<void> decideEnrollment(
+    String id, {
+    required bool approve,
+  }) async {
+    try {
+      final c = await _client;
+      await c.rpc(
+        'decide_enrollment',
+        params: {'p_id': id, 'p_approve': approve},
+      );
+    } catch (e) {
+      _throw(e);
+    }
+  }
+
+  static Future<void> renewEnrollment(String id) async {
+    try {
+      final c = await _client;
+      await c.rpc('renew_enrollment', params: {'p_id': id});
+    } catch (e) {
+      _throw(e);
+    }
+  }
+
+  static Future<void> setEnrollmentPaid(String id, bool paid) async {
+    try {
+      final c = await _client;
+      await c.rpc('set_enrollment_paid', params: {'p_id': id, 'p_paid': paid});
+    } catch (e) {
+      _throw(e);
+    }
+  }
+
+  static Future<void> cancelEnrollment(String id) async {
+    try {
+      final c = await _client;
+      await c.rpc('cancel_enrollment', params: {'p_id': id});
+    } catch (e) {
+      _throw(e);
+    }
+  }
+
+  static Future<void> assignToHalaqa(String halaqaId, String studentId) async {
+    try {
+      final c = await _client;
+      await c.rpc(
+        'assign_to_halaqa',
+        params: {'p_halaqa': halaqaId, 'p_student': studentId},
+      );
     } catch (e) {
       _throw(e);
     }

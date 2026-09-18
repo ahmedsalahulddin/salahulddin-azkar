@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../constants/theme.dart';
 import '../../l10n/strings.dart';
@@ -6,7 +8,10 @@ import '../../services/auth_service.dart';
 import '../../services/tahfeez_service.dart';
 import '../../widgets/sign_in_buttons.dart';
 import '../account_screen.dart' show UserAvatar;
+import 'enrollments_screen.dart';
 import 'halaqa_screen.dart';
+import 'teacher_profile_screen.dart';
+import 'teachers_directory_screen.dart';
 import 'schedule_screen.dart';
 import 'session_evaluation_screen.dart';
 import 'student_halaqa_screen.dart';
@@ -28,6 +33,7 @@ class _TahfeezTabState extends State<TahfeezTab> {
   TahfeezProfile? _profile;
   List<Halaqa> _halaqat = const [];
   List<TahfeezSession> _sessions = const [];
+  List<Enrollment> _enrollments = const [];
   bool _pendingRequest = false;
   bool _loading = false;
   bool _failed = false;
@@ -73,6 +79,7 @@ class _TahfeezTabState extends State<TahfeezTab> {
         profile.isTeacher
             ? Future.value(false)
             : TahfeezService.hasPendingRequest(),
+        TahfeezService.enrollments(),
       ]);
       if (!mounted) return;
       setState(() {
@@ -80,6 +87,7 @@ class _TahfeezTabState extends State<TahfeezTab> {
         _halaqat = results[0] as List<Halaqa>;
         _sessions = results[1] as List<TahfeezSession>;
         _pendingRequest = results[2] as bool;
+        _enrollments = results[3] as List<Enrollment>;
         _loading = false;
       });
     } catch (_) {
@@ -98,6 +106,14 @@ class _TahfeezTabState extends State<TahfeezTab> {
       _halaqat.where((h) => h.teacherId == _uid).toList();
   List<Halaqa> get _joined =>
       _halaqat.where((h) => h.teacherId != _uid).toList();
+
+  /// Where the reader is the student.
+  List<Enrollment> get _myTeachers =>
+      _enrollments.where((e) => e.studentId == _uid).toList();
+
+  /// Where the reader is the teacher.
+  List<Enrollment> get _myStudents =>
+      _enrollments.where((e) => e.teacherId == _uid).toList();
 
   Halaqa? _halaqaOf(String id) {
     for (final h in _halaqat) {
@@ -225,6 +241,10 @@ class _TahfeezTabState extends State<TahfeezTab> {
       padding: const EdgeInsets.all(16),
       children: [
         _header(user, profile),
+        if (profile.isTeacher && profile.teacherCode != null) ...[
+          const SizedBox(height: 10),
+          _teacherCodeCard(profile),
+        ],
         if (_failed) ...[
           const SizedBox(height: 10),
           Text(
@@ -276,6 +296,38 @@ class _TahfeezTabState extends State<TahfeezTab> {
               ],
             ),
           ),
+          const SizedBox(height: 8),
+          _tile(
+            icon: Icons.groups,
+            title: t('tahfeez.myStudents'),
+            subtitle: _studentsSummary(),
+            badge: _myStudents.where((e) => e.isPending).length,
+            onTap: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      EnrollmentsScreen(sessions: _sessions, halaqat: _halaqat),
+                ),
+              );
+              _load();
+            },
+          ),
+          const SizedBox(height: 8),
+          _tile(
+            icon: Icons.badge_outlined,
+            title: t('tahfeez.teacherProfile'),
+            subtitle: t('tahfeez.teacherProfileSub'),
+            onTap: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => TeacherProfileScreen(profile: profile),
+                ),
+              );
+              _load();
+            },
+          ),
           const SizedBox(height: 18),
           SectionTitle('${t('tahfeez.sessionsOfDay')} — ${weekdayName(today)}'),
           if (todaySessions.isEmpty)
@@ -323,7 +375,32 @@ class _TahfeezTabState extends State<TahfeezTab> {
             ),
           ),
         ],
+        if (_myTeachers.isNotEmpty) ...[
+          const SizedBox(height: 18),
+          SectionTitle(t('tahfeez.myTeachers')),
+          for (final e in _myTeachers) ...[
+            _teacherEnrollmentCard(e),
+            const SizedBox(height: 8),
+          ],
+        ],
         const SizedBox(height: 18),
+        _tile(
+          icon: Icons.person_search,
+          title: t('tahfeez.directory'),
+          subtitle: t('tahfeez.directorySub'),
+          onTap: () async {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => TeachersDirectoryScreen(
+                  enrollments: {for (final e in _myTeachers) e.teacherId: e},
+                ),
+              ),
+            );
+            _load();
+          },
+        ),
+        const SizedBox(height: 12),
         _joinCard(),
         if (!profile.isTeacher) ...[
           const SizedBox(height: 12),
@@ -332,6 +409,184 @@ class _TahfeezTabState extends State<TahfeezTab> {
         const SizedBox(height: 30),
       ],
     );
+  }
+
+  Widget _tile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+    int badge = 0,
+  }) {
+    return TahfeezCard(
+      onTap: onTap,
+      child: Row(
+        children: [
+          Badge(
+            isLabelVisible: badge > 0,
+            label: Text('$badge'),
+            backgroundColor: AppColors.error,
+            child: Icon(icon, color: AppColors.gold),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 14,
+                  ),
+                ),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    color: AppColors.textMuted,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Icon(Icons.chevron_left, color: AppColors.textMuted),
+        ],
+      ),
+    );
+  }
+
+  String _studentsSummary() {
+    final pending = _myStudents.where((e) => e.isPending).length;
+    final soon = _myStudents.where((e) => e.endsSoon).length;
+    final active = _myStudents.where((e) => e.isActive).length;
+    final parts = <String>[
+      if (pending > 0) '${t('tahfeez.newRequests')}: $pending',
+      if (soon > 0) '${t('tahfeez.endingSoon')}: $soon',
+      if (pending == 0 && soon == 0) '${t('tahfeez.activeStudents')}: $active',
+    ];
+    return parts.join(' · ');
+  }
+
+  Widget _teacherCodeCard(TahfeezProfile profile) {
+    final code = profile.teacherCode!;
+    return TahfeezCard(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  t('tahfeez.teacherCode'),
+                  style: const TextStyle(
+                    color: AppColors.textMuted,
+                    fontSize: 11,
+                  ),
+                ),
+                Text(
+                  code,
+                  textDirection: TextDirection.ltr,
+                  style: const TextStyle(
+                    color: AppColors.gold,
+                    fontSize: 22,
+                    letterSpacing: 5,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            tooltip: t('tahfeez.codeCopied'),
+            icon: const Icon(Icons.copy, color: AppColors.gold, size: 20),
+            onPressed: () async {
+              await Clipboard.setData(ClipboardData(text: code));
+              if (mounted) showNote(context, t('tahfeez.codeCopied'));
+            },
+          ),
+          IconButton(
+            tooltip: t('tahfeez.shareCode'),
+            icon: const Icon(Icons.share, color: AppColors.gold, size: 20),
+            onPressed: () => SharePlus.instance.share(
+              ShareParams(
+                text: t('tahfeez.shareTeacherCode').replaceAll('{code}', code),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _teacherEnrollmentCard(Enrollment e) {
+    final tp = e.teacher;
+    final photo = tp?.photoUrl;
+    return TahfeezCard(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 20,
+            backgroundColor: AppColors.goldMuted,
+            backgroundImage: photo != null ? NetworkImage(photo) : null,
+            child: photo == null
+                ? const Icon(Icons.person, color: AppColors.gold, size: 20)
+                : null,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  tp?.displayName ?? '…',
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                enrollmentStatusLine(e),
+              ],
+            ),
+          ),
+          if (e.status != EnrollmentStatus.rejected)
+            IconButton(
+              tooltip: e.isPending
+                  ? t('tahfeez.cancelRequest')
+                  : t('tahfeez.leaveTeacher'),
+              icon: const Icon(
+                Icons.close,
+                color: AppColors.textMuted,
+                size: 18,
+              ),
+              onPressed: () => _leaveTeacher(e),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _leaveTeacher(Enrollment e) async {
+    final ok = await confirmDialog(
+      context,
+      message: e.isPending
+          ? t('tahfeez.cancelRequest')
+          : t('tahfeez.leaveTeacherConfirm'),
+      confirmLabel: e.isPending
+          ? t('tahfeez.cancelRequest')
+          : t('tahfeez.leaveTeacher'),
+    );
+    if (!ok || !mounted) return;
+    try {
+      await TahfeezService.cancelEnrollment(e.id);
+      await _load();
+    } catch (err) {
+      if (mounted) showNote(context, describeError(err), error: true);
+    }
   }
 
   Widget _header(AppUser user, TahfeezProfile profile) {
@@ -440,9 +695,7 @@ class _TahfeezTabState extends State<TahfeezTab> {
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  teacher
-                      ? '${t('tahfeez.inviteCode')}: ${h.inviteCode}'
-                      : '$count ${t('tahfeez.sessionsOfDay')}',
+                  '$count ${t('tahfeez.sessionsOfDay')}',
                   style: const TextStyle(
                     color: AppColors.textMuted,
                     fontSize: 12,
@@ -540,7 +793,7 @@ class _TahfeezTabState extends State<TahfeezTab> {
                     fontWeight: FontWeight.bold,
                   ),
                   decoration: InputDecoration(
-                    hintText: t('tahfeez.joinCodeHint'),
+                    hintText: t('tahfeez.teacherCodeHint'),
                     hintStyle: const TextStyle(
                       color: AppColors.textMuted,
                       letterSpacing: 0,
@@ -604,7 +857,7 @@ class _TahfeezTabState extends State<TahfeezTab> {
     if (code.isEmpty) return;
     setState(() => _joining = true);
     try {
-      final name = await TahfeezService.joinHalaqa(code);
+      final name = await TahfeezService.requestEnrollmentByCode(code, '');
       if (!mounted) return;
       _codeController.clear();
       FocusScope.of(context).unfocus();

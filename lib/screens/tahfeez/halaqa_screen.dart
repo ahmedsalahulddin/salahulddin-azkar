@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../../constants/theme.dart';
 import '../../l10n/strings.dart';
@@ -133,76 +131,109 @@ class _HalaqaScreenState extends State<HalaqaScreen> {
   }
 
   Widget _codeCard() {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [AppColors.navyLight, AppColors.navy],
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.goldBorder),
-      ),
-      child: Column(
+    return TahfeezCard(
+      onTap: _addStudent,
+      child: Row(
         children: [
-          Text(
-            t('tahfeez.inviteCode'),
-            style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            _halaqa.inviteCode,
-            textDirection: TextDirection.ltr,
-            style: const TextStyle(
-              color: AppColors.gold,
-              fontSize: 30,
-              letterSpacing: 6,
-              fontWeight: FontWeight.bold,
+          const Icon(Icons.person_add_alt_1, color: AppColors.gold),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  t('tahfeez.addStudent'),
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 14,
+                  ),
+                ),
+                Text(
+                  t('tahfeez.addStudentSub'),
+                  style: const TextStyle(
+                    color: AppColors.textMuted,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () async {
-                    await Clipboard.setData(
-                      ClipboardData(text: _halaqa.inviteCode),
-                    );
-                    if (mounted) showNote(context, t('tahfeez.codeCopied'));
-                  },
-                  icon: const Icon(Icons.copy, size: 16),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.gold,
-                    side: const BorderSide(color: AppColors.goldBorder),
-                  ),
-                  label: Text(t('tahfeez.inviteCode')),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () => SharePlus.instance.share(
-                    ShareParams(
-                      text: t('tahfeez.shareCodeText')
-                          .replaceAll('{name}', _halaqa.name)
-                          .replaceAll('{code}', _halaqa.inviteCode),
-                    ),
-                  ),
-                  icon: const Icon(Icons.share, size: 16),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.gold,
-                    side: const BorderSide(color: AppColors.goldBorder),
-                  ),
-                  label: Text(t('tahfeez.shareCode')),
-                ),
-              ),
-            ],
-          ),
+          const Icon(Icons.chevron_left, color: AppColors.textMuted),
         ],
       ),
     );
+  }
+
+  /// Picks from the teacher's active subscribers who are not in yet.
+  Future<void> _addStudent() async {
+    final List<Enrollment> enrollments;
+    try {
+      enrollments = await TahfeezService.enrollments();
+    } catch (e) {
+      if (mounted) showNote(context, describeError(e), error: true);
+      return;
+    }
+    if (!mounted) return;
+    final inHalaqa = _members.map((m) => m.studentId).toSet();
+    final candidates = enrollments
+        .where((e) => e.isActive && e.student != null)
+        .where((e) => !inHalaqa.contains(e.studentId))
+        .toList();
+    if (candidates.isEmpty) {
+      showNote(context, t('tahfeez.noStudentsToAdd'));
+      return;
+    }
+    final picked = await showModalBottomSheet<Enrollment>(
+      context: context,
+      backgroundColor: AppColors.blackCard,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+      ),
+      builder: (ctx) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: SafeArea(
+          child: ListView(
+            shrinkWrap: true,
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+            children: [
+              Text(
+                t('tahfeez.addStudent'),
+                style: const TextStyle(
+                  color: AppColors.gold,
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 10),
+              for (final e in candidates)
+                ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: AppColors.goldMuted,
+                    backgroundImage: e.student!.photoUrl != null
+                        ? NetworkImage(e.student!.photoUrl!)
+                        : null,
+                    child: e.student!.photoUrl == null
+                        ? const Icon(Icons.person, color: AppColors.gold)
+                        : null,
+                  ),
+                  title: Text(
+                    e.student!.displayName,
+                    style: const TextStyle(color: AppColors.textPrimary),
+                  ),
+                  onTap: () => Navigator.pop(ctx, e),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (picked == null || !mounted) return;
+    try {
+      await TahfeezService.assignToHalaqa(_halaqa.id, picked.studentId);
+      await _load();
+    } catch (e) {
+      if (mounted) showNote(context, describeError(e), error: true);
+    }
   }
 
   Widget _memberCard(HalaqaMember m) {
