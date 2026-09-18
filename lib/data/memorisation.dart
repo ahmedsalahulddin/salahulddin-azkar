@@ -12,7 +12,7 @@ import 'quran_data.dart';
 enum TestMode {
   complete('إكمال الآية', 'يُخفى آخر الآية وتسترجعه'),
   order('ترتيب الكلمات', 'رتّب كلمات الآية بالضغط عليها'),
-  missing('الكلمة الناقصة', 'اختر الكلمة الساقطة من موضعها'),
+  missing('اكمل', 'اختر الكلمة الساقطة من موضعها'),
   next('الآية التالية', 'اختر ما يأتي بعد الآية المعروضة');
 
   const TestMode(this.label, this.hint);
@@ -86,9 +86,9 @@ class QuestionBank {
   /// need something to offer besides the right answer — a surah of three
   /// ayahs simply has fewer questions in it.
   int length(TestMode mode) => switch (mode) {
-        TestMode.next => surah.ayahs.length - 1,
-        _ => surah.ayahs.length,
-      };
+    TestMode.next => surah.ayahs.length - 1,
+    _ => surah.ayahs.length,
+  };
 
   bool supports(TestMode mode) => length(mode) > 0;
 
@@ -145,11 +145,12 @@ class QuestionBank {
 
       case TestMode.next:
         final correct = surah.ayahs[position + 1].text;
-        final others = surah.ayahs
-            .where((a) => a.text != correct && a.number != ayah.number)
-            .map((a) => a.text)
-            .toList()
-          ..shuffle(random);
+        final others =
+            surah.ayahs
+                .where((a) => a.text != correct && a.number != ayah.number)
+                .map((a) => a.text)
+                .toList()
+              ..shuffle(random);
         final options = [correct, ...others.take(3)]..shuffle(random);
         return Question(
           mode: mode,
@@ -163,8 +164,11 @@ class QuestionBank {
   /// Wrong answers for the gap question, taken from the surah itself so they
   /// look like they belong — a distractor from another book would give the
   /// answer away.
-  List<String> _distractors(String answer, Random random,
-      {required Set<String> exclude}) {
+  List<String> _distractors(
+    String answer,
+    Random random, {
+    required Set<String> exclude,
+  }) {
     final pool = <String>{};
     for (final ayah in surah.ayahs) {
       for (final word in _words(ayah.text)) {
