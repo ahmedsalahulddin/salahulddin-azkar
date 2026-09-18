@@ -12,7 +12,15 @@ class TeachersDirectoryScreen extends StatefulWidget {
   /// already asked shows their status instead of the button.
   final Map<String, Enrollment> enrollments;
 
-  const TeachersDirectoryScreen({super.key, required this.enrollments});
+  /// The reader's own gender, so teachers who would refuse them are not
+  /// listed in the first place.
+  final Gender? myGender;
+
+  const TeachersDirectoryScreen({
+    super.key,
+    required this.enrollments,
+    this.myGender,
+  });
 
   @override
   State<TeachersDirectoryScreen> createState() =>
@@ -25,6 +33,8 @@ class _TeachersDirectoryScreenState extends State<TeachersDirectoryScreen> {
   bool _loading = true;
   bool _changed = false;
   String _query = '';
+  String? _lang;
+  TeachesGender? _teaches;
   final _codeController = TextEditingController();
   bool _joining = false;
 
@@ -57,12 +67,87 @@ class _TeachersDirectoryScreenState extends State<TeachersDirectoryScreen> {
 
   List<TahfeezProfile> get _visible {
     final q = _query.trim().toLowerCase();
-    if (q.isEmpty) return _teachers;
     return _teachers.where((p) {
+      if (!p.accepts(widget.myGender)) return false;
+      if (_lang != null && !p.languages.contains(_lang)) return false;
+      if (_teaches != null && p.teachesGender != _teaches) return false;
+      if (q.isEmpty) return true;
       return p.displayName.toLowerCase().contains(q) ||
           (p.city?.toLowerCase().contains(q) ?? false) ||
           (p.teacherCode?.toLowerCase().contains(q) ?? false);
     }).toList();
+  }
+
+  /// Only languages some listed teacher actually offers.
+  List<String> get _offeredLanguages => [
+    for (final (code, _) in tahfeezLanguages)
+      if (_teachers.any((p) => p.languages.contains(code))) code,
+  ];
+
+  Widget _filters() {
+    Widget chip(String label, bool selected, VoidCallback onTap) => ChoiceChip(
+      label: Text(label),
+      selected: selected,
+      selectedColor: AppColors.goldMuted,
+      backgroundColor: AppColors.blackSurface,
+      side: BorderSide(color: selected ? AppColors.gold : AppColors.goldBorder),
+      labelStyle: TextStyle(
+        color: selected ? AppColors.gold : AppColors.textMuted,
+        fontSize: 12,
+      ),
+      showCheckmark: false,
+      visualDensity: VisualDensity.compact,
+      onSelected: (_) => onTap(),
+    );
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                chip(
+                  t('tahfeez.allLanguages'),
+                  _lang == null,
+                  () => setState(() => _lang = null),
+                ),
+                for (final code in _offeredLanguages) ...[
+                  const SizedBox(width: 6),
+                  chip(
+                    languageName(code),
+                    _lang == code,
+                    () => setState(() => _lang = code),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(height: 6),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                chip(
+                  '${t('tahfeez.filterGender')}: ${t('tahfeez.gender.all')}',
+                  _teaches == null,
+                  () => setState(() => _teaches = null),
+                ),
+                for (final g in TeachesGender.values) ...[
+                  const SizedBox(width: 6),
+                  chip(
+                    t('tahfeez.teaches.${g.name}'),
+                    _teaches == g,
+                    () => setState(() => _teaches = g),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -109,6 +194,7 @@ class _TeachersDirectoryScreenState extends State<TeachersDirectoryScreen> {
                   ),
                 ),
               ),
+              _filters(),
               Expanded(
                 child: _loading
                     ? const Center(
@@ -120,7 +206,9 @@ class _TeachersDirectoryScreenState extends State<TeachersDirectoryScreen> {
                           if (_visible.isEmpty)
                             EmptyNote(
                               icon: Icons.person_search,
-                              text: t('tahfeez.noTeachers'),
+                              text: _teachers.isEmpty
+                                  ? t('tahfeez.noTeachers')
+                                  : t('tahfeez.noTeachersForFilter'),
                             )
                           else
                             for (final p in _visible) ...[
@@ -220,6 +308,9 @@ class _TeachersDirectoryScreenState extends State<TeachersDirectoryScreen> {
             spacing: 6,
             runSpacing: 6,
             children: [
+              for (final code in p.languages)
+                _chip(Icons.translate, languageName(code)),
+              _chip(Icons.wc, t('tahfeez.teaches.${p.teachesGender.name}')),
               _chip(Icons.event_repeat, t('tahfeez.plan.${p.planPeriod.name}')),
               if (p.freeSessions > 0)
                 _chip(

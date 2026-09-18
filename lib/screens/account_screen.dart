@@ -11,6 +11,7 @@ import '../services/tahfeez_service.dart';
 import '../services/update_checker.dart';
 import '../widgets/sign_in_buttons.dart';
 import 'admin_screen.dart';
+import 'tahfeez/reports_screen.dart';
 import 'tahfeez/tahfeez_widgets.dart';
 import 'tahfeez/teacher_requests_screen.dart';
 import 'settings_screen.dart';
@@ -284,6 +285,26 @@ class _AccountScreenState extends State<AccountScreen> {
                         context,
                         MaterialPageRoute(
                           builder: (_) => const TeacherRequestsScreen(),
+                        ),
+                      );
+                      TahfeezService.refreshPendingBadge();
+                    },
+                  ),
+                ),
+                const SizedBox(height: 8),
+                ValueListenableBuilder<int>(
+                  valueListenable: TahfeezService.reportsBadge,
+                  builder: (_, n, _) => _tile(
+                    icon: Icons.flag_outlined,
+                    title: n > 0
+                        ? '${t('tahfeez.reports')} ($n)'
+                        : t('tahfeez.reports'),
+                    subtitle: t('tahfeez.reportsSub'),
+                    onTap: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const ReportsScreen(),
                         ),
                       );
                       TahfeezService.refreshPendingBadge();

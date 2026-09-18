@@ -8,6 +8,7 @@ import '../../services/auth_service.dart';
 import '../../services/tahfeez_service.dart';
 import '../../widgets/sign_in_buttons.dart';
 import '../account_screen.dart' show UserAvatar;
+import 'chat_screen.dart';
 import 'enrollments_screen.dart';
 import 'halaqa_screen.dart';
 import 'teacher_profile_screen.dart';
@@ -145,6 +146,7 @@ class _TahfeezTabState extends State<TahfeezTab> {
               );
             }
             if (_profile == null) return _failedView();
+            if (_profile!.blocked) return _blockedView();
             return RefreshIndicator(
               color: AppColors.gold,
               backgroundColor: AppColors.blackCard,
@@ -207,6 +209,30 @@ class _TahfeezTabState extends State<TahfeezTab> {
     if (!ok) showNote(context, t('account.signInFail'), error: true);
   }
 
+  Widget _blockedView() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.block, size: 56, color: AppColors.error),
+            const SizedBox(height: 14),
+            Text(
+              t('tahfeez.youAreBlocked'),
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 14,
+                height: 1.7,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _failedView() {
     return Center(
       child: Column(
@@ -246,6 +272,8 @@ class _TahfeezTabState extends State<TahfeezTab> {
           const SizedBox(height: 10),
           _teacherCodeCard(profile),
         ],
+        const SizedBox(height: 10),
+        _genderCard(profile),
         if (_failed) ...[
           const SizedBox(height: 10),
           Text(
@@ -395,6 +423,7 @@ class _TahfeezTabState extends State<TahfeezTab> {
               MaterialPageRoute(
                 builder: (_) => TeachersDirectoryScreen(
                   enrollments: {for (final e in _myTeachers) e.teacherId: e},
+                  myGender: profile.gender,
                 ),
               ),
             );
@@ -556,6 +585,19 @@ class _TahfeezTabState extends State<TahfeezTab> {
           ),
           if (e.status != EnrollmentStatus.rejected)
             IconButton(
+              tooltip: t('tahfeez.chat'),
+              icon: const Icon(
+                Icons.chat_bubble_outline,
+                color: AppColors.gold,
+                size: 20,
+              ),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => ChatScreen(enrollment: e)),
+              ),
+            ),
+          if (e.status != EnrollmentStatus.rejected)
+            IconButton(
               tooltip: e.isPending
                   ? t('tahfeez.cancelRequest')
                   : t('tahfeez.leaveTeacher'),
@@ -587,6 +629,74 @@ class _TahfeezTabState extends State<TahfeezTab> {
       await _load();
     } catch (err) {
       if (mounted) showNote(context, describeError(err), error: true);
+    }
+  }
+
+  Widget _genderCard(TahfeezProfile profile) {
+    return TahfeezCard(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  t('tahfeez.myGender'),
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 13,
+                  ),
+                ),
+                if (profile.gender == null)
+                  Text(
+                    t('tahfeez.myGenderSub'),
+                    style: const TextStyle(
+                      color: AppColors.textMuted,
+                      fontSize: 11,
+                      height: 1.4,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          for (final g in Gender.values) ...[
+            ChoiceChip(
+              label: Text(t('tahfeez.gender.${g.name}')),
+              selected: profile.gender == g,
+              selectedColor: AppColors.goldMuted,
+              backgroundColor: AppColors.blackSurface,
+              side: BorderSide(
+                color: profile.gender == g
+                    ? AppColors.gold
+                    : AppColors.goldBorder,
+              ),
+              labelStyle: TextStyle(
+                color: profile.gender == g
+                    ? AppColors.gold
+                    : AppColors.textMuted,
+                fontSize: 12,
+              ),
+              showCheckmark: false,
+              visualDensity: VisualDensity.compact,
+              onSelected: (_) => _setGender(g),
+            ),
+            const SizedBox(width: 4),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Future<void> _setGender(Gender g) async {
+    try {
+      await TahfeezService.setGender(g);
+      if (mounted) {
+        setState(() => _profile = _profile?.copyWith(gender: g));
+      }
+    } catch (e) {
+      if (mounted) showNote(context, describeError(e), error: true);
     }
   }
 

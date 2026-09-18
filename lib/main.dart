@@ -453,7 +453,7 @@ class _MainNavigationState extends State<MainNavigation> {
               ),
               BottomNavigationBarItem(
                 icon: ValueListenableBuilder<int>(
-                  valueListenable: TahfeezService.pendingBadge,
+                  valueListenable: TahfeezService.adminBadge,
                   builder: (_, n, _) => Badge(
                     isLabelVisible: n > 0,
                     label: Text('$n'),

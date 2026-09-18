@@ -353,6 +353,8 @@ String describeError(Object e) {
       'max_sessions_per_day' => t('tahfeez.sessionLimit'),
       'no_such_code' => t('tahfeez.noSuchCode'),
       'own_halaqa' => t('tahfeez.ownHalaqa'),
+      'blocked' => t('tahfeez.blockedError'),
+      'gender_mismatch' => t('tahfeez.genderMismatch'),
       'network' => t('tahfeez.loadFailed'),
       _ => t('tahfeez.saveFailed'),
     };

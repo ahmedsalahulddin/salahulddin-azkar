@@ -24,6 +24,8 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
   );
   late PlanPeriod _plan = widget.profile.planPeriod;
   late int _free = widget.profile.freeSessions;
+  late final List<String> _languages = List.of(widget.profile.languages);
+  late TeachesGender _teaches = widget.profile.teachesGender;
   bool _saving = false;
 
   @override
@@ -77,6 +79,69 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                   ),
                   const SizedBox(width: 8),
                 ],
+              ],
+            ),
+            const SizedBox(height: 14),
+            _label(t('tahfeez.languages')),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: [
+                for (final (code, name) in tahfeezLanguages)
+                  FilterChip(
+                    label: Text(name),
+                    selected: _languages.contains(code),
+                    selectedColor: AppColors.goldMuted,
+                    backgroundColor: AppColors.blackSurface,
+                    checkmarkColor: AppColors.gold,
+                    side: BorderSide(
+                      color: _languages.contains(code)
+                          ? AppColors.gold
+                          : AppColors.goldBorder,
+                    ),
+                    labelStyle: TextStyle(
+                      color: _languages.contains(code)
+                          ? AppColors.gold
+                          : AppColors.textMuted,
+                      fontSize: 12,
+                    ),
+                    onSelected: (v) => setState(() {
+                      if (v) {
+                        _languages.add(code);
+                      } else {
+                        _languages.remove(code);
+                      }
+                    }),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            _label(t('tahfeez.teachesGender')),
+            Wrap(
+              spacing: 8,
+              children: [
+                for (final g in TeachesGender.values)
+                  ChoiceChip(
+                    label: Text(t('tahfeez.teaches.${g.name}')),
+                    selected: _teaches == g,
+                    selectedColor: AppColors.goldMuted,
+                    backgroundColor: AppColors.blackSurface,
+                    side: BorderSide(
+                      color: _teaches == g
+                          ? AppColors.gold
+                          : AppColors.goldBorder,
+                    ),
+                    labelStyle: TextStyle(
+                      color: _teaches == g
+                          ? AppColors.gold
+                          : AppColors.textMuted,
+                      fontWeight: _teaches == g
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                    ),
+                    showCheckmark: false,
+                    onSelected: (_) => setState(() => _teaches = g),
+                  ),
               ],
             ),
             const SizedBox(height: 14),
@@ -191,6 +256,8 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
         plan: _plan,
         freeSessions: _free,
         priceNote: _price.text,
+        languages: _languages,
+        teaches: _teaches,
       );
       if (!mounted) return;
       showNote(context, t('tahfeez.saved'));

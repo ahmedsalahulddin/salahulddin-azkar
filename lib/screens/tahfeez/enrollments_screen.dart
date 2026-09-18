@@ -4,6 +4,7 @@ import '../../constants/theme.dart';
 import '../../l10n/strings.dart';
 import '../../services/auth_service.dart';
 import '../../services/tahfeez_service.dart';
+import 'chat_screen.dart';
 import 'student_progress_screen.dart';
 import 'tahfeez_widgets.dart';
 
@@ -187,6 +188,20 @@ class _EnrollmentsScreenState extends State<EnrollmentsScreen> {
                       const SizedBox(height: 3),
                       enrollmentStatusLine(e),
                     ],
+                  ),
+                ),
+                IconButton(
+                  tooltip: t('tahfeez.chat'),
+                  icon: const Icon(
+                    Icons.chat_bubble_outline,
+                    color: AppColors.gold,
+                    size: 20,
+                  ),
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ChatScreen(enrollment: e),
+                    ),
                   ),
                 ),
                 if (!e.isPending)

@@ -1,3 +1,8 @@
+import 'dart:async';
+import 'dart:io';
+
+import 'package:device_info_plus/device_info_plus.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -17,6 +22,31 @@ enum TahfeezRole { student, teacher }
 
 enum PlanPeriod { week, month }
 
+enum Gender { male, female }
+
+enum TeachesGender { male, female, both }
+
+/// The languages a teacher may list, in the order the picker shows them.
+const tahfeezLanguages = <(String code, String name)>[
+  ('ar', 'العربية'),
+  ('en', 'English'),
+  ('fr', 'Français'),
+  ('ur', 'اردو'),
+  ('id', 'Indonesia'),
+  ('ms', 'Bahasa Melayu'),
+  ('hi', 'हिन्दी'),
+  ('tr', 'Türkçe'),
+  ('bn', 'বাংলা'),
+  ('ha', 'Hausa'),
+];
+
+String languageName(String code) {
+  for (final (c, n) in tahfeezLanguages) {
+    if (c == code) return n;
+  }
+  return code;
+}
+
 class TahfeezProfile {
   final String userId;
   final String displayName;
@@ -28,6 +58,10 @@ class TahfeezProfile {
   final PlanPeriod planPeriod;
   final int freeSessions;
   final String? priceNote;
+  final List<String> languages;
+  final TeachesGender teachesGender;
+  final Gender? gender;
+  final bool blocked;
 
   const TahfeezProfile({
     required this.userId,
@@ -40,22 +74,36 @@ class TahfeezProfile {
     this.planPeriod = PlanPeriod.month,
     this.freeSessions = 0,
     this.priceNote,
+    this.languages = const [],
+    this.teachesGender = TeachesGender.both,
+    this.gender,
+    this.blocked = false,
   });
 
   bool get isTeacher => role == TahfeezRole.teacher;
 
-  TahfeezProfile copyWith({String? displayName}) => TahfeezProfile(
-    userId: userId,
-    displayName: displayName ?? this.displayName,
-    photoUrl: photoUrl,
-    role: role,
-    teacherCode: teacherCode,
-    bio: bio,
-    city: city,
-    planPeriod: planPeriod,
-    freeSessions: freeSessions,
-    priceNote: priceNote,
-  );
+  /// Whether a student of [g] (null = undeclared) may ask this teacher.
+  bool accepts(Gender? g) =>
+      teachesGender == TeachesGender.both ||
+      (g != null && g.name == teachesGender.name);
+
+  TahfeezProfile copyWith({String? displayName, Gender? gender}) =>
+      TahfeezProfile(
+        userId: userId,
+        displayName: displayName ?? this.displayName,
+        photoUrl: photoUrl,
+        role: role,
+        teacherCode: teacherCode,
+        bio: bio,
+        city: city,
+        planPeriod: planPeriod,
+        freeSessions: freeSessions,
+        priceNote: priceNote,
+        languages: languages,
+        teachesGender: teachesGender,
+        gender: gender ?? this.gender,
+        blocked: blocked,
+      );
 
   factory TahfeezProfile.fromJson(Map<String, dynamic> j) => TahfeezProfile(
     userId: j['user_id'] as String,
@@ -68,6 +116,63 @@ class TahfeezProfile {
     planPeriod: j['plan_period'] == 'week' ? PlanPeriod.week : PlanPeriod.month,
     freeSessions: (j['free_sessions'] as int?) ?? 0,
     priceNote: j['price_note'] as String?,
+    languages: ((j['languages'] as List?) ?? const []).cast<String>(),
+    teachesGender: TeachesGender.values.firstWhere(
+      (g) => g.name == j['teaches_gender'],
+      orElse: () => TeachesGender.both,
+    ),
+    gender: j['gender'] == null
+        ? null
+        : Gender.values.firstWhere(
+            (g) => g.name == j['gender'],
+            orElse: () => Gender.male,
+          ),
+    blocked: j['blocked'] == true,
+  );
+}
+
+class TahfeezMessage {
+  final String id;
+  final String enrollmentId;
+  final String senderId;
+  final String body;
+  final DateTime createdAt;
+  final DateTime? reportedAt;
+  final String? reportReason;
+  final TahfeezProfile? sender;
+
+  const TahfeezMessage({
+    required this.id,
+    required this.enrollmentId,
+    required this.senderId,
+    required this.body,
+    required this.createdAt,
+    this.reportedAt,
+    this.reportReason,
+    this.sender,
+  });
+
+  TahfeezMessage withSender(TahfeezProfile? p) => TahfeezMessage(
+    id: id,
+    enrollmentId: enrollmentId,
+    senderId: senderId,
+    body: body,
+    createdAt: createdAt,
+    reportedAt: reportedAt,
+    reportReason: reportReason,
+    sender: p,
+  );
+
+  factory TahfeezMessage.fromJson(Map<String, dynamic> j) => TahfeezMessage(
+    id: j['id'] as String,
+    enrollmentId: j['enrollment_id'] as String,
+    senderId: j['sender_id'] as String,
+    body: j['body'] as String,
+    createdAt: DateTime.parse(j['created_at'] as String).toLocal(),
+    reportedAt: j['reported_at'] == null
+        ? null
+        : DateTime.parse(j['reported_at'] as String).toLocal(),
+    reportReason: j['report_reason'] as String?,
   );
 }
 
@@ -354,6 +459,9 @@ class TahfeezService {
         'already_teacher',
         'empty_name',
         'not_enrolled',
+        'blocked',
+        'gender_mismatch',
+        'not_party',
       ]) {
         if (msg.contains(code)) throw TahfeezException(code);
       }
@@ -372,16 +480,47 @@ class TahfeezService {
     final user = AuthService.user.value!;
     try {
       final c = await _client;
-      final created = await c.rpc(
+      final result = await c.rpc(
         'upsert_tahfeez_profile',
-        params: {'p_name': user.displayName, 'p_photo': user.photoUrl},
+        params: {
+          'p_name': user.displayName,
+          'p_photo': user.photoUrl,
+          'p_device': await deviceId(),
+        },
       );
       final row = await c
           .from('tahfeez_profiles')
           .select()
           .eq('user_id', user.id)
           .single();
-      return (TahfeezProfile.fromJson(row), created == true);
+      final created = result is Map && result['created'] == true;
+      return (TahfeezProfile.fromJson(row), created);
+    } catch (e) {
+      _throw(e);
+    }
+  }
+
+  static String? _deviceId;
+
+  /// A stable id for this installation's device, so a block can follow the
+  /// phone as well as the account. Null where the platform offers none.
+  static Future<String?> deviceId() async {
+    if (_deviceId != null || kIsWeb) return _deviceId;
+    try {
+      final info = DeviceInfoPlugin();
+      if (Platform.isAndroid) {
+        _deviceId = (await info.androidInfo).id;
+      } else if (Platform.isIOS) {
+        _deviceId = (await info.iosInfo).identifierForVendor;
+      }
+    } catch (_) {}
+    return _deviceId;
+  }
+
+  static Future<void> setGender(Gender g) async {
+    try {
+      final c = await _client;
+      await c.rpc('set_tahfeez_gender', params: {'p_gender': g.name});
     } catch (e) {
       _throw(e);
     }
@@ -443,8 +582,78 @@ class TahfeezService {
   /// the moment they open the app.
   static final pendingBadge = ValueNotifier<int>(0);
 
+  /// Reported messages awaiting the admin.
+  static final reportsBadge = ValueNotifier<int>(0);
+
+  /// Both together, for the account tab's icon.
+  static final adminBadge = ValueNotifier<int>(0);
+
   static Future<void> refreshPendingBadge() async {
-    pendingBadge.value = await pendingRequestCount();
+    final results = await Future.wait([
+      pendingRequestCount(),
+      reportedMessageCount(),
+    ]);
+    pendingBadge.value = results[0];
+    reportsBadge.value = results[1];
+    adminBadge.value = results[0] + results[1];
+  }
+
+  static Future<int> reportedMessageCount() async {
+    if (AuthService.user.value == null) return 0;
+    try {
+      final c = await _client;
+      final n = await c.rpc('reported_message_count');
+      return (n as int?) ?? 0;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  /// Every reported message, newest first, with who sent it.
+  static Future<List<TahfeezMessage>> reportedMessages() async {
+    try {
+      final c = await _client;
+      final rows = await c
+          .from('tahfeez_messages')
+          .select()
+          .not('reported_at', 'is', null)
+          .order('reported_at', ascending: false);
+      final list = rows.map(TahfeezMessage.fromJson).toList();
+      final profiles = await _profilesOf(
+        c,
+        list.map((m) => m.senderId).toSet().toList(),
+      );
+      return [for (final m in list) m.withSender(profiles[m.senderId])];
+    } catch (e) {
+      _throw(e);
+    }
+  }
+
+  static Future<void> blockUser(String userId, String reason) async {
+    try {
+      final c = await _client;
+      await c.rpc('block_user', params: {'p_user': userId, 'p_reason': reason});
+    } catch (e) {
+      _throw(e);
+    }
+  }
+
+  static Future<void> unblockUser(String userId) async {
+    try {
+      final c = await _client;
+      await c.rpc('unblock_user', params: {'p_user': userId});
+    } catch (e) {
+      _throw(e);
+    }
+  }
+
+  static Future<void> dismissReport(String messageId) async {
+    try {
+      final c = await _client;
+      await c.rpc('dismiss_report', params: {'p_id': messageId});
+    } catch (e) {
+      _throw(e);
+    }
   }
 
   static Future<int> pendingRequestCount() async {
@@ -675,6 +884,8 @@ class TahfeezService {
     required PlanPeriod plan,
     required int freeSessions,
     required String priceNote,
+    required List<String> languages,
+    required TeachesGender teaches,
   }) async {
     try {
       final c = await _client;
@@ -686,6 +897,8 @@ class TahfeezService {
           'p_plan': plan.name,
           'p_free': freeSessions,
           'p_price': priceNote,
+          'p_languages': languages,
+          'p_teaches': teaches.name,
         },
       );
     } catch (e) {
@@ -799,6 +1012,81 @@ class TahfeezService {
     } catch (e) {
       _throw(e);
     }
+  }
+
+  // ---- messages -----------------------------------------------------------
+
+  static Future<List<TahfeezMessage>> messages(String enrollmentId) async {
+    try {
+      final c = await _client;
+      final rows = await c
+          .from('tahfeez_messages')
+          .select()
+          .eq('enrollment_id', enrollmentId)
+          .order('created_at')
+          .limit(500);
+      return rows.map(TahfeezMessage.fromJson).toList();
+    } catch (e) {
+      _throw(e);
+    }
+  }
+
+  static Future<TahfeezMessage> sendMessage(
+    String enrollmentId,
+    String body,
+  ) async {
+    try {
+      final c = await _client;
+      final row = await c.rpc(
+        'send_message',
+        params: {'p_enrollment': enrollmentId, 'p_body': body},
+      );
+      return TahfeezMessage.fromJson(row as Map<String, dynamic>);
+    } catch (e) {
+      _throw(e);
+    }
+  }
+
+  static Future<void> reportMessage(String id, String reason) async {
+    try {
+      final c = await _client;
+      await c.rpc('report_message', params: {'p_id': id, 'p_reason': reason});
+    } catch (e) {
+      _throw(e);
+    }
+  }
+
+  /// New messages in one thread as they land. Cancelling the subscription
+  /// tears the channel down.
+  static Stream<TahfeezMessage> messageStream(String enrollmentId) {
+    late final StreamController<TahfeezMessage> controller;
+    RealtimeChannel? channel;
+    controller = StreamController<TahfeezMessage>(
+      onListen: () async {
+        final c = await _client;
+        channel = c
+            .channel('tahfeez_messages:$enrollmentId')
+            .onPostgresChanges(
+              event: PostgresChangeEvent.insert,
+              schema: 'public',
+              table: 'tahfeez_messages',
+              filter: PostgresChangeFilter(
+                type: PostgresChangeFilterType.eq,
+                column: 'enrollment_id',
+                value: enrollmentId,
+              ),
+              callback: (payload) {
+                if (controller.isClosed) return;
+                controller.add(TahfeezMessage.fromJson(payload.newRecord));
+              },
+            )
+            .subscribe();
+      },
+      onCancel: () async {
+        await channel?.unsubscribe();
+      },
+    );
+    return controller.stream;
   }
 
   // ---- evaluations --------------------------------------------------------
