@@ -92,16 +92,19 @@ class GreetingCardView extends StatelessWidget {
                 scale: unit,
               ),
               child: Padding(
-                padding: EdgeInsets.all(card.frame.insetFor(
-                        Size(constraints.maxWidth, constraints.maxHeight)) +
-                    10 * unit),
+                padding: EdgeInsets.all(
+                  card.frame.insetFor(
+                        Size(constraints.maxWidth, constraints.maxHeight),
+                      ) +
+                      10 * unit,
+                ),
                 child: Stack(
                   children: [
                     if (forSharing)
                       Align(
                         alignment: Alignment.bottomCenter,
                         child: Text(
-                          'islamic-azkar.yallanow.app',
+                          'azkar.salahulddin.com',
                           style: TextStyle(
                             color: palette.muted,
                             fontSize: 9 * unit,
@@ -113,65 +116,66 @@ class GreetingCardView extends StatelessWidget {
                     // A ready-made card already says what it came to say.
                     if (!bare)
                       Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      card.greeting,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: palette.ink,
-                        fontSize: 30 * unit,
-                        height: 1.5,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    if (card.note != null) ...[
-                      SizedBox(height: 6 * unit),
-                      Text(
-                        card.note!,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: palette.muted,
-                          fontSize: 13 * unit,
-                          height: 1.6,
-                        ),
-                      ),
-                    ],
-                    SizedBox(height: 22 * unit),
-                    _rule(palette, unit),
-                    SizedBox(height: 22 * unit),
-                    Flexible(
-                      // Shrinks rather than clips. A card is a fixed shape and
-                      // verses are not a fixed length, so one of the two has
-                      // to give — and cutting a verse short is not an option.
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: ConstrainedBox(
-                          constraints:
-                              BoxConstraints(maxWidth: constraints.maxWidth),
-                          child: Text(
-                            resolved.verse,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            card.greeting,
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontFamily: 'AmiriQuran',
-                              color: palette.body,
-                              fontSize: 17 * unit,
-                              height: 2.1,
+                              color: palette.ink,
+                              fontSize: 30 * unit,
+                              height: 1.5,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                        ),
+                          if (card.note != null) ...[
+                            SizedBox(height: 6 * unit),
+                            Text(
+                              card.note!,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: palette.muted,
+                                fontSize: 13 * unit,
+                                height: 1.6,
+                              ),
+                            ),
+                          ],
+                          SizedBox(height: 22 * unit),
+                          _rule(palette, unit),
+                          SizedBox(height: 22 * unit),
+                          Flexible(
+                            // Shrinks rather than clips. A card is a fixed shape and
+                            // verses are not a fixed length, so one of the two has
+                            // to give — and cutting a verse short is not an option.
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  maxWidth: constraints.maxWidth,
+                                ),
+                                child: Text(
+                                  resolved.verse,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontFamily: 'AmiriQuran',
+                                    color: palette.body,
+                                    fontSize: 17 * unit,
+                                    height: 2.1,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 12 * unit),
+                          Text(
+                            resolved.citation,
+                            style: TextStyle(
+                              color: palette.ink,
+                              fontSize: 11.5 * unit,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    SizedBox(height: 12 * unit),
-                    Text(
-                      resolved.citation,
-                      style: TextStyle(
-                        color: palette.ink,
-                        fontSize: 11.5 * unit,
-                      ),
-                    ),
-                  ],
-                    ),
                   ],
                 ),
               ),
@@ -221,31 +225,31 @@ class GreetingCardView extends StatelessWidget {
               )
             : null,
         child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (note.isNotEmpty)
-            Text(
-              note,
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: noteInk,
-                fontSize: 12.5 * unit,
-                height: 1.6,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (note.isNotEmpty)
+              Text(
+                note,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: noteInk,
+                  fontSize: 12.5 * unit,
+                  height: 1.6,
+                ),
               ),
-            ),
-          if (name.isNotEmpty) ...[
-            SizedBox(height: 3 * unit),
-            Text(
-              'المرسل: $name',
-              style: TextStyle(
-                color: nameInk,
-                fontSize: 11 * unit,
-                fontWeight: FontWeight.bold,
+            if (name.isNotEmpty) ...[
+              SizedBox(height: 3 * unit),
+              Text(
+                'المرسل: $name',
+                style: TextStyle(
+                  color: nameInk,
+                  fontSize: 11 * unit,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-          ],
+            ],
           ],
         ),
       ),
@@ -261,20 +265,25 @@ class GreetingCardView extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-              width: 46 * unit,
-              height: 1 * unit,
-              color: palette.ink.withValues(alpha: 0.5)),
+            width: 46 * unit,
+            height: 1 * unit,
+            color: palette.ink.withValues(alpha: 0.5),
+          ),
           SizedBox(width: 7 * unit),
           Transform.rotate(
             angle: 0.785,
             child: Container(
-                width: 5 * unit, height: 5 * unit, color: palette.ink),
+              width: 5 * unit,
+              height: 5 * unit,
+              color: palette.ink,
+            ),
           ),
           SizedBox(width: 7 * unit),
           Container(
-              width: 46 * unit,
-              height: 1 * unit,
-              color: palette.ink.withValues(alpha: 0.5)),
+            width: 46 * unit,
+            height: 1 * unit,
+            color: palette.ink.withValues(alpha: 0.5),
+          ),
         ],
       ),
     );

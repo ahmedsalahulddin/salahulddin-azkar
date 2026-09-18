@@ -48,7 +48,7 @@ void main() async {
   // any player is built.
   try {
     await JustAudioBackground.init(
-      androidNotificationChannelId: 'app.yallanow.azkar.audio',
+      androidNotificationChannelId: 'com.salahulddin.azkar.audio',
       androidNotificationChannelName: 'التلاوة',
       androidNotificationOngoing: true,
       androidStopForegroundOnPause: true,

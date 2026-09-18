@@ -12,11 +12,16 @@ void main() {
 
   group('the catalogue', () {
     test('ids are unique and every shelf has cards on it', () {
-      expect(GreetingCards.all.map((c) => c.id).toSet().length,
-          GreetingCards.all.length);
+      expect(
+        GreetingCards.all.map((c) => c.id).toSet().length,
+        GreetingCards.all.length,
+      );
       for (final shelf in CardShelf.values) {
-        expect(GreetingCards.of(shelf), isNotEmpty,
-            reason: '${shelf.title} is empty');
+        expect(
+          GreetingCards.of(shelf),
+          isNotEmpty,
+          reason: '${shelf.title} is empty',
+        );
       }
     });
 
@@ -29,10 +34,16 @@ void main() {
       final counts = {for (final s in index) s.number: s.ayahCount};
 
       for (final card in GreetingCards.all) {
-        expect(counts.containsKey(card.surah), isTrue,
-            reason: '${card.id} points at surah ${card.surah}');
-        expect(card.ayah, inInclusiveRange(1, counts[card.surah]!),
-            reason: '${card.id} points past the end of its surah');
+        expect(
+          counts.containsKey(card.surah),
+          isTrue,
+          reason: '${card.id} points at surah ${card.surah}',
+        );
+        expect(
+          card.ayah,
+          inInclusiveRange(1, counts[card.surah]!),
+          reason: '${card.id} points past the end of its surah',
+        );
       }
     });
 
@@ -44,7 +55,10 @@ void main() {
         final surah = await QuranService.surah(card.surah);
         final ayah = surah.ayahs.firstWhere((a) => a.number == card.ayah);
         expect(resolved.verse, ayah.text);
-        expect(resolved.citation, contains(QuranService.toArabicDigits(card.ayah)));
+        expect(
+          resolved.citation,
+          contains(QuranService.toArabicDigits(card.ayah)),
+        );
       }
     });
 
@@ -62,87 +76,110 @@ void main() {
       for (final width in [180.0, 380.0]) {
         for (final card in GreetingCards.all) {
           final resolved = await GreetingCards.resolve(card);
-          await tester.pumpWidget(MaterialApp(
-            home: Directionality(
-              textDirection: TextDirection.rtl,
-              child: Center(
-                child: SizedBox(
-                  width: width,
-                  child: GreetingCardView(resolved: resolved),
+          await tester.pumpWidget(
+            MaterialApp(
+              home: Directionality(
+                textDirection: TextDirection.rtl,
+                child: Center(
+                  child: SizedBox(
+                    width: width,
+                    child: GreetingCardView(resolved: resolved),
+                  ),
                 ),
               ),
             ),
-          ));
+          );
           await tester.pump();
-          expect(tester.takeException(), isNull,
-              reason: '${card.id} overflowed at ${width}px');
+          expect(
+            tester.takeException(),
+            isNull,
+            reason: '${card.id} overflowed at ${width}px',
+          );
         }
       }
     });
 
-    testWidgets('the card keeps its shape whatever it is given',
-        (tester) async {
+    testWidgets('the card keeps its shape whatever it is given', (
+      tester,
+    ) async {
       final resolved = await GreetingCards.resolve(GreetingCards.all.first);
-      await tester.pumpWidget(MaterialApp(
-        home: Center(
-          child: SizedBox(
-            width: 300,
-            child: GreetingCardView(resolved: resolved),
-          ),
-        ),
-      ));
-      final size = tester.getSize(find.byType(GreetingCardView));
-      expect(size.width / size.height,
-          closeTo(GreetingCardView.aspectRatio, 0.01));
-    });
-
-    testWidgets('the signature and note appear only when given',
-        (tester) async {
-      final resolved = await GreetingCards.resolve(GreetingCards.all.first);
-      await tester.pumpWidget(MaterialApp(
-        home: Center(
-          child: SizedBox(
-            width: 380,
-            child: GreetingCardView(
-              resolved: resolved,
-              senderName: 'أحمد صلاح الدين',
-              senderNote: 'كل عام وأنتم بخير يا غالي',
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Center(
+            child: SizedBox(
+              width: 300,
+              child: GreetingCardView(resolved: resolved),
             ),
           ),
         ),
-      ));
+      );
+      final size = tester.getSize(find.byType(GreetingCardView));
+      expect(
+        size.width / size.height,
+        closeTo(GreetingCardView.aspectRatio, 0.01),
+      );
+    });
+
+    testWidgets('the signature and note appear only when given', (
+      tester,
+    ) async {
+      final resolved = await GreetingCards.resolve(GreetingCards.all.first);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Center(
+            child: SizedBox(
+              width: 380,
+              child: GreetingCardView(
+                resolved: resolved,
+                senderName: 'أحمد صلاح الدين',
+                senderNote: 'كل عام وأنتم بخير يا غالي',
+              ),
+            ),
+          ),
+        ),
+      );
       await tester.pump();
       expect(find.text('المرسل: أحمد صلاح الدين'), findsOneWidget);
       expect(find.text('كل عام وأنتم بخير يا غالي'), findsOneWidget);
 
       // Left empty, no stray "المرسل:" label survives.
-      await tester.pumpWidget(MaterialApp(
-        home: Center(
-          child: SizedBox(
-            width: 380,
-            child: GreetingCardView(resolved: resolved, senderName: '  '),
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Center(
+            child: SizedBox(
+              width: 380,
+              child: GreetingCardView(resolved: resolved, senderName: '  '),
+            ),
           ),
         ),
-      ));
+      );
       await tester.pump();
       expect(find.textContaining('المرسل'), findsNothing);
     });
 
-    testWidgets('the app is named only on the copy that gets sent',
-        (tester) async {
+    testWidgets('the app is named only on the copy that gets sent', (
+      tester,
+    ) async {
       final resolved = await GreetingCards.resolve(GreetingCards.all.first);
       for (final sharing in [false, true]) {
-        await tester.pumpWidget(MaterialApp(
-          home: Center(
-            child: SizedBox(
-              width: 380,
-              child: GreetingCardView(resolved: resolved, forSharing: sharing),
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Center(
+              child: SizedBox(
+                width: 380,
+                child: GreetingCardView(
+                  resolved: resolved,
+                  forSharing: sharing,
+                ),
+              ),
             ),
           ),
-        ));
+        );
         await tester.pump();
-        expect(find.text('islamic-azkar.yallanow.app'),
-            sharing ? findsOneWidget : findsNothing);
+        expect(
+          find.text('azkar.salahulddin.com'),
+          sharing ? findsOneWidget : findsNothing,
+        );
       }
     });
   });
@@ -155,8 +192,11 @@ void main() {
       // photograph, and Arabic at that size does not survive the second pass.
       for (final layout in [280.0, 320.0, 360.0, 420.0]) {
         final out = layout * CardViewerScreen.exportRatio(layout);
-        expect(out, closeTo(CardViewerScreen.exportWidth, 1),
-            reason: '$layout across should still export at one width');
+        expect(
+          out,
+          closeTo(CardViewerScreen.exportWidth, 1),
+          reason: '$layout across should still export at one width',
+        );
       }
     });
 
@@ -164,8 +204,7 @@ void main() {
       // Three times the layout was the old floor; nothing should regress
       // below it, however wide the screen.
       for (final layout in [280.0, 700.0, 1200.0]) {
-        expect(CardViewerScreen.exportRatio(layout),
-            greaterThanOrEqualTo(3.0));
+        expect(CardViewerScreen.exportRatio(layout), greaterThanOrEqualTo(3.0));
       }
     });
 

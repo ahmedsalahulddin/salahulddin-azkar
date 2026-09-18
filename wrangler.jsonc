@@ -13,11 +13,6 @@
   ],
   "routes": [
     {
-      "pattern": "islamic-azkar.yallanow.app",
-      "zone_name": "yallanow.app",
-      "custom_domain": true
-    },
-    {
       "pattern": "azkar.salahulddin.com",
       "zone_name": "salahulddin.com",
       "custom_domain": true
