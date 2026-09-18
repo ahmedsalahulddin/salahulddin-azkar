@@ -42,12 +42,28 @@ class ContinuousListening {
   /// sounding — the buttons belong to it either way.
   static final active = ValueNotifier<bool>(false);
 
-  static final reciter = ValueNotifier<Reciter>(RecitationService.defaultReciter);
+  static final reciter = ValueNotifier<Reciter>(
+    RecitationService.defaultReciter,
+  );
 
   static List<SurahInfo> _index = const [];
   static bool _wired = false;
   static StreamSubscription<int?>? _indexSub;
   static StreamSubscription<PlayerState>? _stateSub;
+  static StreamSubscription<PlayerException>? _errorSub;
+
+  /// Consecutive network/playback failures at the current position. A
+  /// reciter streamed one file per ayah makes hundreds of requests an hour —
+  /// one dropping, especially with the screen off and the phone throttling
+  /// background data, is routine, not exceptional. Without this, that single
+  /// failure ended the session for good with nothing telling the listener
+  /// why the room had gone quiet.
+  static int _errorRetries = 0;
+
+  /// Guards the error handler the same way [_advancing] guards the
+  /// completion handler, so a burst of errors from one bad ayah does not
+  /// pile up overlapping recovery attempts.
+  static bool _recovering = false;
 
   /// The surah whose playlist is currently loaded. Set to 0 while a new
   /// playlist is being loaded so that stale currentIndexStream events from the
@@ -130,26 +146,24 @@ class ContinuousListening {
     try {
       _loadedSurah = 0;
       await AppAudio.player.stop();
-      await AppAudio.player.setAudioSources(
-        [
-          for (var n = 1; n <= info.ayahCount; n++)
-            AudioSource.uri(
-              Uri.parse(RecitationService.urlFor(
+      await AppAudio.player.setAudioSources([
+        for (var n = 1; n <= info.ayahCount; n++)
+          AudioSource.uri(
+            Uri.parse(
+              RecitationService.urlFor(
                 reciterId: reciter.value.id,
                 surah: number,
                 ayah: n,
-              )),
-              tag: MediaItem(
-                id: '$owner$number:$n',
-                title:
-                    '${info.name} — الآية ${QuranService.toArabicDigits(n)}',
-                artist: reciter.value.name,
-                album: 'الاستماع الدائم',
               ),
             ),
-        ],
-        initialIndex: startIndex,
-      );
+            tag: MediaItem(
+              id: '$owner$number:$n',
+              title: '${info.name} — الآية ${QuranService.toArabicDigits(n)}',
+              artist: reciter.value.name,
+              album: 'الاستماع الدائم',
+            ),
+          ),
+      ], initialIndex: startIndex);
       // just_audio_background sometimes settles on index 0 for a moment after
       // setAudioSources before honouring initialIndex — the background
       // session's own restore can race the one just requested. An explicit
@@ -179,8 +193,14 @@ class ContinuousListening {
     required int number,
     required SurahInfo info,
   }) async {
-    final url = RecitationService.surahUrlFor(reciter: reciter.value, surah: number);
-    if (url == null) { active.value = false; return; }
+    final url = RecitationService.surahUrlFor(
+      reciter: reciter.value,
+      surah: number,
+    );
+    if (url == null) {
+      active.value = false;
+      return;
+    }
     ayah.value = 1;
     await _remember();
     try {
@@ -266,6 +286,9 @@ class ContinuousListening {
       if (surah.value != _loadedSurah) return;
       ayah.value = i + 1;
       _remember();
+      // Reaching a new index at all means the one before it played fine —
+      // the listener has moved past whatever it was retrying.
+      _errorRetries = 0;
     });
 
     _stateSub = AppAudio.player.playerStateStream.listen((state) async {
@@ -284,16 +307,58 @@ class ContinuousListening {
         _advancing = false;
       }
     });
+
+    // just_audio only auto-skips a failed item when the player is built with
+    // maxSkipsOnError, which the app's shared player is not — so left alone,
+    // a single dropped request (network hiccup, the proxy briefly down)
+    // stops playback for good with no completion event ever following. This
+    // is the recovery that keeps "continuous" true to its name: a couple of
+    // retries in place for a hiccup, then move past whatever ayah or surah
+    // will not load rather than sit silent.
+    _errorSub = AppAudio.player.errorStream.listen((_) => _handleError());
+  }
+
+  static Future<void> _handleError() async {
+    if (!active.value || !AppAudio.ownsCurrent(owner) || _recovering) return;
+    _recovering = true;
+    try {
+      // Gives a transient drop a moment to clear instead of hammering a
+      // server that just failed.
+      await Future.delayed(const Duration(seconds: 2));
+      if (!active.value || !AppAudio.ownsCurrent(owner)) return;
+
+      _errorRetries++;
+      if (_errorRetries <= 3) {
+        await play(surah.value, fromAyah: ayah.value);
+        return;
+      }
+
+      _errorRetries = 0;
+      final info = infoFor(surah.value);
+      if (reciter.value.isPerAyah &&
+          info != null &&
+          ayah.value < info.ayahCount) {
+        await play(surah.value, fromAyah: ayah.value + 1);
+      } else {
+        await play(nextSurah(surah.value));
+      }
+    } finally {
+      _recovering = false;
+    }
   }
 
   @visibleForTesting
   static Future<void> debugReset() async {
     await _indexSub?.cancel();
     await _stateSub?.cancel();
+    await _errorSub?.cancel();
     _indexSub = null;
     _stateSub = null;
+    _errorSub = null;
     _wired = false;
     _advancing = false;
+    _recovering = false;
+    _errorRetries = 0;
     _loadedSurah = 0;
     active.value = false;
     surah.value = 1;
