@@ -1,7 +1,7 @@
 name: salahulddin_azkar
 description: "salahulddin-AZKAR — أذكار المسلم والمصحف الشريف"
 publish_to: 'none'
-version: 1.6.3+43
+version: 1.6.4+44
 
 environment:
   sdk: ^3.11.5
