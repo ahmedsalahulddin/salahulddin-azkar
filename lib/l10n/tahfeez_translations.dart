@@ -4,6 +4,8 @@
 
 const tahfeezTranslations = <String, Map<String, String>>{
   'fr': {
+    'tahfeez.signInComingSoon': 'Se connecter avec Google — bientôt disponible',
+    'tahfeez.signInFailed': 'Échec de la connexion — réessayez',
     'tahfeez.title': 'Mémorisation',
     'tahfeez.signInPrompt':
         'Connectez-vous avec Google pour rejoindre un cercle de mémorisation, ou pour gérer vos cercles si vous êtes enseignant',
@@ -215,6 +217,8 @@ const tahfeezTranslations = <String, Map<String, String>>{
     'tahfeez.newRequests': 'Nouvelles demandes',
   },
   'ur': {
+    'tahfeez.signInComingSoon': 'گوگل سے سائن ان — جلد آ رہا ہے',
+    'tahfeez.signInFailed': 'سائن ان ناکام — دوبارہ کوشش کریں',
     'tahfeez.title': 'حفظ',
     'tahfeez.signInPrompt':
         'حفظ کے حلقے میں شامل ہونے یا بطور استاد اپنے حلقے سنبھالنے کے لیے گوگل سے سائن ان کریں',
@@ -417,6 +421,8 @@ const tahfeezTranslations = <String, Map<String, String>>{
     'tahfeez.newRequests': 'نئی درخواستیں',
   },
   'id': {
+    'tahfeez.signInComingSoon': 'Masuk dengan Google — segera hadir',
+    'tahfeez.signInFailed': 'Masuk gagal — coba lagi',
     'tahfeez.title': 'Hafalan',
     'tahfeez.signInPrompt':
         'Masuk dengan Google untuk bergabung ke halaqah hafalan, atau mengelola halaqah Anda jika Anda pengajar',
@@ -624,6 +630,9 @@ const tahfeezTranslations = <String, Map<String, String>>{
     'tahfeez.newRequests': 'Permintaan bergabung baru',
   },
   'ms': {
+    'tahfeez.signInComingSoon':
+        'Log masuk dengan Google — akan hadir tidak lama lagi',
+    'tahfeez.signInFailed': 'Log masuk gagal — cuba lagi',
     'tahfeez.title': 'Hafazan',
     'tahfeez.signInPrompt':
         'Log masuk dengan Google untuk menyertai halaqah hafazan, atau mengurus halaqah anda jika anda guru',
@@ -830,6 +839,8 @@ const tahfeezTranslations = <String, Map<String, String>>{
     'tahfeez.newRequests': 'Permohonan baharu',
   },
   'hi': {
+    'tahfeez.signInComingSoon': 'Google से साइन इन — जल्द आ रहा है',
+    'tahfeez.signInFailed': 'साइन इन विफल — फिर कोशिश करें',
     'tahfeez.title': 'हिफ़्ज़',
     'tahfeez.signInPrompt':
         'हिफ़्ज़ हलक़े में शामिल होने, या शिक्षक होने पर अपने हलक़े संभालने के लिए Google से साइन इन करें',
@@ -1033,6 +1044,8 @@ const tahfeezTranslations = <String, Map<String, String>>{
     'tahfeez.newRequests': 'नए अनुरोध',
   },
   'tr': {
+    'tahfeez.signInComingSoon': 'Google ile giriş — yakında',
+    'tahfeez.signInFailed': 'Giriş başarısız — tekrar deneyin',
     'tahfeez.title': 'Hafızlık',
     'tahfeez.signInPrompt':
         'Bir hafızlık halkasına katılmak ya da öğretmenseniz halkalarınızı yönetmek için Google ile giriş yapın',
@@ -1238,6 +1251,8 @@ const tahfeezTranslations = <String, Map<String, String>>{
     'tahfeez.newRequests': 'Yeni katılma istekleri',
   },
   'bn': {
+    'tahfeez.signInComingSoon': 'Google দিয়ে সাইন ইন — শীঘ্রই আসছে',
+    'tahfeez.signInFailed': 'সাইন ইন ব্যর্থ — আবার চেষ্টা করুন',
     'tahfeez.title': 'হিফজ',
     'tahfeez.signInPrompt':
         'হিফজ হালাকায় যোগ দিতে, বা শিক্ষক হলে আপনার হালাকা পরিচালনা করতে Google দিয়ে সাইন ইন করুন',
@@ -1443,6 +1458,8 @@ const tahfeezTranslations = <String, Map<String, String>>{
     'tahfeez.newRequests': 'নতুন অনুরোধ',
   },
   'ha': {
+    'tahfeez.signInComingSoon': 'Shiga da Google — zai zo nan ba da jimawa ba',
+    'tahfeez.signInFailed': 'Shiga ya kasa — sake gwadawa',
     'tahfeez.title': 'Haddar Alƙur’ani',
     'tahfeez.signInPrompt':
         'Shiga da Google don shiga halƙar haddar Alƙur’ani, ko don sarrafa halƙoƙinka idan kai malami ne',

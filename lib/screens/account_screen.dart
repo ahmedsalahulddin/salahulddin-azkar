@@ -3,6 +3,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../constants/theme.dart';
 import '../l10n/strings.dart';
+import '../services/account_lang.dart';
 import '../services/app_locale.dart';
 import '../services/auth_service.dart';
 import '../services/sync_service.dart';
@@ -129,7 +130,7 @@ class _AccountScreenState extends State<AccountScreen> {
     showDialog(
       context: context,
       builder: (ctx) => Directionality(
-        textDirection: AppLocale.isEn ? TextDirection.ltr : TextDirection.rtl,
+        textDirection: AccountLang.direction,
         child: AlertDialog(
           backgroundColor: AppColors.blackCard,
           shape: RoundedRectangleBorder(
@@ -203,32 +204,38 @@ class _AccountScreenState extends State<AccountScreen> {
   Future<void> _signOut() async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.blackCard,
-        title: Text(
-          t('account.signOut'),
-          style: const TextStyle(color: AppColors.gold, fontSize: 17),
-        ),
-        content: Text(
-          t('account.signOutMsg'),
-          style: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(
-              t('account.cancel'),
-              style: const TextStyle(color: AppColors.textMuted),
+      builder: (ctx) => Directionality(
+        textDirection: AccountLang.direction,
+        child: AlertDialog(
+          backgroundColor: AppColors.blackCard,
+          title: Text(
+            t('account.signOut'),
+            style: const TextStyle(color: AppColors.gold, fontSize: 17),
+          ),
+          content: Text(
+            t('account.signOutMsg'),
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 14,
             ),
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(
-              t('account.signOutConfirm'),
-              style: const TextStyle(color: AppColors.error),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(
+                t('account.cancel'),
+                style: const TextStyle(color: AppColors.textMuted),
+              ),
             ),
-          ),
-        ],
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(
+                t('account.signOutConfirm'),
+                style: const TextStyle(color: AppColors.error),
+              ),
+            ),
+          ],
+        ),
       ),
     );
 
@@ -238,86 +245,90 @@ class _AccountScreenState extends State<AccountScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<String>(
-      valueListenable: AppLocale.locale,
-      builder: (context2, locale, child2) => Scaffold(
-        backgroundColor: AppColors.black,
-        appBar: AppBar(
-          title: Text(t('account.title')),
+    return ListenableBuilder(
+      listenable: Listenable.merge([AppLocale.locale, AccountLang.override]),
+      builder: (context2, child2) => Directionality(
+        textDirection: AccountLang.direction,
+        child: Scaffold(
           backgroundColor: AppColors.black,
-          foregroundColor: AppColors.gold,
-        ),
-        body: ValueListenableBuilder<AppUser?>(
-          valueListenable: AuthService.user,
-          builder: (context, user, _) => ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              _profileCard(user),
-              if (SyncService.available) ...[
-                const SizedBox(height: 12),
-                _syncCard(),
-              ],
-              const SizedBox(height: 10),
-              const SettingsScreen(embedded: true),
-              if (_isAdmin) ...[
+          appBar: AppBar(
+            title: Text(t('account.title')),
+            backgroundColor: AppColors.black,
+            foregroundColor: AppColors.gold,
+            actions: [_languageMenu()],
+          ),
+          body: ValueListenableBuilder<AppUser?>(
+            valueListenable: AuthService.user,
+            builder: (context, user, _) => ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                _profileCard(user),
+                if (SyncService.available) ...[
+                  const SizedBox(height: 12),
+                  _syncCard(),
+                ],
+                const SizedBox(height: 10),
+                const SettingsScreen(embedded: true),
+                if (_isAdmin) ...[
+                  const SizedBox(height: 20),
+                  _sectionTitle(t('account.adminSection')),
+                  _tile(
+                    icon: Icons.dashboard_customize,
+                    title: t('account.adminTitle'),
+                    subtitle: t('account.adminSub'),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const AdminScreen()),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  ValueListenableBuilder<int>(
+                    valueListenable: TahfeezService.pendingBadge,
+                    builder: (_, n, _) => _tile(
+                      icon: Icons.how_to_reg,
+                      title: n > 0
+                          ? '${t('account.teacherRequestsTitle')} ($n)'
+                          : t('account.teacherRequestsTitle'),
+                      subtitle: t('account.teacherRequestsSub'),
+                      onTap: () async {
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const TeacherRequestsScreen(),
+                          ),
+                        );
+                        TahfeezService.refreshPendingBadge();
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  ValueListenableBuilder<int>(
+                    valueListenable: TahfeezService.reportsBadge,
+                    builder: (_, n, _) => _tile(
+                      icon: Icons.flag_outlined,
+                      title: n > 0
+                          ? '${t('tahfeez.reports')} ($n)'
+                          : t('tahfeez.reports'),
+                      subtitle: t('tahfeez.reportsSub'),
+                      onTap: () async {
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const ReportsScreen(),
+                          ),
+                        );
+                        TahfeezService.refreshPendingBadge();
+                      },
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 20),
-                _sectionTitle(t('account.adminSection')),
-                _tile(
-                  icon: Icons.dashboard_customize,
-                  title: t('account.adminTitle'),
-                  subtitle: t('account.adminSub'),
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const AdminScreen()),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                ValueListenableBuilder<int>(
-                  valueListenable: TahfeezService.pendingBadge,
-                  builder: (_, n, _) => _tile(
-                    icon: Icons.how_to_reg,
-                    title: n > 0
-                        ? '${t('account.teacherRequestsTitle')} ($n)'
-                        : t('account.teacherRequestsTitle'),
-                    subtitle: t('account.teacherRequestsSub'),
-                    onTap: () async {
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const TeacherRequestsScreen(),
-                        ),
-                      );
-                      TahfeezService.refreshPendingBadge();
-                    },
-                  ),
-                ),
-                const SizedBox(height: 8),
-                ValueListenableBuilder<int>(
-                  valueListenable: TahfeezService.reportsBadge,
-                  builder: (_, n, _) => _tile(
-                    icon: Icons.flag_outlined,
-                    title: n > 0
-                        ? '${t('tahfeez.reports')} ($n)'
-                        : t('tahfeez.reports'),
-                    subtitle: t('tahfeez.reportsSub'),
-                    onTap: () async {
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const ReportsScreen(),
-                        ),
-                      );
-                      TahfeezService.refreshPendingBadge();
-                    },
-                  ),
-                ),
+                _sectionTitle(t('account.aboutSection')),
+                _aboutCard(),
+                const SizedBox(height: 10),
+                _sourcesLink(),
               ],
-              const SizedBox(height: 20),
-              _sectionTitle(t('account.aboutSection')),
-              _aboutCard(),
-              const SizedBox(height: 10),
-              _sourcesLink(),
-            ],
+            ),
           ),
         ),
       ),
@@ -546,6 +557,56 @@ class _AccountScreenState extends State<AccountScreen> {
     );
   }
 
+  Widget _languageMenu() {
+    return PopupMenuButton<String>(
+      tooltip: AccountLang.nameOf(AccountLang.code),
+      color: AppColors.blackCard,
+      onSelected: (c) => AccountLang.set(c),
+      itemBuilder: (_) => [
+        for (final (code, name) in AccountLang.languages)
+          PopupMenuItem(
+            value: code,
+            child: Row(
+              children: [
+                Icon(
+                  code == AccountLang.code
+                      ? Icons.radio_button_checked
+                      : Icons.radio_button_off,
+                  size: 16,
+                  color: code == AccountLang.code
+                      ? AppColors.gold
+                      : AppColors.textMuted,
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  name,
+                  style: TextStyle(
+                    color: code == AccountLang.code
+                        ? AppColors.gold
+                        : AppColors.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.translate, size: 18, color: AppColors.gold),
+            const SizedBox(width: 4),
+            Text(
+              AccountLang.nameOf(AccountLang.code),
+              style: const TextStyle(color: AppColors.gold, fontSize: 13),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _guestActions() {
     return ValueListenableBuilder<Set<SignInProvider>>(
       valueListenable: AuthService.availableProviders,
@@ -664,51 +725,54 @@ class _AccountScreenState extends State<AccountScreen> {
   Future<void> _deleteAccount() async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.blackCard,
-        title: Text(
-          t('account.deleteTitle'),
-          style: const TextStyle(color: AppColors.error, fontSize: 17),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              t('account.deleteMsg'),
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 14,
-                height: 1.7,
+      builder: (ctx) => Directionality(
+        textDirection: AccountLang.direction,
+        child: AlertDialog(
+          backgroundColor: AppColors.blackCard,
+          title: Text(
+            t('account.deleteTitle'),
+            style: const TextStyle(color: AppColors.error, fontSize: 17),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                t('account.deleteMsg'),
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 14,
+                  height: 1.7,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                t('account.deleteNote'),
+                style: const TextStyle(
+                  color: AppColors.textMuted,
+                  fontSize: 12,
+                  height: 1.7,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(
+                t('account.cancel'),
+                style: const TextStyle(color: AppColors.textSecondary),
               ),
             ),
-            const SizedBox(height: 10),
-            Text(
-              t('account.deleteNote'),
-              style: const TextStyle(
-                color: AppColors.textMuted,
-                fontSize: 12,
-                height: 1.7,
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(
+                t('account.continue'),
+                style: const TextStyle(color: AppColors.error),
               ),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(
-              t('account.cancel'),
-              style: const TextStyle(color: AppColors.textSecondary),
-            ),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(
-              t('account.continue'),
-              style: const TextStyle(color: AppColors.error),
-            ),
-          ),
-        ],
       ),
     );
     if (confirmed != true || !mounted) return;
@@ -735,61 +799,64 @@ class _AccountScreenState extends State<AccountScreen> {
 
     return showDialog<bool>(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setLocal) => AlertDialog(
-          backgroundColor: AppColors.blackCard,
-          title: Text(
-            t('account.lastConfirm'),
-            style: const TextStyle(color: AppColors.error, fontSize: 17),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                t('account.deleteConfirm'),
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 13,
+      builder: (ctx) => Directionality(
+        textDirection: AccountLang.direction,
+        child: StatefulBuilder(
+          builder: (ctx, setLocal) => AlertDialog(
+            backgroundColor: AppColors.blackCard,
+            title: Text(
+              t('account.lastConfirm'),
+              style: const TextStyle(color: AppColors.error, fontSize: 17),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  t('account.deleteConfirm'),
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 13,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: controller,
+                  autofocus: true,
+                  textAlign: TextAlign.center,
+                  onChanged: (_) => setLocal(() {}),
+                  style: const TextStyle(color: AppColors.textPrimary),
+                  decoration: const InputDecoration(
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: AppColors.goldBorder),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: Text(
+                  t('account.cancel'),
+                  style: const TextStyle(color: AppColors.textSecondary),
                 ),
               ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: controller,
-                autofocus: true,
-                textAlign: TextAlign.center,
-                onChanged: (_) => setLocal(() {}),
-                style: const TextStyle(color: AppColors.textPrimary),
-                decoration: const InputDecoration(
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: AppColors.goldBorder),
+              TextButton(
+                onPressed: controller.text.trim() == word
+                    ? () => Navigator.pop(ctx, true)
+                    : null,
+                child: Text(
+                  t('account.deleteBtn'),
+                  style: TextStyle(
+                    color: controller.text.trim() == word
+                        ? AppColors.error
+                        : AppColors.textMuted,
                   ),
                 ),
               ),
             ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: Text(
-                t('account.cancel'),
-                style: const TextStyle(color: AppColors.textSecondary),
-              ),
-            ),
-            TextButton(
-              onPressed: controller.text.trim() == word
-                  ? () => Navigator.pop(ctx, true)
-                  : null,
-              child: Text(
-                t('account.deleteBtn'),
-                style: TextStyle(
-                  color: controller.text.trim() == word
-                      ? AppColors.error
-                      : AppColors.textMuted,
-                ),
-              ),
-            ),
-          ],
         ),
       ),
     );

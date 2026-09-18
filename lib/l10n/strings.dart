@@ -1,10 +1,13 @@
+import '../services/account_lang.dart';
 import '../services/app_locale.dart';
 import '../services/tahfeez_lang.dart';
+import 'account_translations.dart';
 import 'tahfeez_translations.dart';
 
 /// Returns the string for [key] in the current app locale — or, for the
 /// memorisation section's own keys, in the language chosen at the top of
-/// that tab.
+/// that tab, or for the Account & Settings screen's own keys, in the
+/// language chosen at the top of that screen.
 String t(String key) {
   if (key.startsWith('tahfeez.')) {
     final code = TahfeezLang.code;
@@ -12,6 +15,15 @@ String t(String key) {
       'ar' => _ar,
       'en' => _en,
       _ => tahfeezTranslations[code] ?? _en,
+    };
+    return map[key] ?? _en[key] ?? _ar[key] ?? key;
+  }
+  if (accountTranslations['fr']!.containsKey(key)) {
+    final code = AccountLang.code;
+    final map = switch (code) {
+      'ar' => _ar,
+      'en' => _en,
+      _ => accountTranslations[code] ?? _en,
     };
     return map[key] ?? _en[key] ?? _ar[key] ?? key;
   }
@@ -337,6 +349,8 @@ const _ar = <String, String>{
   'tahfeez.signInPrompt':
       'سجّل الدخول بحساب جوجل لتنضم إلى حلقة تحفيظ، أو لتُدير حلقاتك إن كنت محفظًا',
   'tahfeez.signInGoogle': 'الدخول بحساب جوجل',
+  'tahfeez.signInComingSoon': 'الدخول بحساب جوجل — قريباً',
+  'tahfeez.signInFailed': 'تعذّر تسجيل الدخول — حاول مرة أخرى',
   'tahfeez.loadFailed': 'تعذّر تحميل البيانات — تحقّق من الاتصال',
   'tahfeez.retry': 'إعادة المحاولة',
   'tahfeez.joinTitle': 'انضم إلى محفظ',
@@ -833,6 +847,8 @@ const _en = <String, String>{
   'tahfeez.signInPrompt':
       'Sign in with Google to join a memorisation circle, or to manage your circles if you are a teacher',
   'tahfeez.signInGoogle': 'Sign in with Google',
+  'tahfeez.signInComingSoon': 'Sign in with Google — coming soon',
+  'tahfeez.signInFailed': 'Sign in failed — please try again',
   'tahfeez.loadFailed': 'Could not load — check your connection',
   'tahfeez.retry': 'Retry',
   'tahfeez.joinTitle': 'Join a teacher',

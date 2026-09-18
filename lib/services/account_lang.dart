@@ -1,0 +1,64 @@
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'app_locale.dart';
+
+/// The language "حسابي" (Account & Settings) is read in — chosen from the
+/// top of that screen, independently of the app's own ar/en toggle, so a
+/// reader who keeps the rest of the app in Arabic can still manage their
+/// account in a language they're more comfortable reading fine print in.
+/// Null means "follow the app language".
+class AccountLang {
+  static const _key = 'account_lang';
+
+  static const languages = <(String code, String name)>[
+    ('ar', 'العربية'),
+    ('en', 'English'),
+    ('fr', 'Français'),
+    ('ur', 'اردو'),
+    ('id', 'Indonesia'),
+    ('ms', 'Bahasa Melayu'),
+    ('hi', 'हिन्दी'),
+    ('tr', 'Türkçe'),
+    ('bn', 'বাংলা'),
+    ('ha', 'Hausa'),
+  ];
+
+  static final override = ValueNotifier<String?>(null);
+
+  /// The language actually in effect.
+  static String get code => override.value ?? (AppLocale.isEn ? 'en' : 'ar');
+
+  static bool get isArabicDigits => code == 'ar';
+
+  static bool get isRtl => code == 'ar' || code == 'ur';
+
+  static TextDirection get direction =>
+      isRtl ? TextDirection.rtl : TextDirection.ltr;
+
+  static String nameOf(String c) {
+    for (final (code, name) in languages) {
+      if (code == c) return name;
+    }
+    return c;
+  }
+
+  static Future<void> load() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      override.value = prefs.getString(_key);
+    } catch (_) {}
+  }
+
+  static Future<void> set(String? c) async {
+    override.value = c;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (c == null) {
+        await prefs.remove(_key);
+      } else {
+        await prefs.setString(_key, c);
+      }
+    } catch (_) {}
+  }
+}

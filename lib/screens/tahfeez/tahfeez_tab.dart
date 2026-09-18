@@ -247,7 +247,7 @@ class _TahfeezTabState extends State<TahfeezTab> {
                 )
               else
                 Text(
-                  t('account.signInSoon'),
+                  t('tahfeez.signInComingSoon'),
                   style: const TextStyle(
                     color: AppColors.textMuted,
                     fontSize: 12,
@@ -265,7 +265,7 @@ class _TahfeezTabState extends State<TahfeezTab> {
     final ok = await AuthService.signInWith(SignInProvider.google);
     if (!mounted) return;
     setState(() => _signingIn = false);
-    if (!ok) showNote(context, t('account.signInFail'), error: true);
+    if (!ok) showNote(context, t('tahfeez.signInFailed'), error: true);
   }
 
   Widget _blockedView() {
