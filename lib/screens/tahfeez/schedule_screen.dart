@@ -49,7 +49,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     final full = today.length >= TahfeezService.maxSessionsPerDay;
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: tahfeezDirection(),
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
@@ -176,9 +176,10 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   String _shortDay(int d) {
     final full = weekdayName(d);
     // Arabic day names read fine at three letters after the article.
-    return full.startsWith('ال') && full.length > 4
-        ? full.substring(2, 5)
-        : full.substring(0, full.length < 3 ? full.length : 3);
+    final chars = full.startsWith('ال') && full.length > 4
+        ? full.substring(2).characters
+        : full.characters;
+    return chars.take(3).toString();
   }
 
   Widget _sessionCard(TahfeezSession s) {
@@ -295,7 +296,7 @@ class _AddSessionSheetState extends State<_AddSessionSheet> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: tahfeezDirection(),
       child: Padding(
         padding: EdgeInsets.fromLTRB(
           20,

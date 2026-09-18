@@ -70,7 +70,7 @@ class _EnrollmentsScreenState extends State<EnrollmentsScreen> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: tahfeezDirection(),
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
@@ -205,7 +205,7 @@ class _EnrollmentsScreenState extends State<EnrollmentsScreen> {
                   ),
                 ),
                 if (!e.isPending)
-                  const Icon(Icons.chevron_left, color: AppColors.textMuted),
+                  Icon(tahfeezChevron, color: AppColors.textMuted),
               ],
             ),
           ),

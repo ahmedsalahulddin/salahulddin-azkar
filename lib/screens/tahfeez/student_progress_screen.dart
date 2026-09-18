@@ -71,7 +71,7 @@ class _StudentProgressScreenState extends State<StudentProgressScreen> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: tahfeezDirection(),
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(

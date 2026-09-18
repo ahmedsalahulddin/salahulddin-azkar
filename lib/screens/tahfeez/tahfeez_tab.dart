@@ -5,6 +5,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../constants/theme.dart';
 import '../../l10n/strings.dart';
 import '../../services/auth_service.dart';
+import '../../services/tahfeez_lang.dart';
 import '../../services/tahfeez_service.dart';
 import '../../widgets/sign_in_buttons.dart';
 import '../account_screen.dart' show UserAvatar;
@@ -126,8 +127,65 @@ class _TahfeezTabState extends State<TahfeezTab> {
 
   @override
   Widget build(BuildContext context) {
+    return ValueListenableBuilder<String?>(
+      valueListenable: TahfeezLang.override,
+      builder: (context, _, _) => _build(context),
+    );
+  }
+
+  Widget _languageMenu() {
+    return PopupMenuButton<String>(
+      tooltip: TahfeezLang.nameOf(TahfeezLang.code),
+      color: AppColors.blackCard,
+      onSelected: (c) => TahfeezLang.set(c),
+      itemBuilder: (_) => [
+        for (final (code, name) in TahfeezLang.languages)
+          PopupMenuItem(
+            value: code,
+            child: Row(
+              children: [
+                Icon(
+                  code == TahfeezLang.code
+                      ? Icons.radio_button_checked
+                      : Icons.radio_button_off,
+                  size: 16,
+                  color: code == TahfeezLang.code
+                      ? AppColors.gold
+                      : AppColors.textMuted,
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  name,
+                  style: TextStyle(
+                    color: code == TahfeezLang.code
+                        ? AppColors.gold
+                        : AppColors.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.translate, size: 18, color: AppColors.gold),
+            const SizedBox(width: 4),
+            Text(
+              TahfeezLang.nameOf(TahfeezLang.code),
+              style: const TextStyle(color: AppColors.gold, fontSize: 13),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: tahfeezDirection(),
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
@@ -135,6 +193,7 @@ class _TahfeezTabState extends State<TahfeezTab> {
           foregroundColor: AppColors.gold,
           title: Text(t('tahfeez.title')),
           centerTitle: true,
+          actions: [_languageMenu()],
         ),
         body: ValueListenableBuilder<AppUser?>(
           valueListenable: AuthService.user,
@@ -321,7 +380,7 @@ class _TahfeezTabState extends State<TahfeezTab> {
                     ),
                   ),
                 ),
-                const Icon(Icons.chevron_left, color: AppColors.textMuted),
+                Icon(tahfeezChevron, color: AppColors.textMuted),
               ],
             ),
           ),
@@ -399,7 +458,7 @@ class _TahfeezTabState extends State<TahfeezTab> {
                     ),
                   ),
                 ),
-                const Icon(Icons.chevron_left, color: AppColors.textMuted),
+                Icon(tahfeezChevron, color: AppColors.textMuted),
               ],
             ),
           ),
@@ -480,7 +539,7 @@ class _TahfeezTabState extends State<TahfeezTab> {
               ],
             ),
           ),
-          const Icon(Icons.chevron_left, color: AppColors.textMuted),
+          Icon(tahfeezChevron, color: AppColors.textMuted),
         ],
       ),
     );
@@ -874,7 +933,7 @@ class _TahfeezTabState extends State<TahfeezTab> {
               ],
             ),
           ),
-          const Icon(Icons.chevron_left, color: AppColors.textMuted),
+          Icon(tahfeezChevron, color: AppColors.textMuted),
         ],
       ),
     );
@@ -924,7 +983,7 @@ class _TahfeezTabState extends State<TahfeezTab> {
             t('tahfeez.evaluate'),
             style: const TextStyle(color: AppColors.gold, fontSize: 12),
           ),
-          const Icon(Icons.chevron_left, color: AppColors.textMuted),
+          Icon(tahfeezChevron, color: AppColors.textMuted),
         ],
       ),
     );

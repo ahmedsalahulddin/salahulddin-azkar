@@ -49,7 +49,7 @@ class _StudentHalaqaScreenState extends State<StudentHalaqaScreen> {
     final photo = _teacher?.photoUrl;
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: tahfeezDirection(),
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(

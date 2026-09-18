@@ -15,6 +15,7 @@ import 'screens/favorites_screen.dart';
 import 'screens/account_screen.dart';
 import 'screens/tahfeez/tahfeez_tab.dart';
 import 'services/auth_service.dart';
+import 'services/tahfeez_lang.dart';
 import 'services/tahfeez_service.dart';
 import 'services/notification_service.dart';
 import 'services/adhan_downloads.dart';
@@ -68,6 +69,7 @@ void main() async {
   } catch (_) {}
 
   await AppLocale.load();
+  await TahfeezLang.load();
   await DhikrLangPref.load();
   await PlaybackSpeed.load();
   await PrayerSettings.load();

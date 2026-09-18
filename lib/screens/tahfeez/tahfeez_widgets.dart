@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../constants/theme.dart';
 import '../../data/quran_data.dart';
 import '../../l10n/strings.dart';
+import '../../services/tahfeez_lang.dart';
 import '../../services/tahfeez_service.dart';
 
 String weekdayName(int weekday) => t('tahfeez.day.$weekday');
@@ -14,9 +15,20 @@ int weekdayOf(DateTime d) => d.weekday % 7;
 String formatTime(TimeOfDay tod) {
   final h = tod.hourOfPeriod == 0 ? 12 : tod.hourOfPeriod;
   final m = tod.minute.toString().padLeft(2, '0');
-  final suffix = tod.period == DayPeriod.am ? 'ص' : 'م';
+  final ar = TahfeezLang.code == 'ar';
+  final suffix = tod.period == DayPeriod.am
+      ? (ar ? 'ص' : 'AM')
+      : (ar ? 'م' : 'PM');
   return '$h:$m $suffix';
 }
+
+/// Reading direction of the memorisation section, which follows its own
+/// language rather than the app's.
+TextDirection tahfeezDirection() => TahfeezLang.direction;
+
+/// The "opens something" chevron, pointing the way the text flows.
+IconData get tahfeezChevron =>
+    TahfeezLang.isRtl ? Icons.chevron_left : Icons.chevron_right;
 
 String formatDate(DateTime d) =>
     '${weekdayName(weekdayOf(d))} ${d.day}/${d.month}/${d.year}';
@@ -219,7 +231,7 @@ Future<bool> confirmDialog(
   final ok = await showDialog<bool>(
     context: context,
     builder: (ctx) => Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: tahfeezDirection(),
       child: AlertDialog(
         backgroundColor: AppColors.blackCard,
         content: Text(
@@ -266,7 +278,7 @@ Future<String?> promptText(
   final result = await showDialog<String>(
     context: context,
     builder: (ctx) => Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: tahfeezDirection(),
       child: AlertDialog(
         backgroundColor: AppColors.blackCard,
         title: Text(
@@ -339,7 +351,7 @@ Future<String?> promptText(
 void showNote(BuildContext context, String text, {bool error = false}) {
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
-      content: Text(text, textDirection: TextDirection.rtl),
+      content: Text(text, textDirection: tahfeezDirection()),
       backgroundColor: error ? AppColors.error : AppColors.emerald,
     ),
   );

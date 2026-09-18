@@ -54,7 +54,7 @@ class _HalaqaScreenState extends State<HalaqaScreen> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: tahfeezDirection(),
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
@@ -158,7 +158,7 @@ class _HalaqaScreenState extends State<HalaqaScreen> {
               ],
             ),
           ),
-          const Icon(Icons.chevron_left, color: AppColors.textMuted),
+          Icon(tahfeezChevron, color: AppColors.textMuted),
         ],
       ),
     );
@@ -190,7 +190,7 @@ class _HalaqaScreenState extends State<HalaqaScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
       ),
       builder: (ctx) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: tahfeezDirection(),
         child: SafeArea(
           child: ListView(
             shrinkWrap: true,
@@ -314,7 +314,7 @@ class _HalaqaScreenState extends State<HalaqaScreen> {
             t('tahfeez.evaluate'),
             style: const TextStyle(color: AppColors.gold, fontSize: 12),
           ),
-          const Icon(Icons.chevron_left, color: AppColors.textMuted),
+          Icon(tahfeezChevron, color: AppColors.textMuted),
         ],
       ),
     );

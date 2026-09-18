@@ -95,7 +95,7 @@ class _SessionEvaluationScreenState extends State<SessionEvaluationScreen> {
   Widget build(BuildContext context) {
     final s = widget.session;
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: tahfeezDirection(),
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
@@ -363,7 +363,7 @@ class _EvaluationEditorScreenState extends State<EvaluationEditorScreen> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: tahfeezDirection(),
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(

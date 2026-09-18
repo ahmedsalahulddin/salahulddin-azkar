@@ -1,7 +1,20 @@
 import '../services/app_locale.dart';
+import '../services/tahfeez_lang.dart';
+import 'tahfeez_translations.dart';
 
-/// Returns the string for [key] in the current app locale.
+/// Returns the string for [key] in the current app locale — or, for the
+/// memorisation section's own keys, in the language chosen at the top of
+/// that tab.
 String t(String key) {
+  if (key.startsWith('tahfeez.')) {
+    final code = TahfeezLang.code;
+    final map = switch (code) {
+      'ar' => _ar,
+      'en' => _en,
+      _ => tahfeezTranslations[code] ?? _en,
+    };
+    return map[key] ?? _en[key] ?? _ar[key] ?? key;
+  }
   final map = AppLocale.isEn ? _en : _ar;
   return map[key] ?? key;
 }

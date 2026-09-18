@@ -158,7 +158,7 @@ class _TeachersDirectoryScreenState extends State<TeachersDirectoryScreen> {
         if (!didPop) Navigator.pop(context, _changed);
       },
       child: Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: tahfeezDirection(),
         child: Scaffold(
           backgroundColor: AppColors.black,
           appBar: AppBar(

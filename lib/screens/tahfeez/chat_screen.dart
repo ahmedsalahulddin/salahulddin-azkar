@@ -120,7 +120,7 @@ class _ChatScreenState extends State<ChatScreen> {
     final other = _other;
     final photo = other?.photoUrl;
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: tahfeezDirection(),
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
