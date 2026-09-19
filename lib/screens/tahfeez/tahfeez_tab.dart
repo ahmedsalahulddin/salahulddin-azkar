@@ -25,7 +25,12 @@ import 'tahfeez_widgets.dart';
 /// sessions; a student's circles and record; and the two doors in — joining
 /// by code, or asking to be approved as a teacher.
 class TahfeezTab extends StatefulWidget {
-  const TahfeezTab({super.key});
+  const TahfeezTab({super.key, this.initialProfile});
+
+  /// Skips the network load and renders straight from this — for previews
+  /// and tests only.
+  @visibleForTesting
+  final TahfeezProfile? initialProfile;
 
   @override
   State<TahfeezTab> createState() => _TahfeezTabState();
@@ -47,7 +52,11 @@ class _TahfeezTabState extends State<TahfeezTab> {
   void initState() {
     super.initState();
     AuthService.user.addListener(_onAuthChanged);
-    _load();
+    if (widget.initialProfile != null) {
+      _profile = widget.initialProfile;
+    } else {
+      _load();
+    }
   }
 
   @override
@@ -345,13 +354,7 @@ class _TahfeezTabState extends State<TahfeezTab> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        _header(user, profile),
-        if (profile.isTeacher && profile.teacherCode != null) ...[
-          const SizedBox(height: 10),
-          _teacherCodeCard(profile),
-        ],
-        const SizedBox(height: 10),
-        _genderCard(profile),
+        _profileCard(user, profile),
         if (_failed) ...[
           const SizedBox(height: 10),
           Text(
@@ -576,58 +579,6 @@ class _TahfeezTabState extends State<TahfeezTab> {
     return parts.join(' · ');
   }
 
-  Widget _teacherCodeCard(TahfeezProfile profile) {
-    final code = profile.teacherCode!;
-    return TahfeezCard(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  t('tahfeez.teacherCode'),
-                  style: const TextStyle(
-                    color: AppColors.textMuted,
-                    fontSize: 11,
-                  ),
-                ),
-                Text(
-                  code,
-                  textDirection: TextDirection.ltr,
-                  style: const TextStyle(
-                    color: AppColors.gold,
-                    fontSize: 22,
-                    letterSpacing: 5,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          IconButton(
-            tooltip: t('tahfeez.codeCopied'),
-            icon: const Icon(Icons.copy, color: AppColors.gold, size: 20),
-            onPressed: () async {
-              await Clipboard.setData(ClipboardData(text: code));
-              if (mounted) showNote(context, t('tahfeez.codeCopied'));
-            },
-          ),
-          IconButton(
-            tooltip: t('tahfeez.shareCode'),
-            icon: const Icon(Icons.share, color: AppColors.gold, size: 20),
-            onPressed: () => SharePlus.instance.share(
-              ShareParams(
-                text: t('tahfeez.shareTeacherCode').replaceAll('{code}', code),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _teacherEnrollmentCard(Enrollment e) {
     final tp = e.teacher;
     final photo = tp?.photoUrl;
@@ -710,60 +661,49 @@ class _TahfeezTabState extends State<TahfeezTab> {
     }
   }
 
-  Widget _genderCard(TahfeezProfile profile) {
-    return TahfeezCard(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  t('tahfeez.myGender'),
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 13,
-                  ),
-                ),
-                if (profile.gender == null)
-                  Text(
-                    t('tahfeez.myGenderSub'),
-                    style: const TextStyle(
-                      color: AppColors.textMuted,
-                      fontSize: 11,
-                      height: 1.4,
+  /// Gender as two icons, tapped rather than typed — the profile card has
+  /// no room to spell out a label, and none is needed for a two-way choice.
+  Widget _genderIcons(TahfeezProfile profile) {
+    IconData iconOf(Gender g) => g == Gender.male ? Icons.male : Icons.female;
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (final g in Gender.values)
+          Padding(
+            padding: const EdgeInsets.only(right: 4),
+            child: Tooltip(
+              message: t('tahfeez.gender.${g.name}'),
+              child: GestureDetector(
+                onTap: () => _setGender(g),
+                behavior: HitTestBehavior.opaque,
+                child: Container(
+                  width: 32,
+                  height: 32,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: profile.gender == g
+                        ? AppColors.goldMuted
+                        : Colors.transparent,
+                    border: Border.all(
+                      color: profile.gender == g
+                          ? AppColors.gold
+                          : AppColors.goldBorder,
                     ),
                   ),
-              ],
+                  child: Icon(
+                    iconOf(g),
+                    size: 18,
+                    color: profile.gender == g
+                        ? AppColors.gold
+                        : AppColors.textMuted,
+                  ),
+                ),
+              ),
             ),
           ),
-          const SizedBox(width: 8),
-          for (final g in Gender.values) ...[
-            ChoiceChip(
-              label: Text(t('tahfeez.gender.${g.name}')),
-              selected: profile.gender == g,
-              selectedColor: AppColors.goldMuted,
-              backgroundColor: AppColors.blackSurface,
-              side: BorderSide(
-                color: profile.gender == g
-                    ? AppColors.gold
-                    : AppColors.goldBorder,
-              ),
-              labelStyle: TextStyle(
-                color: profile.gender == g
-                    ? AppColors.gold
-                    : AppColors.textMuted,
-                fontSize: 12,
-              ),
-              showCheckmark: false,
-              visualDensity: VisualDensity.compact,
-              onSelected: (_) => _setGender(g),
-            ),
-            const SizedBox(width: 4),
-          ],
-        ],
-      ),
+      ],
     );
   }
 
@@ -778,9 +718,14 @@ class _TahfeezTabState extends State<TahfeezTab> {
     }
   }
 
-  Widget _header(AppUser user, TahfeezProfile profile) {
+  /// The reader's identity, in one card: avatar, name, role, gender, and —
+  /// for a teacher — their invite code. Three cards used to say this; one
+  /// says it in less space, and the gender choice needs icons to tap, not
+  /// a label to read.
+  Widget _profileCard(AppUser user, TahfeezProfile profile) {
+    final code = profile.isTeacher ? profile.teacherCode : null;
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topCenter,
@@ -790,66 +735,128 @@ class _TahfeezTabState extends State<TahfeezTab> {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.goldBorder),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          UserAvatar(user: user, size: 52),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+          Row(
+            children: [
+              UserAvatar(user: user, size: 48),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Flexible(
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            profile.displayName,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: AppColors.gold,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        GestureDetector(
+                          onTap: () => _editName(profile),
+                          child: const Icon(
+                            Icons.edit,
+                            size: 15,
+                            color: AppColors.textMuted,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: profile.isTeacher
+                            ? AppColors.goldMuted
+                            : AppColors.emeraldMuted,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
                       child: Text(
-                        profile.displayName,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppColors.gold,
-                          fontSize: 16,
+                        profile.isTeacher
+                            ? t('tahfeez.teacher')
+                            : t('tahfeez.student'),
+                        style: TextStyle(
+                          color: profile.isTeacher
+                              ? AppColors.gold
+                              : AppColors.emeraldLight,
+                          fontSize: 11,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
-                    const SizedBox(width: 4),
-                    GestureDetector(
-                      onTap: () => _editName(profile),
-                      child: const Icon(
-                        Icons.edit,
-                        size: 15,
-                        color: AppColors.textMuted,
-                      ),
-                    ),
                   ],
                 ),
-                const SizedBox(height: 4),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 3,
+              ),
+              const SizedBox(width: 8),
+              _genderIcons(profile),
+            ],
+          ),
+          if (code != null) ...[
+            const SizedBox(height: 10),
+            const Divider(color: AppColors.goldBorder, height: 1),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Text(
+                  t('tahfeez.teacherCode'),
+                  style: const TextStyle(
+                    color: AppColors.textMuted,
+                    fontSize: 11,
                   ),
-                  decoration: BoxDecoration(
-                    color: profile.isTeacher
-                        ? AppColors.goldMuted
-                        : AppColors.emeraldMuted,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
                   child: Text(
-                    profile.isTeacher
-                        ? t('tahfeez.teacher')
-                        : t('tahfeez.student'),
-                    style: TextStyle(
-                      color: profile.isTeacher
-                          ? AppColors.gold
-                          : AppColors.emeraldLight,
-                      fontSize: 11,
+                    code,
+                    textDirection: TextDirection.ltr,
+                    style: const TextStyle(
+                      color: AppColors.gold,
+                      fontSize: 18,
+                      letterSpacing: 4,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
+                GestureDetector(
+                  onTap: () async {
+                    await Clipboard.setData(ClipboardData(text: code));
+                    if (mounted) showNote(context, t('tahfeez.codeCopied'));
+                  },
+                  behavior: HitTestBehavior.opaque,
+                  child: const Padding(
+                    padding: EdgeInsets.all(4),
+                    child: Icon(Icons.copy, color: AppColors.gold, size: 18),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                GestureDetector(
+                  onTap: () => SharePlus.instance.share(
+                    ShareParams(
+                      text: t(
+                        'tahfeez.shareTeacherCode',
+                      ).replaceAll('{code}', code),
+                    ),
+                  ),
+                  behavior: HitTestBehavior.opaque,
+                  child: const Padding(
+                    padding: EdgeInsets.all(4),
+                    child: Icon(Icons.share, color: AppColors.gold, size: 18),
+                  ),
+                ),
               ],
             ),
-          ),
+          ],
         ],
       ),
     );
