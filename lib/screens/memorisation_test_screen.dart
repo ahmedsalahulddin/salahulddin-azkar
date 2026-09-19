@@ -439,17 +439,26 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 4),
-                Slider(
-                  value: _requestedCount.toDouble(),
-                  min: minCount.toDouble(),
-                  max: available.toDouble(),
-                  divisions: (available - minCount) == 0
-                      ? null
-                      : available - minCount,
-                  activeColor: AppColors.gold,
-                  inactiveColor: AppColors.goldBorder,
-                  onChanged: (v) => setState(() => _requestedCount = v.round()),
+                const SizedBox(height: 22),
+                SliderTheme(
+                  // The default overlay reaches ~24px past the track in
+                  // every direction — with the +/- buttons this close
+                  // above, that halo was swallowing taps meant for them.
+                  data: SliderTheme.of(
+                    context,
+                  ).copyWith(overlayShape: SliderComponentShape.noOverlay),
+                  child: Slider(
+                    value: _requestedCount.toDouble(),
+                    min: minCount.toDouble(),
+                    max: available.toDouble(),
+                    divisions: (available - minCount) == 0
+                        ? null
+                        : available - minCount,
+                    activeColor: AppColors.gold,
+                    inactiveColor: AppColors.goldBorder,
+                    onChanged: (v) =>
+                        setState(() => _requestedCount = v.round()),
+                  ),
                 ),
               ],
               const SizedBox(height: 18),

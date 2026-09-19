@@ -31,6 +31,13 @@ class IslamicBook {
   final String? remoteSlug;
   final String? downloadSize;
 
+  /// Scholarly (human) translation editions this same source publishes for
+  /// this book, keyed by the app's language code. Coverage genuinely varies
+  /// per book — e.g. only Nawawi has Bengali, only Bukhari and Muslim have
+  /// Urdu — so this is per-book data, not a fixed language list. Empty for
+  /// the two Seerah books, which this source does not carry at all.
+  final Map<String, String> translations;
+
   const IslamicBook({
     required this.id,
     required this.title,
@@ -39,6 +46,7 @@ class IslamicBook {
     required this.hadithCount,
     this.remoteSlug,
     this.downloadSize,
+    this.translations = const {},
   });
 
   bool get isBundled => remoteSlug == null;
@@ -60,6 +68,12 @@ class LibraryService {
       author: 'الإمام يحيى بن شرف النووي',
       description: 'اثنان وأربعون حديثاً جامعة لقواعد الدين',
       hadithCount: 42,
+      translations: {
+        'en': 'eng-nawawi',
+        'fr': 'fra-nawawi',
+        'tr': 'tur-nawawi',
+        'bn': 'ben-nawawi',
+      },
     ),
     IslamicBook(
       id: 'qudsi',
@@ -67,6 +81,7 @@ class LibraryService {
       author: 'مجموعة من الأحاديث القدسية',
       description: 'ما رواه النبي ﷺ عن ربه عزّ وجل',
       hadithCount: 40,
+      translations: {'en': 'eng-qudsi', 'fr': 'fra-qudsi'},
     ),
     IslamicBook(
       id: 'dehlawi',
@@ -74,6 +89,7 @@ class LibraryService {
       author: 'شاه ولي الله الدهلوي',
       description: 'أربعون حديثاً في الرقائق والآداب',
       hadithCount: 40,
+      translations: {'en': 'eng-dehlawi', 'fr': 'fra-dehlawi'},
     ),
     IslamicBook(
       id: 'seerah_mukhtasar',
@@ -98,6 +114,14 @@ class LibraryService {
       hadithCount: 7589,
       remoteSlug: 'ara-bukhari',
       downloadSize: '٩ م.ب',
+      translations: {
+        'en': 'eng-bukhari',
+        'fr': 'fra-bukhari',
+        'id': 'ind-bukhari',
+        'tr': 'tur-bukhari',
+        'ur': 'urd-bukhari',
+        'bn': 'ben-bukhari',
+      },
     ),
     IslamicBook(
       id: 'muslim',
@@ -107,6 +131,14 @@ class LibraryService {
       hadithCount: 7563,
       remoteSlug: 'ara-muslim',
       downloadSize: '٨ م.ب',
+      translations: {
+        'en': 'eng-muslim',
+        'fr': 'fra-muslim',
+        'id': 'ind-muslim',
+        'tr': 'tur-muslim',
+        'ur': 'urd-muslim',
+        'bn': 'ben-muslim',
+      },
     ),
     IslamicBook(
       id: 'abudawud',
@@ -116,6 +148,14 @@ class LibraryService {
       hadithCount: 5274,
       remoteSlug: 'ara-abudawud',
       downloadSize: '٦ م.ب',
+      translations: {
+        'en': 'eng-abudawud',
+        'fr': 'fra-abudawud',
+        'id': 'ind-abudawud',
+        'tr': 'tur-abudawud',
+        'ur': 'urd-abudawud',
+        'bn': 'ben-abudawud',
+      },
     ),
     IslamicBook(
       id: 'tirmidhi',
@@ -125,6 +165,13 @@ class LibraryService {
       hadithCount: 3956,
       remoteSlug: 'ara-tirmidhi',
       downloadSize: '٦ م.ب',
+      translations: {
+        'en': 'eng-tirmidhi',
+        'id': 'ind-tirmidhi',
+        'tr': 'tur-tirmidhi',
+        'ur': 'urd-tirmidhi',
+        'bn': 'ben-tirmidhi',
+      },
     ),
     IslamicBook(
       id: 'nasai',
@@ -134,6 +181,14 @@ class LibraryService {
       hadithCount: 5758,
       remoteSlug: 'ara-nasai',
       downloadSize: '٦ م.ب',
+      translations: {
+        'en': 'eng-nasai',
+        'fr': 'fra-nasai',
+        'id': 'ind-nasai',
+        'tr': 'tur-nasai',
+        'ur': 'urd-nasai',
+        'bn': 'ben-nasai',
+      },
     ),
     IslamicBook(
       id: 'ibnmajah',
@@ -143,6 +198,14 @@ class LibraryService {
       hadithCount: 4341,
       remoteSlug: 'ara-ibnmajah',
       downloadSize: '٥ م.ب',
+      translations: {
+        'en': 'eng-ibnmajah',
+        'fr': 'fra-ibnmajah',
+        'id': 'ind-ibnmajah',
+        'tr': 'tur-ibnmajah',
+        'ur': 'urd-ibnmajah',
+        'bn': 'ben-ibnmajah',
+      },
     ),
     IslamicBook(
       id: 'malik',
@@ -152,6 +215,14 @@ class LibraryService {
       hadithCount: 1858,
       remoteSlug: 'ara-malik',
       downloadSize: '٢ م.ب',
+      translations: {
+        'en': 'eng-malik',
+        'fr': 'fra-malik',
+        'id': 'ind-malik',
+        'tr': 'tur-malik',
+        'ur': 'urd-malik',
+        'bn': 'ben-malik',
+      },
     ),
   ];
 
@@ -214,7 +285,10 @@ class LibraryService {
     if (book.isBundled || kIsWeb) return true;
 
     try {
-      final request = http.Request('GET', Uri.parse('$_host/${book.remoteSlug}.json'));
+      final request = http.Request(
+        'GET',
+        Uri.parse('$_host/${book.remoteSlug}.json'),
+      );
       final response = await http.Client().send(request);
       if (response.statusCode != 200) return false;
 
@@ -261,5 +335,107 @@ class LibraryService {
     final file = await _fileFor(book);
     if (file != null && await file.exists()) await file.delete();
     _cache.remove(book.id);
+  }
+
+  // ---- translations --------------------------------------------------
+  //
+  // The same source that supplies each book's Arabic text also publishes
+  // scholarly translation editions of most of them (never all the app's
+  // languages — coverage is per book, see IslamicBook.translations). These
+  // are cached exactly like the Arabic download, just keyed by book+language
+  // rather than by book alone, and mapped by hadith number rather than kept
+  // as a plain list, since a translation is only ever read alongside the
+  // Arabic hadith it matches.
+
+  static final Map<String, Map<int, String>> _translationCache = {};
+
+  static Future<File?> _translationFileFor(
+    IslamicBook book,
+    String lang,
+  ) async {
+    if (kIsWeb) return null;
+    return File('${(await _baseDir()).path}/${book.id}_$lang.json');
+  }
+
+  static Future<bool> isTranslationDownloaded(
+    IslamicBook book,
+    String lang,
+  ) async {
+    if (kIsWeb) return false;
+    final file = await _translationFileFor(book, lang);
+    return file != null && await file.exists();
+  }
+
+  /// Throws if [lang]'s edition has not been downloaded for [book], so the
+  /// caller can offer the download rather than showing blank translations.
+  static Future<Map<int, String>> translation(
+    IslamicBook book,
+    String lang,
+  ) async {
+    final key = '${book.id}_$lang';
+    final cached = _translationCache[key];
+    if (cached != null) return cached;
+
+    final file = await _translationFileFor(book, lang);
+    if (file == null || !await file.exists()) {
+      throw StateError('${book.title} has no $lang translation downloaded');
+    }
+    final j = jsonDecode(await file.readAsString()) as Map<String, dynamic>;
+    final map = <int, String>{
+      for (final e in (j['hadiths'] as List))
+        (e as Map<String, dynamic>)['n'] as int: e['t'] as String,
+    };
+    return _translationCache[key] = map;
+  }
+
+  static Future<bool> downloadTranslation(
+    IslamicBook book,
+    String lang, {
+    required void Function(int received, int? total) onProgress,
+  }) async {
+    final slug = book.translations[lang];
+    if (slug == null || kIsWeb) return false;
+
+    try {
+      final request = http.Request('GET', Uri.parse('$_host/$slug.json'));
+      final response = await http.Client().send(request);
+      if (response.statusCode != 200) return false;
+
+      final bytes = <int>[];
+      await for (final chunk in response.stream) {
+        bytes.addAll(chunk);
+        onProgress(bytes.length, response.contentLength);
+      }
+
+      final decoded = jsonDecode(utf8.decode(bytes)) as Map<String, dynamic>;
+      final hadiths = <Map<String, dynamic>>[];
+      for (final h in (decoded['hadiths'] as List? ?? [])) {
+        final m = h as Map<String, dynamic>;
+        final text = (m['text'] as String?)?.trim();
+        final number = m['hadithnumber'];
+        if (text == null || text.isEmpty || number == null) continue;
+        hadiths.add({'n': number, 't': text});
+      }
+      if (hadiths.isEmpty) return false;
+
+      final target = await _translationFileFor(book, lang);
+      if (target == null) return false;
+      final tmp = File('${target.path}.part');
+      await tmp.writeAsString(
+        jsonEncode({'id': book.id, 'lang': lang, 'hadiths': hadiths}),
+        flush: true,
+      );
+      await tmp.rename(target.path);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  static Future<void> deleteTranslation(IslamicBook book, String lang) async {
+    if (kIsWeb) return;
+    final file = await _translationFileFor(book, lang);
+    if (file != null && await file.exists()) await file.delete();
+    _translationCache.remove('${book.id}_$lang');
   }
 }

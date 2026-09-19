@@ -1,12 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/theme.dart';
 import '../l10n/strings.dart';
+import '../services/app_locale.dart';
 import '../widgets/speed_button.dart';
 import '../widgets/speak_button.dart';
 import '../data/library_data.dart';
 import '../data/quran_data.dart' show QuranService;
 import '../services/library_bookmarks.dart';
+
+/// The reader's last-chosen book-translation language, shared across every
+/// book so picking one sticks — same idea as DhikrLangPref for adhkar, kept
+/// separate because a book only ever offers the subset of languages its own
+/// edition actually has (see IslamicBook.translations), never a fixed list.
+class BookLangPref {
+  static const _key = '@noor_book_lang';
+  static final ValueNotifier<String?> selected = ValueNotifier(null);
+
+  static Future<void> load() async {
+    final prefs = await SharedPreferences.getInstance();
+    selected.value = prefs.getString(_key);
+  }
+
+  static Future<void> set(String? lang) async {
+    selected.value = lang;
+    final prefs = await SharedPreferences.getInstance();
+    if (lang == null) {
+      await prefs.remove(_key);
+    } else {
+      await prefs.setString(_key, lang);
+    }
+  }
+}
 
 /// Reads one book, searching across its hadiths.
 ///
@@ -32,10 +58,30 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
   int _received = 0;
   int? _expectedBytes;
 
+  Map<int, String>? _translation;
+  bool _translationDownloading = false;
+  int _tReceived = 0;
+  int? _tExpectedBytes;
+
   @override
   void initState() {
     super.initState();
     _load();
+    _loadTranslationIfPreferred();
+  }
+
+  /// Silently shows the reader's last-picked language if this book happens
+  /// to have it downloaded already — never starts a download on its own, so
+  /// opening a book never spends data the reader did not ask for right now.
+  Future<void> _loadTranslationIfPreferred() async {
+    await BookLangPref.load();
+    final lang = BookLangPref.selected.value;
+    if (lang == null || !widget.book.translations.containsKey(lang)) return;
+    if (!await LibraryService.isTranslationDownloaded(widget.book, lang)) {
+      return;
+    }
+    final map = await LibraryService.translation(widget.book, lang);
+    if (mounted) setState(() => _translation = map);
   }
 
   @override
@@ -104,6 +150,116 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
     }
   }
 
+  Future<void> _pickLanguage() async {
+    final chosen = await showModalBottomSheet<String?>(
+      context: context,
+      backgroundColor: AppColors.blackCard,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+      ),
+      builder: (ctx) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
+                child: Text(
+                  t('lib2.translationLanguageTitle'),
+                  style: const TextStyle(color: AppColors.gold, fontSize: 15),
+                ),
+              ),
+              _langTile(ctx, _arabicOnly, t('lib2.arabicOnlyOption')),
+              for (final code in widget.book.translations.keys)
+                _langTile(ctx, code, AppLocale.nameOf(code)),
+              const SizedBox(height: 8),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    // Dismissed without picking anything (e.g. tapped outside) — leave
+    // whatever was showing exactly as it was.
+    if (chosen == null) return;
+
+    if (chosen == _arabicOnly) {
+      await BookLangPref.set(null);
+      setState(() => _translation = null);
+      return;
+    }
+    await BookLangPref.set(chosen);
+    await _ensureTranslation(chosen);
+  }
+
+  // A real language code is never this, so it can stand for "Arabic only"
+  // in the sheet's result without colliding with `null`, which instead
+  // means "closed without choosing."
+  static const _arabicOnly = '__arabic_only__';
+
+  Widget _langTile(BuildContext ctx, String code, String name) {
+    final current = BookLangPref.selected.value ?? _arabicOnly;
+    final selected = code == current;
+    return ListTile(
+      leading: Icon(
+        selected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+        color: selected ? AppColors.gold : AppColors.textMuted,
+        size: 19,
+      ),
+      title: Text(
+        name,
+        style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
+      ),
+      onTap: () => Navigator.pop(ctx, code),
+    );
+  }
+
+  Future<void> _ensureTranslation(String lang) async {
+    if (await LibraryService.isTranslationDownloaded(widget.book, lang)) {
+      final map = await LibraryService.translation(widget.book, lang);
+      if (mounted) setState(() => _translation = map);
+      return;
+    }
+
+    setState(() {
+      _translationDownloading = true;
+      _tReceived = 0;
+      _tExpectedBytes = null;
+    });
+
+    final ok = await LibraryService.downloadTranslation(
+      widget.book,
+      lang,
+      onProgress: (received, total) {
+        if (mounted) {
+          setState(() {
+            _tReceived = received;
+            _tExpectedBytes = total;
+          });
+        }
+      },
+    );
+
+    if (!mounted) return;
+    setState(() => _translationDownloading = false);
+
+    if (ok) {
+      final map = await LibraryService.translation(widget.book, lang);
+      if (mounted) setState(() => _translation = map);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            t('lib2.downloadFailedMessage'),
+            textDirection: TextDirection.rtl,
+          ),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
+  }
+
   List<Hadith> get _filtered {
     var all = _hadiths ?? const <Hadith>[];
     if (_bookmarkedOnly) {
@@ -155,6 +311,11 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
           backgroundColor: AppColors.black,
           foregroundColor: AppColors.gold,
           actions: [
+            if (!_loading &&
+                !_needsDownload &&
+                !_downloading &&
+                widget.book.translations.isNotEmpty)
+              _langButton(),
             if (!_loading && !_needsDownload && !_downloading) _readAllBar(),
             const SpeedButton(showLabel: false),
           ],
@@ -168,6 +329,35 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
                 child: CircularProgressIndicator(color: AppColors.gold),
               )
             : _reader(),
+      ),
+    );
+  }
+
+  Widget _translationDownloadBanner() {
+    final total = _tExpectedBytes;
+    final mb = (_tReceived / 1024 / 1024).toStringAsFixed(1);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            '${t('lib2.downloadingTranslationPrefix')} '
+            '${AppLocale.nameOf(BookLangPref.selected.value!)} — $mb '
+            '${t('lib2.megabytesUnit')}',
+            style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+          ),
+          const SizedBox(height: 6),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(3),
+            child: LinearProgressIndicator(
+              value: total == null || total == 0 ? null : _tReceived / total,
+              backgroundColor: AppColors.blackSurface,
+              valueColor: const AlwaysStoppedAnimation(AppColors.gold),
+              minHeight: 4,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -282,6 +472,7 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
 
     return Column(
       children: [
+        if (_translationDownloading) _translationDownloadBanner(),
         Padding(
           padding: const EdgeInsets.fromLTRB(12, 12, 12, 6),
           child: TextField(
@@ -331,8 +522,7 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
               ),
               const Spacer(),
               GestureDetector(
-                onTap: () =>
-                    setState(() => _bookmarkedOnly = !_bookmarkedOnly),
+                onTap: () => setState(() => _bookmarkedOnly = !_bookmarkedOnly),
                 behavior: HitTestBehavior.opaque,
                 child: Row(
                   children: [
@@ -378,10 +568,8 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
                   builder: (context, readingAt, _) => ListView.builder(
                     padding: const EdgeInsets.fromLTRB(12, 8, 12, 24),
                     itemCount: filtered.length,
-                    itemBuilder: (context, i) => _hadithCard(
-                      filtered[i],
-                      reading: i == readingAt,
-                    ),
+                    itemBuilder: (context, i) =>
+                        _hadithCard(filtered[i], reading: i == readingAt),
                   ),
                 ),
         ),
@@ -434,6 +622,25 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
     );
   }
 
+  /// Which scholarly edition, of the ones this book actually has, translates
+  /// under the Arabic — every hadith card reads the same choice, made once
+  /// here rather than per card.
+  Widget _langButton() {
+    return ValueListenableBuilder<String?>(
+      valueListenable: BookLangPref.selected,
+      builder: (context, lang, _) => IconButton(
+        onPressed: _pickLanguage,
+        icon: Icon(
+          Icons.translate,
+          color: lang != null && widget.book.translations.containsKey(lang)
+              ? AppColors.gold
+              : AppColors.textSecondary,
+        ),
+        tooltip: t('lib2.translationLanguageTitle'),
+      ),
+    );
+  }
+
   Widget _hadithCard(Hadith h, {bool reading = false}) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -466,6 +673,27 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
               SpeakButton(id: '${widget.book.id}:${h.number}', text: h.text),
             ],
           ),
+          if (_translation?[h.number] case final translated?) ...[
+            const SizedBox(height: 8),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppColors.goldMuted,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                translated,
+                textDirection: TextDirection.ltr,
+                textAlign: TextAlign.left,
+                style: const TextStyle(
+                  color: AppColors.textGold,
+                  fontSize: 13.5,
+                  height: 1.55,
+                ),
+              ),
+            ),
+          ],
           const SizedBox(height: 10),
           Row(
             children: [
