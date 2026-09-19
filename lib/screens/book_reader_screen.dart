@@ -41,6 +41,9 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
   @override
   void dispose() {
     _searchController.dispose();
+    // Leaving the reader ends the reading; a voice with no screen behind it
+    // has no way to be stopped.
+    Tts.stop();
     super.dispose();
   }
 
@@ -151,7 +154,10 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
           title: Text(widget.book.title, style: const TextStyle(fontSize: 17)),
           backgroundColor: AppColors.black,
           foregroundColor: AppColors.gold,
-          actions: const [SpeedButton(showLabel: false)],
+          actions: [
+            if (!_loading && !_needsDownload && !_downloading) _readAllBar(),
+            const SpeedButton(showLabel: false),
+          ],
         ),
         body: _downloading
             ? _downloadProgress()
@@ -367,24 +373,78 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
                     ),
                   ),
                 )
-              : ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 24),
-                  itemCount: filtered.length,
-                  itemBuilder: (context, i) => _hadithCard(filtered[i]),
+              : ValueListenableBuilder<int?>(
+                  valueListenable: Tts.readingIndex,
+                  builder: (context, readingAt, _) => ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(12, 8, 12, 24),
+                    itemCount: filtered.length,
+                    itemBuilder: (context, i) => _hadithCard(
+                      filtered[i],
+                      reading: i == readingAt,
+                    ),
+                  ),
                 ),
         ),
       ],
     );
   }
 
-  Widget _hadithCard(Hadith h) {
+  /// Toggles between "play the whole book, chapter by chapter" and, once
+  /// running, a stop and skip control with a progress count — the same
+  /// pattern My Adhkar uses to read a saved list straight through.
+  Widget _readAllBar() {
+    return ValueListenableBuilder<int?>(
+      valueListenable: Tts.readingIndex,
+      builder: (context, at, _) {
+        if (at == null) {
+          return IconButton(
+            onPressed: () => Tts.readAll([for (final h in _filtered) h.text]),
+            icon: const Icon(Icons.play_arrow, color: AppColors.gold),
+            tooltip: t('misc.readAll'),
+          );
+        }
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              t('misc.readingProgress')
+                  .replaceAll('{current}', QuranService.toArabicDigits(at + 1))
+                  .replaceAll(
+                    '{total}',
+                    QuranService.toArabicDigits(_filtered.length),
+                  ),
+              style: const TextStyle(color: AppColors.textGold, fontSize: 11),
+            ),
+            IconButton(
+              icon: const Icon(Icons.skip_next, color: AppColors.textSecondary),
+              onPressed: Tts.skip,
+              tooltip: t('misc.next'),
+            ),
+            IconButton(
+              icon: const Icon(
+                Icons.stop_circle_outlined,
+                color: AppColors.gold,
+              ),
+              onPressed: Tts.stop,
+              tooltip: t('misc.stop'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _hadithCard(Hadith h, {bool reading = false}) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.blackCard,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.goldBorder),
+        border: Border.all(
+          color: reading ? AppColors.gold : AppColors.goldBorder,
+          width: reading ? 2 : 1,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

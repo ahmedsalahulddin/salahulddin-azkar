@@ -36,10 +36,48 @@ class Tts {
   static Future<void> _configure() async {
     if (_configured) return;
     await _ask(() => _tts.setLanguage('ar'));
+    // Every speak() call below is awaited and, for a long passage, chunked
+    // into several — without this the engine hands back control as soon as
+    // the words are queued, and either the next chunk overlaps this one or
+    // (in readAll) the next item starts on top of it.
+    await _ask(() => _tts.awaitSpeakCompletion(true));
     _tts.setCompletionHandler(() => speaking.value = null);
     _tts.setCancelHandler(() => speaking.value = null);
     _tts.setErrorHandler((_) => speaking.value = null);
     _configured = true;
+  }
+
+  /// Most engines cap a single utterance (Android's TextToSpeech commonly
+  /// enforces ~4000 characters and silently drops the rest), which a short
+  /// dhikr or hadith never approaches but a Seerah chapter can pass many
+  /// times over. Splits on paragraph breaks first — matching how this app's
+  /// book content is actually written — and only cuts mid-paragraph, at a
+  /// sentence boundary, when a single paragraph is still too long.
+  static const _maxChunkChars = 3800;
+
+  static List<String> _chunks(String text) {
+    if (text.length <= _maxChunkChars) return [text];
+
+    final chunks = <String>[];
+    var buffer = '';
+    for (final paragraph in text.split('\n\n')) {
+      final candidate = buffer.isEmpty ? paragraph : '$buffer\n\n$paragraph';
+      if (candidate.length <= _maxChunkChars) {
+        buffer = candidate;
+        continue;
+      }
+      if (buffer.isNotEmpty) chunks.add(buffer);
+      buffer = paragraph;
+      while (buffer.length > _maxChunkChars) {
+        final window = buffer.substring(0, _maxChunkChars);
+        final cut = window.lastIndexOf(RegExp(r'[.!؟]\s'));
+        final splitAt = cut > 0 ? cut + 1 : _maxChunkChars;
+        chunks.add(buffer.substring(0, splitAt).trim());
+        buffer = buffer.substring(splitAt);
+      }
+    }
+    if (buffer.isNotEmpty) chunks.add(buffer);
+    return chunks;
   }
 
   /// The reading pace is the app's one playback speed, applied before each
@@ -59,7 +97,12 @@ class Tts {
     }
     await _ask(_tts.stop);
     speaking.value = id;
-    await _ask(() => _tts.speak(text));
+    final mine = _run;
+    for (final chunk in _chunks(text)) {
+      if (_run != mine || speaking.value != id) return;
+      await _ask(() => _tts.speak(chunk));
+    }
+    if (_run == mine && speaking.value == id) speaking.value = null;
   }
 
   static Future<void> stop() async {
@@ -92,9 +135,6 @@ class Tts {
   static Future<void> readAll(List<String> texts) async {
     if (texts.isEmpty) return;
     await _configure();
-    // Without this, speak() returns as soon as the words are handed over and
-    // the whole list would be spoken at once, on top of itself.
-    await _ask(() => _tts.awaitSpeakCompletion(true));
 
     final mine = ++_run;
     await _ask(_tts.stop);
@@ -106,7 +146,10 @@ class Tts {
       readingIndex.value = i;
       // A passage the engine refuses is skipped rather than ending the run.
       await _ask(() => _tts.setSpeechRate(PlaybackSpeed.speechRate));
-      await _ask(() => _tts.speak(texts[i]));
+      for (final chunk in _chunks(texts[i])) {
+        if (_run != mine) return;
+        await _ask(() => _tts.speak(chunk));
+      }
     }
     if (_run == mine) readingIndex.value = null;
   }
