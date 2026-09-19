@@ -25,11 +25,13 @@ import '../screens/quran_home_screen.dart';
 import '../screens/quran_translation_screen.dart';
 import '../screens/listening_screen.dart';
 import '../screens/radio_screen.dart';
+import '../screens/dua_category_detail_screen.dart';
 import '../screens/quran_screen.dart';
 import '../screens/sahih_adhkar_screen.dart';
 import '../screens/stories_home_screen.dart';
 import '../screens/story_category_screen.dart';
 import '../screens/umrah_screen.dart';
+import '../services/duas_service.dart';
 import '../services/storage_service.dart';
 import '../widgets/tasbih_counter.dart';
 
@@ -52,11 +54,18 @@ class ShelfItem {
   /// first — picking a surah, for one — rather than pushing a fixed screen.
   final Future<void> Function(BuildContext) open;
 
+  /// Matches a key in app_sections (as `'{shelfKey}_{cardId}'`), so one card
+  /// can be hidden remotely without hiding the whole shelf. Every card built
+  /// below sets this; it is nullable only so a stray literal built outside
+  /// this file cannot crash at construction.
+  final String? cardKey;
+
   const ShelfItem({
     required this.icon,
     required this.title,
     required this.subtitle,
     required this.open,
+    this.cardKey,
   });
 }
 
@@ -94,6 +103,9 @@ Future<void> _push(BuildContext context, Widget Function() build) =>
 
 /// The shelves, built fresh so the adhkar counts and book list are
 /// whatever they are now rather than whatever they were at startup.
+/// Duas is last — and, unlike the others, entirely optional: until the base
+/// collection has loaded at least once (a guest's very first launch, before
+/// [DuasService.loadBase] resolves), there is nothing to show for it yet.
 List<HomeShelf> buildShelves() => [
   _quranShelf(),
   _adhkarShelf(),
@@ -101,7 +113,40 @@ List<HomeShelf> buildShelves() => [
   _lessonsShelf(),
   _librarySheet(),
   _cardsShelf(),
+  ?_duasShelf(),
 ];
+
+/// The duas shelf's cards mirror whatever the admin's base collection
+/// currently holds — read from [DuasService.baseCache], which the app
+/// primes at startup and keeps fresh, so this can stay synchronous like
+/// every other shelf. A reader's own additions live only behind "الكل"
+/// (DuasHomeScreen), not as individual home-screen cards, since they are
+/// personal and can grow without bound.
+HomeShelf? _duasShelf() {
+  final categories = DuasService.baseCache.value;
+  if (categories.isEmpty) return null;
+
+  ShelfItem card(DuaCategory category) => ShelfItem(
+    icon: category.icon,
+    title: category.title,
+    subtitle: '${category.duas.length} ${t('duas.countSuffix')}',
+    open: (c) => _push(
+      c,
+      () => DuaCategoryDetailScreen(category: category, editable: false),
+    ),
+    cardKey: 'duas_${category.id}',
+  );
+
+  return HomeShelf(
+    key: 'duas',
+    icon: '🤲',
+    title: tBoth('shelf.duas.title'),
+    tint: AppColors.goldMuted,
+    all: () => const DuasHomeScreen(),
+    pinned: card(categories.first),
+    rest: [for (final category in categories.skip(1)) card(category)],
+  );
+}
 
 HomeShelf _storiesShelf() {
   final categories = getStoryCategoriesWithCount();
@@ -118,6 +163,7 @@ HomeShelf _storiesShelf() {
       subtitle: '${categories.first.count} ${t('story.countSuffix')}',
       open: (c) =>
           _push(c, () => StoryCategoryScreen(category: categories.first)),
+      cardKey: 'stories_${categories.first.id}',
     ),
     rest: [
       for (final category in categories.skip(1))
@@ -126,6 +172,7 @@ HomeShelf _storiesShelf() {
           title: tBoth('story.cat.${category.id}'),
           subtitle: '${category.count} ${t('story.countSuffix')}',
           open: (c) => _push(c, () => StoryCategoryScreen(category: category)),
+          cardKey: 'stories_${category.id}',
         ),
     ],
   );
@@ -145,6 +192,7 @@ HomeShelf _adhkarShelf() {
       title: tBoth('card.sahih.title'),
       subtitle: tBoth('card.sahih.sub'),
       open: (c) => _push(c, () => const SahihAdhkarScreen()),
+      cardKey: 'adhkar_sahih',
     ),
     rest: [
       ShelfItem(
@@ -152,6 +200,7 @@ HomeShelf _adhkarShelf() {
         title: tBoth('card.umrah.title'),
         subtitle: tBoth('card.umrah.sub'),
         open: (c) => _push(c, () => const UmrahScreen()),
+        cardKey: 'adhkar_umrah',
       ),
       for (final category in categories)
         ShelfItem(
@@ -164,18 +213,21 @@ HomeShelf _adhkarShelf() {
                 ? const DeceasedScreen()
                 : CategoryScreen(category: category),
           ),
+          cardKey: 'adhkar_${category.id}',
         ),
       ShelfItem(
         icon: '🔢',
         title: tBoth('card.tasbih.title'),
         subtitle: tBoth('card.tasbih.sub'),
         open: (c) => _push(c, () => const TasbihCounter(dhikr: freeTasbih)),
+        cardKey: 'adhkar_tasbih',
       ),
       ShelfItem(
         icon: '🧭',
         title: tBoth('card.qibla.title'),
         subtitle: tBoth('card.qibla.sub'),
         open: (c) => _push(c, () => const QiblaScreen()),
+        cardKey: 'adhkar_qibla',
       ),
     ],
   );
@@ -196,6 +248,7 @@ HomeShelf _quranShelf() => HomeShelf(
       if (!c.mounted) return;
       await _push(c, () => MushafScreen(initialPage: page));
     },
+    cardKey: 'quran_mushaf',
   ),
   rest: [
     ShelfItem(
@@ -203,30 +256,35 @@ HomeShelf _quranShelf() => HomeShelf(
       title: tBoth('card.translation.title'),
       subtitle: tBoth('card.translation.sub'),
       open: (c) => _push(c, () => const QuranTranslationScreen()),
+      cardKey: 'quran_translation',
     ),
     ShelfItem(
       icon: '🕌',
       title: tBoth('card.recitation.title'),
       subtitle: tBoth('card.recitation.sub'),
       open: (c) => _push(c, () => const QuranScreen()),
+      cardKey: 'quran_recitation',
     ),
     ShelfItem(
       icon: '🧠',
       title: tBoth('card.memtest.title'),
       subtitle: tBoth('card.memtest.sub'),
       open: openMemorisationPicker,
+      cardKey: 'quran_memtest',
     ),
     ShelfItem(
       icon: '📻',
       title: tBoth('card.radio.title'),
       subtitle: tBoth('card.radio.sub'),
       open: (c) => _push(c, () => const RadioScreen()),
+      cardKey: 'quran_radio',
     ),
     ShelfItem(
       icon: '🎧',
       title: tBoth('card.listen.title'),
       subtitle: tBoth('card.listen.sub'),
       open: (c) => _push(c, () => const ListeningScreen()),
+      cardKey: 'quran_listen',
     ),
   ],
 );
@@ -242,6 +300,7 @@ HomeShelf _lessonsShelf() => HomeShelf(
     title: tBoth('lesson.${Lessons.all.first.id}.title'),
     subtitle: tBoth('lesson.${Lessons.all.first.id}.summary'),
     open: (c) => _push(c, () => LessonScreen(lesson: Lessons.all.first)),
+    cardKey: 'lessons_${Lessons.all.first.id}',
   ),
   rest: [
     for (final lesson in Lessons.all.skip(1))
@@ -250,12 +309,14 @@ HomeShelf _lessonsShelf() => HomeShelf(
         title: tBoth('lesson.${lesson.id}.title'),
         subtitle: tBoth('lesson.${lesson.id}.summary'),
         open: (c) => _push(c, () => LessonScreen(lesson: lesson)),
+        cardKey: 'lessons_${lesson.id}',
       ),
     ShelfItem(
       icon: '🎬',
       title: tBoth('card.prophets.title'),
       subtitle: tBoth('card.prophets.sub'),
       open: (c) => _push(c, () => const LessonsScreen()),
+      cardKey: 'lessons_prophets',
     ),
   ],
 );
@@ -266,6 +327,7 @@ HomeShelf _cardsShelf() {
     title: tBoth('cardshelf.${shelf.id}.title'),
     subtitle: tBoth('cardshelf.${shelf.id}.subtitle'),
     open: (c) => _push(c, () => CardsScreen(shelf: shelf)),
+    cardKey: 'cards_${shelf.id}',
   );
 
   return HomeShelf(
@@ -280,16 +342,9 @@ HomeShelf _cardsShelf() {
       title: tBoth('card.mycards.title'),
       subtitle: tBoth('card.mycards.sub'),
       open: (c) => _push(c, () => const MyCardsScreen()),
+      cardKey: 'cards_mycards',
     ),
-    rest: [
-      for (final shelf in GreetingCards.shelvesInUse) card(shelf),
-      ShelfItem(
-        icon: '🤲',
-        title: tBoth('card.duas.title'),
-        subtitle: tBoth('card.duas.sub'),
-        open: (c) => _push(c, () => const DuasHomeScreen()),
-      ),
-    ],
+    rest: [for (final shelf in GreetingCards.shelvesInUse) card(shelf)],
   );
 }
 
@@ -309,6 +364,7 @@ HomeShelf _librarySheet() {
       c,
       () => book.isBundled ? BookReaderScreen(book: book) : const BooksScreen(),
     ),
+    cardKey: 'library_${book.id}',
   );
 
   final hadithEncItem = ShelfItem(
@@ -316,6 +372,7 @@ HomeShelf _librarySheet() {
     title: tBoth('card.hadithEnc.title'),
     subtitle: t('card.hadithEnc.sub'),
     open: (c) => _push(c, () => const HadithEncyclopediaScreen()),
+    cardKey: 'library_hadithEnc',
   );
 
   return HomeShelf(

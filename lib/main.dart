@@ -28,6 +28,7 @@ import 'services/prayer_alerts.dart';
 import 'services/app_locale.dart';
 import 'services/playback_speed.dart';
 import 'services/prayer_settings.dart';
+import 'services/duas_service.dart';
 import 'services/section_config.dart';
 import 'services/sync_service.dart';
 import 'l10n/strings.dart';
@@ -69,6 +70,9 @@ void main() async {
   SectionConfig.onApplied = MushafFrames.reconcile;
   try {
     await SectionConfig.load();
+  } catch (_) {}
+  try {
+    await DuasService.loadBase();
   } catch (_) {}
 
   await AppLocale.load();

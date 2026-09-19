@@ -178,6 +178,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
               ),
               if (entry.hisn != null)
                 DhikrListenButton(dhikr: entry.hisn!, controller: _audio),
+              SpeakButton(id: entry.id, text: entry.text, size: 19),
               const SizedBox(width: 4),
               FavouriteStar(id: entry.id, size: 19, announce: false),
             ],

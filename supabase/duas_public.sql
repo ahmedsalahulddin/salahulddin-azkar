@@ -12,8 +12,8 @@
 
 drop function if exists public.grant_personal_dua_access(text);
 drop function if exists public.revoke_personal_dua_access(uuid);
-drop table if exists public.personal_dua_grants;
 drop table if exists public.personal_duas;
+drop table if exists public.personal_dua_grants;
 
 -- One row, id fixed at 1 so there is only ever one base collection.
 create table if not exists public.duas_base (

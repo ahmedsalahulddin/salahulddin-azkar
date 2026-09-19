@@ -3,6 +3,7 @@ import '../constants/theme.dart';
 import '../data/home_shelves.dart';
 import '../l10n/strings.dart';
 import '../services/app_locale.dart';
+import '../services/duas_service.dart';
 import '../services/section_config.dart';
 import '../widgets/bilingual_text.dart';
 import '../widgets/prayer_times_card.dart';
@@ -30,31 +31,45 @@ class HomeScreen extends StatelessWidget {
                 const PrayerTimesCard(),
                 const SizedBox(height: 20),
 
-                // Rebuilt whenever the locale or section-visibility config changes.
+                // Rebuilt whenever the locale, section-visibility config, or
+                // the duas base collection changes — the last one arrives
+                // asynchronously after startup, so the shelf appears as soon
+                // as it resolves instead of waiting for a full app restart.
                 ValueListenableBuilder<String>(
                   valueListenable: AppLocale.locale,
                   builder: (context, _, _) {
-                    final all = buildShelves();
-                    return ValueListenableBuilder<Map<String, SectionSetting>>(
-                      valueListenable: SectionConfig.settings,
+                    return ValueListenableBuilder<List<DuaCategory>>(
+                      valueListenable: DuasService.baseCache,
                       builder: (context, _, _) {
-                        final visible =
-                            [
-                              for (var i = 0; i < all.length; i++)
-                                if (SectionConfig.isVisible(all[i].key))
-                                  (all[i], i),
-                            ]..sort(
-                              (a, b) => SectionConfig.orderOf(a.$1.key, a.$2)
-                                  .compareTo(
-                                    SectionConfig.orderOf(b.$1.key, b.$2),
-                                  ),
-                            );
+                        final all = buildShelves();
+                        return ValueListenableBuilder<
+                          Map<String, SectionSetting>
+                        >(
+                          valueListenable: SectionConfig.settings,
+                          builder: (context, _, _) {
+                            final visible =
+                                [
+                                  for (var i = 0; i < all.length; i++)
+                                    if (SectionConfig.isVisible(all[i].key))
+                                      (all[i], i),
+                                ]..sort(
+                                  (a, b) =>
+                                      SectionConfig.orderOf(
+                                        a.$1.key,
+                                        a.$2,
+                                      ).compareTo(
+                                        SectionConfig.orderOf(b.$1.key, b.$2),
+                                      ),
+                                );
 
-                        return Column(
-                          children: [
-                            for (final (shelf, _) in visible)
-                              _shelfRow(context, shelf),
-                          ],
+                            return Column(
+                              children: [
+                                for (final (shelf, _) in visible)
+                                  if (_withVisibleCards(shelf) case final s?)
+                                    _shelfRow(context, s),
+                              ],
+                            );
+                          },
                         );
                       },
                     );
@@ -66,6 +81,39 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  /// Filters a shelf's cards by [SectionConfig.isVisible] and re-sorts the
+  /// survivors by [SectionConfig.orderOf], same as the shelves themselves —
+  /// a card with no [ShelfItem.cardKey] is always kept, so nothing built
+  /// outside home_shelves.dart can vanish by omission. Null means every
+  /// card on this shelf is hidden, so the shelf itself has nothing to show.
+  HomeShelf? _withVisibleCards(HomeShelf shelf) {
+    final all = [shelf.pinned, ...shelf.rest];
+    final visible =
+        [
+          for (var i = 0; i < all.length; i++)
+            if (all[i].cardKey == null ||
+                SectionConfig.isVisible(all[i].cardKey!))
+              (all[i], i),
+        ]..sort(
+          (a, b) => SectionConfig.orderOf(
+            a.$1.cardKey ?? '',
+            a.$2,
+          ).compareTo(SectionConfig.orderOf(b.$1.cardKey ?? '', b.$2)),
+        );
+    if (visible.isEmpty) return null;
+
+    final cards = [for (final (item, _) in visible) item];
+    return HomeShelf(
+      key: shelf.key,
+      icon: shelf.icon,
+      title: shelf.title,
+      tint: shelf.tint,
+      all: shelf.all,
+      pinned: cards.first,
+      rest: cards.skip(1).toList(),
     );
   }
 

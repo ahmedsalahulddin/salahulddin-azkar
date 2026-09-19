@@ -1,5 +1,6 @@
 import '../data/adhkar_data.dart';
 import '../data/hisn_data.dart';
+import 'duas_service.dart';
 import 'storage_service.dart';
 
 /// One saved dhikr, whichever part of the app it was starred in.
@@ -41,6 +42,7 @@ class FavouriteEntry {
 /// is dropped from the list rather than shown as a blank card.
 class Favourites {
   static const _hisnPrefix = 'hisn/';
+  static const _duaPrefix = 'dua/';
 
   static String hisnId(int chapterId, int number) =>
       '$_hisnPrefix$chapterId/$number';
@@ -57,6 +59,24 @@ class Favourites {
     final number = int.tryParse(parts[1]);
     if (chapter == null || number == null) return null;
     return (chapter, number);
+  }
+
+  static String duaId(String categoryId, int index) =>
+      '$_duaPrefix$categoryId/$index';
+
+  static bool isDua(String id) => id.startsWith(_duaPrefix);
+
+  /// (categoryId, index) for a dua id, or null if malformed. The category id
+  /// itself may contain no '/', same restriction as every other id in this
+  /// app's data — split only on the last one, so a category id is never cut.
+  static (String, int)? _parseDua(String id) {
+    if (!isDua(id)) return null;
+    final rest = id.substring(_duaPrefix.length);
+    final slash = rest.lastIndexOf('/');
+    if (slash <= 0) return null;
+    final index = int.tryParse(rest.substring(slash + 1));
+    if (index == null) return null;
+    return (rest.substring(0, slash), index);
   }
 
   /// Every favourite, in the order it was starred.
@@ -80,33 +100,73 @@ class Favourites {
     }
     final chapterById = {for (final c in chapters) c.id: c};
 
+    // Same lazy-load-only-if-needed rule as Hisn above. A favourited dua may
+    // be in the shared base collection or in the reader's own — checked in
+    // that order, since a reader's own category ids never collide with the
+    // base's fixed slugs in practice, but base is the more common case.
+    List<DuaCategory> duaCategories = const [];
+    if (ids.any(isDua)) {
+      try {
+        final results = await Future.wait([
+          DuasService.base(),
+          DuasService.mine(),
+        ]);
+        duaCategories = [...results[0], ...results[1]];
+      } catch (_) {
+        // Unreadable data drops the dua favourites from this listing rather
+        // than emptying the whole tab.
+      }
+    }
+    final duaCategoryById = {for (final c in duaCategories) c.id: c};
+
     final entries = <FavouriteEntry>[];
     for (final id in ids) {
       final dhikr = byId[id];
       if (dhikr != null) {
-        entries.add(FavouriteEntry(
-          id: id,
-          text: dhikr.text,
-          origin: categoryNames[dhikr.categoryId] ?? '',
-          dhikr: dhikr,
-        ));
+        entries.add(
+          FavouriteEntry(
+            id: id,
+            text: dhikr.text,
+            origin: categoryNames[dhikr.categoryId] ?? '',
+            dhikr: dhikr,
+          ),
+        );
         continue;
       }
 
-      final parsed = _parseHisn(id);
-      if (parsed == null) continue;
-      final chapter = chapterById[parsed.$1];
-      if (chapter == null) continue;
-      final item =
-          chapter.items.where((i) => i.number == parsed.$2).firstOrNull;
-      if (item == null) continue;
+      final hisnParsed = _parseHisn(id);
+      if (hisnParsed != null) {
+        final chapter = chapterById[hisnParsed.$1];
+        if (chapter == null) continue;
+        final item = chapter.items
+            .where((i) => i.number == hisnParsed.$2)
+            .firstOrNull;
+        if (item == null) continue;
 
-      entries.add(FavouriteEntry(
-        id: id,
-        text: item.text,
-        origin: chapter.title,
-        hisn: item,
-      ));
+        entries.add(
+          FavouriteEntry(
+            id: id,
+            text: item.text,
+            origin: chapter.title,
+            hisn: item,
+          ),
+        );
+        continue;
+      }
+
+      final duaParsed = _parseDua(id);
+      if (duaParsed == null) continue;
+      final category = duaCategoryById[duaParsed.$1];
+      if (category == null) continue;
+      if (duaParsed.$2 < 0 || duaParsed.$2 >= category.duas.length) continue;
+
+      entries.add(
+        FavouriteEntry(
+          id: id,
+          text: category.duas[duaParsed.$2],
+          origin: category.title,
+        ),
+      );
     }
     return entries;
   }

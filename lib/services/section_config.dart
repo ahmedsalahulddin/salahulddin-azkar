@@ -6,36 +6,52 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'auth_service.dart';
 
-/// Whether a home-screen section is shown, and where it sits.
+/// Whether a home-screen section — or one card inside it — is shown, and
+/// where it sits. A row with [parentKey] null is a section (a shelf); a row
+/// whose [parentKey] names another row's key is one of that section's
+/// cards. The hierarchy lives entirely in this one flat table — there is no
+/// separate "cards" table — the same way frame and greeting-card choices
+/// already use a flat, prefixed key with no nesting at all.
 class SectionSetting {
   final String key;
   final String title;
   final bool enabled;
   final int sortOrder;
+  final String? parentKey;
 
   const SectionSetting({
     required this.key,
     required this.title,
     required this.enabled,
     required this.sortOrder,
+    this.parentKey,
   });
 
-  Map<String, dynamic> toJson() =>
-      {'key': key, 'title': title, 'enabled': enabled, 'sort_order': sortOrder};
+  bool get isSection => parentKey == null;
+
+  Map<String, dynamic> toJson() => {
+    'key': key,
+    'title': title,
+    'enabled': enabled,
+    'sort_order': sortOrder,
+    'parent_key': parentKey,
+  };
 
   factory SectionSetting.fromJson(Map<String, dynamic> j) => SectionSetting(
-        key: j['key'],
-        title: j['title'] ?? j['key'],
-        enabled: j['enabled'] ?? true,
-        sortOrder: j['sort_order'] ?? 0,
-      );
+    key: j['key'],
+    title: j['title'] ?? j['key'],
+    enabled: j['enabled'] ?? true,
+    sortOrder: j['sort_order'] ?? 0,
+    parentKey: j['parent_key'] as String?,
+  );
 
   SectionSetting copyWith({bool? enabled, int? sortOrder}) => SectionSetting(
-        key: key,
-        title: title,
-        enabled: enabled ?? this.enabled,
-        sortOrder: sortOrder ?? this.sortOrder,
-      );
+    key: key,
+    title: title,
+    enabled: enabled ?? this.enabled,
+    sortOrder: sortOrder ?? this.sortOrder,
+    parentKey: parentKey,
+  );
 }
 
 /// Lets the home screen be rearranged without shipping a new build.
@@ -144,19 +160,30 @@ class SectionConfig {
     }
   }
 
-  /// Saves visibility and order. Returns false if the write did not land, so
+  /// Saves visibility and order. [updated] may mix sections and cards in any
+  /// order — position is recomputed per sibling group (all the sections
+  /// together, then each section's own cards together), so passing the
+  /// whole tree in one call never scrambles a card's place against a card
+  /// from a different section. Returns false if the write did not land, so
   /// the caller can say so instead of showing a change that did not happen.
   static Future<bool> save(List<SectionSetting> updated) async {
     if (!AuthService.isConfigured) return false;
     try {
       await AuthService.init();
       final client = Supabase.instance.client;
-      for (var i = 0; i < updated.length; i++) {
-        final s = updated[i];
-        await client
-            .from('app_sections')
-            .update({'enabled': s.enabled, 'sort_order': i + 1})
-            .eq('key', s.key);
+
+      final bySibling = <String?, List<SectionSetting>>{};
+      for (final s in updated) {
+        (bySibling[s.parentKey] ??= []).add(s);
+      }
+      for (final group in bySibling.values) {
+        for (var i = 0; i < group.length; i++) {
+          final s = group[i];
+          await client
+              .from('app_sections')
+              .update({'enabled': s.enabled, 'sort_order': i + 1})
+              .eq('key', s.key);
+        }
       }
       await refresh();
       return true;

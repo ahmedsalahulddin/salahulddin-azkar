@@ -1,5 +1,8 @@
+import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'auth_service.dart';
@@ -47,6 +50,14 @@ class DuaCategory {
 /// private to them and synced to their account, the same way favourites and
 /// bookmarks already are. Guests see the base collection only.
 class DuasService {
+  static const _baseCacheKey = '@noor_duas_base';
+
+  /// The base collection, kept in memory so the home screen's "duas" shelf
+  /// can read it synchronously while building — the same cache-then-refresh
+  /// shape SectionConfig already uses for the same reason. Empty until
+  /// [loadBase] has resolved at least once (from cache or network).
+  static final baseCache = ValueNotifier<List<DuaCategory>>([]);
+
   static Future<SupabaseClient> get _client async {
     await AuthService.init();
     return Supabase.instance.client;
@@ -54,6 +65,36 @@ class DuasService {
 
   static Never _throw(Object e) {
     throw StateError(e.toString());
+  }
+
+  /// Reads the cached base collection immediately, then refreshes from the
+  /// project in the background — called once at startup, alongside
+  /// SectionConfig.load().
+  static Future<void> loadBase() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_baseCacheKey);
+      if (raw != null) baseCache.value = _decode(raw);
+    } catch (_) {
+      // A corrupt cache must not keep the shelf empty.
+    }
+    unawaited(refreshBase());
+  }
+
+  static Future<void> refreshBase() async {
+    final cats = await base();
+    if (cats.isEmpty && baseCache.value.isNotEmpty) {
+      // An empty table/unreachable project is not an instruction to hide
+      // what was already shown — same fail-open rule as SectionConfig.
+      return;
+    }
+    baseCache.value = cats;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_baseCacheKey, _encode(cats));
+    } catch (_) {
+      // Cache write failing is not fatal — the in-memory value is correct.
+    }
   }
 
   static List<DuaCategory> _decode(String? raw) {
@@ -96,6 +137,7 @@ class DuasService {
         'content': _encode(cats),
         'updated_at': DateTime.now().toUtc().toIso8601String(),
       });
+      baseCache.value = cats;
     } catch (e) {
       _throw(e);
     }

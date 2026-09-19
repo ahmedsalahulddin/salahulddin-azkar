@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../constants/theme.dart';
 import '../services/duas_service.dart';
+import '../services/favourites.dart';
+import '../widgets/favourite_star.dart';
+import '../widgets/speak_button.dart';
 
 /// One category's duas — a plain bulleted list to read, or (when
 /// [editable]) a title field plus a line-per-dua editor. Shared by the
@@ -145,20 +148,37 @@ class _DuaCategoryDetailScreenState extends State<DuaCategoryDetailScreen> {
       separatorBuilder: (_, _) => const SizedBox(height: 10),
       itemBuilder: (_, i) => Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.fromLTRB(14, 14, 14, 6),
         decoration: BoxDecoration(
           color: AppColors.blackCard,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: AppColors.goldBorder),
         ),
-        child: Text(
-          duas[i],
-          textAlign: TextAlign.right,
-          style: const TextStyle(
-            color: AppColors.textPrimary,
-            height: 1.9,
-            fontSize: 15,
-          ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              duas[i],
+              textAlign: TextAlign.right,
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                height: 1.9,
+                fontSize: 15,
+              ),
+            ),
+            Row(
+              children: [
+                SpeakButton(
+                  id: Favourites.duaId(widget.category.id, i),
+                  text: duas[i],
+                ),
+                FavouriteStar(
+                  id: Favourites.duaId(widget.category.id, i),
+                  announce: false,
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
