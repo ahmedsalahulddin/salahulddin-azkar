@@ -1,12 +1,23 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../constants/theme.dart';
+import '../../data/tahfeez_countries.dart';
 import '../../l10n/strings.dart';
+import '../../services/auth_service.dart';
+import '../../services/hidden_teachers.dart';
 import '../../services/tahfeez_service.dart';
 import 'tahfeez_widgets.dart';
 
+/// Whom a teacher takes on, as the directory filters it: a student ticks any
+/// of these and sees every teacher who fits at least one.
+enum _Audience { males, females, children }
+
 /// Every approved teacher, with a way to ask any of them — or to type a
 /// teacher's code straight in.
+///
+/// Each teacher is one short row: name, then where they are, what they
+/// speak and whom they teach on a single line. Tapping opens the full card.
 class TeachersDirectoryScreen extends StatefulWidget {
   /// The reader's current enrolments, keyed by teacher id, so a teacher
   /// already asked shows their status instead of the button.
@@ -16,10 +27,15 @@ class TeachersDirectoryScreen extends StatefulWidget {
   /// listed in the first place.
   final Gender? myGender;
 
+  /// Teachers to show instead of fetching — for previews and tests only.
+  @visibleForTesting
+  final List<TahfeezProfile>? initialTeachers;
+
   const TeachersDirectoryScreen({
     super.key,
     required this.enrollments,
     this.myGender,
+    this.initialTeachers,
   });
 
   @override
@@ -33,26 +49,34 @@ class _TeachersDirectoryScreenState extends State<TeachersDirectoryScreen> {
   bool _loading = true;
   bool _changed = false;
   String _query = '';
-  String? _lang;
-  TeachesGender? _teaches;
+  final _languages = <String>{};
+  final _audiences = <_Audience>{};
+  final _countries = <String>{};
   final _codeController = TextEditingController();
   bool _joining = false;
 
   @override
   void initState() {
     super.initState();
+    HiddenTeachers.ids.addListener(_onHiddenChanged);
     _load();
   }
 
   @override
   void dispose() {
+    HiddenTeachers.ids.removeListener(_onHiddenChanged);
     _codeController.dispose();
     super.dispose();
   }
 
+  void _onHiddenChanged() {
+    if (mounted) setState(() {});
+  }
+
   Future<void> _load() async {
     try {
-      final list = await TahfeezService.teachers();
+      await HiddenTeachers.load();
+      final list = widget.initialTeachers ?? await TahfeezService.teachers();
       if (!mounted) return;
       setState(() {
         _teachers = list;
@@ -65,84 +89,75 @@ class _TeachersDirectoryScreenState extends State<TeachersDirectoryScreen> {
     }
   }
 
+  /// Teachers the reader could ask at all: not refusing their gender, and
+  /// not ones they chose to hide. Filters and counts both start from here.
+  List<TahfeezProfile> get _eligible => [
+    for (final p in _teachers)
+      if (p.accepts(widget.myGender) &&
+          !HiddenTeachers.ids.value.contains(p.userId))
+        p,
+  ];
+
+  List<TahfeezProfile> get _hidden => [
+    for (final p in _teachers)
+      if (HiddenTeachers.ids.value.contains(p.userId)) p,
+  ];
+
+  static bool _teaches(TahfeezProfile p, _Audience a) => switch (a) {
+    _Audience.males => p.teachesGender != TeachesGender.female,
+    _Audience.females => p.teachesGender != TeachesGender.male,
+    _Audience.children => p.teachesChildren,
+  };
+
   List<TahfeezProfile> get _visible {
     final q = _query.trim().toLowerCase();
-    return _teachers.where((p) {
-      if (!p.accepts(widget.myGender)) return false;
-      if (_lang != null && !p.languages.contains(_lang)) return false;
-      if (_teaches != null && p.teachesGender != _teaches) return false;
+    return _eligible.where((p) {
+      if (_languages.isNotEmpty && !p.languages.any(_languages.contains)) {
+        return false;
+      }
+      if (_audiences.isNotEmpty && !_audiences.any((a) => _teaches(p, a))) {
+        return false;
+      }
+      if (_countries.isNotEmpty && !_countries.contains(p.country ?? '')) {
+        return false;
+      }
       if (q.isEmpty) return true;
       return p.displayName.toLowerCase().contains(q) ||
           (p.city?.toLowerCase().contains(q) ?? false) ||
+          (p.country != null &&
+              countryName(p.country!).toLowerCase().contains(q)) ||
           (p.teacherCode?.toLowerCase().contains(q) ?? false);
     }).toList();
   }
 
-  /// Only languages some listed teacher actually offers.
-  List<String> get _offeredLanguages => [
-    for (final (code, _) in tahfeezLanguages)
-      if (_teachers.any((p) => p.languages.contains(code))) code,
-  ];
+  // ---- filters -------------------------------------------------------------
 
-  Widget _filters() {
-    Widget chip(String label, bool selected, VoidCallback onTap) => ChoiceChip(
-      label: Text(label),
-      selected: selected,
-      selectedColor: AppColors.goldMuted,
-      backgroundColor: AppColors.blackSurface,
-      side: BorderSide(color: selected ? AppColors.gold : AppColors.goldBorder),
-      labelStyle: TextStyle(
-        color: selected ? AppColors.gold : AppColors.textMuted,
-        fontSize: 12,
-      ),
-      showCheckmark: false,
-      visualDensity: VisualDensity.compact,
-      onSelected: (_) => onTap(),
-    );
+  Widget _filterBar() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.fromLTRB(16, 6, 16, 2),
+      child: Row(
         children: [
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                chip(
-                  t('tahfeez.allLanguages'),
-                  _lang == null,
-                  () => setState(() => _lang = null),
-                ),
-                for (final code in _offeredLanguages) ...[
-                  const SizedBox(width: 6),
-                  chip(
-                    languageName(code),
-                    _lang == code,
-                    () => setState(() => _lang = code),
-                  ),
-                ],
-              ],
+          Expanded(
+            child: _filterButton(
+              t('tahfeez.filter.language'),
+              _languages.length,
+              _pickLanguages,
             ),
           ),
-          const SizedBox(height: 6),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                chip(
-                  '${t('tahfeez.filterGender')}: ${t('tahfeez.gender.all')}',
-                  _teaches == null,
-                  () => setState(() => _teaches = null),
-                ),
-                for (final g in TeachesGender.values) ...[
-                  const SizedBox(width: 6),
-                  chip(
-                    t('tahfeez.teaches.${g.name}'),
-                    _teaches == g,
-                    () => setState(() => _teaches = g),
-                  ),
-                ],
-              ],
+          const SizedBox(width: 6),
+          Expanded(
+            child: _filterButton(
+              t('tahfeez.filterGender'),
+              _audiences.length,
+              _pickAudiences,
+            ),
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: _filterButton(
+              t('tahfeez.filter.country'),
+              _countries.length,
+              _pickCountries,
             ),
           ),
         ],
@@ -150,8 +165,228 @@ class _TeachersDirectoryScreenState extends State<TeachersDirectoryScreen> {
     );
   }
 
+  Widget _filterButton(String label, int chosen, VoidCallback onTap) {
+    final active = chosen > 0;
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+        decoration: BoxDecoration(
+          color: active ? AppColors.goldMuted : AppColors.blackSurface,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: active ? AppColors.gold : AppColors.goldBorder,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Flexible(
+              child: Text(
+                active ? '$label ($chosen)' : label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: active ? AppColors.gold : AppColors.textSecondary,
+                  fontSize: 12,
+                  fontWeight: active ? FontWeight.bold : FontWeight.normal,
+                ),
+              ),
+            ),
+            Icon(
+              Icons.expand_more,
+              size: 16,
+              color: active ? AppColors.gold : AppColors.textMuted,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickLanguages() async {
+    final base = _eligible;
+    final options = [
+      for (final (code, _) in tahfeezLanguages)
+        if (base.any((p) => p.languages.contains(code)))
+          (
+            code,
+            languageName(code),
+            base.where((p) => p.languages.contains(code)).length,
+          ),
+    ];
+    final picked = await _pickSheet<String>(
+      title: t('tahfeez.filter.language'),
+      options: options,
+      chosen: _languages,
+    );
+    if (picked == null) return;
+    setState(() {
+      _languages
+        ..clear()
+        ..addAll(picked);
+    });
+  }
+
+  Future<void> _pickAudiences() async {
+    final base = _eligible;
+    final options = [
+      for (final a in _Audience.values)
+        (
+          a,
+          t('tahfeez.filter.${a.name}'),
+          base.where((p) => _teaches(p, a)).length,
+        ),
+    ];
+    final picked = await _pickSheet<_Audience>(
+      title: t('tahfeez.filterGender'),
+      options: options,
+      chosen: _audiences,
+    );
+    if (picked == null) return;
+    setState(() {
+      _audiences
+        ..clear()
+        ..addAll(picked);
+    });
+  }
+
+  Future<void> _pickCountries() async {
+    final base = _eligible;
+    final options = [
+      for (final (code, _, _) in tahfeezCountries)
+        if (base.any((p) => p.country == code))
+          (
+            code,
+            countryName(code),
+            base.where((p) => p.country == code).length,
+          ),
+    ];
+    final picked = await _pickSheet<String>(
+      title: t('tahfeez.filter.country'),
+      options: options,
+      chosen: _countries,
+    );
+    if (picked == null) return;
+    setState(() {
+      _countries
+        ..clear()
+        ..addAll(picked);
+    });
+  }
+
+  /// A checklist with how many teachers each choice would show. Returns the
+  /// new selection, or null if dismissed.
+  Future<Set<T>?> _pickSheet<T>({
+    required String title,
+    required List<(T, String, int)> options,
+    required Set<T> chosen,
+  }) {
+    final working = Set<T>.of(chosen);
+    return showModalBottomSheet<Set<T>>(
+      context: context,
+      backgroundColor: AppColors.blackCard,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Directionality(
+        textDirection: tahfeezDirection(),
+        child: StatefulBuilder(
+          builder: (ctx, setSheet) => SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          title,
+                          style: const TextStyle(
+                            color: AppColors.gold,
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () => setSheet(working.clear),
+                        child: Text(
+                          t('tahfeez.filter.clear'),
+                          style: const TextStyle(color: AppColors.textMuted),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (options.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Text(
+                      t('tahfeez.noTeachers'),
+                      style: const TextStyle(color: AppColors.textMuted),
+                    ),
+                  ),
+                Flexible(
+                  child: ListView(
+                    shrinkWrap: true,
+                    children: [
+                      for (final (value, label, count) in options)
+                        CheckboxListTile(
+                          value: working.contains(value),
+                          dense: true,
+                          activeColor: AppColors.gold,
+                          checkColor: AppColors.black,
+                          controlAffinity: ListTileControlAffinity.leading,
+                          title: Text(
+                            label,
+                            style: const TextStyle(
+                              color: AppColors.textPrimary,
+                              fontSize: 14,
+                            ),
+                          ),
+                          secondary: Text(
+                            '$count',
+                            style: const TextStyle(
+                              color: AppColors.textGold,
+                              fontSize: 13,
+                            ),
+                          ),
+                          onChanged: (v) => setSheet(() {
+                            if (v == true) {
+                              working.add(value);
+                            } else {
+                              working.remove(value);
+                            }
+                          }),
+                        ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+                  child: GoldButton(
+                    label: t('tahfeez.filter.apply'),
+                    icon: Icons.check,
+                    onPressed: () => Navigator.pop(ctx, working),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ---- screen --------------------------------------------------------------
+
   @override
   Widget build(BuildContext context) {
+    final visible = _visible;
+    final hidden = _hidden;
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
@@ -169,16 +404,23 @@ class _TeachersDirectoryScreenState extends State<TeachersDirectoryScreen> {
           body: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 2),
                 child: TextField(
                   onChanged: (v) => setState(() => _query = v),
-                  style: const TextStyle(color: AppColors.textPrimary),
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 14,
+                  ),
                   decoration: InputDecoration(
                     hintText: t('tahfeez.searchTeachers'),
-                    hintStyle: const TextStyle(color: AppColors.textMuted),
+                    hintStyle: const TextStyle(
+                      color: AppColors.textMuted,
+                      fontSize: 13,
+                    ),
                     prefixIcon: const Icon(
                       Icons.search,
                       color: AppColors.textMuted,
+                      size: 20,
                     ),
                     isDense: true,
                     filled: true,
@@ -194,16 +436,16 @@ class _TeachersDirectoryScreenState extends State<TeachersDirectoryScreen> {
                   ),
                 ),
               ),
-              _filters(),
+              _filterBar(),
               Expanded(
                 child: _loading
                     ? const Center(
                         child: CircularProgressIndicator(color: AppColors.gold),
                       )
                     : ListView(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                         children: [
-                          if (_visible.isEmpty)
+                          if (visible.isEmpty)
                             EmptyNote(
                               icon: Icons.person_search,
                               text: _teachers.isEmpty
@@ -211,10 +453,29 @@ class _TeachersDirectoryScreenState extends State<TeachersDirectoryScreen> {
                                   : t('tahfeez.noTeachersForFilter'),
                             )
                           else
-                            for (final p in _visible) ...[
-                              _teacherCard(p),
-                              const SizedBox(height: 10),
+                            for (final p in visible) ...[
+                              _teacherRow(p),
+                              const SizedBox(height: 6),
                             ],
+                          if (hidden.isNotEmpty)
+                            Align(
+                              alignment: AlignmentDirectional.centerStart,
+                              child: TextButton.icon(
+                                onPressed: () => _showHidden(hidden),
+                                icon: const Icon(
+                                  Icons.visibility_off_outlined,
+                                  size: 16,
+                                  color: AppColors.textMuted,
+                                ),
+                                label: Text(
+                                  '${t('tahfeez.hiddenTeachers')} (${hidden.length})',
+                                  style: const TextStyle(
+                                    color: AppColors.textMuted,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ),
                           const SizedBox(height: 10),
                           _codeCard(),
                           const SizedBox(height: 30),
@@ -228,120 +489,285 @@ class _TeachersDirectoryScreenState extends State<TeachersDirectoryScreen> {
     );
   }
 
-  Widget _teacherCard(TahfeezProfile p) {
+  /// One teacher in two lines: who, then where / in what language / for
+  /// whom. Everything else waits in the sheet behind a tap.
+  Widget _teacherRow(TahfeezProfile p) {
     final photo = p.photoUrl;
     final e = _enrollments[p.userId];
+    final meta = [
+      if (p.country != null) countryName(p.country!),
+      _audienceLabel(p),
+      if (p.languages.isNotEmpty) p.languages.map(languageName).join('، '),
+      if (p.freeSessions > 0) '${p.freeSessions} ${t('tahfeez.freeSessions')}',
+    ].join(' · ');
+
     return TahfeezCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+      onTap: () => _openTeacher(p),
+      child: Row(
         children: [
-          Row(
-            children: [
-              CircleAvatar(
-                radius: 24,
-                backgroundColor: AppColors.goldMuted,
-                backgroundImage: photo != null ? NetworkImage(photo) : null,
-                child: photo == null
-                    ? const Icon(Icons.person, color: AppColors.gold)
-                    : null,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      p.displayName,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    if (p.city != null)
-                      Text(
-                        p.city!,
-                        style: const TextStyle(
-                          color: AppColors.textMuted,
-                          fontSize: 12,
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              if (p.teacherCode != null)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.goldMuted,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    p.teacherCode!,
-                    textDirection: TextDirection.ltr,
-                    style: const TextStyle(
-                      color: AppColors.gold,
-                      fontSize: 13,
-                      letterSpacing: 2,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-            ],
+          CircleAvatar(
+            radius: 19,
+            backgroundColor: AppColors.goldMuted,
+            backgroundImage: photo != null ? NetworkImage(photo) : null,
+            child: photo == null
+                ? const Icon(Icons.person, color: AppColors.gold, size: 20)
+                : null,
           ),
-          if (p.bio != null) ...[
-            const SizedBox(height: 10),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  p.displayName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  meta,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppColors.textMuted,
+                    fontSize: 11,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          _trailing(p, e),
+        ],
+      ),
+    );
+  }
+
+  /// Whom the teacher takes on, in the filter's own short words.
+  String _audienceLabel(TahfeezProfile p) => [
+    for (final a in _Audience.values)
+      if (_teaches(p, a)) t('tahfeez.filter.${a.name}'),
+  ].join('، ');
+
+  /// The status badge or the ask button, small enough for one row.
+  Widget _trailing(TahfeezProfile p, Enrollment? e) {
+    if (e == null || e.status == EnrollmentStatus.rejected) {
+      return _smallButton(
+        icon: Icons.person_add_alt_1,
+        label: t('tahfeez.requestJoin'),
+        onTap: () => _request(p),
+      );
+    }
+    final color = e.isActive ? AppColors.success : AppColors.goldLight;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          e.isPending
+              ? Icons.hourglass_top
+              : e.isActive
+              ? Icons.check_circle
+              : Icons.info_outline,
+          size: 18,
+          color: color,
+        ),
+        const SizedBox(height: 2),
+        Text(
+          t('tahfeez.status.${e.isExpired ? 'expired' : e.status.name}'),
+          style: TextStyle(color: color, fontSize: 10),
+        ),
+      ],
+    );
+  }
+
+  Widget _smallButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: AppColors.gold,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 14, color: AppColors.black),
+            const SizedBox(width: 4),
             Text(
-              p.bio!,
+              label,
               style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 13,
-                height: 1.6,
+                color: AppColors.black,
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ],
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 6,
-            runSpacing: 6,
-            children: [
-              for (final code in p.languages)
-                _chip(Icons.translate, languageName(code)),
-              _chip(Icons.wc, t('tahfeez.teaches.${p.teachesGender.name}')),
-              _chip(Icons.event_repeat, t('tahfeez.plan.${p.planPeriod.name}')),
-              if (p.freeSessions > 0)
-                _chip(
-                  Icons.card_giftcard,
-                  '${p.freeSessions} ${t('tahfeez.freeSessions')}',
-                ),
-              if (p.priceNote != null)
-                _chip(Icons.payments_outlined, p.priceNote!),
-            ],
+        ),
+      ),
+    );
+  }
+
+  // ---- the full card -------------------------------------------------------
+
+  Future<void> _openTeacher(TahfeezProfile p) {
+    return showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppColors.blackCard,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Directionality(
+        textDirection: tahfeezDirection(),
+        child: StatefulBuilder(
+          builder: (ctx, setSheet) => SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
+              child: _teacherDetails(ctx, p, () => setSheet(() {})),
+            ),
           ),
-          const SizedBox(height: 12),
-          if (e == null)
-            GoldButton(
-              label: t('tahfeez.requestJoin'),
-              icon: Icons.person_add_alt_1,
-              onPressed: () => _request(p),
-            )
-          else
-            Row(
-              children: [
-                Icon(
-                  e.isPending
-                      ? Icons.hourglass_top
-                      : e.isActive
-                      ? Icons.check_circle
-                      : Icons.info_outline,
-                  size: 16,
-                  color: e.isActive ? AppColors.success : AppColors.goldLight,
+        ),
+      ),
+    );
+  }
+
+  Widget _teacherDetails(
+    BuildContext ctx,
+    TahfeezProfile p,
+    VoidCallback refresh,
+  ) {
+    final photo = p.photoUrl;
+    final e = _enrollments[p.userId];
+    final place = [
+      if (p.city != null) p.city!,
+      if (p.country != null) countryName(p.country!),
+    ].join('، ');
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          children: [
+            CircleAvatar(
+              radius: 28,
+              backgroundColor: AppColors.goldMuted,
+              backgroundImage: photo != null ? NetworkImage(photo) : null,
+              child: photo == null
+                  ? const Icon(Icons.person, color: AppColors.gold, size: 30)
+                  : null,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    p.displayName,
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  if (place.isNotEmpty)
+                    Text(
+                      place,
+                      style: const TextStyle(
+                        color: AppColors.textMuted,
+                        fontSize: 12,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            if (p.teacherCode != null)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.goldMuted,
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                const SizedBox(width: 6),
-                Text(
+                child: Text(
+                  p.teacherCode!,
+                  textDirection: TextDirection.ltr,
+                  style: const TextStyle(
+                    color: AppColors.gold,
+                    fontSize: 13,
+                    letterSpacing: 2,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+          ],
+        ),
+        if (p.bio != null) ...[
+          const SizedBox(height: 12),
+          Text(
+            p.bio!,
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 13,
+              height: 1.6,
+            ),
+          ),
+        ],
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 6,
+          runSpacing: 6,
+          children: [
+            for (final code in p.languages)
+              _chip(Icons.translate, languageName(code)),
+            _chip(Icons.wc, t('tahfeez.teaches.${p.teachesGender.name}')),
+            if (p.teachesChildren)
+              _chip(Icons.child_care, t('tahfeez.teaches.children')),
+            _chip(Icons.event_repeat, t('tahfeez.plan.${p.planPeriod.name}')),
+            if (p.freeSessions > 0)
+              _chip(
+                Icons.card_giftcard,
+                '${p.freeSessions} ${t('tahfeez.freeSessions')}',
+              ),
+            if (p.priceNote != null)
+              _chip(Icons.payments_outlined, p.priceNote!),
+          ],
+        ),
+        const SizedBox(height: 16),
+        if (e == null || e.status == EnrollmentStatus.rejected)
+          GoldButton(
+            label: t('tahfeez.requestJoin'),
+            icon: Icons.person_add_alt_1,
+            onPressed: () async {
+              await _request(p);
+              refresh();
+            },
+          )
+        else
+          Row(
+            children: [
+              Icon(
+                e.isPending
+                    ? Icons.hourglass_top
+                    : e.isActive
+                    ? Icons.check_circle
+                    : Icons.info_outline,
+                size: 18,
+                color: e.isActive ? AppColors.success : AppColors.goldLight,
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
                   t(
                     'tahfeez.status.${e.isExpired ? 'expired' : e.status.name}',
                   ),
@@ -350,20 +776,47 @@ class _TeachersDirectoryScreenState extends State<TeachersDirectoryScreen> {
                     fontSize: 13,
                   ),
                 ),
-                if (e.status == EnrollmentStatus.rejected) ...[
-                  const Spacer(),
-                  TextButton(
-                    onPressed: () => _request(p),
-                    child: Text(
-                      t('tahfeez.requestJoin'),
-                      style: const TextStyle(color: AppColors.gold),
-                    ),
+              ),
+              if (e.isPending)
+                TextButton(
+                  onPressed: () async {
+                    await _cancel(p, e);
+                    refresh();
+                  },
+                  child: Text(
+                    t('tahfeez.cancelRequest'),
+                    style: const TextStyle(color: AppColors.error),
                   ),
-                ],
-              ],
+                ),
+            ],
+          ),
+        if (e == null || e.status == EnrollmentStatus.rejected) ...[
+          const SizedBox(height: 4),
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: TextButton.icon(
+              onPressed: () async {
+                await HiddenTeachers.set(p.userId, true);
+                if (!ctx.mounted || !mounted) return;
+                Navigator.pop(ctx);
+                showNote(context, t('tahfeez.teacherHidden'));
+              },
+              icon: const Icon(
+                Icons.visibility_off_outlined,
+                size: 16,
+                color: AppColors.textMuted,
+              ),
+              label: Text(
+                t('tahfeez.hideTeacher'),
+                style: const TextStyle(
+                  color: AppColors.textMuted,
+                  fontSize: 12,
+                ),
+              ),
             ),
+          ),
         ],
-      ),
+      ],
     );
   }
 
@@ -392,6 +845,61 @@ class _TeachersDirectoryScreenState extends State<TeachersDirectoryScreen> {
     );
   }
 
+  Future<void> _showHidden(List<TahfeezProfile> hidden) {
+    return showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppColors.blackCard,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Directionality(
+        textDirection: tahfeezDirection(),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
+                child: Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: Text(
+                    t('tahfeez.hiddenTeachers'),
+                    style: const TextStyle(
+                      color: AppColors.gold,
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+              for (final p in hidden)
+                ListTile(
+                  dense: true,
+                  title: Text(
+                    p.displayName,
+                    style: const TextStyle(color: AppColors.textPrimary),
+                  ),
+                  trailing: TextButton(
+                    onPressed: () async {
+                      await HiddenTeachers.set(p.userId, false);
+                      if (ctx.mounted) Navigator.pop(ctx);
+                    },
+                    child: Text(
+                      t('tahfeez.unhide'),
+                      style: const TextStyle(color: AppColors.gold),
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 12),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ---- actions -------------------------------------------------------------
+
   Future<void> _request(TahfeezProfile p) async {
     final note = await promptText(
       context,
@@ -406,20 +914,56 @@ class _TeachersDirectoryScreenState extends State<TeachersDirectoryScreen> {
       if (!mounted) return;
       showNote(context, '${t('tahfeez.requestJoinSent')} ${p.displayName}');
       _changed = true;
-      // Reflect the request locally; the tab reloads the real row on return.
+      await _refreshEnrollment(p.userId);
+    } catch (e) {
+      if (mounted) showNote(context, describeError(e), error: true);
+    }
+  }
+
+  Future<void> _cancel(TahfeezProfile p, Enrollment e) async {
+    final ok = await confirmDialog(
+      context,
+      message: '${t('tahfeez.cancelRequest')} — ${p.displayName}؟',
+      confirmLabel: t('tahfeez.cancelRequest'),
+    );
+    if (!ok || !mounted) return;
+    try {
+      await TahfeezService.cancelEnrollment(e.id);
+      if (!mounted) return;
+      _changed = true;
+      setState(() => _enrollments.remove(p.userId));
+      showNote(context, t('tahfeez.requestCancelled'));
+    } catch (err) {
+      if (mounted) showNote(context, describeError(err), error: true);
+    }
+  }
+
+  /// Fetches the real row after a request, so cancelling it has an id to
+  /// point at rather than a placeholder.
+  Future<void> _refreshEnrollment(String teacherId) async {
+    final me = AuthService.user.value?.id;
+    try {
+      final all = await TahfeezService.enrollments();
+      final mine = all.where(
+        (e) => e.teacherId == teacherId && e.studentId == me,
+      );
+      if (!mounted) return;
       setState(() {
-        _enrollments[p.userId] = Enrollment(
+        if (mine.isNotEmpty) _enrollments[teacherId] = mine.first;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _enrollments[teacherId] = Enrollment(
           id: '',
-          teacherId: p.userId,
-          studentId: '',
+          teacherId: teacherId,
+          studentId: me ?? '',
           status: EnrollmentStatus.pending,
           freeSessionsLeft: 0,
           paid: false,
           createdAt: DateTime.now(),
         );
       });
-    } catch (e) {
-      if (mounted) showNote(context, describeError(e), error: true);
     }
   }
 

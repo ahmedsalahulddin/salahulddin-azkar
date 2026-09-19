@@ -93,6 +93,7 @@ class _TahfeezTabState extends State<TahfeezTab> {
         _loading = false;
       });
       if (isNewProfile && mounted) _welcomeNameDialog(profile);
+      _showNotices();
     } catch (_) {
       if (mounted) {
         setState(() {
@@ -104,6 +105,24 @@ class _TahfeezTabState extends State<TahfeezTab> {
   }
 
   String get _uid => AuthService.user.value!.id;
+
+  /// Server-side notices meant for this user, each shown once — for now a
+  /// student withdrawing a request that was still waiting on this teacher.
+  Future<void> _showNotices() async {
+    final notices = await TahfeezService.takeNotices();
+    if (!mounted) return;
+    for (final body in notices) {
+      final text = body.startsWith('cancelled_request:')
+          ? t('tahfeez.notice.cancelledRequest').replaceAll(
+              '{name}',
+              body.substring('cancelled_request:'.length).trim().isEmpty
+                  ? t('tahfeez.student')
+                  : body.substring('cancelled_request:'.length).trim(),
+            )
+          : body;
+      showNote(context, text);
+    }
+  }
 
   List<Halaqa> get _taught =>
       _halaqat.where((h) => h.teacherId == _uid).toList();

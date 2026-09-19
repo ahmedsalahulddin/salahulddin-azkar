@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../constants/theme.dart';
+import '../../data/tahfeez_countries.dart';
 import '../../l10n/strings.dart';
 import '../../services/tahfeez_service.dart';
 import 'tahfeez_widgets.dart';
@@ -27,6 +28,8 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
   late final List<String> _languages = List.of(widget.profile.languages);
   late TeachesGender _teaches = widget.profile.teachesGender;
   late bool _listed = widget.profile.listed;
+  late String? _country = widget.profile.country;
+  late bool _children = widget.profile.teachesChildren;
   bool _saving = false;
 
   @override
@@ -53,6 +56,9 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
           children: [
             _label(t('tahfeez.bio')),
             _field(_bio, hint: t('tahfeez.bioHint'), maxLines: 4),
+            const SizedBox(height: 14),
+            _label(t('tahfeez.country')),
+            _countryPicker(),
             const SizedBox(height: 14),
             _label(t('tahfeez.city')),
             _field(_city, hint: t('tahfeez.city')),
@@ -145,7 +151,21 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                   ),
               ],
             ),
-            const SizedBox(height: 14),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              value: _children,
+              activeThumbColor: AppColors.gold,
+              activeTrackColor: AppColors.goldMuted,
+              title: Text(
+                t('tahfeez.teachesChildren'),
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 14,
+                ),
+              ),
+              onChanged: (v) => setState(() => _children = v),
+            ),
+            const SizedBox(height: 6),
             _label(t('tahfeez.freeSessions')),
             Row(
               children: [
@@ -257,6 +277,35 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
     );
   }
 
+  Widget _countryPicker() {
+    return DropdownButtonFormField<String>(
+      initialValue: _country,
+      dropdownColor: AppColors.blackCard,
+      iconEnabledColor: AppColors.gold,
+      style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
+      decoration: InputDecoration(
+        hintText: t('tahfeez.countryHint'),
+        hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+        isDense: true,
+        filled: true,
+        fillColor: AppColors.blackCard,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.goldBorder),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.goldBorder),
+        ),
+      ),
+      items: [
+        for (final (code, _, _) in tahfeezCountries)
+          DropdownMenuItem(value: code, child: Text(countryName(code))),
+      ],
+      onChanged: (v) => setState(() => _country = v),
+    );
+  }
+
   Widget _stepButton(IconData icon, VoidCallback? onTap) {
     return OutlinedButton(
       onPressed: onTap,
@@ -282,6 +331,8 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
         languages: _languages,
         teaches: _teaches,
         listed: _listed,
+        country: _country,
+        teachesChildren: _children,
       );
       if (!mounted) return;
       showNote(context, t('tahfeez.saved'));

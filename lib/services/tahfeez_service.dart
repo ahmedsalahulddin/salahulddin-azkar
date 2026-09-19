@@ -65,6 +65,10 @@ class TahfeezProfile {
   final bool blocked;
   final bool listed;
 
+  /// ISO country code, chosen from [tahfeezCountries]; null if not set.
+  final String? country;
+  final bool teachesChildren;
+
   const TahfeezProfile({
     required this.userId,
     required this.displayName,
@@ -81,6 +85,8 @@ class TahfeezProfile {
     this.gender,
     this.blocked = false,
     this.listed = true,
+    this.country,
+    this.teachesChildren = false,
   });
 
   bool get isTeacher => role == TahfeezRole.teacher;
@@ -107,6 +113,8 @@ class TahfeezProfile {
         gender: gender ?? this.gender,
         blocked: blocked,
         listed: listed,
+        country: country,
+        teachesChildren: teachesChildren,
       );
 
   factory TahfeezProfile.fromJson(Map<String, dynamic> j) => TahfeezProfile(
@@ -133,6 +141,8 @@ class TahfeezProfile {
           ),
     blocked: j['blocked'] == true,
     listed: j['listed'] != false,
+    country: j['country'] as String?,
+    teachesChildren: j['teaches_children'] == true,
   );
 }
 
@@ -892,6 +902,8 @@ class TahfeezService {
     required List<String> languages,
     required TeachesGender teaches,
     required bool listed,
+    required String? country,
+    required bool teachesChildren,
   }) async {
     try {
       final c = await _client;
@@ -906,6 +918,8 @@ class TahfeezService {
           'p_languages': languages,
           'p_teaches': teaches.name,
           'p_listed': listed,
+          'p_country': country ?? '',
+          'p_children': teachesChildren,
         },
       );
     } catch (e) {
@@ -997,6 +1011,19 @@ class TahfeezService {
       await c.rpc('set_enrollment_paid', params: {'p_id': id, 'p_paid': paid});
     } catch (e) {
       _throw(e);
+    }
+  }
+
+  /// One-line notices addressed to this user (a student withdrawing a
+  /// pending request, for now), each returned exactly once.
+  static Future<List<String>> takeNotices() async {
+    if (AuthService.user.value == null) return const [];
+    try {
+      final c = await _client;
+      final rows = await c.rpc('take_notices') as List;
+      return [for (final r in rows) (r as Map)['body'] as String];
+    } catch (_) {
+      return const [];
     }
   }
 
