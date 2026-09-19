@@ -13,6 +13,7 @@ import '../screens/books_screen.dart';
 import '../screens/cards_screen.dart';
 import '../screens/category_screen.dart';
 import '../screens/deceased_screen.dart';
+import '../screens/duas_home_screen.dart';
 import '../screens/hadith_encyclopedia_screen.dart';
 import '../screens/lesson_screen.dart';
 import '../screens/lessons_screen.dart';
@@ -280,7 +281,15 @@ HomeShelf _cardsShelf() {
       subtitle: tBoth('card.mycards.sub'),
       open: (c) => _push(c, () => const MyCardsScreen()),
     ),
-    rest: [for (final shelf in GreetingCards.shelvesInUse) card(shelf)],
+    rest: [
+      for (final shelf in GreetingCards.shelvesInUse) card(shelf),
+      ShelfItem(
+        icon: '🤲',
+        title: tBoth('card.duas.title'),
+        subtitle: tBoth('card.duas.sub'),
+        open: (c) => _push(c, () => const DuasHomeScreen()),
+      ),
+    ],
   );
 }
 
