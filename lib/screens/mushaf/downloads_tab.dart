@@ -5,6 +5,8 @@ import '../../data/tafsir_data.dart';
 import '../../data/translation_data.dart';
 import '../../l10n/strings.dart';
 import '../../services/mushaf_image_service.dart';
+import '../../services/recitation_downloads.dart';
+import '../../services/recitation_service.dart';
 
 /// Pulls the whole Mushaf down so it reads with no connection at all.
 class DownloadsTab extends StatefulWidget {
@@ -19,10 +21,16 @@ class _DownloadsTabState extends State<DownloadsTab> {
   bool _running = false;
   int _done = 0;
 
+  List<SurahInfo> _surahs = const [];
+  Reciter? _recitationReciter;
+
   @override
   void initState() {
     super.initState();
     _refresh();
+    QuranService.index().then((s) {
+      if (mounted) setState(() => _surahs = s);
+    });
   }
 
   Future<void> _refresh() async {
@@ -176,6 +184,45 @@ class _DownloadsTabState extends State<DownloadsTab> {
         _SectionTitle(t('mushaf.recitationsTitle')),
         const SizedBox(height: 6),
         _SectionNote(t('mushaf.recitationsStreamingNote')),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final r in RecitationService.reciters)
+              ChoiceChip(
+                label: Text(r.displayName),
+                selected: _recitationReciter?.id == r.id,
+                onSelected: (_) => setState(() => _recitationReciter = r),
+                labelStyle: TextStyle(
+                  color: _recitationReciter?.id == r.id
+                      ? AppColors.black
+                      : AppColors.textPrimary,
+                  fontSize: 12,
+                ),
+                selectedColor: AppColors.gold,
+                backgroundColor: AppColors.blackCard,
+                side: const BorderSide(color: AppColors.goldBorder),
+              ),
+          ],
+        ),
+        if (_recitationReciter != null) ...[
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 420,
+            child: _surahs.isEmpty
+                ? const Center(
+                    child: CircularProgressIndicator(color: AppColors.gold),
+                  )
+                : ListView.builder(
+                    itemCount: _surahs.length,
+                    itemBuilder: (context, i) => _RecitationSurahItem(
+                      reciter: _recitationReciter!,
+                      info: _surahs[i],
+                    ),
+                  ),
+          ),
+        ],
       ],
     );
   }
@@ -355,6 +402,162 @@ class _RemoteItemState extends State<_RemoteItem> {
           ],
         ],
       ),
+    );
+  }
+}
+
+/// One surah's download row for [reciter] — downloaded, downloading, or not
+/// yet fetched. Every playback screen in the app checks the same store this
+/// writes to ([RecitationDownloads]), so downloading here is what makes that
+/// surah play offline anywhere.
+class _RecitationSurahItem extends StatelessWidget {
+  final Reciter reciter;
+  final SurahInfo info;
+
+  const _RecitationSurahItem({required this.reciter, required this.info});
+
+  String get _key => RecitationDownloads.keyOf(reciter.id, info.number);
+
+  Future<void> _start(BuildContext context) async {
+    final ok = await RecitationDownloads.download(
+      reciter: reciter,
+      info: info,
+    );
+    if (!ok && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            t('mushaf.downloadIncomplete'),
+            textDirection: TextDirection.rtl,
+          ),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
+  }
+
+  Future<void> _remove(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          backgroundColor: AppColors.blackCard,
+          content: Text(
+            t('mushaf.removeDownloadConfirm'),
+            style: const TextStyle(color: AppColors.textPrimary),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(
+                t('mushaf.cancel'),
+                style: const TextStyle(color: AppColors.textMuted),
+              ),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(
+                t('mushaf.removeDownload'),
+                style: const TextStyle(color: AppColors.error),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (confirmed != true) return;
+
+    await RecitationDownloads.remove(reciterId: reciter.id, surah: info.number);
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          t('mushaf.downloadRemoved'),
+          textDirection: TextDirection.rtl,
+        ),
+        backgroundColor: AppColors.emerald,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<Set<String>>(
+      valueListenable: RecitationDownloads.ready,
+      builder: (context, ready, _) {
+        final isReady = ready.contains(_key);
+        return ValueListenableBuilder<MapEntry<String, double?>?>(
+          valueListenable: RecitationDownloads.active,
+          builder: (context, active, _) {
+            final busy = active?.key == _key;
+            final progress = active?.value;
+            return Container(
+              margin: const EdgeInsets.only(bottom: 6),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 8,
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.blackCard,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppColors.goldBorder),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      info.name,
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                  if (busy)
+                    SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        value: progress == null || progress == 0
+                            ? null
+                            : progress,
+                        color: AppColors.gold,
+                      ),
+                    )
+                  else if (isReady)
+                    GestureDetector(
+                      onTap: () => _remove(context),
+                      behavior: HitTestBehavior.opaque,
+                      child: const Padding(
+                        padding: EdgeInsets.all(4),
+                        child: Icon(
+                          Icons.offline_pin,
+                          color: AppColors.emeraldLight,
+                          size: 20,
+                        ),
+                      ),
+                    )
+                  else
+                    GestureDetector(
+                      onTap: () => _start(context),
+                      behavior: HitTestBehavior.opaque,
+                      child: const Padding(
+                        padding: EdgeInsets.all(4),
+                        child: Icon(
+                          Icons.download,
+                          color: AppColors.gold,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

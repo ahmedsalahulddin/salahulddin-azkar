@@ -6,8 +6,11 @@ import 'package:just_audio_background/just_audio_background.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/quran_data.dart';
+import '../l10n/strings.dart';
 import 'app_audio.dart';
+import 'connectivity_check.dart';
 import 'playback_speed.dart';
+import 'recitation_downloads.dart';
 import 'recitation_service.dart';
 
 /// Recitation that does not stop at the end of a surah.
@@ -41,6 +44,13 @@ class ContinuousListening {
   /// True while this screen's playlist is the one loaded, whether or not it is
   /// sounding — the buttons belong to it either way.
   static final active = ValueNotifier<bool>(false);
+
+  /// Set whenever a play attempt fails outright — most often no internet
+  /// and nothing downloaded for the current position — and cleared the next
+  /// time a track actually starts. The listening screen shows this as a
+  /// toast; there is otherwise nothing to tell the listener why the room
+  /// went quiet.
+  static final lastError = ValueNotifier<String?>(null);
 
   static final reciter = ValueNotifier<Reciter>(
     RecitationService.defaultReciter,
@@ -157,15 +167,13 @@ class ContinuousListening {
       // of playback advancing once and then going silent. setAudioSources
       // replaces the source on the SAME live player, which is the supported
       // way to move to the next track and never drops the session.
-      await AppAudio.player.setAudioSources([
+      final sources = <AudioSource>[
         for (var n = 1; n <= info.ayahCount; n++)
           AudioSource.uri(
-            Uri.parse(
-              RecitationService.urlFor(
-                reciterId: reciter.value.id,
-                surah: number,
-                ayah: n,
-              ),
+            await RecitationDownloads.sourceFor(
+              reciter: reciter.value,
+              surah: number,
+              ayah: n,
             ),
             tag: MediaItem(
               id: '$owner$number:$n',
@@ -174,7 +182,11 @@ class ContinuousListening {
               album: 'الاستماع الدائم',
             ),
           ),
-      ], initialIndex: startIndex);
+      ];
+      await AppAudio.player.setAudioSources(
+        sources,
+        initialIndex: startIndex,
+      );
       // just_audio_background sometimes settles on index 0 for a moment after
       // setAudioSources before honouring initialIndex — the background
       // session's own restore can race the one just requested. An explicit
@@ -191,10 +203,12 @@ class ContinuousListening {
       // off again. The first surah still played, and then nothing followed it,
       // which is the one thing this file exists to prevent.
       active.value = true;
+      lastError.value = null;
       await PlaybackSpeed.apply();
       await AppAudio.player.play();
     } catch (_) {
       active.value = false;
+      lastError.value = await _failureMessage();
     }
   }
 
@@ -204,14 +218,6 @@ class ContinuousListening {
     required int number,
     required SurahInfo info,
   }) async {
-    final url = RecitationService.surahUrlFor(
-      reciter: reciter.value,
-      surah: number,
-    );
-    if (url == null) {
-      active.value = false;
-      return;
-    }
     ayah.value = 1;
     await _remember();
     try {
@@ -220,7 +226,10 @@ class ContinuousListening {
       // disposes the native player rather than merely pausing it.
       await AppAudio.player.setAudioSource(
         AudioSource.uri(
-          Uri.parse(url),
+          await RecitationDownloads.sourceFor(
+            reciter: reciter.value,
+            surah: number,
+          ),
           tag: MediaItem(
             id: '$owner$number:1',
             title: info.name,
@@ -231,12 +240,19 @@ class ContinuousListening {
       );
       _loadedSurah = number;
       active.value = true;
+      lastError.value = null;
       await PlaybackSpeed.apply();
       await AppAudio.player.play();
     } catch (_) {
       active.value = false;
+      lastError.value = await _failureMessage();
     }
   }
+
+  static Future<String> _failureMessage() async =>
+      (await ConnectivityCheck.online)
+      ? t('qs.recitationPlaybackFailed')
+      : t('qs.recitationNeedsInternet');
 
   /// Al-Fatiha follows An-Nas: the Mushaf is read in a circle, not to an end.
   static int nextSurah(int number) => number >= 114 ? 1 : number + 1;
@@ -373,6 +389,7 @@ class ContinuousListening {
     _errorRetries = 0;
     _loadedSurah = 0;
     active.value = false;
+    lastError.value = null;
     surah.value = 1;
     ayah.value = 1;
     _index = const [];

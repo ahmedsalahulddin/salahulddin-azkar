@@ -12,6 +12,8 @@ import '../constants/theme.dart';
 import '../data/quran_data.dart';
 import '../l10n/strings.dart';
 import '../services/app_audio.dart';
+import '../services/connectivity_check.dart';
+import '../services/recitation_downloads.dart';
 import '../services/recitation_service.dart';
 
 class _Lang {
@@ -383,8 +385,8 @@ class _QuranTranslationSurahScreenState
   // just_audio_background refuses any source without a MediaItem tag, so a
   // bare setUrl() throws before a byte is fetched.
   Future<void> _playArabicOnce(Ayah ayah, int s) async {
-    final url = RecitationService.urlFor(
-      reciterId: _reciter.id,
+    final uri = await RecitationDownloads.sourceFor(
+      reciter: _reciter,
       surah: widget.info.number,
       ayah: ayah.number,
     );
@@ -392,7 +394,7 @@ class _QuranTranslationSurahScreenState
     if (_cancelled(s)) return;
     await AppAudio.player.setAudioSource(
       AudioSource.uri(
-        Uri.parse(url),
+        uri,
         tag: MediaItem(
           id: 'trans:${_reciter.id}:${widget.info.number}:${ayah.number}',
           title:
@@ -421,7 +423,12 @@ class _QuranTranslationSurahScreenState
       } catch (_) {
         if (!_audioErrorShown) {
           _audioErrorShown = true;
-          _toast(t('qs.recitationPlaybackFailed'));
+          final online = await ConnectivityCheck.online;
+          _toast(
+            online
+                ? t('qs.recitationPlaybackFailed')
+                : t('qs.recitationNeedsInternet'),
+          );
         }
         return false;
       }

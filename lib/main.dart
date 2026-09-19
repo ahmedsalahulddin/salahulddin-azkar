@@ -20,6 +20,7 @@ import 'services/tahfeez_lang.dart';
 import 'services/tahfeez_service.dart';
 import 'services/notification_service.dart';
 import 'services/adhan_downloads.dart';
+import 'services/recitation_downloads.dart';
 import 'services/daily_reminders.dart';
 import 'services/dhikr_reminder.dart';
 import 'services/prayer_alerts.dart';
@@ -81,6 +82,7 @@ void main() async {
   DailyReminders.onChanged = NotificationService.scheduleDailyReminders;
   await DailyReminders.load();
   unawaited(AdhanDownloads.refresh());
+  unawaited(RecitationDownloads.refresh());
   // The chosen Mushaf border, so the first page opens already wearing it —
   // and where the reader has placed it.
   await MushafFrames.load();

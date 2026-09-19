@@ -8,7 +8,9 @@ import '../services/app_audio.dart';
 import '../data/quran_data.dart';
 import '../data/tafsir_data.dart';
 import '../l10n/strings.dart';
+import '../services/connectivity_check.dart';
 import '../services/playback_speed.dart';
+import '../services/recitation_downloads.dart';
 import '../services/recitation_service.dart';
 import '../services/storage_service.dart';
 import '../widgets/speed_button.dart';
@@ -127,15 +129,13 @@ class _SurahScreenState extends State<SurahScreen> {
     try {
       if (!AppAudio.ownsCurrent(mine)) {
         await _player.stop();
-        await _player.setAudioSources([
+        final sources = <AudioSource>[
           for (final a in surah.ayahs)
             AudioSource.uri(
-              Uri.parse(
-                RecitationService.urlFor(
-                  reciterId: _reciter.id,
-                  surah: surah.number,
-                  ayah: a.number,
-                ),
+              await RecitationDownloads.sourceFor(
+                reciter: _reciter,
+                surah: surah.number,
+                ayah: a.number,
               ),
               tag: MediaItem(
                 id: '${_reciter.id}:${surah.number}:${a.number}',
@@ -145,7 +145,8 @@ class _SurahScreenState extends State<SurahScreen> {
                 album: t('qs.quranTitle'),
               ),
             ),
-        ], initialIndex: fromAyah - 1);
+        ];
+        await _player.setAudioSources(sources, initialIndex: fromAyah - 1);
       } else {
         await _player.seek(Duration.zero, index: fromAyah - 1);
       }
@@ -158,25 +159,32 @@ class _SurahScreenState extends State<SurahScreen> {
         _audioFailed = true;
         _playingAyah = null;
       });
-      _toast(t('qs.recitationPlaybackFailed'));
+      _toast(await _playbackFailureMessage());
     }
   }
+
+  /// Distinguishes "not downloaded and no internet" from an ordinary
+  /// playback failure, so the reader is told the actual reason rather than a
+  /// generic "check your connection" when a network check would show there
+  /// plainly is none.
+  Future<String> _playbackFailureMessage() async =>
+      (await ConnectivityCheck.online)
+      ? t('qs.recitationPlaybackFailed')
+      : t('qs.recitationNeedsInternet');
 
   // Per-surah reciters (mp3quran.net): one MP3 for the whole surah.
   // Ayah highlighting is unavailable; _playingAyah stays null.
   Future<void> _playPerSurah({required dynamic surah}) async {
-    final url = RecitationService.surahUrlFor(
-      reciter: _reciter,
-      surah: surah.number,
-    );
-    if (url == null) return;
     final mine = '${_reciter.id}:${surah.number}';
     try {
       if (!AppAudio.ownsCurrent(mine)) {
         await _player.stop();
         await _player.setAudioSource(
           AudioSource.uri(
-            Uri.parse(url),
+            await RecitationDownloads.sourceFor(
+              reciter: _reciter,
+              surah: surah.number,
+            ),
             tag: MediaItem(
               id: mine,
               title: surah.name,
@@ -192,7 +200,7 @@ class _SurahScreenState extends State<SurahScreen> {
     } catch (_) {
       if (!mounted) return;
       setState(() => _audioFailed = true);
-      _toast(t('qs.recitationPlaybackFailed'));
+      _toast(await _playbackFailureMessage());
     }
   }
 

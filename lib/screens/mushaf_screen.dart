@@ -9,8 +9,10 @@ import '../data/quran_data.dart';
 import '../l10n/strings.dart';
 import '../services/bookmark_service.dart';
 import '../services/app_audio.dart';
+import '../services/connectivity_check.dart';
 import '../services/mushaf_image_service.dart';
 import '../services/playback_speed.dart';
+import '../services/recitation_downloads.dart';
 import '../services/recitation_service.dart';
 import '../services/repeat_settings.dart';
 import '../services/storage_service.dart';
@@ -154,15 +156,13 @@ class _MushafScreenState extends State<MushafScreen> {
         : [for (var n = start.ayah; n <= surah.ayahs.length; n++) n];
 
     try {
-      await _player.setAudioSources([
+      final sources = <AudioSource>[
         for (final ayah in order)
           AudioSource.uri(
-            Uri.parse(
-              RecitationService.urlFor(
-                reciterId: _reciter.id,
-                surah: start.surah,
-                ayah: ayah,
-              ),
+            await RecitationDownloads.sourceFor(
+              reciter: _reciter,
+              surah: start.surah,
+              ayah: ayah,
             ),
             // Names the track in the notification and on the lock screen,
             // and is what lets playback survive leaving the app.
@@ -174,7 +174,8 @@ class _MushafScreenState extends State<MushafScreen> {
               album: t('mushaf.theNobleQuran'),
             ),
           ),
-      ], initialIndex: 0);
+      ];
+      await _player.setAudioSources(sources, initialIndex: 0);
       await PlaybackSpeed.apply();
 
       // Follow the recitation: highlight the playing ayah and auto-turn the
@@ -207,7 +208,14 @@ class _MushafScreenState extends State<MushafScreen> {
 
       await _player.play();
     } catch (_) {
-      if (mounted) _toast(t('mushaf.recitationPlaybackFailed'), error: true);
+      if (!mounted) return;
+      final online = await ConnectivityCheck.online;
+      _toast(
+        online
+            ? t('mushaf.recitationPlaybackFailed')
+            : t('mushaf.recitationNeedsInternet'),
+        error: true,
+      );
     }
   }
 

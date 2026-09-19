@@ -51,6 +51,18 @@ class _ListeningScreenState extends State<ListeningScreen> {
       AppAudio.player.stop();
     }
     _load();
+    ContinuousListening.lastError.addListener(_showLastError);
+  }
+
+  void _showLastError() {
+    final message = ContinuousListening.lastError.value;
+    if (message == null || !mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, textDirection: TextDirection.rtl),
+        backgroundColor: AppColors.error,
+      ),
+    );
   }
 
   Future<void> _load() async {
@@ -70,6 +82,7 @@ class _ListeningScreenState extends State<ListeningScreen> {
   @override
   void dispose() {
     ContinuousListening.surah.removeListener(_followRecitation);
+    ContinuousListening.lastError.removeListener(_showLastError);
     _listController.dispose();
     super.dispose();
   }

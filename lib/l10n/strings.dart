@@ -572,6 +572,8 @@ const _ar = <String, String>{
   'qs.noResults': 'لا توجد نتائج',
   'qs.ayahUnit': 'آية',
   'qs.recitationPlaybackFailed': 'تعذّر تشغيل التلاوة — تحقّق من الاتصال',
+  'qs.recitationNeedsInternet':
+      'هذه التلاوة غير مُنزَّلة، وتحتاج اتصالاً بالإنترنت لتشغيلها',
   'qs.tafsirOpenFailed': 'تعذّر فتح التفسير',
   'qs.ayahWord': 'الآية',
   'qs.noTafsirAvailable': 'لا يتوفر تفسير لهذه الآية',
@@ -948,9 +950,15 @@ const _ar = <String, String>{
   'mushaf.playSelectedAyah': 'تلاوة الآية المحددة',
   'mushaf.playShort': 'تـشغيل',
   'mushaf.recitationPlaybackFailed': 'تعذّر تشغيل التلاوة — تحقّق من الاتصال',
+  'mushaf.recitationNeedsInternet':
+      'هذه التلاوة غير مُنزَّلة، وتحتاج اتصالاً بالإنترنت لتشغيلها',
   'mushaf.recitationsStreamingNote':
-      'تُبَث عند التشغيل ولا تُنزَّل بعد — تلاوة قارئ واحد للمصحف كامل تقارب ٣٠٠ م.ب، وتنزيلها يحتاج إدارة مساحة لم تُبنَ.',
+      'اختر قارئًا، ثم نزّل أي سورة لتُسمع بلا إنترنت في كل مكان بالتطبيق — المصحف كامل بصوت قارئ واحد يقارب ٣٠٠ م.ب، لذا التنزيل سورة سورة بدل دفعة واحدة.',
   'mushaf.recitationsTitle': 'التلاوات',
+  'mushaf.chooseReciterForDownload': 'اختر القارئ',
+  'mushaf.downloadRemoved': 'تم حذف التنزيل',
+  'mushaf.removeDownload': 'حذف التنزيل',
+  'mushaf.removeDownloadConfirm': 'حذف تنزيل هذه السورة؟',
   'mushaf.repeatDisabled': 'أُلغي التكرار',
   'mushaf.repeatEnabled': 'تم ضبط التكرار',
   'mushaf.repeatForMemorisationTitle': 'التكرار للحفظ',
@@ -1523,6 +1531,8 @@ const _en = <String, String>{
   'qs.ayahUnit': 'ayah',
   'qs.recitationPlaybackFailed':
       'Could not play the recitation — check your connection',
+  'qs.recitationNeedsInternet':
+      'This recitation isn\'t downloaded and needs an internet connection to play',
   'qs.tafsirOpenFailed': 'Could not open the tafsir',
   'qs.ayahWord': 'Ayah',
   'qs.noTafsirAvailable': 'No tafsir is available for this ayah',
@@ -1918,9 +1928,15 @@ const _en = <String, String>{
   'mushaf.playShort': 'Play',
   'mushaf.recitationPlaybackFailed':
       'Couldn\'t play the recitation — check your connection',
+  'mushaf.recitationNeedsInternet':
+      'This recitation isn\'t downloaded and needs an internet connection to play',
   'mushaf.recitationsStreamingNote':
-      'Streamed on playback and not downloadable yet — one reciter\'s recitation of the whole Mushaf is about 300 MB, and downloading it needs storage management that hasn\'t been built.',
+      'Pick a reciter, then download any surah to hear it with no internet, everywhere in the app — the whole Mushaf in one reciter\'s voice is about 300 MB, so downloads go surah by surah rather than all at once.',
   'mushaf.recitationsTitle': 'Recitations',
+  'mushaf.chooseReciterForDownload': 'Choose the reciter',
+  'mushaf.downloadRemoved': 'Download removed',
+  'mushaf.removeDownload': 'Remove download',
+  'mushaf.removeDownloadConfirm': 'Remove this surah\'s download?',
   'mushaf.repeatDisabled': 'Repetition cancelled',
   'mushaf.repeatEnabled': 'Repetition set',
   'mushaf.repeatForMemorisationTitle': 'Repetition for memorisation',
