@@ -10,8 +10,10 @@ import '../services/sync_service.dart';
 import '../services/section_config.dart';
 import '../services/tahfeez_service.dart';
 import '../services/update_checker.dart';
+import '../services/personal_duas_service.dart';
 import '../widgets/sign_in_buttons.dart';
 import 'admin_screen.dart';
+import 'personal_duas_screen.dart';
 import 'tahfeez/reports_screen.dart';
 import 'tahfeez/tahfeez_widgets.dart';
 import 'tahfeez/teacher_requests_screen.dart';
@@ -34,6 +36,7 @@ class _AccountScreenState extends State<AccountScreen> {
   SignInProvider? _busyWith;
   bool _deleting = false;
   bool _isAdmin = false;
+  bool _hasPersonalDuas = false;
   String _version = '';
   bool _checkingUpdate = false;
   TahfeezProfile? _tahfeezProfile;
@@ -56,12 +59,30 @@ class _AccountScreenState extends State<AccountScreen> {
 
   void _onAuthChanged() {
     _checkAdmin();
+    _checkPersonalDuas();
     _loadTahfeezName();
   }
 
   Future<void> _checkAdmin() async {
     final admin = await SectionConfig.isAdmin();
     if (mounted && admin != _isAdmin) setState(() => _isAdmin = admin);
+  }
+
+  /// A tile for the hidden personal-duas section shows only for the admin
+  /// (who owns it) or a reader specifically granted access — never for a
+  /// general reader. Checking is just attempting the read: RLS answers
+  /// truthfully either way, so there is nothing to gate client-side beyond
+  /// showing or hiding this one tile.
+  Future<void> _checkPersonalDuas() async {
+    if (AuthService.user.value == null) {
+      if (mounted) setState(() => _hasPersonalDuas = false);
+      return;
+    }
+    final cats = await PersonalDuasService.categories();
+    final has = _isAdmin || cats != null;
+    if (mounted && has != _hasPersonalDuas) {
+      setState(() => _hasPersonalDuas = has);
+    }
   }
 
   /// Silent on failure — the row is created lazily here too, for someone
@@ -269,6 +290,20 @@ class _AccountScreenState extends State<AccountScreen> {
                 ],
                 const SizedBox(height: 10),
                 const SettingsScreen(embedded: true),
+                if (_hasPersonalDuas) ...[
+                  const SizedBox(height: 20),
+                  _tile(
+                    icon: Icons.volunteer_activism,
+                    title: 'أدعيتي الخاصة',
+                    subtitle: 'مجموعة أدعية مبوّبة، خاصة بك',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const PersonalDuasHomeScreen(),
+                      ),
+                    ),
+                  ),
+                ],
                 if (_isAdmin) ...[
                   const SizedBox(height: 20),
                   _sectionTitle(t('account.adminSection')),
