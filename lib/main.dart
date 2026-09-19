@@ -122,7 +122,7 @@ class NoorAzkarApp extends StatelessWidget {
       builder: (context, child) => ValueListenableBuilder<String>(
         valueListenable: AppLocale.locale,
         builder: (_, locale, __) => Directionality(
-          textDirection: locale == 'en' ? TextDirection.ltr : TextDirection.rtl,
+          textDirection: AppLocale.direction,
           child: SafeArea(top: false, left: false, right: false, child: child!),
         ),
       ),

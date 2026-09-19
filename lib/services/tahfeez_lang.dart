@@ -25,8 +25,11 @@ class TahfeezLang {
 
   static final override = ValueNotifier<String?>(null);
 
-  /// The language actually in effect.
-  static String get code => override.value ?? (AppLocale.isEn ? 'en' : 'ar');
+  /// The language actually in effect: the reader's own choice for this
+  /// section, or the app's general language if they never set one — now
+  /// that both cover the same ten languages, "follow the app" means all of
+  /// them, not just English.
+  static String get code => override.value ?? AppLocale.code;
 
   static bool get isRtl => code == 'ar' || code == 'ur';
 

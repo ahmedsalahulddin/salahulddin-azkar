@@ -128,21 +128,51 @@ class HomeScreen extends StatelessWidget {
   Widget _langToggle() {
     return ValueListenableBuilder<String>(
       valueListenable: AppLocale.locale,
-      builder: (_, locale, __) => GestureDetector(
-        onTap: () => AppLocale.set(locale == 'ar' ? 'en' : 'ar'),
+      builder: (_, locale, __) => PopupMenuButton<String>(
+        tooltip: AppLocale.nameOf(locale),
+        color: AppColors.blackCard,
+        onSelected: AppLocale.set,
+        itemBuilder: (_) => [
+          for (final (code, name) in AppLocale.languages)
+            PopupMenuItem(
+              value: code,
+              child: Row(
+                children: [
+                  Icon(
+                    code == locale
+                        ? Icons.radio_button_checked
+                        : Icons.radio_button_off,
+                    size: 16,
+                    color: code == locale
+                        ? AppColors.gold
+                        : AppColors.textMuted,
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    name,
+                    style: TextStyle(
+                      color: code == locale
+                          ? AppColors.gold
+                          : AppColors.textPrimary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
           decoration: BoxDecoration(
             color: AppColors.blackCard,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: locale == 'en' ? AppColors.gold : AppColors.goldBorder,
+              color: locale == 'ar' ? AppColors.goldBorder : AppColors.gold,
             ),
           ),
           child: Text(
-            locale == 'ar' ? 'EN' : 'ع',
+            locale == 'ar' ? 'EN' : locale.toUpperCase(),
             style: TextStyle(
-              color: locale == 'en' ? AppColors.gold : AppColors.textMuted,
+              color: locale == 'ar' ? AppColors.textMuted : AppColors.gold,
               fontSize: 13,
               fontWeight: FontWeight.bold,
             ),

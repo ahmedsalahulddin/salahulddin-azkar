@@ -2,6 +2,7 @@ import '../services/account_lang.dart';
 import '../services/app_locale.dart';
 import '../services/tahfeez_lang.dart';
 import 'account_translations.dart';
+import 'app_translations.dart';
 import 'tahfeez_translations.dart';
 
 /// Returns the string for [key] in the current app locale — or, for the
@@ -27,20 +28,32 @@ String t(String key) {
     };
     return map[key] ?? _en[key] ?? _ar[key] ?? key;
   }
+  if (appTranslations['fr']!.containsKey(key)) {
+    final code = AppLocale.code;
+    final map = switch (code) {
+      'ar' => _ar,
+      'en' => _en,
+      _ => appTranslations[code] ?? _en,
+    };
+    return map[key] ?? _en[key] ?? _ar[key] ?? key;
+  }
   final map = AppLocale.isEn ? _en : _ar;
   return map[key] ?? key;
 }
 
-/// A card name in Arabic, with its English rendering in parentheses on the
-/// same line when the reader has switched to English — Arabic stays the one
-/// language of record, the parenthetical is a hint back to it. Arabic-only
-/// readers see just the Arabic, unchanged.
+/// A card name in Arabic, with its rendering in the reader's chosen language
+/// in parentheses on the same line — Arabic stays the one language of
+/// record, the parenthetical is a hint back to it. Arabic readers see just
+/// the Arabic, unchanged.
 String tBoth(String key) {
   final ar = _ar[key] ?? key;
-  if (!AppLocale.isEn) return ar;
-  final en = _en[key];
-  if (en == null || en == ar) return ar;
-  return '$ar ($en)';
+  final code = AppLocale.code;
+  if (code == 'ar') return ar;
+  final other = code == 'en'
+      ? _en[key]
+      : (appTranslations[code]?[key] ?? _en[key]);
+  if (other == null || other == ar) return ar;
+  return '$ar ($other)';
 }
 
 /// Splits a [tBoth] string back into its Arabic and English halves, so a
