@@ -624,6 +624,9 @@ const _ar = <String, String>{
   'lib2.searchHadithTextsHint': 'ابحث في نصوص الأحاديث…',
   'lib2.resultsUnit': 'نتيجة',
   'lib2.noResultsFound': 'لا توجد نتائج',
+  'lib2.bookmarkedOnlyLabel': 'المحفوظ فقط',
+  'lib2.bookmarkTooltip': 'حفظ موضع القراءة',
+  'lib2.noBookmarksYet': 'لم تحفظ أي موضع بعد — اضغط أيقونة العلامة على أي فصل',
   'lib2.failedToLoadSectionsMessage': 'تعذّر تحميل الأقسام — تحقّق من الاتصال',
   'lib2.translationLanguageLabel': 'لغة الترجمة',
   'lib2.retryButton': 'إعادة المحاولة',
@@ -1586,6 +1589,10 @@ const _en = <String, String>{
   'lib2.searchHadithTextsHint': 'Search hadith texts…',
   'lib2.resultsUnit': 'result',
   'lib2.noResultsFound': 'No results found',
+  'lib2.bookmarkedOnlyLabel': 'Bookmarked only',
+  'lib2.bookmarkTooltip': 'Bookmark this reading position',
+  'lib2.noBookmarksYet':
+      'No bookmarks yet — tap the bookmark icon on any chapter',
   'lib2.failedToLoadSectionsMessage':
       'Failed to load sections — check your connection',
   'lib2.translationLanguageLabel': 'Translation language',

@@ -76,6 +76,21 @@ class LibraryService {
       hadithCount: 40,
     ),
     IslamicBook(
+      id: 'seerah_mukhtasar',
+      title: 'مختصر سيرة الرسول صلى الله عليه وسلم',
+      author: 'الشيخ محمد بن عبد الوهاب',
+      description: 'السيرة النبوية موجزة — البداية والمناسب لأول قراءة',
+      hadithCount: 156,
+    ),
+    IslamicBook(
+      id: 'raheeq_makhtoom',
+      title: 'الرحيق المختوم',
+      author: 'الشيخ صفي الرحمن المباركفوري',
+      description:
+          'السيرة النبوية بالتفصيل — بحث فاز بالجائزة الأولى لمسابقة رابطة العالم الإسلامي',
+      hadithCount: 330,
+    ),
+    IslamicBook(
       id: 'bukhari',
       title: 'صحيح البخاري',
       author: 'الإمام محمد بن إسماعيل البخاري',

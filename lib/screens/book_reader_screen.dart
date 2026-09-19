@@ -6,6 +6,7 @@ import '../widgets/speed_button.dart';
 import '../widgets/speak_button.dart';
 import '../data/library_data.dart';
 import '../data/quran_data.dart' show QuranService;
+import '../services/library_bookmarks.dart';
 
 /// Reads one book, searching across its hadiths.
 ///
@@ -24,6 +25,7 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
 
   List<Hadith>? _hadiths;
   String _search = '';
+  bool _bookmarkedOnly = false;
   bool _loading = true;
   bool _needsDownload = false;
   bool _downloading = false;
@@ -100,10 +102,21 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
   }
 
   List<Hadith> get _filtered {
-    final all = _hadiths ?? const <Hadith>[];
+    var all = _hadiths ?? const <Hadith>[];
+    if (_bookmarkedOnly) {
+      all = all
+          .where((h) => LibraryBookmarks.has(widget.book.id, h.number))
+          .toList();
+    }
     final q = _search.trim();
     if (q.isEmpty) return all;
     return all.where((h) => h.text.contains(q)).toList();
+  }
+
+  Future<void> _toggleBookmark(Hadith h) async {
+    await LibraryBookmarks.toggle(widget.book.id, h.number);
+    HapticFeedback.lightImpact();
+    if (mounted) setState(() {});
   }
 
   Future<void> _copy(Hadith h) async {
@@ -310,6 +323,33 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
                   fontSize: 12,
                 ),
               ),
+              const Spacer(),
+              GestureDetector(
+                onTap: () =>
+                    setState(() => _bookmarkedOnly = !_bookmarkedOnly),
+                behavior: HitTestBehavior.opaque,
+                child: Row(
+                  children: [
+                    Icon(
+                      _bookmarkedOnly ? Icons.bookmark : Icons.bookmark_border,
+                      color: _bookmarkedOnly
+                          ? AppColors.gold
+                          : AppColors.textMuted,
+                      size: 16,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      t('lib2.bookmarkedOnlyLabel'),
+                      style: TextStyle(
+                        color: _bookmarkedOnly
+                            ? AppColors.gold
+                            : AppColors.textMuted,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
@@ -317,7 +357,10 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
           child: filtered.isEmpty
               ? Center(
                   child: Text(
-                    t('lib2.noResultsFound'),
+                    _bookmarkedOnly && _search.isEmpty
+                        ? t('lib2.noBookmarksYet')
+                        : t('lib2.noResultsFound'),
+                    textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: AppColors.textMuted,
                       fontSize: 15,
@@ -399,6 +442,23 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
                 ),
               ],
               const Spacer(),
+              GestureDetector(
+                onTap: () => _toggleBookmark(h),
+                behavior: HitTestBehavior.opaque,
+                child: Padding(
+                  padding: const EdgeInsets.all(4),
+                  child: Icon(
+                    LibraryBookmarks.has(widget.book.id, h.number)
+                        ? Icons.bookmark
+                        : Icons.bookmark_border,
+                    color: LibraryBookmarks.has(widget.book.id, h.number)
+                        ? AppColors.gold
+                        : AppColors.textMuted,
+                    size: 17,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 4),
               GestureDetector(
                 onTap: () => _copy(h),
                 behavior: HitTestBehavior.opaque,
