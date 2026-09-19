@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../constants/theme.dart';
+import '../../data/tahfeez_countries.dart';
 import '../../l10n/strings.dart';
 import '../../services/auth_service.dart';
 import '../../services/tahfeez_lang.dart';
@@ -661,40 +662,36 @@ class _TahfeezTabState extends State<TahfeezTab> {
     }
   }
 
-  /// Gender as two icons, tapped rather than typed — the profile card has
-  /// no room to spell out a label, and none is needed for a two-way choice.
+  /// Gender as two small labelled chips, tapped rather than typed — a
+  /// written word reads faster than a symbol, and there are only two.
   Widget _genderIcons(TahfeezProfile profile) {
-    IconData iconOf(Gender g) => g == Gender.male ? Icons.male : Icons.female;
-
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         for (final g in Gender.values)
           Padding(
             padding: const EdgeInsets.only(right: 4),
-            child: Tooltip(
-              message: t('tahfeez.gender.${g.name}'),
-              child: GestureDetector(
-                onTap: () => _setGender(g),
-                behavior: HitTestBehavior.opaque,
-                child: Container(
-                  width: 32,
-                  height: 32,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
+            child: GestureDetector(
+              onTap: () => _setGender(g),
+              behavior: HitTestBehavior.opaque,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  color: profile.gender == g
+                      ? AppColors.goldMuted
+                      : Colors.transparent,
+                  border: Border.all(
                     color: profile.gender == g
-                        ? AppColors.goldMuted
-                        : Colors.transparent,
-                    border: Border.all(
-                      color: profile.gender == g
-                          ? AppColors.gold
-                          : AppColors.goldBorder,
-                    ),
+                        ? AppColors.gold
+                        : AppColors.goldBorder,
                   ),
-                  child: Icon(
-                    iconOf(g),
-                    size: 18,
+                ),
+                child: Text(
+                  t('tahfeez.gender.${g.name}'),
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
                     color: profile.gender == g
                         ? AppColors.gold
                         : AppColors.textMuted,
@@ -718,10 +715,107 @@ class _TahfeezTabState extends State<TahfeezTab> {
     }
   }
 
-  /// The reader's identity, in one card: avatar, name, role, gender, and —
-  /// for a teacher — their invite code. Three cards used to say this; one
-  /// says it in less space, and the gender choice needs icons to tap, not
-  /// a label to read.
+  Widget _countryRow(TahfeezProfile profile) {
+    return GestureDetector(
+      onTap: () => _pickCountry(profile),
+      behavior: HitTestBehavior.opaque,
+      child: Row(
+        children: [
+          const Icon(Icons.public, size: 14, color: AppColors.textMuted),
+          const SizedBox(width: 6),
+          Text(
+            t('tahfeez.country'),
+            style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              profile.country == null
+                  ? t('tahfeez.countryHint')
+                  : countryName(profile.country!),
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: profile.country == null
+                    ? AppColors.textMuted
+                    : AppColors.gold,
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          const Icon(Icons.edit, size: 14, color: AppColors.textMuted),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _pickCountry(TahfeezProfile profile) async {
+    final chosen = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: AppColors.blackCard,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      isScrollControlled: true,
+      builder: (ctx) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: DraggableScrollableSheet(
+          expand: false,
+          initialChildSize: 0.6,
+          maxChildSize: 0.85,
+          builder: (ctx, scrollController) => ListView(
+            controller: scrollController,
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  t('tahfeez.country'),
+                  style: const TextStyle(
+                    color: AppColors.gold,
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              for (final (code, _, _) in tahfeezCountries)
+                ListTile(
+                  title: Text(
+                    countryName(code),
+                    style: TextStyle(
+                      color: code == profile.country
+                          ? AppColors.gold
+                          : AppColors.textPrimary,
+                      fontWeight: code == profile.country
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                    ),
+                  ),
+                  trailing: code == profile.country
+                      ? const Icon(Icons.check, color: AppColors.gold)
+                      : null,
+                  onTap: () => Navigator.pop(ctx, code),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (chosen == null || chosen == profile.country || !mounted) return;
+    try {
+      await TahfeezService.setCountry(chosen);
+      if (mounted) {
+        setState(() => _profile = _profile?.copyWith(country: chosen));
+      }
+    } catch (e) {
+      if (mounted) showNote(context, describeError(e), error: true);
+    }
+  }
+
+  /// The reader's identity, in one card: avatar, name, role, gender,
+  /// country, and — for a teacher — their invite code. Three cards used to
+  /// say this; one says it in less space.
   Widget _profileCard(AppUser user, TahfeezProfile profile) {
     final code = profile.isTeacher ? profile.teacherCode : null;
     return Container(
@@ -802,6 +896,10 @@ class _TahfeezTabState extends State<TahfeezTab> {
               _genderIcons(profile),
             ],
           ),
+          const SizedBox(height: 10),
+          const Divider(color: AppColors.goldBorder, height: 1),
+          const SizedBox(height: 10),
+          _countryRow(profile),
           if (code != null) ...[
             const SizedBox(height: 10),
             const Divider(color: AppColors.goldBorder, height: 1),

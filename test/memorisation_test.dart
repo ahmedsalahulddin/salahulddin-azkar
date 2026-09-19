@@ -35,23 +35,29 @@ void main() {
       for (final d in TestDifficulty.values) {
         for (var i = 0; i < b.length(TestMode.complete); i++) {
           final q = b.build(TestMode.complete, i, d);
-          expect([...q.shown, ...q.hidden].join(' '), q.ayah.text,
-              reason: 'ayah ${q.ayah.number} at ${d.label} lost words');
+          expect(
+            [...q.shown, ...q.hidden].join(' '),
+            q.ayah.text,
+            reason: 'ayah ${q.ayah.number} at ${d.label} lost words',
+          );
           expect(q.hidden, isNotEmpty, reason: 'nothing was withheld');
         }
       }
     });
 
-    test('something is always left to cue the recall, except on hard',
-        () async {
+    test('something is always left to cue the recall, except on hard', () async {
       // An-Nas: four to six words an ayah, so the easy level has to hold up on
       // short ayahs too.
       final b = await bank(114);
       for (var i = 0; i < b.length(TestMode.complete); i++) {
-        expect(b.build(TestMode.complete, i, TestDifficulty.easy).shown,
-            isNotEmpty);
-        expect(b.build(TestMode.complete, i, TestDifficulty.hard).shown,
-            isEmpty);
+        expect(
+          b.build(TestMode.complete, i, TestDifficulty.easy).shown,
+          isNotEmpty,
+        );
+        expect(
+          b.build(TestMode.complete, i, TestDifficulty.hard).shown,
+          isEmpty,
+        );
       }
     });
   });
@@ -90,8 +96,11 @@ void main() {
       final b = await bank(2); // long enough for a real pool of distractors
       for (var i = 0; i < 40; i++) {
         final q = b.build(TestMode.missing, i, TestDifficulty.medium);
-        expect(q.options.toSet().length, q.options.length,
-            reason: 'a duplicate option would make two answers correct');
+        expect(
+          q.options.toSet().length,
+          q.options.length,
+          reason: 'a duplicate option would make two answers correct',
+        );
         expect(q.answer, inInclusiveRange(0, q.options.length - 1));
       }
     });
@@ -115,10 +124,13 @@ void main() {
     test('a surah of one ayah simply cannot be asked this way', () async {
       final b = await bank(108); // three ayahs — fine
       expect(b.supports(TestMode.next), isTrue);
-      final kawthar = QuestionBank(Surah(
+      final kawthar = QuestionBank(
+        Surah(
           number: 1,
           name: 'اختبار',
-          ayahs: [await bank(112).then((x) => x.surah.ayahs.first)]));
+          ayahs: [await bank(112).then((x) => x.surah.ayahs.first)],
+        ),
+      );
       expect(kawthar.supports(TestMode.next), isFalse);
     });
   });
@@ -141,14 +153,25 @@ void main() {
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.reset);
 
-      final info = (await QuranService.index()).firstWhere((s) => s.number == surah);
-      await tester.pumpWidget(MaterialApp(home: MemorisationTestScreen(info: info)));
+      final info = (await QuranService.index()).firstWhere(
+        (s) => s.number == surah,
+      );
+      await tester.pumpWidget(
+        MaterialApp(home: MemorisationTestScreen(info: info)),
+      );
       await tester.pump();
+      await tester.pump();
+
+      // Setup step: how many questions to run. The default is every
+      // available question, so starting straight from here reproduces the
+      // old fixed-count behaviour these tests were written against.
+      await tester.tap(find.text('ابدأ الاختبار'));
       await tester.pump();
     }
 
-    testWidgets('the withheld words leave a visible gap, not a blank card',
-        (tester) async {
+    testWidgets('the withheld words leave a visible gap, not a blank card', (
+      tester,
+    ) async {
       await pumpTest(tester, 112);
 
       // The old drill painted the hidden words in the background colour, so
@@ -166,8 +189,9 @@ void main() {
       expect(find.textContaining('السؤال ٢ من ٤'), findsOneWidget);
     });
 
-    testWidgets('all four ways are offered, and switching restarts the score',
-        (tester) async {
+    testWidgets('all four ways are offered, and switching restarts the score', (
+      tester,
+    ) async {
       await pumpTest(tester, 112);
       for (final mode in TestMode.values) {
         expect(find.text(mode.label), findsOneWidget);
@@ -180,6 +204,11 @@ void main() {
       expect(find.textContaining('السؤال ٢'), findsOneWidget);
 
       await tester.tap(find.text(TestMode.missing.label));
+      await tester.pump();
+
+      // Switching modes returns to the setup step, since each mode has its
+      // own number of available questions.
+      await tester.tap(find.text('ابدأ الاختبار'));
       await tester.pump();
       expect(find.textContaining('السؤال ١'), findsOneWidget);
       expect(find.textContaining('✓ ٠'), findsOneWidget);

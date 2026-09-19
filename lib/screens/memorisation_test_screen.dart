@@ -1,9 +1,15 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../constants/theme.dart';
 import '../data/memorisation.dart';
 import '../data/quran_data.dart';
 import '../l10n/strings.dart';
+import '../services/auth_service.dart';
+import '../services/tahfeez_service.dart';
+import 'tahfeez/tahfeez_widgets.dart' show gradeLabel, gradeColor;
+import 'memtest_history_screen.dart';
 
 const _mushafFont = 'AmiriQuran';
 
@@ -97,9 +103,25 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
   TestMode _mode = TestMode.complete;
   TestDifficulty _difficulty = TestDifficulty.medium;
 
+  /// Whether the setup step (question count) has been confirmed and the run
+  /// is under way. Reset to false whenever the mode changes, since each mode
+  /// has its own number of available questions.
+  bool _started = false;
+
+  /// How many questions this run asked for, and how many the bank had —
+  /// picked once in setup, then fixed for the run.
+  int _requestedCount = 0;
+
+  /// Where in the surah this run's block of questions begins — randomised
+  /// per run so repeated attempts do not always drill the same opening
+  /// ayahs.
+  int _runStart = 0;
+
   int _position = 0;
   int _correct = 0;
   int _missed = 0;
+  bool _saving = false;
+  bool _saved = false;
 
   /// complete — whether the withheld words are showing.
   bool _revealed = false;
@@ -115,17 +137,42 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
   void initState() {
     super.initState();
     QuranService.surah(widget.info.number).then((s) {
-      if (mounted) setState(() => _bank = QuestionBank(s));
+      if (mounted) {
+        setState(() {
+          _bank = QuestionBank(s);
+          _requestedCount = _defaultCount(_bank!.length(_mode));
+        });
+      }
     });
   }
 
-  int get _total => _bank!.length(_mode);
-  bool get _finished => _position >= _total;
-  Question get _question => _bank!.build(_mode, _position, _difficulty);
+  int _defaultCount(int available) => min(10, available);
+
+  /// The fewest questions worth offering a picker for — below this, the run
+  /// always covers everything available rather than asking the reader to
+  /// choose among two or three questions.
+  int _minCount(int available) => min(3, available);
+
+  int get _total => _started ? _requestedCount : _bank!.length(_mode);
+  bool get _finished => _started && _position >= _total;
+  Question get _question =>
+      _bank!.build(_mode, _runStart + _position, _difficulty);
 
   void _switchMode(TestMode mode) {
     setState(() {
       _mode = mode;
+      _started = false;
+      _requestedCount = _defaultCount(_bank!.length(mode));
+      _restart();
+    });
+  }
+
+  void _beginRun() {
+    final available = _bank!.length(_mode);
+    final maxStart = available - _requestedCount;
+    setState(() {
+      _started = true;
+      _runStart = maxStart <= 0 ? 0 : Random().nextInt(maxStart + 1);
       _restart();
     });
   }
@@ -134,7 +181,19 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
     _position = 0;
     _correct = 0;
     _missed = 0;
+    _saved = false;
     _clearQuestionState();
+  }
+
+  /// Retakes the same question count from a freshly randomised start, rather
+  /// than sending the reader back through setup.
+  void _retake() {
+    setState(() {
+      final available = _bank!.length(_mode);
+      final maxStart = available - _requestedCount;
+      _runStart = maxStart <= 0 ? 0 : Random().nextInt(maxStart + 1);
+      _restart();
+    });
   }
 
   void _clearQuestionState() {
@@ -178,12 +237,14 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
             : Column(
                 children: [
                   _modeBar(bank),
-                  if (!_finished) _progress(),
+                  if (_started && !_finished) _progress(),
                   Expanded(
                     child: _finished
                         ? _results()
                         : !bank.supports(_mode)
                         ? _tooShort()
+                        : !_started
+                        ? _setupPanel(bank)
                         : _body(_question),
                   ),
                 ],
@@ -298,6 +359,138 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
             fontSize: 14,
             height: 1.7,
           ),
+        ),
+      ),
+    );
+  }
+
+  /// Asked once per run, before the first question: how many of the
+  /// available questions to be tested on. A short surah with only a
+  /// handful skips the picker and simply says so.
+  Widget _setupPanel(QuestionBank bank) {
+    final available = bank.length(_mode);
+    final minCount = _minCount(available);
+    final fixedCount = minCount >= available;
+
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: _card(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                t(
+                  'misc.questionsAvailable',
+                ).replaceAll('{count}', QuranService.toArabicDigits(available)),
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 14,
+                ),
+              ),
+              const SizedBox(height: 18),
+              if (fixedCount)
+                Text(
+                  t('misc.allAvailableQuestions').replaceAll(
+                    '{count}',
+                    QuranService.toArabicDigits(available),
+                  ),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: AppColors.textMuted,
+                    fontSize: 13,
+                  ),
+                )
+              else ...[
+                Text(
+                  t('misc.questionCountLabel'),
+                  style: const TextStyle(
+                    color: AppColors.textMuted,
+                    fontSize: 12,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _countStepButton(
+                      Icons.remove,
+                      _requestedCount > minCount
+                          ? () => setState(() => _requestedCount--)
+                          : null,
+                    ),
+                    SizedBox(
+                      width: 64,
+                      child: Text(
+                        QuranService.toArabicDigits(_requestedCount),
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: AppColors.gold,
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    _countStepButton(
+                      Icons.add,
+                      _requestedCount < available
+                          ? () => setState(() => _requestedCount++)
+                          : null,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Slider(
+                  value: _requestedCount.toDouble(),
+                  min: minCount.toDouble(),
+                  max: available.toDouble(),
+                  divisions: (available - minCount) == 0
+                      ? null
+                      : available - minCount,
+                  activeColor: AppColors.gold,
+                  inactiveColor: AppColors.goldBorder,
+                  onChanged: (v) => setState(() => _requestedCount = v.round()),
+                ),
+              ],
+              const SizedBox(height: 18),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _beginRun,
+                  icon: const Icon(Icons.play_arrow, size: 18),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.goldDark,
+                    foregroundColor: AppColors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 13),
+                  ),
+                  label: Text(t('misc.startTest')),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _countStepButton(IconData icon, VoidCallback? onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        width: 40,
+        height: 40,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: onTap == null ? AppColors.blackSurface : AppColors.gold,
+          ),
+        ),
+        child: Icon(
+          icon,
+          size: 18,
+          color: onTap == null ? AppColors.textMuted : AppColors.gold,
         ),
       ),
     );
@@ -845,12 +1038,51 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
 
   // ---- results -----------------------------------------------------------
 
+  /// Ties the run's percentage to the same four-tier vocabulary a teacher's
+  /// evaluation uses, so a reader who does both sees one consistent scale.
+  EvalGrade _gradeOf(int score) {
+    if (score >= 90) return EvalGrade.excellent;
+    if (score >= 75) return EvalGrade.veryGood;
+    if (score >= 60) return EvalGrade.good;
+    return EvalGrade.redo;
+  }
+
+  Future<void> _saveResult(int score, int total) async {
+    setState(() => _saving = true);
+    try {
+      await TahfeezService.saveMemtestResult(
+        surahNumber: widget.info.number,
+        surahName: widget.info.name,
+        mode: _mode.name,
+        questionCount: total,
+        correctCount: _correct,
+        scorePercent: score,
+      );
+      if (!mounted) return;
+      setState(() {
+        _saving = false;
+        _saved = true;
+      });
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(t('misc.resultSaved'))));
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _saving = false);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(t('misc.resultSaveFailed'))));
+    }
+  }
+
   Widget _results() {
     final total = _correct + _missed;
     final score = total == 0 ? 0 : (_correct * 100 / total).round();
+    final grade = _gradeOf(score);
+    final signedIn = AuthService.user.value != null;
 
     return Center(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(28),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -863,7 +1095,24 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(
+                color: gradeColor(grade).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: gradeColor(grade)),
+              ),
+              child: Text(
+                gradeLabel(grade),
+                style: TextStyle(
+                  color: gradeColor(grade),
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
             Text(
               '${_mode.label} — ${t('misc.surahPrefix')} ${widget.info.name}',
               style: const TextStyle(
@@ -881,11 +1130,45 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
                   .replaceAll('{total}', QuranService.toArabicDigits(total)),
               style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
             ),
-            const SizedBox(height: 26),
+            const SizedBox(height: 22),
+            if (signedIn) ...[
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: _saving || _saved
+                      ? null
+                      : () => _saveResult(score, total),
+                  icon: Icon(
+                    _saved ? Icons.check : Icons.save_outlined,
+                    size: 18,
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.gold,
+                    side: const BorderSide(color: AppColors.gold),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  label: Text(
+                    _saved ? t('misc.resultSaved') : t('misc.saveResult'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+            ] else
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: Text(
+                  t('misc.signInToSaveResults'),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: AppColors.textMuted,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: () => setState(_restart),
+                onPressed: _retake,
                 icon: const Icon(Icons.refresh, size: 18),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.goldDark,
@@ -900,6 +1183,22 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
               t('misc.orChooseAnotherMethod'),
               style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
             ),
+            if (signedIn) ...[
+              const SizedBox(height: 14),
+              TextButton.icon(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const MemtestHistoryScreen(),
+                  ),
+                ),
+                icon: const Icon(Icons.history, size: 18),
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.textGold,
+                ),
+                label: Text(t('misc.viewMemtestHistory')),
+              ),
+            ],
           ],
         ),
       ),

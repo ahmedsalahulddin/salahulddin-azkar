@@ -4,6 +4,7 @@ import '../../constants/theme.dart';
 import '../../data/quran_data.dart';
 import '../../l10n/strings.dart';
 import '../../services/tahfeez_service.dart';
+import '../memtest_history_screen.dart';
 import 'tahfeez_widgets.dart';
 
 /// Every assessment one student has received, newest first — the same
@@ -78,6 +79,19 @@ class _StudentProgressScreenState extends State<StudentProgressScreen> {
           backgroundColor: AppColors.black,
           foregroundColor: AppColors.gold,
           title: Text(widget.title),
+          actions: [
+            IconButton(
+              tooltip: t('misc.viewMemtestHistory'),
+              icon: const Icon(Icons.quiz_outlined),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      MemtestHistoryScreen(studentId: widget.studentId),
+                ),
+              ),
+            ),
+          ],
         ),
         body: _loading
             ? const Center(

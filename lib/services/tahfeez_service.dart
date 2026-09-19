@@ -96,26 +96,29 @@ class TahfeezProfile {
       teachesGender == TeachesGender.both ||
       (g != null && g.name == teachesGender.name);
 
-  TahfeezProfile copyWith({String? displayName, Gender? gender}) =>
-      TahfeezProfile(
-        userId: userId,
-        displayName: displayName ?? this.displayName,
-        photoUrl: photoUrl,
-        role: role,
-        teacherCode: teacherCode,
-        bio: bio,
-        city: city,
-        planPeriod: planPeriod,
-        freeSessions: freeSessions,
-        priceNote: priceNote,
-        languages: languages,
-        teachesGender: teachesGender,
-        gender: gender ?? this.gender,
-        blocked: blocked,
-        listed: listed,
-        country: country,
-        teachesChildren: teachesChildren,
-      );
+  TahfeezProfile copyWith({
+    String? displayName,
+    Gender? gender,
+    String? country,
+  }) => TahfeezProfile(
+    userId: userId,
+    displayName: displayName ?? this.displayName,
+    photoUrl: photoUrl,
+    role: role,
+    teacherCode: teacherCode,
+    bio: bio,
+    city: city,
+    planPeriod: planPeriod,
+    freeSessions: freeSessions,
+    priceNote: priceNote,
+    languages: languages,
+    teachesGender: teachesGender,
+    gender: gender ?? this.gender,
+    blocked: blocked,
+    listed: listed,
+    country: country ?? this.country,
+    teachesChildren: teachesChildren,
+  );
 
   factory TahfeezProfile.fromJson(Map<String, dynamic> j) => TahfeezProfile(
     userId: j['user_id'] as String,
@@ -449,6 +452,49 @@ class Evaluation {
       '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 }
 
+/// One saved run of the Memory Test drill (lib/screens/memorisation_test_screen.dart).
+/// Self-administered and self-graded — unlike [Evaluation], nothing here was
+/// judged by a teacher — but once saved it is readable by any teacher
+/// [tahfeez_related] to the student, alongside their evaluations.
+class MemtestResult {
+  final String? id;
+  final String studentId;
+  final int surahNumber;
+  final String surahName;
+
+  /// The drill mode's name (TestMode.name) — kept as a string here so this
+  /// model does not have to import lib/data/memorisation.dart.
+  final String mode;
+  final int questionCount;
+  final int correctCount;
+  final int scorePercent;
+  final DateTime createdAt;
+
+  const MemtestResult({
+    this.id,
+    required this.studentId,
+    required this.surahNumber,
+    required this.surahName,
+    required this.mode,
+    required this.questionCount,
+    required this.correctCount,
+    required this.scorePercent,
+    required this.createdAt,
+  });
+
+  factory MemtestResult.fromJson(Map<String, dynamic> j) => MemtestResult(
+    id: j['id'] as String,
+    studentId: j['student_id'] as String,
+    surahNumber: j['surah_number'] as int,
+    surahName: j['surah_name'] as String,
+    mode: j['mode'] as String,
+    questionCount: j['question_count'] as int,
+    correctCount: j['correct_count'] as int,
+    scorePercent: j['score_percent'] as int,
+    createdAt: DateTime.parse(j['created_at'] as String),
+  );
+}
+
 /// All server traffic for the memorisation module. Every call assumes a
 /// signed-in reader; the tab does not reach these before sign-in.
 class TahfeezService {
@@ -536,6 +582,15 @@ class TahfeezService {
     try {
       final c = await _client;
       await c.rpc('set_tahfeez_gender', params: {'p_gender': g.name});
+    } catch (e) {
+      _throw(e);
+    }
+  }
+
+  static Future<void> setCountry(String code) async {
+    try {
+      final c = await _client;
+      await c.rpc('set_tahfeez_country', params: {'p_country': code});
     } catch (e) {
       _throw(e);
     }
@@ -1172,6 +1227,48 @@ class TahfeezService {
       }, onConflict: 'session_id,student_id,on_date');
     } catch (err) {
       _throw(err);
+    }
+  }
+
+  static Future<void> saveMemtestResult({
+    required int surahNumber,
+    required String surahName,
+    required String mode,
+    required int questionCount,
+    required int correctCount,
+    required int scorePercent,
+  }) async {
+    try {
+      final c = await _client;
+      final uid = c.auth.currentUser!.id;
+      await c.from('tahfeez_memtest_results').insert({
+        'student_id': uid,
+        'surah_number': surahNumber,
+        'surah_name': surahName,
+        'mode': mode,
+        'question_count': questionCount,
+        'correct_count': correctCount,
+        'score_percent': scorePercent,
+      });
+    } catch (e) {
+      _throw(e);
+    }
+  }
+
+  /// Newest first. A student passes their own id; a related teacher any of
+  /// theirs — see the RLS policy in supabase/tahfeez_memtest.sql.
+  static Future<List<MemtestResult>> memtestResultsOf(String studentId) async {
+    try {
+      final c = await _client;
+      final rows = await c
+          .from('tahfeez_memtest_results')
+          .select()
+          .eq('student_id', studentId)
+          .order('created_at', ascending: false)
+          .limit(200);
+      return rows.map(MemtestResult.fromJson).toList();
+    } catch (e) {
+      _throw(e);
     }
   }
 }
