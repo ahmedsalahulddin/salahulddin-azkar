@@ -84,10 +84,7 @@ class _MushafScreenState extends State<MushafScreen> {
     setState(() {
       _pages = pages;
       _index = index;
-      // The page follows the recitation ayah by ayah — a per-surah reciter
-      // (one file for the whole surah, no ayah-level audio) can't drive that,
-      // so this screen only ever offers and remembers a per-ayah reciter.
-      _reciter = reciter.isPerAyah ? reciter : RecitationService.defaultReciter;
+      _reciter = reciter;
       _repeat = repeat;
     });
     _prefetchAround(_current);
@@ -147,6 +144,11 @@ class _MushafScreenState extends State<MushafScreen> {
   // ---- ayah actions ----------------------------------------------------
 
   Future<void> _playFrom(AyahBoxes start) async {
+    if (!_reciter.isPerAyah) {
+      await _playWholeSurah(start.surah);
+      return;
+    }
+
     final surah = await QuranService.surah(start.surah);
 
     // With repetition on, the playlist is the drill order; otherwise it simply
@@ -206,6 +208,38 @@ class _MushafScreenState extends State<MushafScreen> {
         if (match != null && mounted) setState(() => _selected = match);
       });
 
+      await _player.play();
+    } catch (_) {
+      if (!mounted) return;
+      final online = await ConnectivityCheck.online;
+      _toast(
+        online
+            ? t('mushaf.recitationPlaybackFailed')
+            : t('mushaf.recitationNeedsInternet'),
+        error: true,
+      );
+    }
+  }
+
+  // Per-surah reciters (mp3quran.net): one MP3 for the whole surah, so there
+  // is no ayah index to track — no highlighting, no auto page-turn.
+  Future<void> _playWholeSurah(int surah) async {
+    try {
+      _indexSub?.cancel();
+      _indexSub = null;
+      final surahInfo = await QuranService.surah(surah);
+      await _player.setAudioSource(
+        AudioSource.uri(
+          await RecitationDownloads.sourceFor(reciter: _reciter, surah: surah),
+          tag: MediaItem(
+            id: '${_reciter.id}:$surah',
+            title: surahInfo.name,
+            artist: _reciter.displayName,
+            album: t('mushaf.theNobleQuran'),
+          ),
+        ),
+      );
+      await PlaybackSpeed.apply();
       await _player.play();
     } catch (_) {
       if (!mounted) return;
@@ -558,10 +592,15 @@ class _MushafScreenState extends State<MushafScreen> {
                       const SpeedButton(),
                       _barIcon(
                         Icons.repeat,
-                        t('mushaf.repetition'),
-                        _openRepeatSettings,
+                        _reciter.isPerAyah
+                            ? t('mushaf.repetition')
+                            : t('mushaf.repeatUnavailablePerSurah'),
+                        _reciter.isPerAyah
+                            ? _openRepeatSettings
+                            : () =>
+                                  _toast(t('mushaf.repeatUnavailablePerSurah')),
                         label: t('mushaf.repetitionShort'),
-                        active: _repeat.isActive,
+                        active: _reciter.isPerAyah && _repeat.isActive,
                         iconSize: 23,
                       ),
                     ],
@@ -667,9 +706,7 @@ class _MushafScreenState extends State<MushafScreen> {
       constraints: const BoxConstraints(minWidth: 220, maxWidth: 340),
       onSelected: _applyReciter,
       itemBuilder: (context) => [
-        // Per-surah reciters (one file per surah) can't drive the ayah-by-ayah
-        // highlighting and auto page-turn this screen is built around.
-        for (final r in RecitationService.reciters.where((r) => r.isPerAyah))
+        for (final r in RecitationService.reciters)
           PopupMenuItem(
             value: r,
             height: 40,
@@ -697,6 +734,20 @@ class _MushafScreenState extends State<MushafScreen> {
                       ),
                     ),
                   ),
+                  // Per-surah reciters (one file per surah) can't drive the
+                  // ayah-by-ayah highlighting, auto page-turn or repeat drill
+                  // this screen otherwise offers — flagged so the choice is
+                  // informed rather than a later surprise.
+                  if (!r.isPerAyah) ...[
+                    const SizedBox(width: 6),
+                    Text(
+                      t('mushaf.wholeSurahReciterBadge'),
+                      style: const TextStyle(
+                        color: AppColors.textMuted,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -710,8 +761,11 @@ class _MushafScreenState extends State<MushafScreen> {
     if (chosen.id == _reciter.id) return;
     await RecitationService.setReciter(chosen.id);
     await _player.stop();
+    _indexSub?.cancel();
+    _indexSub = null;
     if (!mounted) return;
     setState(() => _reciter = chosen);
+    if (!chosen.isPerAyah) _toast(t('mushaf.wholeSurahReciterNote'));
   }
 
   Widget _playButton() {
@@ -740,7 +794,11 @@ class _MushafScreenState extends State<MushafScreen> {
 
         return _barIcon(
           playing ? Icons.pause : Icons.play_arrow,
-          playing ? t('mushaf.pause') : t('mushaf.playSelectedAyah'),
+          playing
+              ? t('mushaf.pause')
+              : (_reciter.isPerAyah
+                    ? t('mushaf.playSelectedAyah')
+                    : t('mushaf.playWholeSurah')),
           () {
             if (playing) {
               _player.pause();

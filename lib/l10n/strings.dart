@@ -272,6 +272,8 @@ const _ar = <String, String>{
   'book.nawawi': 'الأربعون النووية',
   'book.qudsi': 'الأربعون القدسية',
   'book.dehlawi': 'أربعون الدهلوي',
+  'book.seerah_mukhtasar': 'مختصر سيرة الرسول ﷺ',
+  'book.raheeq_makhtoom': 'الرحيق المختوم',
   'book.bukhari': 'صحيح البخاري',
   'book.muslim': 'صحيح مسلم',
   'book.abudawud': 'سنن أبي داود',
@@ -982,6 +984,12 @@ const _ar = <String, String>{
   'mushaf.perAyahRepeatLabel': 'تكرار كل آية',
   'mushaf.playSelectedAyah': 'تلاوة الآية المحددة',
   'mushaf.playShort': 'تـشغيل',
+  'mushaf.playWholeSurah': 'تلاوة السورة كاملة',
+  'mushaf.wholeSurahReciterBadge': 'سورة كاملة',
+  'mushaf.wholeSurahReciterNote':
+      'هذا القارئ مسجَّل سورة كاملة في ملف واحد — التنقل والتكرار بالآية غير متاحين معه، وستُشغَّل السورة من بدايتها',
+  'mushaf.repeatUnavailablePerSurah':
+      'التكرار غير متاح مع هذا القارئ — سجّله لكل سورة كاملة',
   'mushaf.recitationPlaybackFailed': 'تعذّر تشغيل التلاوة — تحقّق من الاتصال',
   'mushaf.recitationNeedsInternet':
       'هذه التلاوة غير مُنزَّلة، وتحتاج اتصالاً بالإنترنت لتشغيلها',
@@ -1242,6 +1250,8 @@ const _en = <String, String>{
   'book.nawawi': "Al-Nawawi's Forty",
   'book.qudsi': 'Forty Qudsi Hadith',
   'book.dehlawi': "Al-Dehlawi's Forty",
+  'book.seerah_mukhtasar': "A Brief Biography of the Prophet ﷺ",
+  'book.raheeq_makhtoom': 'Ar-Raheeq Al-Makhtoom (The Sealed Nectar)',
   'book.bukhari': 'Sahih Al-Bukhari',
   'book.muslim': 'Sahih Muslim',
   'book.abudawud': 'Sunan Abi Dawud',
@@ -1981,6 +1991,15 @@ const _en = <String, String>{
   'mushaf.perAyahRepeatLabel': 'Repeat each ayah',
   'mushaf.playSelectedAyah': 'Play the selected ayah',
   'mushaf.playShort': 'Play',
+  'mushaf.playWholeSurah': 'Play the whole surah',
+  'mushaf.wholeSurahReciterBadge': 'Whole surah',
+  'mushaf.wholeSurahReciterNote':
+      'This reciter is recorded as one file per surah — ayah navigation and '
+      'repetition aren\'t available with them, and the surah plays from '
+      'the start',
+  'mushaf.repeatUnavailablePerSurah':
+      'Repetition isn\'t available with this reciter — they\'re recorded '
+      'per surah, not per ayah',
   'mushaf.recitationPlaybackFailed':
       'Couldn\'t play the recitation — check your connection',
   'mushaf.recitationNeedsInternet':
