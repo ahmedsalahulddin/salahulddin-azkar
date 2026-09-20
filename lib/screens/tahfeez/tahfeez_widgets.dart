@@ -8,6 +8,11 @@ import '../../services/tahfeez_service.dart';
 
 String weekdayName(int weekday) => t('tahfeez.day.$weekday');
 
+String monthName(int month) => t('tahfeez.month.$month');
+
+bool isSameDate(DateTime a, DateTime b) =>
+    a.year == b.year && a.month == b.month && a.day == b.day;
+
 /// Dart's DateTime counts Monday = 1 … Sunday = 7; the table counts from
 /// Sunday = 0 like Postgres.
 int weekdayOf(DateTime d) => d.weekday % 7;
