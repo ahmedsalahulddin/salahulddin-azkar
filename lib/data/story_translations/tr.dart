@@ -134,7 +134,8 @@ const Map<String, StoryTranslation> trStoryTranslations = {
         'olmadığını anladılar, secdeye kapandılar ve dediler: "Harun '
         've Musa\'nın Rabbine iman ettik," Firavun\'un ellerini ve '
         'ayaklarını çaprazlama kesme tehdidine rağmen.',
-    source: 'Taha Suresi: 17-21, A\'raf Suresi: 107-122 ve Şuara '
+    source:
+        'Taha Suresi: 17-21, A\'raf Suresi: 107-122 ve Şuara '
         'Suresi: 38-51',
   ),
   'miracle-6': StoryTranslation(
@@ -405,7 +406,8 @@ const Map<String, StoryTranslation> trStoryTranslations = {
         'salim çıktı, hatta yalnızca bağlarının yandığı söylenir; halk '
         'gözlerinin önünde büyük bir mucize gördü, fakat çoğu buna '
         'rağmen küfürde ısrar etti.',
-    source: 'Enbiya Suresi: 51-70, En\'am Suresi: 74-79 ve Saffat '
+    source:
+        'Enbiya Suresi: 51-70, En\'am Suresi: 74-79 ve Saffat '
         'Suresi: 83-98',
   ),
   'prophet-4': StoryTranslation(
@@ -491,7 +493,8 @@ const Map<String, StoryTranslation> trStoryTranslations = {
         'etmeye çalıştığında, Allah denizi üzerlerine kapattı ve '
         'İsrailoğulları\'nın gözü önünde hepsini boğdu; yüzyıllarca '
         'kendilerini köleleştiren zalimin sonunu bir anda izlediler.',
-    source: 'Kasas Suresi: 7-43, Şuara Suresi: 10-68 ve Taha '
+    source:
+        'Kasas Suresi: 7-43, Şuara Suresi: 10-68 ve Taha '
         'Suresi',
   ),
   'prophet-6': StoryTranslation(
@@ -526,7 +529,8 @@ const Map<String, StoryTranslation> trStoryTranslations = {
         'verdiği tek kavim onlardı; Kur\'an\'ın işaret ettiği gibi: '
         '"İman edip de imanı kendisine fayda vermiş bir şehir '
         'halkı olsaydı, Yunus\'un kavminden başka olsaydı."',
-    source: 'Saffat Suresi: 139-148, Enbiya Suresi: 87-88 ve '
+    source:
+        'Saffat Suresi: 139-148, Enbiya Suresi: 87-88 ve '
         'Yunus Suresi: 98',
   ),
   'prophet-7': StoryTranslation(
@@ -848,7 +852,8 @@ const Map<String, StoryTranslation> trStoryTranslations = {
         'işaretlenmiş sert topraktan taşlar yağdırdı, onu tamamen '
         'yok etti ki hiçbir izi kalmadı; hayasızlığın sonuçları üzerinde '
         'düşünenler için bir ibret olarak.',
-    source: 'Hud Suresi: 77-83, Hicr Suresi: 57-77 ve A\'raf '
+    source:
+        'Hud Suresi: 77-83, Hicr Suresi: 57-77 ve A\'raf '
         'Suresi: 80-84',
   ),
   'prophet-16': StoryTranslation(
@@ -887,7 +892,8 @@ const Map<String, StoryTranslation> trStoryTranslations = {
         'helaklerinden sonra ıssız yurtlarına hitap ederek durdu: '
         '"Ey kavmim, size Rabbimin risaletlerini ulaştırdım ve size '
         'öğüt verdim, kâfir bir topluluk için nasıl üzülebilirim?"',
-    source: 'Hud Suresi: 84-95, A\'raf Suresi: 85-93 ve Şuara '
+    source:
+        'Hud Suresi: 84-95, A\'raf Suresi: 85-93 ve Şuara '
         'Suresi: 176-191',
   ),
   'prophet-17': StoryTranslation(
@@ -1121,7 +1127,8 @@ const Map<String, StoryTranslation> trStoryTranslations = {
         'kökten tamamen helak oldu, aralarından Hud ve kendisiyle '
         'birlikte iman edenler dışında hiç kimse kalmadı; güçleri '
         've sarayları Allah\'ın hükmü karşısında hiçbir işe yaramadı.',
-    source: 'A\'raf Suresi: 65-72, Hud Suresi: 50-60 ve Hakka '
+    source:
+        'A\'raf Suresi: 65-72, Hud Suresi: 50-60 ve Hakka '
         'Suresi: 6-8',
   ),
 
@@ -1182,7 +1189,8 @@ const Map<String, StoryTranslation> trStoryTranslations = {
         'oldular, hepsi bir anda helak oldu, büyük küçük; çünkü '
         'peygamberlerine verdikleri sözü basit bir konuda yerine '
         'getirmediler: deveye haftada bir gün su içirmek.',
-    source: 'A\'raf Suresi: 73-79, Şems Suresi: 11-15 ve Hud '
+    source:
+        'A\'raf Suresi: 73-79, Şems Suresi: 11-15 ve Hud '
         'Suresi: 61-68',
   ),
   'animal-3': StoryTranslation(
@@ -1482,7 +1490,8 @@ const Map<String, StoryTranslation> trStoryTranslations = {
         'etti, fakat adaletli etkisi İslam tarihinde kazınmış olarak '
         'kaldı, öyle ki ilk dört halifeden sonra beşinci raşid halife '
         'sayıldı.',
-    source: 'Tarih ve siyer kitapları — İbnü\'l-Cevzi\'nin Ömer bin '
+    source:
+        'Tarih ve siyer kitapları — İbnü\'l-Cevzi\'nin Ömer bin '
         'Abdülaziz\'in Siretinden',
   ),
   'righteous-4': StoryTranslation(
@@ -1513,7 +1522,8 @@ const Map<String, StoryTranslation> trStoryTranslations = {
         'valiler öğüdünü dinlemek için ona gelmelerine ve birçok '
         'konuda görüşüne uymalarına rağmen, bu mevkiyi mevki '
         've mal için kullanmadan dünyada zahid bir hayat sürdü.',
-    source: 'Biyografi kitapları — Ebu Nuaym\'ın Hilyetü\'l-Evliya\'sı '
+    source:
+        'Biyografi kitapları — Ebu Nuaym\'ın Hilyetü\'l-Evliya\'sı '
         'gibi',
   ),
   'righteous-5': StoryTranslation(
@@ -1541,7 +1551,8 @@ const Map<String, StoryTranslation> trStoryTranslations = {
         'etmenin bir örneği oldu, ölümünden yüzyıllar sonra bile '
         'fıkıh ve takvada kendisine uyulan bir öğretmen olarak '
         'kaldı.',
-    source: 'Biyografi kitapları — Zehebi\'nin Siyeru A\'lami\'n-'
+    source:
+        'Biyografi kitapları — Zehebi\'nin Siyeru A\'lami\'n-'
         'Nübela\'sı gibi',
   ),
   'righteous-6': StoryTranslation(
@@ -1570,7 +1581,8 @@ const Map<String, StoryTranslation> trStoryTranslations = {
         'Sünnet görüşü galip geldi; böylece tek bir adamın hak '
         'üzerindeki sebatının bütün bir ümmetin akidesini '
         'sapmadan koruyabileceğinin ölümsüz bir örneği oldu.',
-    source: 'Biyografi ve tarih kitapları — Zehebi\'nin Siyeru '
+    source:
+        'Biyografi ve tarih kitapları — Zehebi\'nin Siyeru '
         'A\'lami\'n-Nübela\'sı gibi',
   ),
   'righteous-7': StoryTranslation(
@@ -1604,7 +1616,8 @@ const Map<String, StoryTranslation> trStoryTranslations = {
         'ibadeti sebebiyle "Abidü\'l-Haremeyn" lakabını aldı; '
         'böylece korkulan bir eşkıyadan zühd ve takvada kendisine '
         'uyulan bir rehbere dönüştü.',
-    source: 'Biyografi kitapları — Ebu Nuaym\'ın Hilyetü\'l-Evliya\'sı '
+    source:
+        'Biyografi kitapları — Ebu Nuaym\'ın Hilyetü\'l-Evliya\'sı '
         'gibi',
   ),
   'righteous-8': StoryTranslation(
@@ -1634,7 +1647,8 @@ const Map<String, StoryTranslation> trStoryTranslations = {
         'nesillerin ibadette tam ihlasın anlamını herhangi bir '
         'hesap veya karşılıktan uzak olarak anlamasının temeli '
         'oldu.',
-    source: 'Biyografi kitapları — İbnü\'l-Cevzi\'nin Sıfatü\'s-'
+    source:
+        'Biyografi kitapları — İbnü\'l-Cevzi\'nin Sıfatü\'s-'
         'Safve\'si gibi',
   ),
 
@@ -1772,7 +1786,8 @@ const Map<String, StoryTranslation> trStoryTranslations = {
         'ilk iki insan olmaları için oraya indirdi ve bu, herkes için '
         'ne kadar güzel görünse de Şeytan\'ın vesveselerine '
         'inanmama konusunda bir ders olsun diye.',
-    source: 'Bakara Suresi: 35-37 ve Taha Suresi: 115-123 '
+    source:
+        'Bakara Suresi: 35-37 ve Taha Suresi: 115-123 '
         '(çocuklar için sadeleştirilmiştir)',
   ),
 

@@ -85,12 +85,12 @@ class HisnDhikr {
   });
 
   factory HisnDhikr.fromJson(Map<String, dynamic> j) => HisnDhikr(
-        number: j['n'],
-        text: j['t'],
-        repeat: j['r'] ?? 1,
-        audioId: j['au'],
-        english: (j['en'] as String?)?.isEmpty ?? true ? null : j['en'],
-      );
+    number: j['n'],
+    text: j['t'],
+    repeat: j['r'] ?? 1,
+    audioId: j['au'],
+    english: (j['en'] as String?)?.isEmpty ?? true ? null : j['en'],
+  );
 
   bool get hasAudio => audioId != null;
 
@@ -114,13 +114,13 @@ class HisnChapter {
   });
 
   factory HisnChapter.fromJson(Map<String, dynamic> j) => HisnChapter(
-        id: j['id'],
-        title: j['title'],
-        titleEn: j['titleEn'],
-        items: (j['items'] as List)
-            .map((e) => HisnDhikr.fromJson(e as Map<String, dynamic>))
-            .toList(),
-      );
+    id: j['id'],
+    title: j['title'],
+    titleEn: j['titleEn'],
+    items: (j['items'] as List)
+        .map((e) => HisnDhikr.fromJson(e as Map<String, dynamic>))
+        .toList(),
+  );
 
   /// Arabic with the English chapter title in parentheses, once the reader
   /// has switched to English — same convention as every other card name.

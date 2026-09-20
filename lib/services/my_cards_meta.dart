@@ -7,8 +7,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 enum CardStyle {
   /// The app writes over it: the greeting, the verse, and the signature. The
   /// picture is the paper.
-  background('background', 'خلفية يُكتب عليها',
-      'التهنئة والآية والتوقيع فوق صورتك'),
+  background(
+    'background',
+    'خلفية يُكتب عليها',
+    'التهنئة والآية والتوقيع فوق صورتك',
+  ),
 
   /// The picture as it is. Only the signature, and only if one is written —
   /// a card that already says everything should not be written on twice.
@@ -105,17 +108,23 @@ class MyCardsMeta {
   /// Every group in use, sorted, so the filter row and the picker offer what
   /// the reader has already created rather than a list written here.
   static List<String> groups() {
-    final all = _entries.values
-        .map((e) => e.group)
-        .where((g) => g.isNotEmpty)
-        .toSet()
-        .toList()
-      ..sort();
+    final all =
+        _entries.values
+            .map((e) => e.group)
+            .where((g) => g.isNotEmpty)
+            .toSet()
+            .toList()
+          ..sort();
     return all;
   }
 
-  static Future<void> set(String fileName,
-      {String? title, String? group, String? shelf, CardStyle? style}) async {
+  static Future<void> set(
+    String fileName, {
+    String? title,
+    String? group,
+    String? shelf,
+    CardStyle? style,
+  }) async {
     final current = _entries[fileName] ?? const _Entry(title: '', group: '');
     _entries[fileName] = _Entry(
       title: (title ?? current.title).trim(),
@@ -139,9 +148,7 @@ class MyCardsMeta {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(
         _key,
-        jsonEncode({
-          for (final e in _entries.entries) e.key: e.value.toJson(),
-        }),
+        jsonEncode({for (final e in _entries.entries) e.key: e.value.toJson()}),
       );
     } catch (_) {
       // The names still apply for this session.
@@ -172,15 +179,19 @@ class _Entry {
     this.style = CardStyle.background,
   });
 
-  Map<String, dynamic> toJson() =>
-      {'t': title, 'g': group, 's': shelf, 'm': style.id};
+  Map<String, dynamic> toJson() => {
+    't': title,
+    'g': group,
+    's': shelf,
+    'm': style.id,
+  };
 
   factory _Entry.fromJson(Map<String, dynamic> j) => _Entry(
-        title: j['t'] as String? ?? '',
-        group: j['g'] as String? ?? '',
-        shelf: j['s'] as String? ?? '',
-        style: CardStyle.byId(j['m'] as String?),
-      );
+    title: j['t'] as String? ?? '',
+    group: j['g'] as String? ?? '',
+    shelf: j['s'] as String? ?? '',
+    style: CardStyle.byId(j['m'] as String?),
+  );
 }
 
 extension _FirstOrNull<T> on Iterable<T> {

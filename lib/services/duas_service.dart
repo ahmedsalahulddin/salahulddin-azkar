@@ -7,6 +7,23 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'auth_service.dart';
 
+/// One category's title and dua lines in a single non-Arabic language —
+/// only the base collection carries these; a reader's own additions are
+/// whatever language they wrote them in and are never machine-translated.
+class DuaTranslation {
+  final String title;
+  final List<String> duas;
+
+  const DuaTranslation({required this.title, required this.duas});
+
+  Map<String, dynamic> toJson() => {'title': title, 'duas': duas};
+
+  factory DuaTranslation.fromJson(Map<String, dynamic> j) => DuaTranslation(
+    title: j['title'] as String,
+    duas: (j['duas'] as List).map((e) => e as String).toList(),
+  );
+}
+
 /// One card of duas — a title and the lines under it. Used for both the
 /// shared base collection and each reader's own.
 class DuaCategory {
@@ -15,26 +32,54 @@ class DuaCategory {
   final String icon;
   final List<String> duas;
 
+  /// Language code (en, fr, ur, id, ms, hi, tr, bn, ha) -> that language's
+  /// title/duas. Empty for every user-authored category — only the base
+  /// collection's admin-edited categories carry translations.
+  final Map<String, DuaTranslation> translations;
+
   const DuaCategory({
     required this.id,
     required this.title,
     required this.icon,
     required this.duas,
+    this.translations = const {},
   });
 
-  DuaCategory copyWith({String? title, String? icon, List<String>? duas}) =>
-      DuaCategory(
-        id: id,
-        title: title ?? this.title,
-        icon: icon ?? this.icon,
-        duas: duas ?? this.duas,
-      );
+  DuaCategory copyWith({
+    String? title,
+    String? icon,
+    List<String>? duas,
+    Map<String, DuaTranslation>? translations,
+  }) => DuaCategory(
+    id: id,
+    title: title ?? this.title,
+    icon: icon ?? this.icon,
+    duas: duas ?? this.duas,
+    translations: translations ?? this.translations,
+  );
+
+  /// This category's title/duas in [langCode] — falls back to the Arabic
+  /// original when [langCode] is 'ar' or has no translation on file (a
+  /// category not yet translated, or a reader's own).
+  DuaCategory localized(String langCode) {
+    final t = langCode == 'ar' ? null : translations[langCode];
+    if (t == null) return this;
+    return DuaCategory(
+      id: id,
+      title: t.title,
+      icon: icon,
+      duas: t.duas,
+      translations: translations,
+    );
+  }
 
   Map<String, dynamic> toJson() => {
     'id': id,
     'title': title,
     'icon': icon,
     'duas': duas,
+    if (translations.isNotEmpty)
+      'translations': translations.map((k, v) => MapEntry(k, v.toJson())),
   };
 
   factory DuaCategory.fromJson(Map<String, dynamic> j) => DuaCategory(
@@ -42,6 +87,9 @@ class DuaCategory {
     title: j['title'] as String,
     icon: j['icon'] as String? ?? '🤲',
     duas: (j['duas'] as List).map((e) => e as String).toList(),
+    translations: (j['translations'] as Map<String, dynamic>? ?? const {}).map(
+      (k, v) => MapEntry(k, DuaTranslation.fromJson(v as Map<String, dynamic>)),
+    ),
   );
 }
 

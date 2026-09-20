@@ -28,10 +28,10 @@ class _BrandMark {
 </svg>''';
 
   static String of(SignInProvider p) => switch (p) {
-        SignInProvider.google => google,
-        SignInProvider.facebook => facebook,
-        SignInProvider.apple => apple,
-      };
+    SignInProvider.google => google,
+    SignInProvider.facebook => facebook,
+    SignInProvider.apple => apple,
+  };
 }
 
 /// A sign-in button in the provider's own colours, as their terms require.
@@ -50,15 +50,15 @@ class SignInButton extends StatelessWidget {
   // Each brand mandates its own surface: Google on white, Meta on their blue,
   // Apple on black.
   Color get _background => switch (provider) {
-        SignInProvider.google => Colors.white,
-        SignInProvider.facebook => const Color(0xFF1877F2),
-        SignInProvider.apple => Colors.black,
-      };
+    SignInProvider.google => Colors.white,
+    SignInProvider.facebook => const Color(0xFF1877F2),
+    SignInProvider.apple => Colors.black,
+  };
 
   Color get _foreground => switch (provider) {
-        SignInProvider.google => const Color(0xFF1F1F1F),
-        _ => Colors.white,
-      };
+    SignInProvider.google => const Color(0xFF1F1F1F),
+    _ => Colors.white,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -85,7 +85,9 @@ class SignInButton extends StatelessWidget {
                   width: 18,
                   height: 18,
                   child: CircularProgressIndicator(
-                      strokeWidth: 2, color: _foreground),
+                    strokeWidth: 2,
+                    color: _foreground,
+                  ),
                 )
               : Row(
                   mainAxisAlignment: MainAxisAlignment.center,

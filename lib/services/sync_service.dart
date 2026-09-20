@@ -75,11 +75,13 @@ class SyncService {
       final uid = _uid;
       if (uid == null) return false;
 
-      final rows = (await _client
-              .from(_table)
-              .select('kind, key, value')
-              .eq('user_id', uid) as List)
-          .cast<Map<String, dynamic>>();
+      final rows =
+          (await _client
+                      .from(_table)
+                      .select('kind, key, value')
+                      .eq('user_id', uid)
+                  as List)
+              .cast<Map<String, dynamic>>();
 
       final favourites = <String>{};
       final bookmarks = <String, Map<String, dynamic>>{};
@@ -89,7 +91,8 @@ class SyncService {
         final key = row['key'] as String;
         if (kind == SyncKind.favourite.id) favourites.add(key);
         if (kind == SyncKind.bookmark.id) {
-          bookmarks[key] = ((row['value'] as Map?) ?? {}).cast<String, dynamic>();
+          bookmarks[key] = ((row['value'] as Map?) ?? {})
+              .cast<String, dynamic>();
         }
         if (kind == SyncKind.position.id) {
           remotePosition = (row['value'] as Map?)?['page']?.toString();
@@ -121,7 +124,9 @@ class SyncService {
   }
 
   static Future<void> _mergeBookmarks(
-      String uid, Map<String, Map<String, dynamic>> remote) async {
+    String uid,
+    Map<String, Map<String, dynamic>> remote,
+  ) async {
     final local = await BookmarkService.all();
     final localKeys = {for (final b in local) b.key};
 
@@ -145,11 +150,15 @@ class SyncService {
     // Upload with the whole bookmark, so the device that reads this next can
     // rebuild it properly.
     await _uploadBookmarks(
-        uid, local.where((b) => !remote.containsKey(b.key)).toList());
+      uid,
+      local.where((b) => !remote.containsKey(b.key)).toList(),
+    );
   }
 
   static Future<void> _uploadBookmarks(
-      String uid, List<Bookmark> bookmarks) async {
+    String uid,
+    List<Bookmark> bookmarks,
+  ) async {
     if (bookmarks.isEmpty) return;
     await _client.from(_table).upsert([
       for (final bookmark in bookmarks)
@@ -170,7 +179,9 @@ class SyncService {
     // The furthest page wins. Two devices reading the same Mushaf are one
     // reader, and going backwards is the only outcome they would notice.
     final furthest = [localPage, remote].whereType<int>().fold<int?>(
-        null, (best, page) => best == null || page > best ? page : best);
+      null,
+      (best, page) => best == null || page > best ? page : best,
+    );
     if (furthest == null) return;
 
     if (furthest != localPage) {
@@ -188,7 +199,10 @@ class SyncService {
   }
 
   static Future<void> _upload(
-      String uid, SyncKind kind, Set<String> keys) async {
+    String uid,
+    SyncKind kind,
+    Set<String> keys,
+  ) async {
     if (keys.isEmpty) return;
     await _client.from(_table).upsert([
       for (final key in keys)

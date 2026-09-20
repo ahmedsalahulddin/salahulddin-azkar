@@ -100,8 +100,7 @@ class UmrahGuide {
     final resolved = await load();
     return resolved.fold<int>(
       0,
-      (sum, entry) =>
-          sum + entry.$2.fold<int>(0, (s, c) => s + c.items.length),
+      (sum, entry) => sum + entry.$2.fold<int>(0, (s, c) => s + c.items.length),
     );
   }
 }

@@ -24,15 +24,16 @@ class BilingualText extends StatelessWidget {
   });
 
   CrossAxisAlignment get _crossAlign => switch (textAlign) {
-        TextAlign.right => CrossAxisAlignment.end,
-        TextAlign.left => CrossAxisAlignment.start,
-        _ => CrossAxisAlignment.center,
-      };
+    TextAlign.right => CrossAxisAlignment.end,
+    TextAlign.left => CrossAxisAlignment.start,
+    _ => CrossAxisAlignment.center,
+  };
 
   @override
   Widget build(BuildContext context) {
     final (ar, en) = splitBilingual(combined);
-    final enStyle = englishStyle ??
+    final enStyle =
+        englishStyle ??
         style.copyWith(
           fontSize: (style.fontSize ?? 14) * 0.8,
           color: style.color?.withValues(alpha: 0.68),
@@ -42,18 +43,22 @@ class BilingualText extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: _crossAlign,
       children: [
-        Text(ar,
+        Text(
+          ar,
+          textAlign: textAlign,
+          maxLines: maxLines,
+          overflow: TextOverflow.ellipsis,
+          style: style,
+        ),
+        if (en != null)
+          Text(
+            '($en)',
+            textDirection: TextDirection.ltr,
             textAlign: textAlign,
             maxLines: maxLines,
             overflow: TextOverflow.ellipsis,
-            style: style),
-        if (en != null)
-          Text('($en)',
-              textDirection: TextDirection.ltr,
-              textAlign: textAlign,
-              maxLines: maxLines,
-              overflow: TextOverflow.ellipsis,
-              style: enStyle),
+            style: enStyle,
+          ),
       ],
     );
   }

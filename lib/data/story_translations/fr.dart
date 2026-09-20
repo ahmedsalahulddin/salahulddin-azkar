@@ -31,7 +31,8 @@ const Map<String, StoryTranslation> frStoryTranslations = {
         'un témoignage irréfutable que ce que les gens de La Mecque '
         'avaient vu n\'était ni une illusion ni de la magie, mais un '
         'signe véritable venu de Dieu.',
-    source: 'Sahih al-Boukhari et Muslim — commentaire de la sourate '
+    source:
+        'Sahih al-Boukhari et Muslim — commentaire de la sourate '
         'Al-Qamar : 1-2',
   ),
   'miracle-2': StoryTranslation(
@@ -145,7 +146,8 @@ const Map<String, StoryTranslation> frStoryTranslations = {
         'en disant : "Nous croyons au Seigneur d\'Aaron et de Moïse", '
         'malgré la menace de Pharaon de leur trancher mains et pieds de '
         'façon opposée.',
-    source: 'Sourate Ta-Ha : 17-21, sourate Al-A\'raf : 107-122 et '
+    source:
+        'Sourate Ta-Ha : 17-21, sourate Al-A\'raf : 107-122 et '
         'sourate Ach-Chu\'ara : 38-51',
   ),
   'miracle-6': StoryTranslation(
@@ -449,7 +451,8 @@ const Map<String, StoryTranslation> frStoryTranslations = {
         'l\'on dit que seuls ses liens avaient brûlé. Les gens virent là '
         'un miracle immense sous leurs yeux, mais la plupart '
         'persistèrent dans la mécréance malgré cela.',
-    source: 'Sourate Al-Anbiya : 51-70, sourate Al-An\'am : 74-79 et '
+    source:
+        'Sourate Al-Anbiya : 51-70, sourate Al-An\'am : 74-79 et '
         'sourate As-Saffat : 83-98',
   ),
   'prophet-4': StoryTranslation(
@@ -545,7 +548,8 @@ const Map<String, StoryTranslation> frStoryTranslations = {
         'tous, sous les yeux des Fils d\'Israël assistant à la fin du '
         'tyran qui les avait asservis pendant des siècles en un seul '
         'instant.',
-    source: 'Sourate Al-Qasas : 7-43, sourate Ach-Chu\'ara : 10-68 et '
+    source:
+        'Sourate Al-Qasas : 7-43, sourate Ach-Chu\'ara : 10-68 et '
         'sourate Ta-Ha',
   ),
   'prophet-6': StoryTranslation(
@@ -585,7 +589,8 @@ const Map<String, StoryTranslation> frStoryTranslations = {
         'que le Coran souligne en disant : "N\'eût été une cité qui crût '
         'et à qui sa croyance profita, exception faite du peuple de '
         'Jonas."',
-    source: 'Sourate As-Saffat : 139-148, sourate Al-Anbiya : 87-88 et '
+    source:
+        'Sourate As-Saffat : 139-148, sourate Al-Anbiya : 87-88 et '
         'sourate Yunus : 98',
   ),
   'prophet-7': StoryTranslation(
@@ -813,7 +818,8 @@ const Map<String, StoryTranslation> frStoryTranslations = {
         'ﷺ la compta parmi les meilleures femmes de l\'univers, avec '
         'Marie fille d\'Imran, Khadija et Fatima, qu\'Allah les agrée '
         'toutes.',
-    source: 'Sourate At-Tahrim : 11 et sourate Al-Qasas : 9 — Sahih '
+    source:
+        'Sourate At-Tahrim : 11 et sourate Al-Qasas : 9 — Sahih '
         'al-Boukhari',
   ),
   'prophet-13': StoryTranslation(
@@ -940,7 +946,8 @@ const Map<String, StoryTranslation> frStoryTranslations = {
         'un coupable précis — la détruisant complètement sans qu\'il '
         'n\'en reste la moindre trace, leçon pour ceux qui savent y '
         'réfléchir.',
-    source: 'Sourate Hoûd : 77-83, sourate Al-Hijr : 57-77 et sourate '
+    source:
+        'Sourate Hoûd : 77-83, sourate Al-Hijr : 57-77 et sourate '
         'Al-A\'raf : 80-84',
   ),
   'prophet-16': StoryTranslation(
@@ -979,7 +986,8 @@ const Map<String, StoryTranslation> frStoryTranslations = {
         'vous ai bien transmis les messages de mon Seigneur et vous ai '
         'conseillés ; comment m\'attristerais-je alors sur un peuple '
         'mécréant ?"',
-    source: 'Sourate Hoûd : 84-95, sourate Al-A\'raf : 85-93 et sourate '
+    source:
+        'Sourate Hoûd : 84-95, sourate Al-A\'raf : 85-93 et sourate '
         'Ach-Chu\'ara : 176-191',
   ),
   'prophet-17': StoryTranslation(
@@ -1233,7 +1241,8 @@ const Map<String, StoryTranslation> frStoryTranslations = {
         'laissant survivre que Hud et ceux qui avaient cru avec lui ; '
         'ni leur force ni leurs palais ne leur servirent à rien face à '
         'l\'ordre de Dieu.',
-    source: 'Sourate Al-A\'raf : 65-72, sourate Hoûd : 50-60 et sourate '
+    source:
+        'Sourate Al-A\'raf : 65-72, sourate Hoûd : 50-60 et sourate '
         'Al-Haqqa : 6-8',
   ),
 
@@ -1305,7 +1314,8 @@ const Map<String, StoryTranslation> frStoryTranslations = {
         'pour n\'avoir pas tenu leur engagement envers leur prophète '
         'dans une affaire aussi simple que de laisser une chamelle boire '
         'un seul jour par semaine.',
-    source: 'Sourate Al-A\'raf : 73-79, sourate Ach-Chams : 11-15 et '
+    source:
+        'Sourate Al-A\'raf : 73-79, sourate Ach-Chams : 11-15 et '
         'sourate Hoûd : 61-68',
   ),
   'animal-3': StoryTranslation(
@@ -1633,7 +1643,8 @@ const Map<String, StoryTranslation> frStoryTranslations = {
         'justice demeura gravée dans l\'histoire de l\'Islam au point '
         'qu\'on le compte comme le cinquième calife bien-guidé après les '
         'quatre premiers.',
-    source: 'Livres d\'histoire et de biographies — comme la biographie '
+    source:
+        'Livres d\'histoire et de biographies — comme la biographie '
         'd\'Omar ibn Abdul Aziz par Ibn al-Jawzi',
   ),
   'righteous-4': StoryTranslation(
@@ -1667,7 +1678,8 @@ const Map<String, StoryTranslation> frStoryTranslations = {
         'souvent à son avis en de nombreuses affaires, sans jamais '
         'exploiter cette position pour un rang ou une richesse '
         'quelconque.',
-    source: 'Livres de biographies — comme Hilyat al-Awliya '
+    source:
+        'Livres de biographies — comme Hilyat al-Awliya '
         'd\'Abu Nu\'aym',
   ),
   'righteous-5': StoryTranslation(
@@ -1696,7 +1708,8 @@ const Map<String, StoryTranslation> frStoryTranslations = {
         'devint ainsi un modèle de fermeté dans le droit chemin, et '
         'demeura, même après sa mort, un maître qu\'on continua '
         'd\'imiter en science et en piété pendant des siècles.',
-    source: 'Livres de biographies — comme Siyar A\'lam an-Nubala\' '
+    source:
+        'Livres de biographies — comme Siyar A\'lam an-Nubala\' '
         'd\'Adh-Dhahabi',
   ),
   'righteous-6': StoryTranslation(
@@ -1727,7 +1740,8 @@ const Map<String, StoryTranslation> frStoryTranslations = {
         'devenant ainsi un exemple éternel montrant que la fermeté '
         'd\'un seul homme sur la vérité peut préserver la croyance de '
         'toute une nation de la déviation.',
-    source: 'Livres de biographies et d\'histoire — comme Siyar A\'lam '
+    source:
+        'Livres de biographies et d\'histoire — comme Siyar A\'lam '
         'an-Nubala\' d\'Adh-Dhahabi',
   ),
   'righteous-7': StoryTranslation(
@@ -1763,7 +1777,8 @@ const Map<String, StoryTranslation> frStoryTranslations = {
         'de son long séjour et de son adoration à La Mecque et à '
         'Médine, passant ainsi d\'un brigand redouté à un guide '
         'spirituel suivi en exemple.',
-    source: 'Livres de biographies — comme Hilyat al-Awliya\' d\'Abu '
+    source:
+        'Livres de biographies — comme Hilyat al-Awliya\' d\'Abu '
         'Nu\'aym',
   ),
   'righteous-8': StoryTranslation(
@@ -1794,7 +1809,8 @@ const Map<String, StoryTranslation> frStoryTranslations = {
         'lequel les générations suivantes bâtirent leur compréhension '
         'de la dévotion pure et désintéressée envers Dieu, au-delà de '
         'tout calcul ou contrepartie.',
-    source: 'Livres de biographies — comme Sifat as-Safwa d\'Ibn '
+    source:
+        'Livres de biographies — comme Sifat as-Safwa d\'Ibn '
         'al-Jawzi',
   ),
 
@@ -1914,7 +1930,8 @@ const Map<String, StoryTranslation> frStoryTranslations = {
         'comprit alors que chaque acte étrange avait une sagesse '
         'immense qu\'il n\'aurait pas pu connaître si l\'homme vertueux '
         'ne la lui avait pas expliquée.',
-    source: 'Sourate Al-Kahf : 60-82 (version simplifiée pour les '
+    source:
+        'Sourate Al-Kahf : 60-82 (version simplifiée pour les '
         'enfants)',
   ),
   'child-6': StoryTranslation(
@@ -1943,7 +1960,8 @@ const Map<String, StoryTranslation> frStoryTranslations = {
         'deux premiers humains à y vivre, et pour que cela soit une '
         'leçon pour tous les hommes : ne jamais croire les suggestions '
         'de Satan, si belles paraissent-elles.',
-    source: 'Sourate Al-Baqara : 35-37 et sourate Ta-Ha : 115-123 '
+    source:
+        'Sourate Al-Baqara : 35-37 et sourate Ta-Ha : 115-123 '
         '(version simplifiée pour les enfants)',
   ),
 
@@ -2278,7 +2296,8 @@ const Map<String, StoryTranslation> frStoryTranslations = {
         'sa place dans le cœur du Prophète ﷺ comme fils bien-aimé ne '
         'changea jamais — il est le seul compagnon nommé directement '
         'dans le Coran.',
-    source: 'Livres de la Sira prophétique — sourate Al-Ahzab : 4-5 et '
+    source:
+        'Livres de la Sira prophétique — sourate Al-Ahzab : 4-5 et '
         '37',
   ),
 
@@ -2512,7 +2531,8 @@ const Map<String, StoryTranslation> frStoryTranslations = {
         'danger de la trahison et de la rupture des engagements, et sur '
         'le prix immense payé par les premiers porteurs du Coran pour '
         'la diffusion de cette religion.',
-    source: 'Sahih al-Boukhari et Muslim — livres de la Sira '
+    source:
+        'Sahih al-Boukhari et Muslim — livres de la Sira '
         'prophétique',
   ),
   'battle-7': StoryTranslation(

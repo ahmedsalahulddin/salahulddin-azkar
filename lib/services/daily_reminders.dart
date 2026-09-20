@@ -47,7 +47,9 @@ class DailyReminders {
   /// reader asked for, expressed as clock times since the reminder is laid
   /// down before the day's prayer times are known.
   static final verseFirst = ValueNotifier<DayTime>(const DayTime(10 * 60));
-  static final verseSecond = ValueNotifier<DayTime>(const DayTime(22 * 60 + 30));
+  static final verseSecond = ValueNotifier<DayTime>(
+    const DayTime(22 * 60 + 30),
+  );
 
   // ---- morning and evening adhkar ----------------------------------------
 
@@ -75,16 +77,22 @@ class DailyReminders {
 
       morningOn.value = prefs.getBool(_keys['morning_on']!) ?? false;
       eveningOn.value = prefs.getBool(_keys['evening_on']!) ?? false;
-      morningAt.value = DayTime(at('morning_at') ?? 6 * 60)
-          .clampTo(morningWindow.earliest, morningWindow.latest);
-      eveningAt.value = DayTime(at('evening_at') ?? 17 * 60)
-          .clampTo(eveningWindow.earliest, eveningWindow.latest);
+      morningAt.value = DayTime(
+        at('morning_at') ?? 6 * 60,
+      ).clampTo(morningWindow.earliest, morningWindow.latest);
+      eveningAt.value = DayTime(
+        at('evening_at') ?? 17 * 60,
+      ).clampTo(eveningWindow.earliest, eveningWindow.latest);
     } catch (_) {
       // Off is the safe default: nothing arrives unasked.
     }
   }
 
-  static Future<void> setVerse({bool? on, DayTime? first, DayTime? second}) async {
+  static Future<void> setVerse({
+    bool? on,
+    DayTime? first,
+    DayTime? second,
+  }) async {
     if (on != null) verseOn.value = on;
     if (first != null) verseFirst.value = first;
     if (second != null) verseSecond.value = second;
@@ -94,8 +102,10 @@ class DailyReminders {
   static Future<void> setMorning({bool? on, DayTime? at}) async {
     if (on != null) morningOn.value = on;
     if (at != null) {
-      morningAt.value =
-          at.clampTo(morningWindow.earliest, morningWindow.latest);
+      morningAt.value = at.clampTo(
+        morningWindow.earliest,
+        morningWindow.latest,
+      );
     }
     await _persist();
   }
@@ -103,8 +113,10 @@ class DailyReminders {
   static Future<void> setEvening({bool? on, DayTime? at}) async {
     if (on != null) eveningOn.value = on;
     if (at != null) {
-      eveningAt.value =
-          at.clampTo(eveningWindow.earliest, eveningWindow.latest);
+      eveningAt.value = at.clampTo(
+        eveningWindow.earliest,
+        eveningWindow.latest,
+      );
     }
     await _persist();
   }

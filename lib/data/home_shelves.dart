@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../constants/theme.dart';
 import '../l10n/strings.dart';
+import '../services/app_locale.dart';
 import '../data/adhkar_data.dart';
 import '../data/greeting_cards.dart';
 import '../data/lessons.dart';
@@ -123,7 +124,10 @@ List<HomeShelf> buildShelves() => [
 /// (DuasHomeScreen), not as individual home-screen cards, since they are
 /// personal and can grow without bound.
 HomeShelf? _duasShelf() {
-  final categories = DuasService.baseCache.value;
+  final code = AppLocale.code;
+  final categories = [
+    for (final c in DuasService.baseCache.value) c.localized(code),
+  ];
   if (categories.isEmpty) return null;
 
   ShelfItem card(DuaCategory category) => ShelfItem(

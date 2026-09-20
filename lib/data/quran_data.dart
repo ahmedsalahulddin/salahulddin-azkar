@@ -17,12 +17,12 @@ class SurahInfo {
   });
 
   factory SurahInfo.fromJson(Map<String, dynamic> j) => SurahInfo(
-        number: j['n'],
-        name: j['name'],
-        nameEn: j['nameEn'],
-        ayahCount: j['ayahs'],
-        type: j['type'],
-      );
+    number: j['n'],
+    name: j['name'],
+    nameEn: j['nameEn'],
+    ayahCount: j['ayahs'],
+    type: j['type'],
+  );
 
   /// Al-Fatiha counts the Basmala as its first ayah, and At-Tawbah has none,
   /// so only the other 112 surahs show it as a header.
@@ -76,12 +76,12 @@ class MushafPage {
   });
 
   factory MushafPage.fromJson(Map<String, dynamic> j) => MushafPage(
-        number: j['p'],
-        juz: j['j'],
-        runs: (j['r'] as List)
-            .map((e) => AyahRun.fromJson(e as Map<String, dynamic>))
-            .toList(),
-      );
+    number: j['p'],
+    juz: j['j'],
+    runs: (j['r'] as List)
+        .map((e) => AyahRun.fromJson(e as Map<String, dynamic>))
+        .toList(),
+  );
 }
 
 /// An ayah that matched a search, with where it lives.
@@ -240,13 +240,15 @@ class QuranService {
     for (final info in await index()) {
       final surah = await QuranService.surah(info.number);
       for (final ayah in surah.ayahs) {
-        built.add(AyahHit(
-          surah: info.number,
-          surahName: info.name,
-          ayah: ayah.number,
-          text: ayah.text,
-          key: matchKey(ayah.text),
-        ));
+        built.add(
+          AyahHit(
+            surah: info.number,
+            surahName: info.name,
+            ayah: ayah.number,
+            text: ayah.text,
+            key: matchKey(ayah.text),
+          ),
+        );
       }
     }
     return _searchIndex = built;

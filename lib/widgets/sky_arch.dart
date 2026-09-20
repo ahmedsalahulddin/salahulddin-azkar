@@ -28,13 +28,14 @@ class SkyArch extends StatelessWidget {
   /// lives here, over everything.
   final Widget? aboveDome;
 
-  const SkyArch(
-      {super.key,
-      required this.data,
-      required this.now,
-      this.inDome,
-      this.footer,
-      this.aboveDome});
+  const SkyArch({
+    super.key,
+    required this.data,
+    required this.now,
+    this.inDome,
+    this.footer,
+    this.aboveDome,
+  });
 
   static const height = 282.0;
 
@@ -51,7 +52,9 @@ class SkyArch extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          CustomPaint(painter: SkyArchPainter(data: data, now: now)),
+          CustomPaint(
+            painter: SkyArchPainter(data: data, now: now),
+          ),
           if (inDome != null)
             Positioned(
               left: 0,
@@ -138,7 +141,9 @@ class SkyArchPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final panel = RRect.fromRectAndRadius(
-        Offset.zero & size, const Radius.circular(20));
+      Offset.zero & size,
+      const Radius.circular(20),
+    );
     canvas.save();
     canvas.clipRRect(panel);
 
@@ -161,11 +166,12 @@ class SkyArchPainter extends CustomPainter {
 
     canvas.restore();
     canvas.drawRRect(
-        panel,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1
-          ..color = _gold.withValues(alpha: 0.35));
+      panel,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1
+        ..color = _gold.withValues(alpha: 0.35),
+    );
   }
 
   void _stars(Canvas canvas, Size size) {
@@ -174,23 +180,27 @@ class SkyArchPainter extends CustomPainter {
     final random = math.Random(7);
     for (var i = 0; i < 40; i++) {
       canvas.drawCircle(
-        Offset(random.nextDouble() * size.width,
-            random.nextDouble() * size.height * 0.7),
+        Offset(
+          random.nextDouble() * size.width,
+          random.nextDouble() * size.height * 0.7,
+        ),
         0.5 + random.nextDouble(),
         Paint()
-          ..color =
-              Colors.white.withValues(alpha: 0.15 + random.nextDouble() * 0.4),
+          ..color = Colors.white.withValues(
+            alpha: 0.15 + random.nextDouble() * 0.4,
+          ),
       );
     }
   }
 
   void _horizon(Canvas canvas, Size size, double y) {
     canvas.drawLine(
-        Offset(14, y),
-        Offset(size.width - 14, y),
-        Paint()
-          ..strokeWidth = 1
-          ..color = _gold.withValues(alpha: 0.4));
+      Offset(14, y),
+      Offset(size.width - 14, y),
+      Paint()
+        ..strokeWidth = 1
+        ..color = _gold.withValues(alpha: 0.4),
+    );
   }
 
   /// A mosque dome on the horizon: drum, onion bulb, finial and crescent.
@@ -223,18 +233,22 @@ class SkyArchPainter extends CustomPainter {
     // Finial and crescent.
     final tip = Offset(cx, y0 - 96);
     canvas.drawLine(
-        tip,
-        tip - const Offset(0, 7),
-        Paint()
-          ..strokeWidth = 1.6
-          ..color = _gold);
+      tip,
+      tip - const Offset(0, 7),
+      Paint()
+        ..strokeWidth = 1.6
+        ..color = _gold,
+    );
     final c = tip - const Offset(0, 12);
     final disc = Path()..addOval(Rect.fromCircle(center: c, radius: 5.4));
     final bite = Path()
       ..addOval(
-          Rect.fromCircle(center: c + const Offset(2.4, -1), radius: 4.8));
-    canvas.drawPath(Path.combine(PathOperation.difference, disc, bite),
-        Paint()..color = _goldLight);
+        Rect.fromCircle(center: c + const Offset(2.4, -1), radius: 4.8),
+      );
+    canvas.drawPath(
+      Path.combine(PathOperation.difference, disc, bite),
+      Paint()..color = _goldLight,
+    );
   }
 
   void _skyPath(Canvas canvas, Size size, double horizon) {
@@ -249,12 +263,16 @@ class SkyArchPainter extends CustomPainter {
       if (wrapped <= 1) {
         final theta = math.pi * wrapped;
         return Offset(
-            cx + radius * math.cos(theta), horizon - radius * math.sin(theta));
+          cx + radius * math.cos(theta),
+          horizon - radius * math.sin(theta),
+        );
       }
       final p = wrapped - 1;
       final theta = math.pi * p;
       return Offset(
-          cx - radius * math.cos(theta), horizon + dip * math.sin(theta));
+        cx - radius * math.cos(theta),
+        horizon + dip * math.sin(theta),
+      );
     }
 
     // Daylight solid, night dotted.
@@ -264,14 +282,18 @@ class SkyArchPainter extends CustomPainter {
       i == 0 ? day.moveTo(p.dx, p.dy) : day.lineTo(p.dx, p.dy);
     }
     canvas.drawPath(
-        day,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.4
-          ..color = _gold.withValues(alpha: 0.8));
+      day,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.4
+        ..color = _gold.withValues(alpha: 0.8),
+    );
     for (var i = 0; i < 42; i++) {
       canvas.drawCircle(
-          at(1 + i / 42), 0.9, Paint()..color = _gold.withValues(alpha: 0.4));
+        at(1 + i / 42),
+        0.9,
+        Paint()..color = _gold.withValues(alpha: 0.4),
+      );
     }
 
     final fraction = clock.fractionFor(now);
@@ -282,17 +304,19 @@ class SkyArchPainter extends CustomPainter {
       final where = at(clock.fractionFor(prayer.time));
       final marked = prayer.isNext;
       canvas.drawCircle(
-          where,
-          marked ? 4.4 : 2.9,
-          Paint()..color = marked ? _goldLight : _gold.withValues(alpha: 0.9));
+        where,
+        marked ? 4.4 : 2.9,
+        Paint()..color = marked ? _goldLight : _gold.withValues(alpha: 0.9),
+      );
       if (marked) {
         canvas.drawCircle(
-            where,
-            8,
-            Paint()
-              ..style = PaintingStyle.stroke
-              ..strokeWidth = 1.1
-              ..color = _goldLight.withValues(alpha: 0.6));
+          where,
+          8,
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.1
+            ..color = _goldLight.withValues(alpha: 0.6),
+        );
       }
       _label(canvas, prayer.name, where, cx, horizon, marked);
     }
@@ -303,8 +327,11 @@ class SkyArchPainter extends CustomPainter {
   void _glow(Canvas canvas, Offset centre, bool daylight) {
     final colour = daylight ? const Color(0xFFFFD98A) : const Color(0xFFF3E4B8);
     for (var i = 5; i >= 1; i--) {
-      canvas.drawCircle(centre, i * 7.5,
-          Paint()..color = colour.withValues(alpha: 0.05 * (6 - i)));
+      canvas.drawCircle(
+        centre,
+        i * 7.5,
+        Paint()..color = colour.withValues(alpha: 0.05 * (6 - i)),
+      );
     }
   }
 
@@ -330,16 +357,28 @@ class SkyArchPainter extends CustomPainter {
     const r = 8.0;
     final disc = Path()..addOval(Rect.fromCircle(center: centre, radius: r));
     final bite = Path()
-      ..addOval(Rect.fromCircle(
-          center: centre + const Offset(4.2, -2.2), radius: r * 0.95));
-    canvas.drawPath(Path.combine(PathOperation.difference, disc, bite),
-        Paint()..color = const Color(0xFFF6E7BC));
+      ..addOval(
+        Rect.fromCircle(
+          center: centre + const Offset(4.2, -2.2),
+          radius: r * 0.95,
+        ),
+      );
+    canvas.drawPath(
+      Path.combine(PathOperation.difference, disc, bite),
+      Paint()..color = const Color(0xFFF6E7BC),
+    );
   }
 
   /// Day labels sit inside the curve; the two night prayers get pushed down
   /// below the horizon instead, where inward would stack them on the ends.
-  void _label(Canvas canvas, String name, Offset at, double cx, double horizon,
-      bool marked) {
+  void _label(
+    Canvas canvas,
+    String name,
+    Offset at,
+    double cx,
+    double horizon,
+    bool marked,
+  ) {
     final painter = TextPainter(
       text: TextSpan(
         text: name,
@@ -372,8 +411,10 @@ class SkyArchPainter extends CustomPainter {
       anchor += Offset(-unit.dx * 14, 2);
     }
 
-    painter.paint(canvas,
-        Offset(anchor.dx - painter.width / 2, anchor.dy - painter.height / 2));
+    painter.paint(
+      canvas,
+      Offset(anchor.dx - painter.width / 2, anchor.dy - painter.height / 2),
+    );
   }
 
   @override

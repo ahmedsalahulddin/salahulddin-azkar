@@ -124,7 +124,9 @@ class DhikrReminder {
     final end = toHour.value * 60;
     if (end <= start || perDay.value < 1) return const [];
     final step = (end - start) ~/ perDay.value;
-    return [for (var i = 0; i < perDay.value; i++) start + step ~/ 2 + i * step];
+    return [
+      for (var i = 0; i < perDay.value; i++) start + step ~/ 2 + i * step,
+    ];
   }
 
   /// A slot [lead] minutes before each of the five prayers, as minutes past
@@ -157,9 +159,9 @@ class DhikrReminder {
   /// any kind, and the "never return an empty pool" fallback quietly handed
   /// back every short dhikr instead. The chips looked like they worked and
   /// none of them did: asking for supplications sent tasbih.
-  static bool _carries(Dhikr dhikr, String marker) =>
-      QuranService.searchKey(dhikr.text)
-          .contains(QuranService.searchKey(marker));
+  static bool _carries(Dhikr dhikr, String marker) => QuranService.searchKey(
+    dhikr.text,
+  ).contains(QuranService.searchKey(marker));
 
   static List<Dhikr> get pool {
     final short = adhkar.where((d) => d.text.length <= 90).toList();
@@ -179,8 +181,7 @@ class DhikrReminder {
       for (final f in DhikrFlavour.values)
         if (f.marker != null) f.marker!,
     ];
-    final rest =
-        short.where((d) => !named.any((m) => _carries(d, m))).toList();
+    final rest = short.where((d) => !named.any((m) => _carries(d, m))).toList();
     return rest.isEmpty ? short : rest;
   }
 

@@ -97,7 +97,8 @@ class TranslationService {
   ];
 
   static const _preferenceKey = '@noor_translation';
-  static const _host = 'https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/editions';
+  static const _host =
+      'https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/editions';
 
   static Translation byId(String id) =>
       available.firstWhere((t) => t.id == id, orElse: () => available.first);
@@ -149,8 +150,10 @@ class TranslationService {
       throw StateError('${translation.language} is not downloaded');
     }
 
-    final decoded = (jsonDecode(await file.readAsString()) as Map<String, dynamic>)
-        .map((ayah, text) => MapEntry(int.parse(ayah), text as String));
+    final decoded =
+        (jsonDecode(await file.readAsString()) as Map<String, dynamic>).map(
+          (ayah, text) => MapEntry(int.parse(ayah), text as String),
+        );
     return _cache[key] = decoded;
   }
 
@@ -217,7 +220,8 @@ class TranslationService {
           .timeout(const Duration(seconds: 30));
       if (res.statusCode != 200) return false;
 
-      final body = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+      final body =
+          jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
       final verses = body['chapter'] as List?;
       if (verses == null || verses.isEmpty) return false;
 

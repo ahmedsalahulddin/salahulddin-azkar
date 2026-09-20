@@ -31,17 +31,17 @@ enum PrayerMethod {
       values.firstWhere((m) => m.id == id, orElse: () => auto);
 
   CalculationParameters get parameters => switch (this) {
-        PrayerMethod.auto => CalculationMethod.umm_al_qura.getParameters(),
-        PrayerMethod.ummAlQura => CalculationMethod.umm_al_qura.getParameters(),
-        PrayerMethod.egyptian => CalculationMethod.egyptian.getParameters(),
-        PrayerMethod.muslimWorldLeague =>
-          CalculationMethod.muslim_world_league.getParameters(),
-        PrayerMethod.karachi => CalculationMethod.karachi.getParameters(),
-        PrayerMethod.dubai => CalculationMethod.dubai.getParameters(),
-        PrayerMethod.turkey => CalculationMethod.turkey.getParameters(),
-        PrayerMethod.northAmerica =>
-          CalculationMethod.north_america.getParameters(),
-      };
+    PrayerMethod.auto => CalculationMethod.umm_al_qura.getParameters(),
+    PrayerMethod.ummAlQura => CalculationMethod.umm_al_qura.getParameters(),
+    PrayerMethod.egyptian => CalculationMethod.egyptian.getParameters(),
+    PrayerMethod.muslimWorldLeague =>
+      CalculationMethod.muslim_world_league.getParameters(),
+    PrayerMethod.karachi => CalculationMethod.karachi.getParameters(),
+    PrayerMethod.dubai => CalculationMethod.dubai.getParameters(),
+    PrayerMethod.turkey => CalculationMethod.turkey.getParameters(),
+    PrayerMethod.northAmerica =>
+      CalculationMethod.north_america.getParameters(),
+  };
 
   /// The method in use where the reader is standing.
   ///
@@ -124,7 +124,9 @@ class PrayerSettings {
 
   /// The parameters to compute with at [latitude], [longitude].
   static CalculationParameters parametersFor(
-      double latitude, double longitude) {
+    double latitude,
+    double longitude,
+  ) {
     final chosen = method.value == PrayerMethod.auto
         ? PrayerMethod.forPlace(latitude, longitude)
         : method.value;
@@ -135,6 +137,6 @@ class PrayerSettings {
   /// reader which method they are actually on.
   static PrayerMethod effective(double latitude, double longitude) =>
       method.value == PrayerMethod.auto
-          ? PrayerMethod.forPlace(latitude, longitude)
-          : method.value;
+      ? PrayerMethod.forPlace(latitude, longitude)
+      : method.value;
 }

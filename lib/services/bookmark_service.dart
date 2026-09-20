@@ -34,23 +34,23 @@ class Bookmark {
   String get key => '${kind.name}:$surah:$ayah';
 
   Map<String, dynamic> toJson() => {
-        'k': kind.name,
-        's': surah,
-        'a': ayah,
-        'p': page,
-        if (note != null) 'n': note,
-      };
+    'k': kind.name,
+    's': surah,
+    'a': ayah,
+    'p': page,
+    if (note != null) 'n': note,
+  };
 
   factory Bookmark.fromJson(Map<String, dynamic> j) => Bookmark(
-        kind: BookmarkKind.values.firstWhere(
-          (k) => k.name == j['k'],
-          orElse: () => BookmarkKind.reading,
-        ),
-        surah: j['s'],
-        ayah: j['a'],
-        page: j['p'],
-        note: j['n'],
-      );
+    kind: BookmarkKind.values.firstWhere(
+      (k) => k.name == j['k'],
+      orElse: () => BookmarkKind.reading,
+    ),
+    surah: j['s'],
+    ayah: j['a'],
+    page: j['p'],
+    note: j['n'],
+  );
 }
 
 /// Marks placed on ayahs: a reading position, something being memorised, or a
@@ -107,7 +107,9 @@ class BookmarkService {
   /// Removes locally and tells the account, for the same reason favourites do:
   /// a merge unions, so a deletion that stays here comes back from there.
   static Future<void> remove(BookmarkKind kind, int surah, int ayah) async {
-    unawaited(SyncService.forget(SyncKind.bookmark, '${kind.name}:$surah:$ayah'));
+    unawaited(
+      SyncService.forget(SyncKind.bookmark, '${kind.name}:$surah:$ayah'),
+    );
     final list = await all()
       ..removeWhere(
         (b) => b.kind == kind && b.surah == surah && b.ayah == ayah,

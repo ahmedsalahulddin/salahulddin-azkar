@@ -42,7 +42,8 @@ enum CardPalette {
   bool get isLight => this == CardPalette.sand;
 
   Color get body => isLight ? const Color(0xFF2A2114) : const Color(0xFFF2ECDE);
-  Color get muted => isLight ? const Color(0xFF7A6743) : const Color(0xFFA4977C);
+  Color get muted =>
+      isLight ? const Color(0xFF7A6743) : const Color(0xFFA4977C);
 }
 
 /// One card: a greeting, and something from the Book underneath it.
@@ -87,8 +88,11 @@ class ResolvedCard {
   final String verse;
   final String citation;
 
-  const ResolvedCard(
-      {required this.card, required this.verse, required this.citation});
+  const ResolvedCard({
+    required this.card,
+    required this.verse,
+    required this.citation,
+  });
 }
 
 class GreetingCards {
@@ -282,19 +286,27 @@ class GreetingCards {
   /// sets. Fails open like every other reader of that config: an unreachable
   /// project shows every card rather than an empty shelf.
   static List<GreetingCard> of(CardShelf shelf) {
-    final shown = [
-      for (var i = 0; i < all.length; i++)
-        if (all[i].shelf == shelf && SectionConfig.isVisible(all[i].sectionKey))
-          (all[i], i),
-    ]..sort((a, b) => SectionConfig.orderOf(a.$1.sectionKey, a.$2)
-        .compareTo(SectionConfig.orderOf(b.$1.sectionKey, b.$2)));
+    final shown =
+        [
+          for (var i = 0; i < all.length; i++)
+            if (all[i].shelf == shelf &&
+                SectionConfig.isVisible(all[i].sectionKey))
+              (all[i], i),
+        ]..sort(
+          (a, b) => SectionConfig.orderOf(
+            a.$1.sectionKey,
+            a.$2,
+          ).compareTo(SectionConfig.orderOf(b.$1.sectionKey, b.$2)),
+        );
     return [for (final (card, _) in shown) card];
   }
 
   /// Shelves with nothing left on them drop out of the home row, so a reader
   /// never opens onto an empty grid.
-  static List<CardShelf> get shelvesInUse =>
-      [for (final shelf in CardShelf.values) if (of(shelf).isNotEmpty) shelf];
+  static List<CardShelf> get shelvesInUse => [
+    for (final shelf in CardShelf.values)
+      if (of(shelf).isNotEmpty) shelf,
+  ];
 
   /// Fills in the verse text and its citation from the bundled Mushaf.
   static Future<ResolvedCard> resolve(GreetingCard card) async {

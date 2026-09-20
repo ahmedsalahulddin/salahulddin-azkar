@@ -98,8 +98,10 @@ class _MushafPageImageState extends State<MushafPageImage> {
 
   /// Where the image actually lands inside [box] under BoxFit.contain.
   Rect _drawnRect(Size box, Size image) {
-    final scale =
-        (box.width / image.width).clamp(0.0, box.height / image.height);
+    final scale = (box.width / image.width).clamp(
+      0.0,
+      box.height / image.height,
+    );
     final width = image.width * scale;
     final height = image.height * scale;
     return Rect.fromLTWH(
@@ -152,7 +154,8 @@ class _MushafPageImageState extends State<MushafPageImage> {
             _reported = drawn;
             // After this frame: the listener resizes what encloses us.
             WidgetsBinding.instance.addPostFrameCallback(
-                (_) => widget.onDrawn!(drawn));
+              (_) => widget.onDrawn!(drawn),
+            );
           }
         }
 
@@ -262,7 +265,9 @@ class _HizbPainter extends CustomPainter {
         centre,
         radius,
         Paint()
-          ..color = mark.strong ? const Color(0xE6B8860B) : const Color(0x00000000)
+          ..color = mark.strong
+              ? const Color(0xE6B8860B)
+              : const Color(0x00000000)
           ..style = PaintingStyle.fill,
       );
       canvas.drawCircle(

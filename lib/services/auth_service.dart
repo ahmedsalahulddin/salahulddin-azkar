@@ -19,10 +19,14 @@ class AuthConfig {
   static const _defaultAnonKey =
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlueG1rcXN6ZmJ6aXhwZXhnb2x3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYxODk3MjIsImV4cCI6MjEwMTc2NTcyMn0.E8bHRxdQmvVjLhB3a3WK53XXrr2kAwKpcrZuA1xSIpU';
 
-  static const url =
-      String.fromEnvironment('SUPABASE_URL', defaultValue: _defaultUrl);
-  static const anonKey =
-      String.fromEnvironment('SUPABASE_ANON_KEY', defaultValue: _defaultAnonKey);
+  static const url = String.fromEnvironment(
+    'SUPABASE_URL',
+    defaultValue: _defaultUrl,
+  );
+  static const anonKey = String.fromEnvironment(
+    'SUPABASE_ANON_KEY',
+    defaultValue: _defaultAnonKey,
+  );
 
   /// Where the provider returns to after sign-in.
   ///
@@ -54,10 +58,10 @@ enum SignInProvider {
   const SignInProvider(this.key, this.brand, this.label);
 
   OAuthProvider get oauth => switch (this) {
-        SignInProvider.google => OAuthProvider.google,
-        SignInProvider.facebook => OAuthProvider.facebook,
-        SignInProvider.apple => OAuthProvider.apple,
-      };
+    SignInProvider.google => OAuthProvider.google,
+    SignInProvider.facebook => OAuthProvider.facebook,
+    SignInProvider.apple => OAuthProvider.apple,
+  };
 }
 
 /// A signed-in person, or null when reading as a guest.
@@ -67,12 +71,7 @@ class AppUser {
   final String? email;
   final String? photoUrl;
 
-  const AppUser({
-    required this.id,
-    this.name,
-    this.email,
-    this.photoUrl,
-  });
+  const AppUser({required this.id, this.name, this.email, this.photoUrl});
 
   String get displayName => name?.trim().isNotEmpty == true
       ? name!
@@ -134,10 +133,12 @@ class AuthService {
   static Future<void> refreshProviders() async {
     if (!isConfigured) return;
     try {
-      final res = await http.get(
-        Uri.parse('${AuthConfig.url}/auth/v1/settings'),
-        headers: {'apikey': AuthConfig.anonKey},
-      ).timeout(const Duration(seconds: 10));
+      final res = await http
+          .get(
+            Uri.parse('${AuthConfig.url}/auth/v1/settings'),
+            headers: {'apikey': AuthConfig.anonKey},
+          )
+          .timeout(const Duration(seconds: 10));
       if (res.statusCode != 200) return;
 
       final external =

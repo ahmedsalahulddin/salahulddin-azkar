@@ -50,13 +50,12 @@ class RepeatSettings {
     int? wholeRange,
     int? rangeLength,
     Duration? gap,
-  }) =>
-      RepeatSettings(
-        perAyah: perAyah ?? this.perAyah,
-        wholeRange: wholeRange ?? this.wholeRange,
-        rangeLength: rangeLength ?? this.rangeLength,
-        gap: gap ?? this.gap,
-      );
+  }) => RepeatSettings(
+    perAyah: perAyah ?? this.perAyah,
+    wholeRange: wholeRange ?? this.wholeRange,
+    rangeLength: rangeLength ?? this.rangeLength,
+    gap: gap ?? this.gap,
+  );
 
   static const _perAyahKey = '@noor_repeat_per_ayah';
   static const _wholeKey = '@noor_repeat_whole';

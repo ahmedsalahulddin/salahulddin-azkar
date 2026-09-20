@@ -169,8 +169,12 @@ class SpeakButton extends StatelessWidget {
   final String text;
   final double size;
 
-  const SpeakButton(
-      {super.key, required this.id, required this.text, this.size = 18});
+  const SpeakButton({
+    super.key,
+    required this.id,
+    required this.text,
+    this.size = 18,
+  });
 
   @override
   Widget build(BuildContext context) {

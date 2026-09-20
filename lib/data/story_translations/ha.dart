@@ -153,7 +153,8 @@ const Map<String, StoryTranslation> haStoryTranslations = {
         'cewa: "Mun yi imani da Ubangijin Haruna da Musa," ko '
         'da yake Fir\'auna ya yi musu barazanar yanke hannaye da '
         'ƙafafunsu daban-daban.',
-    source: 'Suratu Taha: 17-21, Suratul A\'raf: 107-122, da '
+    source:
+        'Suratu Taha: 17-21, Suratul A\'raf: 107-122, da '
         'Suratu Ash-Shu\'ara: 38-51',
   ),
   'miracle-6': StoryTranslation(
@@ -465,7 +466,8 @@ const Map<String, StoryTranslation> haStoryTranslations = {
         'shi, sai mutane suka shaida babbar mu\'ujiza a gaban '
         'idanunsu, amma yawancinsu suka dage a kan kafirci duk '
         'da haka.',
-    source: 'Suratul Anbiya: 51-70, Suratul An\'am: 74-79, da '
+    source:
+        'Suratul Anbiya: 51-70, Suratul An\'am: 74-79, da '
         'Suratus Saffat: 83-98',
   ),
   'prophet-4': StoryTranslation(
@@ -563,7 +565,8 @@ const Map<String, StoryTranslation> haStoryTranslations = {
         'nutsar da su duka a gaban idanun Bani Isra\'ila, suna kallon '
         'ƙarshen azzalumin da ya bautar da su na ƙarnuka, a cikin '
         'lokaci guda.',
-    source: 'Suratul Qasas: 7-43, Suratu Ash-Shu\'ara: 10-68, da '
+    source:
+        'Suratul Qasas: 7-43, Suratu Ash-Shu\'ara: 10-68, da '
         'Suratu Taha',
   ),
   'prophet-6': StoryTranslation(
@@ -603,7 +606,8 @@ const Map<String, StoryTranslation> haStoryTranslations = {
         'Alkur\'ani ya ambata da faɗarsa: "Don me babu wani gari '
         'da ya yi imani sai imaninsa ya amfane shi, sai mutanen '
         'Yunusa."',
-    source: 'Suratus Saffat: 139-148, Suratul Anbiya: 87-88, da '
+    source:
+        'Suratus Saffat: 139-148, Suratul Anbiya: 87-88, da '
         'Suratu Yunusa: 98',
   ),
   'prophet-7': StoryTranslation(
@@ -838,7 +842,8 @@ const Map<String, StoryTranslation> haStoryTranslations = {
         'ya ambace ta a matsayin ɗaya daga cikin mafi kyawun '
         'mata na dukkan duniya tare da Maryamu \'yar Imrana, '
         'Khadija, da Fatima Allah Ya yarda da su.',
-    source: 'Suratut Tahrim: 11 da Suratul Qasas: 9 — Sahihul '
+    source:
+        'Suratut Tahrim: 11 da Suratul Qasas: 9 — Sahihul '
         'Bukhari',
   ),
   'prophet-13': StoryTranslation(
@@ -970,7 +975,8 @@ const Map<String, StoryTranslation> haStoryTranslations = {
         'ga kowa daga cikinsu — sai Ya hallaka shi gaba ɗaya har '
         'babu wani abin da ya rage daga gare shi, darasi ga waɗanda '
         'suke tunani a kan sakamakon aikin ƙazanta.',
-    source: 'Suratu Hudu: 77-83, Suratul Hijr: 57-77, da Suratul '
+    source:
+        'Suratu Hudu: 77-83, Suratul Hijr: 57-77, da Suratul '
         'A\'raf: 80-84',
   ),
   'prophet-16': StoryTranslation(
@@ -1009,7 +1015,8 @@ const Map<String, StoryTranslation> haStoryTranslations = {
         'suka aikata masa: "Ya mutanena, lallai na isar muku saƙon '
         'Ubangijina na kuma yi muku nasiha, ta yaya zan yi baƙin '
         'ciki a kan mutane kafirai?"',
-    source: 'Suratu Hudu: 84-95, Suratul A\'raf: 85-93, da '
+    source:
+        'Suratu Hudu: 84-95, Suratul A\'raf: 85-93, da '
         'Suratu Ash-Shu\'ara: 176-191',
   ),
   'prophet-17': StoryTranslation(
@@ -1271,7 +1278,8 @@ const Map<String, StoryTranslation> haStoryTranslations = {
         'daga gare su sai Hudu da waɗanda suka yi imani tare da '
         'shi, sai ƙarfinsu da fadojinsu ba su yi wani amfani ba a '
         'gaban hukuncin Allah.',
-    source: 'Suratul A\'raf: 65-72, Suratu Hudu: 50-60, da '
+    source:
+        'Suratul A\'raf: 65-72, Suratu Hudu: 50-60, da '
         'Suratul Haqqa: 6-8',
   ),
 
@@ -1339,7 +1347,8 @@ const Map<String, StoryTranslation> haStoryTranslations = {
         'lokaci guda, babba da ƙarami, saboda ba su cika alkawarin '
         'da suka yi wa annabinsu a wani abu mai sauƙi ba: su bar '
         'raƙumi ya sha ruwa rana ɗaya a mako.',
-    source: 'Suratul A\'raf: 73-79, Suratu Ash-Shams: 11-15, da '
+    source:
+        'Suratul A\'raf: 73-79, Suratu Ash-Shams: 11-15, da '
         'Suratu Hudu: 61-68',
   ),
   'animal-3': StoryTranslation(
@@ -1671,7 +1680,8 @@ const Map<String, StoryTranslation> haStoryTranslations = {
         'amma tasirinsa na adalci ya kasance a rubuce a tarihin '
         'Musulunci har aka ɗauke shi khalifa na biyar mai shiriya '
         'bayan khalifofi huɗu na farko.',
-    source: 'Littattafan tarihi da sira — kamar Sirar Umar ɗan '
+    source:
+        'Littattafan tarihi da sira — kamar Sirar Umar ɗan '
         'Abdul-Aziz na Ibn al-Jauzi',
   ),
   'righteous-4': StoryTranslation(
@@ -1703,7 +1713,8 @@ const Map<String, StoryTranslation> haStoryTranslations = {
         'gwamnoni suna zuwa gare shi domin jin nasiharsa kuma '
         'suna bin ra\'ayinsa a al\'amura da yawa, ba tare da ya yi '
         'amfani da wannan matsayi domin girma ko dukiya ba.',
-    source: 'Littattafan tarihin rayuwa — kamar Hilyatul Auliya '
+    source:
+        'Littattafan tarihin rayuwa — kamar Hilyatul Auliya '
         'na Abu Nu\'aim',
   ),
   'righteous-5': StoryTranslation(
@@ -1732,7 +1743,8 @@ const Map<String, StoryTranslation> haStoryTranslations = {
         'zama misali a kan tsayuwa a kan gaskiya, ya kuma ci gaba '
         'ya zama malami wanda ake koyi da shi a fikihu da tsoron '
         'Allah har ƙarnuka bayan mutuwarsa.',
-    source: 'Littattafan tarihin rayuwa — kamar Siyar A\'lam '
+    source:
+        'Littattafan tarihin rayuwa — kamar Siyar A\'lam '
         'An-Nubala na Az-Zahabi',
   ),
   'righteous-6': StoryTranslation(
@@ -1763,7 +1775,8 @@ const Map<String, StoryTranslation> haStoryTranslations = {
         'nasara, sai ya zama misali madawwami cewa tsayin daka '
         'na mutum guda a kan gaskiya na iya kare akidar al\'umma '
         'gaba ɗaya daga karkacewa.',
-    source: 'Littattafan tarihin rayuwa da tarihi — kamar Siyar '
+    source:
+        'Littattafan tarihin rayuwa da tarihi — kamar Siyar '
         'A\'lam An-Nubala na Az-Zahabi',
   ),
   'righteous-7': StoryTranslation(
@@ -1800,7 +1813,8 @@ const Map<String, StoryTranslation> haStoryTranslations = {
         'tsawon zamansa da ibadarsa a Makka da Madina, sai ya '
         'canja daga wani ɗan fashi wanda ake tsoro zuwa jagora '
         'wanda ake koyi da shi a zuhudu da tsoron Allah.',
-    source: 'Littattafan tarihin rayuwa — kamar Hilyatul Auliya '
+    source:
+        'Littattafan tarihin rayuwa — kamar Hilyatul Auliya '
         'na Abu Nu\'aim',
   ),
   'righteous-8': StoryTranslation(
@@ -1832,7 +1846,8 @@ const Map<String, StoryTranslation> haStoryTranslations = {
         'kewaye da ita, sai misalinta ya zama tushe ga tsararraki '
         'masu zuwa domin su fahimci ma\'anar cikakken ikhlasi a '
         'ibada, nesa da wani hisabi ko sakamako.',
-    source: 'Littattafan tarihin rayuwa — kamar Sifatus Safwa '
+    source:
+        'Littattafan tarihin rayuwa — kamar Sifatus Safwa '
         'na Ibn al-Jauzi',
   ),
 
@@ -1988,7 +2003,8 @@ const Map<String, StoryTranslation> haStoryTranslations = {
         'cikinta, kuma domin wannan ya zama darasi ga dukkan '
         'mutane su kada su yarda da waswasin Shaiɗan komai '
         'kyansu.',
-    source: 'Suratul Baqara: 35-37 da Suratu Taha: 115-123 (an '
+    source:
+        'Suratul Baqara: 35-37 da Suratu Taha: 115-123 (an '
         'sauƙaƙe don yara)',
   ),
 

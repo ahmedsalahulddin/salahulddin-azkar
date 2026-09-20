@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../constants/theme.dart';
+import '../services/app_locale.dart';
 import '../services/auth_service.dart';
 import '../services/duas_service.dart';
 import '../widgets/sign_in_buttons.dart' show SignInButton;
@@ -40,8 +41,9 @@ class _DuasHomeScreenState extends State<DuasHomeScreen> {
   Future<void> _load() async {
     final results = await Future.wait([DuasService.base(), DuasService.mine()]);
     if (!mounted) return;
+    final code = AppLocale.code;
     setState(() {
-      _base = results[0];
+      _base = [for (final c in results[0]) c.localized(code)];
       _mine = results[1];
       _loading = false;
     });

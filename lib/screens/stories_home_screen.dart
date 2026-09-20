@@ -63,9 +63,13 @@ class StoriesHomeScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text('${cat.count} ${t('story.countSuffix')}',
-                        style: const TextStyle(
-                            color: AppColors.textMuted, fontSize: 11)),
+                    Text(
+                      '${cat.count} ${t('story.countSuffix')}',
+                      style: const TextStyle(
+                        color: AppColors.textMuted,
+                        fontSize: 11,
+                      ),
+                    ),
                   ],
                 ),
               ),

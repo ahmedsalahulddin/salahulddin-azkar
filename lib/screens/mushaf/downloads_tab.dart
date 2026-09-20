@@ -419,10 +419,7 @@ class _RecitationSurahItem extends StatelessWidget {
   String get _key => RecitationDownloads.keyOf(reciter.id, info.number);
 
   Future<void> _start(BuildContext context) async {
-    final ok = await RecitationDownloads.download(
-      reciter: reciter,
-      info: info,
-    );
+    final ok = await RecitationDownloads.download(reciter: reciter, info: info);
     if (!ok && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -494,10 +491,7 @@ class _RecitationSurahItem extends StatelessWidget {
             final progress = active?.value;
             return Container(
               margin: const EdgeInsets.only(bottom: 6),
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 8,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
                 color: AppColors.blackCard,
                 borderRadius: BorderRadius.circular(10),

@@ -70,7 +70,9 @@ class StorageService {
   static Future<void> saveTasbihCount(String dhikrId, int count) async {
     final prefs = await SharedPreferences.getInstance();
     final data = prefs.getString(_tasbihKey);
-    final counts = data != null ? jsonDecode(data) as Map<String, dynamic> : <String, dynamic>{};
+    final counts = data != null
+        ? jsonDecode(data) as Map<String, dynamic>
+        : <String, dynamic>{};
     counts[dhikrId] = count;
     await prefs.setString(_tasbihKey, jsonEncode(counts));
   }

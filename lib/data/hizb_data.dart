@@ -23,28 +23,24 @@ class HizbMark {
     required this.ayah,
   });
 
-  factory HizbMark.fromJson(Map<String, dynamic> j) => HizbMark(
-        hizb: j['h'],
-        quarter: j['q'],
-        surah: j['s'],
-        ayah: j['a'],
-      );
+  factory HizbMark.fromJson(Map<String, dynamic> j) =>
+      HizbMark(hizb: j['h'], quarter: j['q'], surah: j['s'], ayah: j['a']);
 
   /// What the margin says: the hizb by number, or which part of it this is.
   String get label => switch (quarter) {
-        0 => 'الحزب',
-        1 => '¼',
-        2 => '½',
-        _ => '¾',
-      };
+    0 => 'الحزب',
+    1 => '¼',
+    2 => '½',
+    _ => '¾',
+  };
 
   /// Spelled out, for the places with room for it.
   String get longLabel => switch (quarter) {
-        0 => 'الحزب $hizb',
-        1 => 'ربع الحزب $hizb',
-        2 => 'نصف الحزب $hizb',
-        _ => 'ثلاثة أرباع الحزب $hizb',
-      };
+    0 => 'الحزب $hizb',
+    1 => 'ربع الحزب $hizb',
+    2 => 'نصف الحزب $hizb',
+    _ => 'ثلاثة أرباع الحزب $hizb',
+  };
 
   /// The hizb's own opening is the mark the eye should catch first.
   bool get startsHizb => quarter == 0;
@@ -68,14 +64,17 @@ class HizbService {
   /// The marks that begin somewhere inside [runs] — the stretches of surah
   /// printed on one page. A page usually carries none; some carry two.
   static Future<List<HizbMark>> onPage(
-      Iterable<({int surah, int first, int last})> runs) async {
+    Iterable<({int surah, int first, int last})> runs,
+  ) async {
     final marks = await all();
     return [
       for (final mark in marks)
-        if (runs.any((r) =>
-            r.surah == mark.surah &&
-            mark.ayah >= r.first &&
-            mark.ayah <= r.last))
+        if (runs.any(
+          (r) =>
+              r.surah == mark.surah &&
+              mark.ayah >= r.first &&
+              mark.ayah <= r.last,
+        ))
           mark,
     ];
   }

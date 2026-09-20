@@ -161,7 +161,8 @@ const Map<String, StoryTranslation> idStoryTranslations = {
         'berkata: "Kami beriman kepada Tuhan Harun dan Musa," '
         'meski Firaun mengancam akan memotong tangan dan kaki '
         'mereka secara bersilang.',
-    source: 'Surah Taha: 17-21, Surah Al-A\'raf: 107-122, dan Surah '
+    source:
+        'Surah Taha: 17-21, Surah Al-A\'raf: 107-122, dan Surah '
         'Asy-Syu\'ara: 38-51',
   ),
   'miracle-6': StoryTranslation(
@@ -510,7 +511,8 @@ const Map<String, StoryTranslation> idStoryTranslations = {
         'saja, maka orang-orang menyaksikan mukjizat besar di '
         'hadapan mata mereka, namun kebanyakan mereka tetap '
         'bersikeras dalam kekafiran meski demikian.',
-    source: 'Surah Al-Anbiya: 51-70, Surah Al-An\'am: 74-79, dan '
+    source:
+        'Surah Al-Anbiya: 51-70, Surah Al-An\'am: 74-79, dan '
         'Surah Ash-Shaffat: 83-98',
   ),
   'prophet-4': StoryTranslation(
@@ -622,7 +624,8 @@ const Map<String, StoryTranslation> idStoryTranslations = {
         'mereka semua di hadapan mata Bani Israil, sementara mereka '
         'menyaksikan akhir dari penguasa lalim yang telah '
         'memperbudak mereka berabad-abad, dalam sekejap mata.',
-    source: 'Surah Al-Qasas: 7-43, Surah Asy-Syu\'ara: 10-68, dan '
+    source:
+        'Surah Al-Qasas: 7-43, Surah Asy-Syu\'ara: 10-68, dan '
         'Surah Taha',
   ),
   'prophet-6': StoryTranslation(
@@ -668,7 +671,8 @@ const Map<String, StoryTranslation> idStoryTranslations = {
         'Qur\'an dengan firman-Nya: "Maka mengapa tidak ada suatu '
         'kota yang beriman, lalu imannya itu bermanfaat kepadanya, '
         'selain kaum Yunus."',
-    source: 'Surah Ash-Shaffat: 139-148, Surah Al-Anbiya: 87-88, dan '
+    source:
+        'Surah Ash-Shaffat: 139-148, Surah Al-Anbiya: 87-88, dan '
         'Surah Yunus: 98',
   ),
   'prophet-7': StoryTranslation(
@@ -943,7 +947,8 @@ const Map<String, StoryTranslation> idStoryTranslations = {
         'kepalanya sendiri. Nabi ﷺ menyebutnya termasuk di antara '
         'wanita-wanita terbaik seluruh alam bersama Maryam binti '
         'Imran, Khadijah, dan Fatimah radhiyallahu anhunna.',
-    source: 'Surah At-Tahrim: 11 dan Surah Al-Qasas: 9 — Sahih '
+    source:
+        'Surah At-Tahrim: 11 dan Surah Al-Qasas: 9 — Sahih '
         'al-Bukhari',
   ),
   'prophet-13': StoryTranslation(
@@ -1098,7 +1103,8 @@ const Map<String, StoryTranslation> idStoryTranslations = {
         'total hingga tidak tersisa jejak sedikit pun darinya, sebagai '
         'pelajaran bagi orang-orang yang mau merenungkan akibat '
         'perbuatan keji.',
-    source: 'Surah Hud: 77-83, Surah Al-Hijr: 57-77, dan Surah '
+    source:
+        'Surah Hud: 77-83, Surah Al-Hijr: 57-77, dan Surah '
         'Al-A\'raf: 80-84',
   ),
   'prophet-16': StoryTranslation(
@@ -1150,7 +1156,8 @@ const Map<String, StoryTranslation> idStoryTranslations = {
         'menyampaikan kepadamu amanat-amanat Tuhanku dan aku '
         'telah memberi nasihat kepadamu, maka bagaimana aku '
         'akan bersedih hati terhadap orang-orang yang kafir?"',
-    source: 'Surah Hud: 84-95, Surah Al-A\'raf: 85-93, dan Surah '
+    source:
+        'Surah Hud: 84-95, Surah Al-A\'raf: 85-93, dan Surah '
         'Asy-Syu\'ara: 176-191',
   ),
   'prophet-17': StoryTranslation(
@@ -1464,7 +1471,8 @@ const Map<String, StoryTranslation> idStoryTranslations = {
         'orang yang beriman bersamanya, maka kekuatan dan istana-'
         'istana mereka sama sekali tidak berguna di hadapan '
         'ketentuan Allah.',
-    source: 'Surah Al-A\'raf: 65-72, Surah Hud: 50-60, dan Surah '
+    source:
+        'Surah Al-A\'raf: 65-72, Surah Hud: 50-60, dan Surah '
         'Al-Haqqah: 6-8',
   ),
 
@@ -1547,7 +1555,8 @@ const Map<String, StoryTranslation> idStoryTranslations = {
         'janji mereka kepada nabi mereka dalam perkara yang '
         'sederhana: membiarkan seekor unta minum sehari dalam '
         'sepekan.',
-    source: 'Surah Al-A\'raf: 73-79, Surah Asy-Syams: 11-15, dan '
+    source:
+        'Surah Al-A\'raf: 73-79, Surah Asy-Syams: 11-15, dan '
         'Surah Hud: 61-68',
   ),
   'animal-3': StoryTranslation(
@@ -1927,7 +1936,8 @@ const Map<String, StoryTranslation> idStoryTranslations = {
         'sementara ia masih muda, tetapi pengaruh keadilannya tetap '
         'terpahat dalam sejarah Islam hingga ia dianggap sebagai '
         'khalifah rasyidin kelima setelah empat khalifah pertama.',
-    source: 'Kitab-kitab sejarah dan sirah — seperti Sirah Umar bin '
+    source:
+        'Kitab-kitab sejarah dan sirah — seperti Sirah Umar bin '
         'Abdul Aziz karya Ibnul Jauzi',
   ),
   'righteous-4': StoryTranslation(
@@ -1964,7 +1974,8 @@ const Map<String, StoryTranslation> idStoryTranslations = {
         'dan gubernur mendatanginya untuk mendengarkan nasihatnya '
         'dan mengikuti pendapatnya dalam banyak perkara, tanpa ia '
         'memanfaatkan kedudukan ini untuk kekuasaan atau harta.',
-    source: 'Kitab-kitab biografi — seperti Hilyatul Auliya karya '
+    source:
+        'Kitab-kitab biografi — seperti Hilyatul Auliya karya '
         'Abu Nu\'aim',
   ),
   'righteous-5': StoryTranslation(
@@ -1997,7 +2008,8 @@ const Map<String, StoryTranslation> idStoryTranslations = {
         'pada kebenaran, dan tetap menjadi guru yang diteladani '
         'dalam fikih dan kewaraan hingga berabad-abad setelah '
         'wafatnya.',
-    source: 'Kitab-kitab biografi — seperti Siyar A\'lam An-Nubala '
+    source:
+        'Kitab-kitab biografi — seperti Siyar A\'lam An-Nubala '
         'karya Adz-Dzahabi',
   ),
   'righteous-6': StoryTranslation(
@@ -2030,7 +2042,8 @@ const Map<String, StoryTranslation> idStoryTranslations = {
         'para ulama besar itu menang, maka jadilah ia teladan abadi '
         'bahwa keteguhan seorang lelaki pada kebenaran dapat '
         'menjaga akidah seluruh umat dari penyimpangan.',
-    source: 'Kitab-kitab biografi dan sejarah — seperti Siyar A\'lam '
+    source:
+        'Kitab-kitab biografi dan sejarah — seperti Siyar A\'lam '
         'An-Nubala karya Adz-Dzahabi',
   ),
   'righteous-7': StoryTranslation(
@@ -2073,7 +2086,8 @@ const Map<String, StoryTranslation> idStoryTranslations = {
         'Madinah, maka berubahlah ia dari seorang perampok yang '
         'ditakuti menjadi pembimbing yang diteladani dalam kezuhudan '
         'dan ketakwaan.',
-    source: 'Kitab-kitab biografi — seperti Hilyatul Auliya karya '
+    source:
+        'Kitab-kitab biografi — seperti Hilyatul Auliya karya '
         'Abu Nu\'aim',
   ),
   'righteous-8': StoryTranslation(
@@ -2110,7 +2124,8 @@ const Map<String, StoryTranslation> idStoryTranslations = {
         'generasi-generasi berikutnya untuk memahami makna '
         'keikhlasan yang sempurna dalam beribadah, jauh dari segala '
         'perhitungan atau imbalan.',
-    source: 'Kitab-kitab biografi — seperti Shifatush Shafwah karya '
+    source:
+        'Kitab-kitab biografi — seperti Shifatush Shafwah karya '
         'Ibnul Jauzi',
   ),
 
@@ -2282,7 +2297,8 @@ const Map<String, StoryTranslation> idStoryTranslations = {
         'menjadi pelajaran bagi semua orang untuk tidak mempercayai '
         'bisikan-bisikan setan betapapun indahnya bisikan itu '
         'tampak.',
-    source: 'Surah Al-Baqarah: 35-37 dan Surah Taha: 115-123 '
+    source:
+        'Surah Al-Baqarah: 35-37 dan Surah Taha: 115-123 '
         '(disederhanakan untuk anak-anak)',
   ),
 
@@ -2662,7 +2678,8 @@ const Map<String, StoryTranslation> idStoryTranslations = {
         'tetapi kedudukannya di hati Nabi ﷺ tetap sama, dan ia '
         'adalah satu-satunya sahabat yang namanya disebutkan '
         'secara eksplisit dalam Al-Qur\'an yang mulia.',
-    source: 'Kitab-kitab sirah nabawiyah — Surah Al-Ahzab: 4-5 '
+    source:
+        'Kitab-kitab sirah nabawiyah — Surah Al-Ahzab: 4-5 '
         'dan 37',
   ),
 
@@ -2747,7 +2764,8 @@ const Map<String, StoryTranslation> idStoryTranslations = {
         'bahkan pada saat kemenangan tampak jelas, dan Al-Qur\'an '
         'turun tentangnya menegur mereka yang menyalahi perintah '
         'dan meneguhkan hati orang-orang mukmin.',
-    source: 'Surah Ali \'Imran: 121-175 — kitab-kitab sirah '
+    source:
+        'Surah Ali \'Imran: 121-175 — kitab-kitab sirah '
         'nabawiyah',
   ),
   'battle-3': StoryTranslation(
@@ -2926,7 +2944,8 @@ const Map<String, StoryTranslation> idStoryTranslations = {
         'pengkhianatan dan pelanggaran janji, dan tentang harga '
         'mahal yang dibayar oleh para pembawa Al-Qur\'an pertama '
         'dalam menyebarkan agama ini.',
-    source: 'Sahih al-Bukhari dan Muslim — kitab-kitab sirah '
+    source:
+        'Sahih al-Bukhari dan Muslim — kitab-kitab sirah '
         'nabawiyah',
   ),
   'battle-7': StoryTranslation(

@@ -41,7 +41,8 @@ const Map<String, StoryTranslation> msStoryTranslations = {
         '"Telah hampir saat (kiamat) dan terbelahlah bulan. Dan '
         'jika mereka melihat sesuatu mukjizat, mereka berpaling '
         'dan berkata: sihir yang berterusan."',
-    source: 'Sahih al-Bukhari dan Muslim — tafsiran Surah '
+    source:
+        'Sahih al-Bukhari dan Muslim — tafsiran Surah '
         'Al-Qamar: 1-2',
   ),
   'miracle-2': StoryTranslation(
@@ -176,7 +177,8 @@ const Map<String, StoryTranslation> msStoryTranslations = {
         'sujud sambil berkata: "Kami beriman kepada Tuhan Harun '
         'dan Musa," walaupun Firaun mengancam akan memotong '
         'tangan dan kaki mereka secara bersilang.',
-    source: 'Surah Taha: 17-21, Surah Al-A\'raf: 107-122, dan '
+    source:
+        'Surah Taha: 17-21, Surah Al-A\'raf: 107-122, dan '
         'Surah Asy-Syu\'ara\': 38-51',
   ),
   'miracle-6': StoryTranslation(
@@ -548,7 +550,8 @@ const Map<String, StoryTranslation> msStoryTranslations = {
         'sahaja, lalu orang ramai menyaksikan mukjizat besar di '
         'hadapan mata mereka, namun kebanyakan mereka tetap '
         'berdegil dalam kekufuran walaupun demikian.',
-    source: 'Surah Al-Anbiya\': 51-70, Surah Al-An\'am: 74-79, dan '
+    source:
+        'Surah Al-Anbiya\': 51-70, Surah Al-An\'am: 74-79, dan '
         'Surah As-Saffat: 83-98',
   ),
   'prophet-4': StoryTranslation(
@@ -666,7 +669,8 @@ const Map<String, StoryTranslation> msStoryTranslations = {
         'menyaksikan pengakhiran penguasa zalim yang telah '
         'memperhambakan mereka berkurun-kurun, dalam sesaat '
         'sahaja.',
-    source: 'Surah Al-Qasas: 7-43, Surah Asy-Syu\'ara\': 10-68, '
+    source:
+        'Surah Al-Qasas: 7-43, Surah Asy-Syu\'ara\': 10-68, '
         'dan Surah Taha',
   ),
   'prophet-6': StoryTranslation(
@@ -713,7 +717,8 @@ const Map<String, StoryTranslation> msStoryTranslations = {
         'yang disebutkan Al-Quran dengan firman-Nya: "Maka '
         'mengapa tidak ada satu bandar pun yang beriman lalu '
         'imannya itu berguna kepadanya, kecuali kaum Yunus."',
-    source: 'Surah As-Saffat: 139-148, Surah Al-Anbiya\': 87-88, '
+    source:
+        'Surah As-Saffat: 139-148, Surah Al-Anbiya\': 87-88, '
         'dan Surah Yunus: 98',
   ),
   'prophet-7': StoryTranslation(
@@ -999,7 +1004,8 @@ const Map<String, StoryTranslation> msStoryTranslations = {
         'mata kepalanya sendiri. Nabi ﷺ menyebutnya antara sebaik-'
         'baik wanita seluruh alam bersama Maryam binti Imran, '
         'Khadijah, dan Fatimah radhiallahu anhunna.',
-    source: 'Surah At-Tahrim: 11 dan Surah Al-Qasas: 9 — Sahih '
+    source:
+        'Surah At-Tahrim: 11 dan Surah Al-Qasas: 9 — Sahih '
         'al-Bukhari',
   ),
   'prophet-13': StoryTranslation(
@@ -1164,7 +1170,8 @@ const Map<String, StoryTranslation> msStoryTranslations = {
         'tiada langsung tinggal kesan daripadanya, sebagai '
         'pengajaran kepada mereka yang mahu merenung akibat '
         'perbuatan keji itu.',
-    source: 'Surah Hud: 77-83, Surah Al-Hijr: 57-77, dan Surah '
+    source:
+        'Surah Hud: 77-83, Surah Al-Hijr: 57-77, dan Surah '
         'Al-A\'raf: 80-84',
   ),
   'prophet-16': StoryTranslation(
@@ -1217,7 +1224,8 @@ const Map<String, StoryTranslation> msStoryTranslations = {
         'amanat Tuhanku dan aku telah menasihatimu, maka '
         'bagaimana aku hendak bersedih terhadap kaum yang '
         'kafir?"',
-    source: 'Surah Hud: 84-95, Surah Al-A\'raf: 85-93, dan Surah '
+    source:
+        'Surah Hud: 84-95, Surah Al-A\'raf: 85-93, dan Surah '
         'Asy-Syu\'ara\': 176-191',
   ),
   'prophet-17': StoryTranslation(
@@ -1547,7 +1555,8 @@ const Map<String, StoryTranslation> msStoryTranslations = {
         'orang yang beriman bersamanya, maka kekuatan dan '
         'istana-istana mereka langsung tidak berguna di hadapan '
         'ketentuan Allah.',
-    source: 'Surah Al-A\'raf: 65-72, Surah Hud: 50-60, dan Surah '
+    source:
+        'Surah Al-A\'raf: 65-72, Surah Hud: 50-60, dan Surah '
         'Al-Haqqah: 6-8',
   ),
 
@@ -1633,7 +1642,8 @@ const Map<String, StoryTranslation> msStoryTranslations = {
         'menepati janji mereka kepada nabi mereka dalam satu '
         'perkara yang mudah: membiarkan seekor unta minum sehari '
         'dalam seminggu.',
-    source: 'Surah Al-A\'raf: 73-79, Surah Asy-Syams: 11-15, dan '
+    source:
+        'Surah Al-A\'raf: 73-79, Surah Asy-Syams: 11-15, dan '
         'Surah Hud: 61-68',
   ),
   'animal-3': StoryTranslation(
@@ -2037,7 +2047,8 @@ const Map<String, StoryTranslation> msStoryTranslations = {
         'muda, tetapi kesan keadilannya kekal terukir dalam sejarah '
         'Islam sehingga dia dianggap sebagai khalifah rasyidin '
         'kelima selepas empat khalifah pertama.',
-    source: 'Kitab-kitab sejarah dan sirah — seperti Sirah Umar '
+    source:
+        'Kitab-kitab sejarah dan sirah — seperti Sirah Umar '
         'bin Abdul Aziz karya Ibnul Jauzi',
   ),
   'righteous-4': StoryTranslation(
@@ -2076,7 +2087,8 @@ const Map<String, StoryTranslation> msStoryTranslations = {
         'mendengar nasihatnya lalu mengikuti pendapatnya dalam '
         'banyak perkara, tanpa dia memanfaatkan kedudukan ini '
         'untuk pangkat atau harta.',
-    source: 'Kitab-kitab biografi — seperti Hilyatul Auliya karya '
+    source:
+        'Kitab-kitab biografi — seperti Hilyatul Auliya karya '
         'Abu Nuaim',
   ),
   'righteous-5': StoryTranslation(
@@ -2111,7 +2123,8 @@ const Map<String, StoryTranslation> msStoryTranslations = {
         'pada kebenaran, lalu terus menjadi seorang guru yang '
         'menjadi ikutan dalam fikah dan kewarakan sehingga '
         'berkurun-kurun selepas kewafatannya.',
-    source: 'Kitab-kitab biografi — seperti Siyar A\'lam An-Nubala '
+    source:
+        'Kitab-kitab biografi — seperti Siyar A\'lam An-Nubala '
         'karya Az-Zahabi',
   ),
   'righteous-6': StoryTranslation(
@@ -2147,7 +2160,8 @@ const Map<String, StoryTranslation> msStoryTranslations = {
         'menjadilah dia teladan abadi bahawa keteguhan seorang '
         'lelaki pada kebenaran boleh menjaga akidah seluruh umat '
         'daripada penyelewengan.',
-    source: 'Kitab-kitab biografi dan sejarah — seperti Siyar A\'lam '
+    source:
+        'Kitab-kitab biografi dan sejarah — seperti Siyar A\'lam '
         'An-Nubala karya Az-Zahabi',
   ),
   'righteous-7': StoryTranslation(
@@ -2192,7 +2206,8 @@ const Map<String, StoryTranslation> msStoryTranslations = {
         'Madinah, maka berubahlah dia daripada seorang perompak '
         'yang ditakuti kepada seorang pembimbing yang menjadi '
         'ikutan dalam kezuhudan dan ketakwaan.',
-    source: 'Kitab-kitab biografi — seperti Hilyatul Auliya karya '
+    source:
+        'Kitab-kitab biografi — seperti Hilyatul Auliya karya '
         'Abu Nuaim',
   ),
   'righteous-8': StoryTranslation(
@@ -2231,7 +2246,8 @@ const Map<String, StoryTranslation> msStoryTranslations = {
         'menjadi asas kepada generasi-generasi berikutnya untuk '
         'memahami maksud keikhlasan yang sempurna dalam '
         'beribadat, jauh daripada sebarang perkiraan atau balasan.',
-    source: 'Kitab-kitab biografi — seperti Sifatus Safwah karya '
+    source:
+        'Kitab-kitab biografi — seperti Sifatus Safwah karya '
         'Ibnul Jauzi',
   ),
 
@@ -2375,7 +2391,8 @@ const Map<String, StoryTranslation> msStoryTranslations = {
         'pelik itu mempunyai hikmah yang besar yang tidak akan '
         'pernah diketahuinya jika lelaki soleh itu tidak menjelaskannya '
         'kepadanya.',
-    source: 'Surah Al-Kahfi: 60-82 (dipermudahkan untuk kanak-'
+    source:
+        'Surah Al-Kahfi: 60-82 (dipermudahkan untuk kanak-'
         'kanak)',
   ),
   'child-6': StoryTranslation(
@@ -2411,7 +2428,8 @@ const Map<String, StoryTranslation> msStoryTranslations = {
         'pengajaran kepada semua orang supaya tidak mempercayai '
         'bisikan-bisikan syaitan betapa pun indah bisikan itu '
         'kelihatan.',
-    source: 'Surah Al-Baqarah: 35-37 dan Surah Taha: 115-123 '
+    source:
+        'Surah Al-Baqarah: 35-37 dan Surah Taha: 115-123 '
         '(dipermudahkan untuk kanak-kanak)',
   ),
 
@@ -2773,7 +2791,8 @@ const Map<String, StoryTranslation> msStoryTranslations = {
         'kewafatannya, setiap kali baginda melihat saudarinya, '
         'baginda sentiasa mengenanginya dengan penuh kasih '
         'serta memuliakan sesiapa sahaja yang mengenalinya.',
-    source: 'Sahih al-Bukhari dan Muslim — kitab-kitab sirah '
+    source:
+        'Sahih al-Bukhari dan Muslim — kitab-kitab sirah '
         'nabawiyah',
   ),
   'companion-10': StoryTranslation(
@@ -2818,7 +2837,8 @@ const Map<String, StoryTranslation> msStoryTranslations = {
         'menjadi Zaid bin Harithah, tetapi kedudukannya di hati '
         'Nabi ﷺ kekal sama, dan dialah satu-satunya sahabat yang '
         'namanya disebut secara jelas dalam Al-Quran yang mulia.',
-    source: 'Kitab-kitab sirah nabawiyah — Surah Al-Ahzab: 4-5 '
+    source:
+        'Kitab-kitab sirah nabawiyah — Surah Al-Ahzab: 4-5 '
         'dan 37',
   ),
 
@@ -2908,7 +2928,8 @@ const Map<String, StoryTranslation> msStoryTranslations = {
         'dengannya Al-Quran yang menegur mereka yang '
         'menyalahi perintah serta meneguhkan hati orang-orang '
         'mukmin.',
-    source: 'Surah Ali \'Imran: 121-175 — kitab-kitab sirah '
+    source:
+        'Surah Ali \'Imran: 121-175 — kitab-kitab sirah '
         'nabawiyah',
   ),
   'battle-3': StoryTranslation(
@@ -3100,7 +3121,8 @@ const Map<String, StoryTranslation> msStoryTranslations = {
         'janji, serta tentang harga mahal yang dibayar oleh para '
         'pembawa Al-Quran yang pertama dalam menyebarkan '
         'agama ini.',
-    source: 'Sahih al-Bukhari dan Muslim — kitab-kitab sirah '
+    source:
+        'Sahih al-Bukhari dan Muslim — kitab-kitab sirah '
         'nabawiyah',
   ),
   'battle-7': StoryTranslation(

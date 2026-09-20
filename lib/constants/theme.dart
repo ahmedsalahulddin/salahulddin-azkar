@@ -42,48 +42,45 @@ class AppColors {
 
 class AppTheme {
   static ThemeData get darkTheme => ThemeData(
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: AppColors.black,
-        primaryColor: AppColors.gold,
-        colorScheme: const ColorScheme.dark(
-          primary: AppColors.gold,
-          secondary: AppColors.emerald,
-          surface: AppColors.blackCard,
-        ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: AppColors.black,
-          foregroundColor: AppColors.gold,
-          elevation: 0,
-          centerTitle: true,
-          titleTextStyle: TextStyle(
-            color: AppColors.gold,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-          backgroundColor: AppColors.blackCard,
-          selectedItemColor: AppColors.gold,
-          unselectedItemColor: AppColors.textMuted,
-          type: BottomNavigationBarType.fixed,
-          elevation: 0,
-        ),
-        // Every message the app answers a tap with is a SnackBar, and each one
-        // sets its own dark background without setting a text colour. Material
-        // then supplies onInverseSurface — which in a dark theme is itself
-        // dark, so the message arrived as an empty black box: the reader saw
-        // that something had been said and could not read a word of it. Named
-        // here rather than at the forty-four call sites.
-        snackBarTheme: const SnackBarThemeData(
-          backgroundColor: AppColors.blackCard,
-          contentTextStyle: TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 14,
-          ),
-          actionTextColor: AppColors.gold,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+    brightness: Brightness.dark,
+    scaffoldBackgroundColor: AppColors.black,
+    primaryColor: AppColors.gold,
+    colorScheme: const ColorScheme.dark(
+      primary: AppColors.gold,
+      secondary: AppColors.emerald,
+      surface: AppColors.blackCard,
+    ),
+    appBarTheme: const AppBarTheme(
+      backgroundColor: AppColors.black,
+      foregroundColor: AppColors.gold,
+      elevation: 0,
+      centerTitle: true,
+      titleTextStyle: TextStyle(
+        color: AppColors.gold,
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+      ),
+    ),
+    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+      backgroundColor: AppColors.blackCard,
+      selectedItemColor: AppColors.gold,
+      unselectedItemColor: AppColors.textMuted,
+      type: BottomNavigationBarType.fixed,
+      elevation: 0,
+    ),
+    // Every message the app answers a tap with is a SnackBar, and each one
+    // sets its own dark background without setting a text colour. Material
+    // then supplies onInverseSurface — which in a dark theme is itself
+    // dark, so the message arrived as an empty black box: the reader saw
+    // that something had been said and could not read a word of it. Named
+    // here rather than at the forty-four call sites.
+    snackBarTheme: const SnackBarThemeData(
+      backgroundColor: AppColors.blackCard,
+      contentTextStyle: TextStyle(color: AppColors.textPrimary, fontSize: 14),
+      actionTextColor: AppColors.gold,
+      behavior: SnackBarBehavior.floating,
+    ),
+  );
 }
 
 enum FontSizeOption { small, medium, large }
@@ -91,17 +88,23 @@ enum FontSizeOption { small, medium, large }
 class AppFontSizes {
   static double dhikr(FontSizeOption size) {
     switch (size) {
-      case FontSizeOption.small: return 18;
-      case FontSizeOption.medium: return 22;
-      case FontSizeOption.large: return 28;
+      case FontSizeOption.small:
+        return 18;
+      case FontSizeOption.medium:
+        return 22;
+      case FontSizeOption.large:
+        return 28;
     }
   }
 
   static double source(FontSizeOption size) {
     switch (size) {
-      case FontSizeOption.small: return 12;
-      case FontSizeOption.medium: return 14;
-      case FontSizeOption.large: return 16;
+      case FontSizeOption.small:
+        return 12;
+      case FontSizeOption.medium:
+        return 14;
+      case FontSizeOption.large:
+        return 16;
     }
   }
 }

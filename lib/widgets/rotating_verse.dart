@@ -119,7 +119,10 @@ class _RotatingVerseState extends State<RotatingVerse> {
           // scales down until it spans the panel instead of wrapping.
           child: widget.dense
               ? FittedBox(
-                  key: ValueKey(verse.$1), fit: BoxFit.scaleDown, child: text)
+                  key: ValueKey(verse.$1),
+                  fit: BoxFit.scaleDown,
+                  child: text,
+                )
               : text,
         );
       },
