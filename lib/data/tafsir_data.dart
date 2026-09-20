@@ -101,17 +101,68 @@ class TafsirService {
       remoteSlug: 'fath-al-qadir-al-shawkani',
       downloadSize: '١٧٢ م.ب',
     ),
+    // Non-Arabic editions, one per app language this remote source actually
+    // has a tafsir in — no Malay or Hausa edition exists there, so those two
+    // languages keep to the Arabic list above.
+    TafsirEdition(
+      id: 'mukhtasar-en',
+      name: 'Al-Mukhtasar (English)',
+      author: 'Tafsir Center for Quranic Studies',
+      remoteSlug: 'en-tafsir-al-mukhtasar',
+      downloadSize: '٢ م.ب',
+    ),
+    TafsirEdition(
+      id: 'mukhtasar-fr',
+      name: 'Al-Mukhtasar (Français)',
+      author: 'Tafsir Center for Quranic Studies',
+      remoteSlug: 'french-mokhtasar',
+      downloadSize: '٢ م.ب',
+    ),
+    TafsirEdition(
+      id: 'ibn-kathir-ur',
+      name: 'ابن کثیر (اردو)',
+      author: 'الحافظ ابن كثير',
+      remoteSlug: 'ur-tafseer-ibn-e-kaseer',
+      downloadSize: '٤٦ م.ب',
+    ),
+    TafsirEdition(
+      id: 'mukhtasar-id',
+      name: 'Al-Mukhtasar (Bahasa Indonesia)',
+      author: 'Tafsir Center for Quranic Studies',
+      remoteSlug: 'indonesian-mokhtasar',
+      downloadSize: '٢ م.ب',
+    ),
+    TafsirEdition(
+      id: 'mukhtasar-hi',
+      name: 'मुख़्तसर (हिन्दी)',
+      author: 'Tafsir Center for Quranic Studies',
+      remoteSlug: 'hindi-mokhtasar',
+      downloadSize: '٥ م.ب',
+    ),
+    TafsirEdition(
+      id: 'mukhtasar-tr',
+      name: 'Muhtasar (Türkçe)',
+      author: 'Tafsir Center for Quranic Studies',
+      remoteSlug: 'turkish-mokhtasar',
+      downloadSize: '٢ م.ب',
+    ),
+    TafsirEdition(
+      id: 'mukhtasar-bn',
+      name: 'আল-মুখতাসার (বাংলা)',
+      author: 'Tafsir Center for Quranic Studies',
+      remoteSlug: 'bengali-mokhtasar',
+      downloadSize: '٥ م.ب',
+    ),
   ];
 
   static const _preferenceKey = '@noor_tafsir_edition';
-  static const _host = 'https://cdn.jsdelivr.net/gh/spa5k/tafsir_api@main/tafsir';
+  static const _host =
+      'https://cdn.jsdelivr.net/gh/spa5k/tafsir_api@main/tafsir';
 
   static TafsirEdition get defaultEdition => editions.first;
 
-  static TafsirEdition byId(String id) => editions.firstWhere(
-        (e) => e.id == id,
-        orElse: () => defaultEdition,
-      );
+  static TafsirEdition byId(String id) =>
+      editions.firstWhere((e) => e.id == id, orElse: () => defaultEdition);
 
   // Kept for the older reader screens that show a single tafsir.
   static String get name => defaultEdition.name;
@@ -157,7 +208,9 @@ class TafsirService {
 
     final String raw;
     if (edition.isBundled) {
-      raw = await rootBundle.loadString('assets/tafsir/${edition.id}/$surah.json');
+      raw = await rootBundle.loadString(
+        'assets/tafsir/${edition.id}/$surah.json',
+      );
     } else {
       final file = await _fileFor(edition, surah);
       if (file == null || !await file.exists()) {

@@ -467,7 +467,7 @@ class _ListeningScreenState extends State<ListeningScreen> {
                     size: 19,
                   ),
                   title: Text(
-                    r.displayName,
+                    r.bilingualName,
                     style: const TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 14,

@@ -5,6 +5,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../constants/theme.dart';
 import '../../data/tahfeez_countries.dart';
 import '../../l10n/strings.dart';
+import '../../services/app_locale.dart';
 import '../../services/auth_service.dart';
 import '../../services/tahfeez_lang.dart';
 import '../../services/tahfeez_service.dart';
@@ -156,9 +157,16 @@ class _TahfeezTabState extends State<TahfeezTab> {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<String?>(
-      valueListenable: TahfeezLang.override,
-      builder: (context, _, _) => _build(context),
+    // This tab is kept alive in an IndexedStack, so it must listen for the
+    // app's general language changing too — not just its own override —
+    // or a language picked from the home screen never reaches a tab that
+    // was already mounted and never set an override of its own.
+    return ValueListenableBuilder<String>(
+      valueListenable: AppLocale.locale,
+      builder: (context, _, _) => ValueListenableBuilder<String?>(
+        valueListenable: TahfeezLang.override,
+        builder: (context, _, _) => _build(context),
+      ),
     );
   }
 
@@ -715,36 +723,45 @@ class _TahfeezTabState extends State<TahfeezTab> {
     }
   }
 
-  Widget _countryRow(TahfeezProfile profile) {
+  /// Country as a small chip beside gender, tapped to open the same picker —
+  /// no longer its own full-width row now that gender sits right next to it.
+  Widget _countryChip(TahfeezProfile profile) {
+    final set = profile.country != null;
     return GestureDetector(
       onTap: () => _pickCountry(profile),
       behavior: HitTestBehavior.opaque,
-      child: Row(
-        children: [
-          const Icon(Icons.public, size: 14, color: AppColors.textMuted),
-          const SizedBox(width: 6),
-          Text(
-            t('tahfeez.country'),
-            style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 96),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          color: set ? AppColors.goldMuted : Colors.transparent,
+          border: Border.all(
+            color: set ? AppColors.gold : AppColors.goldBorder,
           ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              profile.country == null
-                  ? t('tahfeez.countryHint')
-                  : countryName(profile.country!),
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: profile.country == null
-                    ? AppColors.textMuted
-                    : AppColors.gold,
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.public,
+              size: 12,
+              color: set ? AppColors.gold : AppColors.textMuted,
+            ),
+            const SizedBox(width: 4),
+            Flexible(
+              child: Text(
+                set ? countryName(profile.country!) : t('tahfeez.countryHint'),
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  color: set ? AppColors.gold : AppColors.textMuted,
+                ),
               ),
             ),
-          ),
-          const Icon(Icons.edit, size: 14, color: AppColors.textMuted),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -893,13 +910,17 @@ class _TahfeezTabState extends State<TahfeezTab> {
                 ),
               ),
               const SizedBox(width: 8),
-              _genderIcons(profile),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _genderIcons(profile),
+                  const SizedBox(height: 6),
+                  _countryChip(profile),
+                ],
+              ),
             ],
           ),
-          const SizedBox(height: 10),
-          const Divider(color: AppColors.goldBorder, height: 1),
-          const SizedBox(height: 10),
-          _countryRow(profile),
           if (code != null) ...[
             const SizedBox(height: 10),
             const Divider(color: AppColors.goldBorder, height: 1),

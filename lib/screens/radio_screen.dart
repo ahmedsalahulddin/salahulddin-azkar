@@ -6,6 +6,7 @@ import '../services/app_audio.dart';
 
 import '../constants/theme.dart';
 import '../l10n/strings.dart';
+import '../services/app_locale.dart';
 import '../services/playback_speed.dart';
 
 /// A live Qur'an radio station.
@@ -15,12 +16,26 @@ class RadioStation {
   final String place;
   final String url;
 
+  /// The name in each of the app's 9 other languages (en, fr, ur, id, ms,
+  /// hi, tr, bn, ha), keyed by AppLocale code.
+  final Map<String, String> otherNames;
+
   const RadioStation({
     required this.id,
     required this.name,
     required this.place,
     required this.url,
+    this.otherNames = const {},
   });
+
+  /// Arabic name with the selected language's rendering alongside it — same
+  /// "Arabic (translated)" convention as tBoth().
+  String get bilingualName {
+    final code = AppLocale.code;
+    if (code == 'ar') return name;
+    final other = otherNames[code];
+    return other == null || other == name ? name : '$name ($other)';
+  }
 }
 
 /// Live radio. Every stream here was probed before being listed — a station
@@ -32,36 +47,83 @@ class RadioStation {
 class RadioScreen extends StatefulWidget {
   const RadioScreen({super.key});
 
+  static const _quranRadioNames = {
+    'en': 'Holy Quran Radio',
+    'fr': 'Radio du Saint Coran',
+    'ur': 'ریڈیو قرآن کریم',
+    'id': "Radio Al-Qur'an",
+    'ms': 'Radio Al-Quran',
+    'hi': 'क़ुरआन रेडियो',
+    'tr': "Kur'an Radyosu",
+    'bn': 'কুরআন রেডিও',
+    'ha': "Rediyon Alkur'ani",
+  };
+
   static const stations = <RadioStation>[
     RadioStation(
       id: 'cairo',
       name: 'إذاعة القرآن الكريم',
       place: 'القاهرة — مصر',
       url: 'https://stream.radiojar.com/8s5u5tpdtwzuv',
+      otherNames: _quranRadioNames,
     ),
     RadioStation(
       id: 'saudi',
       name: 'إذاعة القرآن الكريم',
       place: 'السعودية',
       url: 'https://stream.radiojar.com/0tpy1h0kxtzuv',
+      otherNames: _quranRadioNames,
     ),
     RadioStation(
       id: 'tarateel',
       name: 'إذاعة تراتيل',
       place: 'تلاوات خاشعة متواصلة',
       url: 'https://backup.qurango.net/radio/tarateel',
+      otherNames: {
+        'en': 'Tarateel Radio',
+        'fr': 'Radio Tarateel',
+        'ur': 'ریڈیو تراتیل',
+        'id': 'Radio Tarateel',
+        'ms': 'Radio Tarateel',
+        'hi': 'तरातील रेडियो',
+        'tr': 'Tertil Radyosu',
+        'bn': 'তারাতিল রেডিও',
+        'ha': "Rediyon Tarattilin Alkur'ani",
+      },
     ),
     RadioStation(
       id: 'mix',
       name: 'إذاعة القرّاء',
       place: 'تلاوات متنوعة لعدة قرّاء',
       url: 'https://qurango.net/radio/mix',
+      otherNames: {
+        'en': 'Reciters Radio',
+        'fr': 'Radio des Récitateurs',
+        'ur': 'قراء ریڈیو',
+        'id': 'Radio Para Qari',
+        'ms': 'Radio Qari',
+        'hi': 'क़ारी रेडियो',
+        'tr': 'Kurra Radyosu',
+        'bn': 'কারী রেডিও',
+        'ha': 'Rediyon Alqarrua',
+      },
     ),
     RadioStation(
       id: 'afasy',
       name: 'إذاعة مشاري العفاسي',
       place: 'تلاوات العفاسي على مدار اليوم',
       url: 'https://backup.qurango.net/radio/mishary_alafasi',
+      otherNames: {
+        'en': 'Mishary Alafasy Radio',
+        'fr': 'Radio Mishary Al-Afassy',
+        'ur': 'مشاری العفاسی ریڈیو',
+        'id': 'Radio Mishari Al-Afasy',
+        'ms': 'Radio Mishary Al-Afasy',
+        'hi': 'मिशारी अल-अफ़ासी रेडियो',
+        'tr': 'Meşârî el-Afâsî Radyosu',
+        'bn': 'মিশারি আল-আফাসি রেডিও',
+        'ha': 'Rediyon Mishary Alfasy',
+      },
     ),
   ];
 
@@ -207,7 +269,7 @@ class _RadioScreenState extends State<RadioScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    station.name,
+                    station.bilingualName,
                     style: TextStyle(
                       color: playing ? AppColors.gold : AppColors.textPrimary,
                       fontSize: 15,
