@@ -869,6 +869,27 @@ class TahfeezService {
     }
   }
 
+  /// Student id -> email, for a circle the caller teaches. Restricted by the
+  /// tahfeez_halaqa_emails() function itself, not just by RLS on a table —
+  /// a display name alone is not enough to find one student among many.
+  static Future<Map<String, String>> memberEmails(String halaqaId) async {
+    try {
+      final c = await _client;
+      final rows = await c.rpc(
+        'tahfeez_halaqa_emails',
+        params: {'p_halaqa_id': halaqaId},
+      );
+      return {
+        for (final r in rows as List)
+          (r as Map<String, dynamic>)['student_id'] as String:
+              r['email'] as String,
+      };
+    } catch (_) {
+      // A teacher's students still filter by name if emails fail to load.
+      return const {};
+    }
+  }
+
   static Future<void> removeMember(String halaqaId, String studentId) async {
     try {
       final c = await _client;

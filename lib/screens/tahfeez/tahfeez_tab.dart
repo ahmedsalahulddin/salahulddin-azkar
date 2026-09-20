@@ -1331,7 +1331,11 @@ class _TahfeezTabState extends State<TahfeezTab> {
     await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => ScheduleScreen(halaqat: _taught, sessions: _sessions),
+        builder: (_) => ScheduleScreen(
+          halaqat: _taught,
+          sessions: _sessions,
+          enrollments: _myStudents,
+        ),
       ),
     );
     _load();

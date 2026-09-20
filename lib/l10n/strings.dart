@@ -539,6 +539,13 @@ const _ar = <String, String>{
   'tahfeez.allStudents': 'الكل',
   'tahfeez.pickDayHint': 'اضغط على يوم لعرض حصصه',
   'tahfeez.daysWorkedTogether': 'أيام العمل معًا',
+  'tahfeez.needHalaqaFirst': 'يجب عليك عمل حلقة أولًا',
+  'tahfeez.needHalaqaFirstHint':
+      'أنشئ حلقتك من الصفحة الرئيسية للتحفيظ قبل إدارة جدولك',
+  'tahfeez.subscribed': 'مشتركين',
+  'tahfeez.notSubscribed': 'غير مشتركين',
+  'tahfeez.searchStudent': 'ابحث بالاسم أو البريد الإلكتروني',
+  'tahfeez.noStudentsFound': 'لا يوجد طلاب مطابقون',
   'tahfeez.teacherCode': 'كودك كمحفظ',
   'tahfeez.teacherCodeHint': 'كود المحفظ',
   'tahfeez.shareTeacherCode':
@@ -1558,6 +1565,13 @@ const _en = <String, String>{
   'tahfeez.allStudents': 'All',
   'tahfeez.pickDayHint': 'Tap a day to see its sessions',
   'tahfeez.daysWorkedTogether': 'Days worked together',
+  'tahfeez.needHalaqaFirst': 'You need to create a circle first',
+  'tahfeez.needHalaqaFirstHint':
+      'Create your circle from the Memorisation home screen before managing your schedule',
+  'tahfeez.subscribed': 'Subscribed',
+  'tahfeez.notSubscribed': 'Not subscribed',
+  'tahfeez.searchStudent': 'Search by name or email',
+  'tahfeez.noStudentsFound': 'No matching students',
   'tahfeez.teacherCode': 'Your teacher code',
   'tahfeez.teacherCodeHint': 'Teacher code',
   'tahfeez.shareTeacherCode':

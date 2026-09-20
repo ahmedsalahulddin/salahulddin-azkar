@@ -23,10 +23,15 @@ class ScheduleScreen extends StatefulWidget {
   final List<Halaqa> halaqat;
   final List<TahfeezSession> sessions;
 
+  /// The caller's own students — used only to tell a subscribed student
+  /// from one who isn't, in the picker's filter.
+  final List<Enrollment> enrollments;
+
   const ScheduleScreen({
     super.key,
     required this.halaqat,
     required this.sessions,
+    this.enrollments = const [],
   });
 
   @override
@@ -40,6 +45,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
   List<HalaqaMember> _students = const [];
   final Map<String, Set<String>> _studentHalaqaIds = {};
+  Map<String, String> _studentEmails = const {};
   bool _loadingStudents = true;
   String? _studentId;
   List<Evaluation> _studentEvals = const [];
@@ -56,25 +62,78 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
   Future<void> _loadStudents() async {
     try {
-      final lists = await Future.wait(
-        widget.halaqat.map((h) => TahfeezService.members(h.id)),
-      );
+      final results = await Future.wait([
+        Future.wait(widget.halaqat.map((h) => TahfeezService.members(h.id))),
+        Future.wait(
+          widget.halaqat.map((h) => TahfeezService.memberEmails(h.id)),
+        ),
+      ]);
+      final memberLists = results[0] as List<List<HalaqaMember>>;
+      final emailMaps = results[1] as List<Map<String, String>>;
+
       final byId = <String, HalaqaMember>{};
+      final emails = <String, String>{};
       for (var i = 0; i < widget.halaqat.length; i++) {
-        for (final m in lists[i]) {
+        for (final m in memberLists[i]) {
           byId[m.studentId] = m;
           (_studentHalaqaIds[m.studentId] ??= {}).add(widget.halaqat[i].id);
         }
+        emails.addAll(emailMaps[i]);
       }
       if (!mounted) return;
       setState(() {
         _students = byId.values.toList()
           ..sort((a, b) => a.name.compareTo(b.name));
+        _studentEmails = emails;
         _loadingStudents = false;
       });
     } catch (_) {
       if (mounted) setState(() => _loadingStudents = false);
     }
+  }
+
+  /// A student counts as subscribed while they have an accepted, unexpired
+  /// term with the caller — the same "اشتراك" the teacher directory tracks.
+  bool _isSubscribed(String studentId) {
+    for (final e in widget.enrollments) {
+      if (e.studentId == studentId &&
+          e.status == EnrollmentStatus.active &&
+          e.daysLeft >= 0) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  String? _nameOf(String? id) {
+    if (id == null) return null;
+    for (final s in _students) {
+      if (s.studentId == id) return s.name;
+    }
+    return null;
+  }
+
+  /// The sheet pops '' for an explicit "كل الطلاب" choice and a student id
+  /// for a student — never null, which is reserved for "dismissed without
+  /// choosing", so swiping the sheet away never silently clears an active
+  /// filter.
+  Future<void> _openStudentPicker() async {
+    final picked = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.blackCard,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+      ),
+      builder: (_) => _StudentPickerSheet(
+        students: _students,
+        emails: _studentEmails,
+        isSubscribed: _isSubscribed,
+        selectedId: _studentId,
+      ),
+    );
+    if (picked == null) return;
+    _pickStudent(picked.isEmpty ? null : picked);
   }
 
   Future<void> _pickStudent(String? id) async {
@@ -144,6 +203,25 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.halaqat.isEmpty) {
+      return Directionality(
+        textDirection: tahfeezDirection(),
+        child: Scaffold(
+          backgroundColor: AppColors.black,
+          appBar: AppBar(
+            backgroundColor: AppColors.black,
+            foregroundColor: AppColors.gold,
+            title: Text(t('tahfeez.calendar')),
+          ),
+          body: EmptyNote(
+            icon: Icons.groups_outlined,
+            text: t('tahfeez.needHalaqaFirst'),
+            hint: t('tahfeez.needHalaqaFirstHint'),
+          ),
+        ),
+      );
+    }
+
     return Directionality(
       textDirection: tahfeezDirection(),
       child: Scaffold(
@@ -155,7 +233,8 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         ),
         body: Column(
           children: [
-            if (!_loadingStudents && _students.isNotEmpty) _studentFilterBar(),
+            if (!_loadingStudents && _students.isNotEmpty)
+              _studentFilterButton(),
             _monthHeader(),
             _weekdayHeader(),
             _monthGrid(),
@@ -168,57 +247,69 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     );
   }
 
-  Widget _studentFilterBar() {
-    return SizedBox(
-      height: 44,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        children: [
-          _studentChip(null, t('tahfeez.allStudents')),
-          for (final s in _students) _studentChip(s.studentId, s.name),
-        ],
-      ),
-    );
-  }
-
-  Widget _studentChip(String? id, String label) {
-    final active = _studentId == id;
+  /// One tappable row instead of a chip per student — with 200+ students a
+  /// horizontal scroll of chips has no way to find one by name. Opens a
+  /// searchable picker instead.
+  Widget _studentFilterButton() {
+    final label = _nameOf(_studentId) ?? t('tahfeez.allStudents');
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 3),
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
       child: GestureDetector(
-        onTap: () => _pickStudent(id),
+        onTap: _openStudentPicker,
+        behavior: HitTestBehavior.opaque,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
-            color: active ? AppColors.goldMuted : AppColors.blackSurface,
-            borderRadius: BorderRadius.circular(20),
+            color: _studentId == null
+                ? AppColors.blackSurface
+                : AppColors.goldMuted,
+            borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: active ? AppColors.gold : AppColors.goldBorder,
+              color: _studentId == null ? AppColors.goldBorder : AppColors.gold,
             ),
           ),
           child: Row(
-            mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                label,
-                style: TextStyle(
-                  color: active ? AppColors.gold : AppColors.textMuted,
-                  fontSize: 12,
-                  fontWeight: active ? FontWeight.bold : FontWeight.normal,
+              Icon(
+                Icons.filter_list,
+                size: 16,
+                color: _studentId == null
+                    ? AppColors.textMuted
+                    : AppColors.gold,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  label,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: _studentId == null
+                        ? AppColors.textSecondary
+                        : AppColors.gold,
+                    fontSize: 13,
+                    fontWeight: _studentId == null
+                        ? FontWeight.normal
+                        : FontWeight.bold,
+                  ),
                 ),
               ),
-              if (active && _loadingEvals) ...[
-                const SizedBox(width: 6),
+              if (_loadingEvals)
                 const SizedBox(
-                  width: 10,
-                  height: 10,
+                  width: 12,
+                  height: 12,
                   child: CircularProgressIndicator(
                     strokeWidth: 1.5,
                     color: AppColors.gold,
                   ),
+                )
+              else
+                Icon(
+                  Icons.expand_more,
+                  size: 18,
+                  color: _studentId == null
+                      ? AppColors.textMuted
+                      : AppColors.gold,
                 ),
-              ],
             ],
           ),
         ),
@@ -703,5 +794,238 @@ class _AddSessionSheetState extends State<_AddSessionSheet> {
         showNote(context, describeError(e), error: true);
       }
     }
+  }
+}
+
+enum _SubFilter { all, subscribed, unsubscribed }
+
+/// Searchable by name or email, with a subscribed/not-subscribed toggle —
+/// the flat chip row it replaces had no way to find one student among two
+/// hundred.
+class _StudentPickerSheet extends StatefulWidget {
+  final List<HalaqaMember> students;
+  final Map<String, String> emails;
+  final bool Function(String studentId) isSubscribed;
+  final String? selectedId;
+
+  const _StudentPickerSheet({
+    required this.students,
+    required this.emails,
+    required this.isSubscribed,
+    required this.selectedId,
+  });
+
+  @override
+  State<_StudentPickerSheet> createState() => _StudentPickerSheetState();
+}
+
+class _StudentPickerSheetState extends State<_StudentPickerSheet> {
+  final _searchController = TextEditingController();
+  String _query = '';
+  _SubFilter _filter = _SubFilter.all;
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  List<HalaqaMember> get _filtered {
+    final q = _query.trim().toLowerCase();
+    return widget.students.where((s) {
+      if (_filter == _SubFilter.subscribed &&
+          !widget.isSubscribed(s.studentId)) {
+        return false;
+      }
+      if (_filter == _SubFilter.unsubscribed &&
+          widget.isSubscribed(s.studentId)) {
+        return false;
+      }
+      if (q.isEmpty) return true;
+      final email = widget.emails[s.studentId] ?? '';
+      return s.name.toLowerCase().contains(q) ||
+          email.toLowerCase().contains(q);
+    }).toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final list = _filtered;
+    return Directionality(
+      textDirection: tahfeezDirection(),
+      child: DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.75,
+        minChildSize: 0.4,
+        maxChildSize: 0.95,
+        builder: (ctx, scrollController) => SafeArea(
+          top: false,
+          child: Column(
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.symmetric(vertical: 10),
+                decoration: BoxDecoration(
+                  color: AppColors.textMuted,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: TextField(
+                  controller: _searchController,
+                  onChanged: (v) => setState(() => _query = v),
+                  style: const TextStyle(color: AppColors.textPrimary),
+                  decoration: InputDecoration(
+                    isDense: true,
+                    hintText: t('tahfeez.searchStudent'),
+                    hintStyle: const TextStyle(color: AppColors.textMuted),
+                    prefixIcon: const Icon(
+                      Icons.search,
+                      color: AppColors.textMuted,
+                      size: 20,
+                    ),
+                    filled: true,
+                    fillColor: AppColors.blackSurface,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: AppColors.goldBorder),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                height: 34,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  children: [
+                    _filterChip(_SubFilter.all, t('tahfeez.allStudents')),
+                    const SizedBox(width: 6),
+                    _filterChip(_SubFilter.subscribed, t('tahfeez.subscribed')),
+                    const SizedBox(width: 6),
+                    _filterChip(
+                      _SubFilter.unsubscribed,
+                      t('tahfeez.notSubscribed'),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Divider(color: AppColors.goldBorder, height: 1),
+              Expanded(
+                child: list.isEmpty
+                    ? Center(
+                        child: Text(
+                          t('tahfeez.noStudentsFound'),
+                          style: const TextStyle(color: AppColors.textMuted),
+                        ),
+                      )
+                    : ListView.builder(
+                        controller: scrollController,
+                        itemCount: list.length + 1,
+                        itemBuilder: (ctx, i) {
+                          if (i == 0) {
+                            final allSelected = widget.selectedId == null;
+                            return ListTile(
+                              leading: Icon(
+                                Icons.groups,
+                                color: allSelected
+                                    ? AppColors.gold
+                                    : AppColors.textMuted,
+                              ),
+                              title: Text(
+                                t('tahfeez.allStudents'),
+                                style: TextStyle(
+                                  color: allSelected
+                                      ? AppColors.gold
+                                      : AppColors.textPrimary,
+                                  fontWeight: allSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                ),
+                              ),
+                              onTap: () => Navigator.pop(context, ''),
+                            );
+                          }
+                          final s = list[i - 1];
+                          final email = widget.emails[s.studentId];
+                          final selected = s.studentId == widget.selectedId;
+                          final subscribed = widget.isSubscribed(s.studentId);
+                          return ListTile(
+                            leading: Icon(
+                              selected
+                                  ? Icons.radio_button_checked
+                                  : Icons.person_outline,
+                              size: 20,
+                              color: selected
+                                  ? AppColors.gold
+                                  : AppColors.textMuted,
+                            ),
+                            title: Text(
+                              s.name,
+                              style: TextStyle(
+                                color: selected
+                                    ? AppColors.gold
+                                    : AppColors.textPrimary,
+                                fontWeight: selected
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                              ),
+                            ),
+                            subtitle: email == null
+                                ? null
+                                : Text(
+                                    email,
+                                    textDirection: TextDirection.ltr,
+                                    style: const TextStyle(
+                                      color: AppColors.textMuted,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                            trailing: subscribed
+                                ? const Icon(
+                                    Icons.verified,
+                                    size: 16,
+                                    color: AppColors.emeraldLight,
+                                  )
+                                : null,
+                            onTap: () => Navigator.pop(context, s.studentId),
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _filterChip(_SubFilter f, String label) {
+    final active = _filter == f;
+    return GestureDetector(
+      onTap: () => setState(() => _filter = f),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: active ? AppColors.goldMuted : AppColors.blackSurface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: active ? AppColors.gold : AppColors.goldBorder,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: active ? AppColors.gold : AppColors.textMuted,
+            fontSize: 12,
+            fontWeight: active ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+      ),
+    );
   }
 }
