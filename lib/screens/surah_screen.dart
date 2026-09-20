@@ -6,7 +6,6 @@ import 'package:just_audio_background/just_audio_background.dart';
 import '../constants/theme.dart';
 import '../services/app_audio.dart';
 import '../data/quran_data.dart';
-import '../data/tafsir_data.dart';
 import '../l10n/strings.dart';
 import '../services/connectivity_check.dart';
 import '../services/playback_speed.dart';
@@ -14,6 +13,7 @@ import '../services/recitation_downloads.dart';
 import '../services/recitation_service.dart';
 import '../services/storage_service.dart';
 import '../widgets/speed_button.dart';
+import '../widgets/tafsir_sheet.dart';
 
 class SurahScreen extends StatefulWidget {
   final SurahInfo info;
@@ -312,16 +312,6 @@ class _SurahScreenState extends State<SurahScreen> {
   }
 
   Future<void> _showTafsir(Ayah a) async {
-    Map<int, String> tafsir;
-    try {
-      tafsir = await TafsirService.forSurah(widget.info.number);
-    } catch (_) {
-      if (mounted) _toast(t('qs.tafsirOpenFailed'));
-      return;
-    }
-    if (!mounted) return;
-
-    final text = tafsir[a.number];
     await showModalBottomSheet<void>(
       context: context,
       backgroundColor: AppColors.blackCard,
@@ -331,81 +321,12 @@ class _SurahScreenState extends State<SurahScreen> {
       ),
       builder: (ctx) => Directionality(
         textDirection: TextDirection.rtl,
-        child: DraggableScrollableSheet(
-          expand: false,
-          initialChildSize: 0.6,
-          minChildSize: 0.3,
-          maxChildSize: 0.92,
-          builder: (ctx, scrollController) => Column(
-            children: [
-              // Grab handle
-              Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.symmetric(vertical: 10),
-                decoration: BoxDecoration(
-                  color: AppColors.textMuted,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              Text(
-                '${TafsirService.name} — ${t('qs.ayahWord')} ${QuranService.toArabicDigits(a.number)}',
-                style: const TextStyle(
-                  color: AppColors.gold,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 10),
-              const Divider(color: AppColors.goldBorder, height: 1),
-              Expanded(
-                child: ListView(
-                  controller: scrollController,
-                  padding: const EdgeInsets.fromLTRB(18, 16, 18, 24),
-                  children: [
-                    // The ayah itself, for context
-                    Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: AppColors.navy,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.goldBorder),
-                      ),
-                      child: Text(
-                        a.text,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontFamily: _mushafFont,
-                          color: AppColors.textGold,
-                          fontSize: _fontSize * 0.85,
-                          height: 2.0,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 18),
-                    Text(
-                      text ?? t('qs.noTafsirAvailable'),
-                      textAlign: TextAlign.justify,
-                      style: TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: _fontSize * 0.62,
-                        height: 1.9,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      TafsirService.publisher,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: AppColors.textMuted,
-                        fontSize: 11,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+        child: TafsirSheet(
+          surah: widget.info.number,
+          ayah: a.number,
+          reference:
+              '${t('mushaf.surah')} ${widget.info.name} — ${t('mushaf.theAyah')} ${a.number}',
+          ayahText: a.text,
         ),
       ),
     );
