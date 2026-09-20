@@ -1,3 +1,4 @@
+import '../l10n/strings.dart';
 import 'library_data.dart';
 import 'quran_data.dart';
 
@@ -66,208 +67,95 @@ class ResolvedSource {
 }
 
 class Lessons {
-  static const all = <Lesson>[
+  /// A point's title and body, read from `lesson.<lessonId>.point.<n>.*` —
+  /// built fresh on every access (like every other translated card in this
+  /// app) so a locale change is picked up without restarting.
+  static LessonPoint _point(String lessonId, int n, {LessonSource? source}) =>
+      LessonPoint(
+        title: t('lesson.$lessonId.point.$n.title'),
+        body: t('lesson.$lessonId.point.$n.body'),
+        source: source,
+      );
+
+  static List<Lesson> get all => [
     Lesson(
       id: 'pillars-islam',
       icon: '🕋',
-      title: 'أركان الإسلام',
-      summary: 'الخمسة التي بُني عليها الدين',
-      opening: HadithSource('nawawi', 3),
+      title: t('lesson.pillars-islam.title'),
+      summary: t('lesson.pillars-islam.summary'),
+      opening: const HadithSource('nawawi', 3),
       points: [
-        LessonPoint(
-          title: 'الشهادتان',
-          body: 'أن تشهد أن لا إله إلا الله وأن محمداً رسول الله. '
-              'وهي أول ما يدخل به المرء في الإسلام، ومعناها إفراد الله '
-              'وحده بالعبادة، وتصديق النبي ﷺ فيما أخبر واتّباعه فيما أمر.',
-        ),
-        LessonPoint(
-          title: 'إقام الصلاة',
-          body: 'خمس صلوات في اليوم والليلة: الفجر والظهر والعصر والمغرب '
-              'والعشاء. وهي أول ما يُحاسب عليه العبد يوم القيامة، '
-              'وأوقاتها موقوتة لا تُقدَّم ولا تُؤخَّر عن وقتها بلا عذر.',
-          source: VerseSource(4, 103),
-        ),
-        LessonPoint(
-          title: 'إيتاء الزكاة',
-          body: 'حقٌّ معلوم في المال يُخرجه من بلغ ماله النصاب وحال عليه '
-              'الحول، ومقداره في النقود وعروض التجارة رُبع العُشر — '
-              'أي اثنان ونصف في المئة.',
-          source: VerseSource(9, 103),
-        ),
-        LessonPoint(
-          title: 'صوم رمضان',
-          body: 'الإمساك عن الطعام والشراب وسائر المفطرات من طلوع الفجر '
-              'إلى غروب الشمس، طوال شهر رمضان، مع حفظ اللسان والجوارح.',
-          source: VerseSource(2, 183),
-        ),
-        LessonPoint(
-          title: 'حج البيت لمن استطاع',
-          body: 'مرة واحدة في العمر على من قدر عليه ببدنه وماله وأمن طريقه. '
-              'والاستطاعة شرط، فمن لم يستطع فلا حج عليه.',
-          source: VerseSource(3, 97),
-        ),
+        _point('pillars-islam', 0),
+        _point('pillars-islam', 1, source: const VerseSource(4, 103)),
+        _point('pillars-islam', 2, source: const VerseSource(9, 103)),
+        _point('pillars-islam', 3, source: const VerseSource(2, 183)),
+        _point('pillars-islam', 4, source: const VerseSource(3, 97)),
       ],
     ),
     Lesson(
       id: 'pillars-faith',
       icon: '🌙',
-      title: 'أركان الإيمان',
-      summary: 'الستة التي جاءت في حديث جبريل',
-      opening: HadithSource('nawawi', 2),
+      title: t('lesson.pillars-faith.title'),
+      summary: t('lesson.pillars-faith.summary'),
+      opening: const HadithSource('nawawi', 2),
       points: [
-        LessonPoint(
-          title: 'الإيمان بالله',
-          body: 'تصديقٌ بوجوده وربوبيته وألوهيته وأسمائه وصفاته، '
-              'وأنه وحده المستحق للعبادة، ليس كمثله شيء.',
-          source: VerseSource(112, 1),
-        ),
-        LessonPoint(
-          title: 'وملائكته',
-          body: 'خلقٌ من نور، لا يعصون الله ما أمرهم ويفعلون ما يُؤمرون. '
-              'منهم جبريل الموكل بالوحي، وميكائيل، وإسرافيل.',
-          source: VerseSource(66, 6),
-        ),
-        LessonPoint(
-          title: 'وكتبه',
-          body: 'ما أنزله على رسله، ومنها التوراة والإنجيل والزبور، '
-              'وخاتمها القرآن المهيمن عليها والمحفوظ من التبديل.',
-          source: VerseSource(15, 9),
-        ),
-        LessonPoint(
-          title: 'ورسله',
-          body: 'الإيمان بأن الله أرسل رسلاً مبشّرين ومنذرين، '
-              'أوّلهم نوح وخاتمهم محمد ﷺ، لا نفرّق بين أحد منهم.',
-          source: VerseSource(2, 285),
-        ),
-        LessonPoint(
-          title: 'واليوم الآخر',
-          body: 'البعث والحساب والميزان والصراط، والجنة والنار. '
-              'وأن كل نفس تُجزى بما كسبت لا تُظلم شيئاً.',
-          source: VerseSource(99, 7),
-        ),
-        LessonPoint(
-          title: 'والقدر خيره وشره',
-          body: 'أن الله علم كل شيء وكتبه، وأن ما شاء كان وما لم يشأ لم يكن، '
-              'مع بقاء اختيار العبد ومسؤوليته عن كسبه.',
-          source: VerseSource(54, 49),
-        ),
+        _point('pillars-faith', 0, source: const VerseSource(112, 1)),
+        _point('pillars-faith', 1, source: const VerseSource(66, 6)),
+        _point('pillars-faith', 2, source: const VerseSource(15, 9)),
+        _point('pillars-faith', 3, source: const VerseSource(2, 285)),
+        _point('pillars-faith', 4, source: const VerseSource(99, 7)),
+        _point('pillars-faith', 5, source: const VerseSource(54, 49)),
       ],
     ),
     Lesson(
       id: 'ihsan',
       icon: '✨',
-      title: 'الإحسان',
-      summary: 'أعلى المراتب الثلاث',
-      opening: HadithSource('nawawi', 2),
+      title: t('lesson.ihsan.title'),
+      summary: t('lesson.ihsan.summary'),
+      opening: const HadithSource('nawawi', 2),
       points: [
-        LessonPoint(
-          title: 'أن تعبد الله كأنك تراه',
-          body: 'أن يستحضر العبد قرب الله منه وهو يعبده، فيؤدّي العبادة '
-              'على أتمّ ما يقدر عليه، لا أداءً ناقصاً يُسقط الواجب فحسب.',
-        ),
-        LessonPoint(
-          title: 'فإن لم تكن تراه فإنه يراك',
-          body: 'فمن لم يبلغ تلك المرتبة، فليعلم أن الله مطّلع عليه '
-              'في سرّه وعلانيته. وهذه هي المراقبة.',
-          source: VerseSource(57, 4),
-        ),
-        LessonPoint(
-          title: 'والإحسان في كل شيء',
-          body: 'ليس في العبادة وحدها، بل في العمل والمعاملة والقول، '
-              'وحتى في الذبح ورفق الإنسان بما تحت يده.',
-          source: VerseSource(55, 60),
-        ),
+        _point('ihsan', 0),
+        _point('ihsan', 1, source: const VerseSource(57, 4)),
+        _point('ihsan', 2, source: const VerseSource(55, 60)),
       ],
     ),
     Lesson(
       id: 'wudu',
       icon: '💧',
-      title: 'الوضوء',
-      summary: 'كما جاء في آية المائدة',
-      opening: VerseSource(5, 6),
+      title: t('lesson.wudu.title'),
+      summary: t('lesson.wudu.summary'),
+      opening: const VerseSource(5, 6),
       points: [
-        LessonPoint(
-          title: 'النية',
-          body: 'محلّها القلب، ولا يُتلفّظ بها. وهي ما يميّز العبادة '
-              'عن مجرد غسل الأعضاء.',
-          source: HadithSource('nawawi', 1),
-        ),
-        LessonPoint(
-          title: 'غسل الوجه',
-          body: 'من منابت شعر الرأس إلى أسفل اللحية طولاً، '
-              'ومن الأذن إلى الأذن عرضاً. ويُسنّ قبله المضمضة والاستنشاق.',
-        ),
-        LessonPoint(
-          title: 'غسل اليدين إلى المرفقين',
-          body: 'مع إدخال المرفقين، ويبدأ باليمنى ثم اليسرى.',
-        ),
-        LessonPoint(
-          title: 'مسح الرأس',
-          body: 'يمرّ بيديه المبلولتين على رأسه من مقدّمه إلى مؤخّره ثم يعيدهما، '
-              'ويمسح أذنيه معه.',
-        ),
-        LessonPoint(
-          title: 'غسل الرجلين إلى الكعبين',
-          body: 'مع تخليل أصابعهما، والبدء باليمنى. '
-              'ويُسنّ في الغسل والمسح ثلاثاً، والواجب مرة تعمّ العضو.',
-        ),
+        _point('wudu', 0, source: const HadithSource('nawawi', 1)),
+        _point('wudu', 1),
+        _point('wudu', 2),
+        _point('wudu', 3),
+        _point('wudu', 4),
       ],
     ),
     Lesson(
       id: 'salah',
       icon: '🕌',
-      title: 'الصلاة',
-      summary: 'مواقيتها وعدد ركعاتها وشروطها',
-      opening: VerseSource(29, 45),
+      title: t('lesson.salah.title'),
+      summary: t('lesson.salah.summary'),
+      opening: const VerseSource(29, 45),
       points: [
-        LessonPoint(
-          title: 'الفروض الخمسة',
-          body: 'الفجر ركعتان، والظهر أربع، والعصر أربع، والمغرب ثلاث، '
-              'والعشاء أربع. وللمسافر أن يقصر الرباعية إلى ركعتين.',
-        ),
-        LessonPoint(
-          title: 'شروطها قبل الدخول فيها',
-          body: 'الطهارة من الحدث والخبث، وستر العورة، واستقبال القبلة، '
-              'ودخول الوقت. فمن صلّى قبل الوقت لم تُجزئه.',
-          source: VerseSource(2, 144),
-        ),
-        LessonPoint(
-          title: 'أركانها',
-          body: 'تكبيرة الإحرام، والقيام مع القدرة، وقراءة الفاتحة، '
-              'والركوع، والرفع منه، والسجود، والجلوس بين السجدتين، '
-              'والطمأنينة في كل ركن، والتشهد الأخير، ثم التسليم.',
-        ),
-        LessonPoint(
-          title: 'الخشوع روحها',
-          body: 'وهو حضور القلب وسكون الجوارح. '
-              'وبه وصف الله المفلحين من المؤمنين.',
-          source: VerseSource(23, 2),
-        ),
+        _point('salah', 0),
+        _point('salah', 1, source: const VerseSource(2, 144)),
+        _point('salah', 2),
+        _point('salah', 3, source: const VerseSource(23, 2)),
       ],
     ),
     Lesson(
       id: 'niyyah',
       icon: '❤️',
-      title: 'النية',
-      summary: 'أول حديث في الأربعين، وأصل العمل كله',
-      opening: HadithSource('nawawi', 1),
+      title: t('lesson.niyyah.title'),
+      summary: t('lesson.niyyah.summary'),
+      opening: const HadithSource('nawawi', 1),
       points: [
-        LessonPoint(
-          title: 'العمل بلا نية لا يُثمر',
-          body: 'العادة تصير عبادة بالنية، والعبادة تصير عادة بفقدها. '
-              'فالنائم ليقوى على الطاعة مأجور، والمصلّي رياءً محروم.',
-        ),
-        LessonPoint(
-          title: 'ولكل امرئ ما نوى',
-          body: 'يُجزى العبد على مقدار نيته لا على مقدار عمله وحده، '
-              'فقد يبلغ صاحب العمل القليل بنيته ما لا يبلغه غيره بالكثير.',
-        ),
-        LessonPoint(
-          title: 'والإخلاص شرط القبول',
-          body: 'أن يُراد بالعمل وجه الله وحده. '
-              'وأن يكون العمل على هدي النبي ﷺ. وبهذين يُقبل العمل.',
-          source: VerseSource(98, 5),
-        ),
+        _point('niyyah', 0),
+        _point('niyyah', 1),
+        _point('niyyah', 2, source: const VerseSource(98, 5)),
       ],
     ),
   ];
@@ -292,8 +180,7 @@ class Lessons {
           );
 
         case HadithSource(:final bookId, :final number):
-          final book =
-              LibraryService.books.firstWhere((b) => b.id == bookId);
+          final book = LibraryService.books.firstWhere((b) => b.id == bookId);
           final hadiths = await LibraryService.hadiths(book);
           final hadith = hadiths.firstWhere((h) => h.number == number);
           return ResolvedSource(

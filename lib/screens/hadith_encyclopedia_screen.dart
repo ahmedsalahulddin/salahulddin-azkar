@@ -17,7 +17,7 @@ class HadithEncyclopediaScreen extends StatefulWidget {
     super.key,
     this.parentId,
     this.title,
-    this.lang = 'en',
+    this.lang = 'ar',
   });
 
   @override

@@ -85,6 +85,12 @@ class ContinuousListening {
   /// stream's queue.
   static bool _advancing = false;
 
+  /// Set by [stop] and cleared at the top of [play] — checked before a
+  /// delayed retry resumes playback in [_recoverFromLoadFailure], so an
+  /// explicit stop during the couple of seconds a retry is waiting out
+  /// stays stopped instead of starting itself back up.
+  static bool _stopRequested = false;
+
   static SurahInfo? infoFor(int number) =>
       _index.where((s) => s.number == number).firstOrNull;
 
@@ -130,6 +136,7 @@ class ContinuousListening {
     if (info == null) return;
 
     _wire();
+    _stopRequested = false;
     surah.value = number;
     await _remember();
 
@@ -183,10 +190,7 @@ class ContinuousListening {
             ),
           ),
       ];
-      await AppAudio.player.setAudioSources(
-        sources,
-        initialIndex: startIndex,
-      );
+      await AppAudio.player.setAudioSources(sources, initialIndex: startIndex);
       // just_audio_background sometimes settles on index 0 for a moment after
       // setAudioSources before honouring initialIndex — the background
       // session's own restore can race the one just requested. An explicit
@@ -204,11 +208,11 @@ class ContinuousListening {
       // which is the one thing this file exists to prevent.
       active.value = true;
       lastError.value = null;
+      _errorRetries = 0;
       await PlaybackSpeed.apply();
       await AppAudio.player.play();
     } catch (_) {
-      active.value = false;
-      lastError.value = await _failureMessage();
+      await _recoverFromLoadFailure(number: number, fromAyah: fromAyah);
     }
   }
 
@@ -241,11 +245,11 @@ class ContinuousListening {
       _loadedSurah = number;
       active.value = true;
       lastError.value = null;
+      _errorRetries = 0;
       await PlaybackSpeed.apply();
       await AppAudio.player.play();
     } catch (_) {
-      active.value = false;
-      lastError.value = await _failureMessage();
+      await _recoverFromLoadFailure(number: number, fromAyah: 1);
     }
   }
 
@@ -253,6 +257,43 @@ class ContinuousListening {
       (await ConnectivityCheck.online)
       ? t('qs.recitationPlaybackFailed')
       : t('qs.recitationNeedsInternet');
+
+  /// [play] itself failing to load a surah — as opposed to a track that was
+  /// already playing dropping out, which [_handleError] covers — used to end
+  /// the session outright on the very first failed attempt. That is exactly
+  /// the transition the automatic "surah ended, load the next one" completion
+  /// handler makes below, so a single dropped request on that handoff (no
+  /// different from the mid-playback ones [_handleError] already shrugs off)
+  /// stopped "continuous" listening cold with nothing to retry it. This
+  /// mirrors that same retry-then-move-past pattern for a load that never
+  /// got off the ground.
+  static Future<void> _recoverFromLoadFailure({
+    required int number,
+    required int fromAyah,
+  }) async {
+    if (_errorRetries < 3) {
+      _errorRetries++;
+      await Future.delayed(const Duration(seconds: 2));
+      if (_stopRequested) return;
+      await play(number, fromAyah: fromAyah);
+      return;
+    }
+
+    _errorRetries = 0;
+    if (_stopRequested) return;
+    final info = infoFor(number);
+    if (reciter.value.isPerAyah && info != null && fromAyah < info.ayahCount) {
+      await play(number, fromAyah: fromAyah + 1);
+    } else if (number < 114) {
+      await play(nextSurah(number));
+    } else {
+      // Wrapping past An-Nas back to Al-Fatiha here too would, with no
+      // connection at all, retry every surah in the Quran once before
+      // looping forever — better to stop and say so than spin silently.
+      active.value = false;
+      lastError.value = await _failureMessage();
+    }
+  }
 
   /// Al-Fatiha follows An-Nas: the Mushaf is read in a circle, not to an end.
   static int nextSurah(int number) => number >= 114 ? 1 : number + 1;
@@ -300,6 +341,7 @@ class ContinuousListening {
 
   static Future<void> stop() async {
     active.value = false;
+    _stopRequested = true;
     await AppAudio.player.stop();
   }
 
@@ -388,6 +430,7 @@ class ContinuousListening {
     _recovering = false;
     _errorRetries = 0;
     _loadedSurah = 0;
+    _stopRequested = false;
     active.value = false;
     lastError.value = null;
     surah.value = 1;

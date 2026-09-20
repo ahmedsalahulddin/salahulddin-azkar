@@ -670,53 +670,107 @@ class _TahfeezTabState extends State<TahfeezTab> {
     }
   }
 
-  /// Gender as two small labelled chips, tapped rather than typed — a
-  /// written word reads faster than a symbol, and there are only two.
-  Widget _genderIcons(TahfeezProfile profile) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        for (final g in Gender.values)
-          Padding(
-            padding: const EdgeInsets.only(right: 4),
-            child: GestureDetector(
-              onTap: () => _setGender(g),
-              behavior: HitTestBehavior.opaque,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  color: profile.gender == g
-                      ? AppColors.goldMuted
-                      : Colors.transparent,
-                  border: Border.all(
-                    color: profile.gender == g
-                        ? AppColors.gold
-                        : AppColors.goldBorder,
-                  ),
-                ),
-                child: Text(
-                  t('tahfeez.gender.${g.name}'),
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    color: profile.gender == g
-                        ? AppColors.gold
-                        : AppColors.textMuted,
-                  ),
+  /// Gender as one compact chip — the same "icon plus current value, tap to
+  /// pick from a list" shape as the country chip beside it, instead of two
+  /// always-visible toggle chips.
+  Widget _genderChip(TahfeezProfile profile) {
+    final set = profile.gender != null;
+    return GestureDetector(
+      onTap: () => _pickGender(profile),
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 96),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          color: set ? AppColors.goldMuted : Colors.transparent,
+          border: Border.all(
+            color: set ? AppColors.gold : AppColors.goldBorder,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.person_outline,
+              size: 12,
+              color: set ? AppColors.gold : AppColors.textMuted,
+            ),
+            const SizedBox(width: 4),
+            Flexible(
+              child: Text(
+                set
+                    ? t('tahfeez.gender.${profile.gender!.name}')
+                    : t('tahfeez.genderHint'),
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  color: set ? AppColors.gold : AppColors.textMuted,
                 ),
               ),
             ),
-          ),
-      ],
+          ],
+        ),
+      ),
     );
   }
 
-  Future<void> _setGender(Gender g) async {
+  Future<void> _pickGender(TahfeezProfile profile) async {
+    final chosen = await showModalBottomSheet<Gender>(
+      context: context,
+      backgroundColor: AppColors.blackCard,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                child: Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: Text(
+                    t('tahfeez.genderHint'),
+                    style: const TextStyle(
+                      color: AppColors.gold,
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+              for (final g in Gender.values)
+                ListTile(
+                  title: Text(
+                    t('tahfeez.gender.${g.name}'),
+                    style: TextStyle(
+                      color: g == profile.gender
+                          ? AppColors.gold
+                          : AppColors.textPrimary,
+                      fontWeight: g == profile.gender
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                    ),
+                  ),
+                  trailing: g == profile.gender
+                      ? const Icon(Icons.check, color: AppColors.gold)
+                      : null,
+                  onTap: () => Navigator.pop(ctx, g),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (chosen == null || chosen == profile.gender || !mounted) return;
     try {
-      await TahfeezService.setGender(g);
+      await TahfeezService.setGender(chosen);
       if (mounted) {
-        setState(() => _profile = _profile?.copyWith(gender: g));
+        setState(() => _profile = _profile?.copyWith(gender: chosen));
       }
     } catch (e) {
       if (mounted) showNote(context, describeError(e), error: true);
@@ -914,70 +968,70 @@ class _TahfeezTabState extends State<TahfeezTab> {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _genderIcons(profile),
-                  const SizedBox(height: 6),
-                  _countryChip(profile),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _genderChip(profile),
+                      const SizedBox(width: 6),
+                      _countryChip(profile),
+                    ],
+                  ),
+                  if (code != null) ...[
+                    const SizedBox(height: 6),
+                    _teacherCodeCompact(code),
+                  ],
                 ],
               ),
             ],
           ),
-          if (code != null) ...[
-            const SizedBox(height: 10),
-            const Divider(color: AppColors.goldBorder, height: 1),
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                Text(
-                  t('tahfeez.teacherCode'),
-                  style: const TextStyle(
-                    color: AppColors.textMuted,
-                    fontSize: 11,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    code,
-                    textDirection: TextDirection.ltr,
-                    style: const TextStyle(
-                      color: AppColors.gold,
-                      fontSize: 18,
-                      letterSpacing: 4,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () async {
-                    await Clipboard.setData(ClipboardData(text: code));
-                    if (mounted) showNote(context, t('tahfeez.codeCopied'));
-                  },
-                  behavior: HitTestBehavior.opaque,
-                  child: const Padding(
-                    padding: EdgeInsets.all(4),
-                    child: Icon(Icons.copy, color: AppColors.gold, size: 18),
-                  ),
-                ),
-                const SizedBox(width: 6),
-                GestureDetector(
-                  onTap: () => SharePlus.instance.share(
-                    ShareParams(
-                      text: t(
-                        'tahfeez.shareTeacherCode',
-                      ).replaceAll('{code}', code),
-                    ),
-                  ),
-                  behavior: HitTestBehavior.opaque,
-                  child: const Padding(
-                    padding: EdgeInsets.all(4),
-                    child: Icon(Icons.share, color: AppColors.gold, size: 18),
-                  ),
-                ),
-              ],
-            ),
-          ],
         ],
       ),
+    );
+  }
+
+  /// The invite code, shrunk to fit the trailing column beside the header
+  /// instead of its own full-width row — the card's whole reason for being
+  /// one card and not three was to take less space, and gender/country
+  /// moving onto a single line freed exactly enough room for this.
+  Widget _teacherCodeCompact(String code) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          code,
+          textDirection: TextDirection.ltr,
+          style: const TextStyle(
+            color: AppColors.gold,
+            fontSize: 13,
+            letterSpacing: 1.5,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(width: 4),
+        GestureDetector(
+          onTap: () async {
+            await Clipboard.setData(ClipboardData(text: code));
+            if (mounted) showNote(context, t('tahfeez.codeCopied'));
+          },
+          behavior: HitTestBehavior.opaque,
+          child: const Padding(
+            padding: EdgeInsets.all(3),
+            child: Icon(Icons.copy, color: AppColors.gold, size: 14),
+          ),
+        ),
+        GestureDetector(
+          onTap: () => SharePlus.instance.share(
+            ShareParams(
+              text: t('tahfeez.shareTeacherCode').replaceAll('{code}', code),
+            ),
+          ),
+          behavior: HitTestBehavior.opaque,
+          child: const Padding(
+            padding: EdgeInsets.all(3),
+            child: Icon(Icons.share, color: AppColors.gold, size: 14),
+          ),
+        ),
+      ],
     );
   }
 

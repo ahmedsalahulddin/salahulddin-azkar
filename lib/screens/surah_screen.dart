@@ -29,6 +29,11 @@ class SurahScreen extends StatefulWidget {
 const _mushafFont = 'AmiriQuran';
 
 class _SurahScreenState extends State<SurahScreen> {
+  /// The surah on screen — starts at [widget.info] but moves on to the next
+  /// one when recitation finishes it, so this can't stay tied to the widget's
+  /// own (immutable) construction argument.
+  late SurahInfo _info = widget.info;
+  List<SurahInfo> _index = const [];
   Surah? _surah;
   double _fontSize = 24;
 
@@ -36,8 +41,13 @@ class _SurahScreenState extends State<SurahScreen> {
   final _itemKeys = <int, GlobalKey>{};
   Reciter _reciter = RecitationService.defaultReciter;
   StreamSubscription<int?>? _indexSub;
+  StreamSubscription<PlayerState>? _completionSub;
   int? _playingAyah;
   bool _audioFailed = false;
+
+  /// Guards the completion handler against firing again while the next
+  /// surah is still being loaded.
+  bool _advancingSurah = false;
 
   @override
   void initState() {
@@ -63,22 +73,35 @@ class _SurahScreenState extends State<SurahScreen> {
       setState(() => _playingAyah = ayah);
       _scrollTo(ayah);
     });
+
+    // A reader working through the Mushaf a surah at a time does not want
+    // the voice to stop just because this one ran out of ayat — the next
+    // surah follows on, the same as continuous listening.
+    _completionSub = _player.playerStateStream.listen((state) {
+      if (!mounted || _advancingSurah) return;
+      if (state.processingState != ProcessingState.completed) return;
+      if (!AppAudio.ownsCurrent('${_reciter.id}:')) return;
+      _advanceToNextSurah();
+    });
   }
 
   @override
   void dispose() {
+    _completionSub?.cancel();
     _indexSub?.cancel();
     _player.stop();
     super.dispose();
   }
 
   Future<void> _load() async {
-    final s = await QuranService.surah(widget.info.number);
+    final s = await QuranService.surah(_info.number);
+    final index = await QuranService.index();
     final stored = await StorageService.getFontSize();
     final reciter = await RecitationService.getReciter();
     if (!mounted) return;
     setState(() {
       _surah = s;
+      _index = index;
       _reciter = reciter;
       _fontSize = switch (stored) {
         'small' => 20.0,
@@ -86,6 +109,26 @@ class _SurahScreenState extends State<SurahScreen> {
         _ => 24.0,
       };
     });
+  }
+
+  Future<void> _advanceToNextSurah() async {
+    _advancingSurah = true;
+    try {
+      final nextNumber = _info.number >= 114 ? 1 : _info.number + 1;
+      final nextInfo = _index.where((s) => s.number == nextNumber).firstOrNull;
+      if (nextInfo == null || !mounted) return;
+      final s = await QuranService.surah(nextNumber);
+      if (!mounted) return;
+      setState(() {
+        _info = nextInfo;
+        _surah = s;
+        _playingAyah = null;
+        _itemKeys.clear();
+      });
+      await _play(fromAyah: 1);
+    } finally {
+      _advancingSurah = false;
+    }
   }
 
   void _adjustFont(double delta) {
@@ -322,10 +365,10 @@ class _SurahScreenState extends State<SurahScreen> {
       builder: (ctx) => Directionality(
         textDirection: TextDirection.rtl,
         child: TafsirSheet(
-          surah: widget.info.number,
+          surah: _info.number,
           ayah: a.number,
           reference:
-              '${t('mushaf.surah')} ${widget.info.name} — ${t('mushaf.theAyah')} ${a.number}',
+              '${t('mushaf.surah')} ${_info.name} — ${t('mushaf.theAyah')} ${a.number}',
           ayahText: a.text,
         ),
       ),
@@ -346,7 +389,7 @@ class _SurahScreenState extends State<SurahScreen> {
     await Clipboard.setData(
       ClipboardData(
         text:
-            '${a.text}\n\n[${t('qs.surahPrefix')} ${widget.info.name} — ${t('qs.ayahWord')} ${a.number}]',
+            '${a.text}\n\n[${t('qs.surahPrefix')} ${_info.name} — ${t('qs.ayahWord')} ${a.number}]',
       ),
     );
     if (!mounted) return;
@@ -362,7 +405,7 @@ class _SurahScreenState extends State<SurahScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final info = widget.info;
+    final info = _info;
     final surah = _surah;
 
     return Directionality(

@@ -160,6 +160,83 @@ const _ar = <String, String>{
   'lesson.salah.summary': 'مواقيتها وعدد ركعاتها وشروطها',
   'lesson.niyyah.title': 'النية',
   'lesson.niyyah.summary': 'أول حديث في الأربعين، وأصل العمل كله',
+  'lesson.pillars-islam.point.0.title': 'الشهادتان',
+  'lesson.pillars-islam.point.0.body':
+      'أن تشهد أن لا إله إلا الله وأن محمداً رسول الله. وهي أول ما يدخل به المرء في الإسلام، ومعناها إفراد الله وحده بالعبادة، وتصديق النبي ﷺ فيما أخبر واتّباعه فيما أمر.',
+  'lesson.pillars-islam.point.1.title': 'إقام الصلاة',
+  'lesson.pillars-islam.point.1.body':
+      'خمس صلوات في اليوم والليلة: الفجر والظهر والعصر والمغرب والعشاء. وهي أول ما يُحاسب عليه العبد يوم القيامة، وأوقاتها موقوتة لا تُقدَّم ولا تُؤخَّر عن وقتها بلا عذر.',
+  'lesson.pillars-islam.point.2.title': 'إيتاء الزكاة',
+  'lesson.pillars-islam.point.2.body':
+      'حقٌّ معلوم في المال يُخرجه من بلغ ماله النصاب وحال عليه الحول، ومقداره في النقود وعروض التجارة رُبع العُشر — أي اثنان ونصف في المئة.',
+  'lesson.pillars-islam.point.3.title': 'صوم رمضان',
+  'lesson.pillars-islam.point.3.body':
+      'الإمساك عن الطعام والشراب وسائر المفطرات من طلوع الفجر إلى غروب الشمس، طوال شهر رمضان، مع حفظ اللسان والجوارح.',
+  'lesson.pillars-islam.point.4.title': 'حج البيت لمن استطاع',
+  'lesson.pillars-islam.point.4.body':
+      'مرة واحدة في العمر على من قدر عليه ببدنه وماله وأمن طريقه. والاستطاعة شرط، فمن لم يستطع فلا حج عليه.',
+  'lesson.pillars-faith.point.0.title': 'الإيمان بالله',
+  'lesson.pillars-faith.point.0.body':
+      'تصديقٌ بوجوده وربوبيته وألوهيته وأسمائه وصفاته، وأنه وحده المستحق للعبادة، ليس كمثله شيء.',
+  'lesson.pillars-faith.point.1.title': 'وملائكته',
+  'lesson.pillars-faith.point.1.body':
+      'خلقٌ من نور، لا يعصون الله ما أمرهم ويفعلون ما يُؤمرون. منهم جبريل الموكل بالوحي، وميكائيل، وإسرافيل.',
+  'lesson.pillars-faith.point.2.title': 'وكتبه',
+  'lesson.pillars-faith.point.2.body':
+      'ما أنزله على رسله، ومنها التوراة والإنجيل والزبور، وخاتمها القرآن المهيمن عليها والمحفوظ من التبديل.',
+  'lesson.pillars-faith.point.3.title': 'ورسله',
+  'lesson.pillars-faith.point.3.body':
+      'الإيمان بأن الله أرسل رسلاً مبشّرين ومنذرين، أوّلهم نوح وخاتمهم محمد ﷺ، لا نفرّق بين أحد منهم.',
+  'lesson.pillars-faith.point.4.title': 'واليوم الآخر',
+  'lesson.pillars-faith.point.4.body':
+      'البعث والحساب والميزان والصراط، والجنة والنار. وأن كل نفس تُجزى بما كسبت لا تُظلم شيئاً.',
+  'lesson.pillars-faith.point.5.title': 'والقدر خيره وشره',
+  'lesson.pillars-faith.point.5.body':
+      'أن الله علم كل شيء وكتبه، وأن ما شاء كان وما لم يشأ لم يكن، مع بقاء اختيار العبد ومسؤوليته عن كسبه.',
+  'lesson.ihsan.point.0.title': 'أن تعبد الله كأنك تراه',
+  'lesson.ihsan.point.0.body':
+      'أن يستحضر العبد قرب الله منه وهو يعبده، فيؤدّي العبادة على أتمّ ما يقدر عليه، لا أداءً ناقصاً يُسقط الواجب فحسب.',
+  'lesson.ihsan.point.1.title': 'فإن لم تكن تراه فإنه يراك',
+  'lesson.ihsan.point.1.body':
+      'فمن لم يبلغ تلك المرتبة، فليعلم أن الله مطّلع عليه في سرّه وعلانيته. وهذه هي المراقبة.',
+  'lesson.ihsan.point.2.title': 'والإحسان في كل شيء',
+  'lesson.ihsan.point.2.body':
+      'ليس في العبادة وحدها، بل في العمل والمعاملة والقول، وحتى في الذبح ورفق الإنسان بما تحت يده.',
+  'lesson.wudu.point.0.title': 'النية',
+  'lesson.wudu.point.0.body':
+      'محلّها القلب، ولا يُتلفّظ بها. وهي ما يميّز العبادة عن مجرد غسل الأعضاء.',
+  'lesson.wudu.point.1.title': 'غسل الوجه',
+  'lesson.wudu.point.1.body':
+      'من منابت شعر الرأس إلى أسفل اللحية طولاً، ومن الأذن إلى الأذن عرضاً. ويُسنّ قبله المضمضة والاستنشاق.',
+  'lesson.wudu.point.2.title': 'غسل اليدين إلى المرفقين',
+  'lesson.wudu.point.2.body': 'مع إدخال المرفقين، ويبدأ باليمنى ثم اليسرى.',
+  'lesson.wudu.point.3.title': 'مسح الرأس',
+  'lesson.wudu.point.3.body':
+      'يمرّ بيديه المبلولتين على رأسه من مقدّمه إلى مؤخّره ثم يعيدهما، ويمسح أذنيه معه.',
+  'lesson.wudu.point.4.title': 'غسل الرجلين إلى الكعبين',
+  'lesson.wudu.point.4.body':
+      'مع تخليل أصابعهما، والبدء باليمنى. ويُسنّ في الغسل والمسح ثلاثاً، والواجب مرة تعمّ العضو.',
+  'lesson.salah.point.0.title': 'الفروض الخمسة',
+  'lesson.salah.point.0.body':
+      'الفجر ركعتان، والظهر أربع، والعصر أربع، والمغرب ثلاث، والعشاء أربع. وللمسافر أن يقصر الرباعية إلى ركعتين.',
+  'lesson.salah.point.1.title': 'شروطها قبل الدخول فيها',
+  'lesson.salah.point.1.body':
+      'الطهارة من الحدث والخبث، وستر العورة، واستقبال القبلة، ودخول الوقت. فمن صلّى قبل الوقت لم تُجزئه.',
+  'lesson.salah.point.2.title': 'أركانها',
+  'lesson.salah.point.2.body':
+      'تكبيرة الإحرام، والقيام مع القدرة، وقراءة الفاتحة، والركوع، والرفع منه، والسجود، والجلوس بين السجدتين، والطمأنينة في كل ركن، والتشهد الأخير، ثم التسليم.',
+  'lesson.salah.point.3.title': 'الخشوع روحها',
+  'lesson.salah.point.3.body':
+      'وهو حضور القلب وسكون الجوارح. وبه وصف الله المفلحين من المؤمنين.',
+  'lesson.niyyah.point.0.title': 'العمل بلا نية لا يُثمر',
+  'lesson.niyyah.point.0.body':
+      'العادة تصير عبادة بالنية، والعبادة تصير عادة بفقدها. فالنائم ليقوى على الطاعة مأجور، والمصلّي رياءً محروم.',
+  'lesson.niyyah.point.1.title': 'ولكل امرئ ما نوى',
+  'lesson.niyyah.point.1.body':
+      'يُجزى العبد على مقدار نيته لا على مقدار عمله وحده، فقد يبلغ صاحب العمل القليل بنيته ما لا يبلغه غيره بالكثير.',
+  'lesson.niyyah.point.2.title': 'والإخلاص شرط القبول',
+  'lesson.niyyah.point.2.body':
+      'أن يُراد بالعمل وجه الله وحده. وأن يكون العمل على هدي النبي ﷺ. وبهذين يُقبل العمل.',
 
   // Card shelves
   'cardshelf.daily.title': 'كروت يومية',
@@ -317,6 +394,8 @@ const _ar = <String, String>{
   'account.adminSection': 'الإدارة',
   'account.adminTitle': 'إدارة الأقسام',
   'account.adminSub': 'أظهِر وأخفِ ورتّب أقسام الشاشة الرئيسية',
+  'account.adminDuasTitle': 'الأدعية العامة',
+  'account.adminDuasSub': 'تعديل مجموعة الأدعية اللي يشوفها الكل',
   'account.aboutSection': 'عن التطبيق',
   'account.version': 'الإصدار',
   'account.sources': 'المصادر والحقوق',
@@ -483,6 +562,7 @@ const _ar = <String, String>{
   'tahfeez.myGender': 'جنسك',
   'tahfeez.myGenderSub':
       'حدده مرة واحدة ليظهر لك المحفظون المناسبون، ويُرفض أي طلب غير متوافق تلقائيًا',
+  'tahfeez.genderHint': 'الجنس',
   'tahfeez.genderSaved': 'تم الحفظ',
   'tahfeez.genderMismatch': 'هذا المحفظ لا يقبل طلابًا من جنسك',
   'tahfeez.noTeachersForFilter': 'لا يوجد محفظون يطابقون هذا الفلتر',
@@ -1175,6 +1255,85 @@ const _en = <String, String>{
   'lesson.salah.summary': "Times, rak'ahs and conditions",
   'lesson.niyyah.title': 'Intention',
   'lesson.niyyah.summary': 'First hadith of the Forty, root of all deeds',
+  'lesson.pillars-islam.point.0.title': 'The Two Testimonies',
+  'lesson.pillars-islam.point.0.body':
+      'To testify that there is no god but Allah and that Muhammad is His messenger. This is the first thing by which a person enters Islam, and it means devoting worship to Allah alone, believing the Prophet ﷺ in what he reported, and following him in what he commanded.',
+  'lesson.pillars-islam.point.1.title': 'Establishing Prayer',
+  'lesson.pillars-islam.point.1.body':
+      'Five prayers a day and night: Fajr, Dhuhr, Asr, Maghrib and Isha. It is the first thing a servant will be held accountable for on the Day of Judgment, and its times are fixed — never brought forward or delayed without a valid excuse.',
+  'lesson.pillars-islam.point.2.title': 'Paying Zakat',
+  'lesson.pillars-islam.point.2.body':
+      'A known due on wealth, paid by whoever\'s wealth reaches the nisab threshold and a full lunar year has passed over it. Its rate on money and trade goods is a quarter of a tenth — that is, two and a half percent.',
+  'lesson.pillars-islam.point.3.title': 'Fasting Ramadan',
+  'lesson.pillars-islam.point.3.body':
+      'Abstaining from food, drink, and everything else that breaks the fast, from the break of dawn until sunset, throughout the month of Ramadan — along with guarding the tongue and the limbs.',
+  'lesson.pillars-islam.point.4.title': 'Pilgrimage for Those Able',
+  'lesson.pillars-islam.point.4.body':
+      'Once in a lifetime, for whoever is able by body, wealth, and safety of the journey. Ability is a condition — whoever cannot afford it owes no Hajj.',
+  'lesson.pillars-faith.point.0.title': 'Belief in Allah',
+  'lesson.pillars-faith.point.0.body':
+      'Affirming His existence, His lordship, His sole right to worship, and His names and attributes — that He alone deserves worship, and that nothing is like Him.',
+  'lesson.pillars-faith.point.1.title': 'And His Angels',
+  'lesson.pillars-faith.point.1.body':
+      'Beings created from light, who never disobey Allah in what He commands them and do as they are told. Among them is Jibril, entrusted with revelation, as well as Mika’il and Israfil.',
+  'lesson.pillars-faith.point.2.title': 'And His Books',
+  'lesson.pillars-faith.point.2.body':
+      'What He revealed to His messengers, including the Torah, the Gospel, and the Psalms — sealed by the Quran, which stands as a witness over them and is preserved from any alteration.',
+  'lesson.pillars-faith.point.3.title': 'And His Messengers',
+  'lesson.pillars-faith.point.3.body':
+      'Believing that Allah sent messengers bringing good news and warning, the first of them Noah and the last Muhammad ﷺ — we make no distinction between any of them.',
+  'lesson.pillars-faith.point.4.title': 'And the Last Day',
+  'lesson.pillars-faith.point.4.body':
+      'The resurrection, the reckoning, the scale, and the bridge — and Paradise and the Fire. Every soul is repaid for what it earned, without the slightest injustice.',
+  'lesson.pillars-faith.point.5.title':
+      'And Divine Decree, Its Good and Its Bad',
+  'lesson.pillars-faith.point.5.body':
+      'That Allah knew and recorded everything, and that whatever He willed came to be and whatever He did not will never will — while the servant still retains a real choice and bears responsibility for what they earn.',
+  'lesson.ihsan.point.0.title': 'To Worship Allah as Though You See Him',
+  'lesson.ihsan.point.0.body':
+      'That the servant keeps in mind Allah’s nearness while worshipping Him, so that the worship is performed as completely as one is able — not a bare minimum that merely discharges the obligation.',
+  'lesson.ihsan.point.1.title': 'And If You Do Not See Him, He Surely Sees You',
+  'lesson.ihsan.point.1.body':
+      'Whoever has not reached that station should know that Allah is watching them, in private and in public. This is what is meant by muraqabah — ever-present awareness of Him.',
+  'lesson.ihsan.point.2.title': 'Excellence in Everything',
+  'lesson.ihsan.point.2.body':
+      'Not in worship alone, but in work, dealings, and speech — even in how an animal is slaughtered and in a person’s gentleness toward whatever is in their care.',
+  'lesson.wudu.point.0.title': 'The Intention',
+  'lesson.wudu.point.0.body':
+      'Its place is the heart; it is not spoken aloud. It is what distinguishes an act of worship from simply washing one’s limbs.',
+  'lesson.wudu.point.1.title': 'Washing the Face',
+  'lesson.wudu.point.1.body':
+      'From the hairline to the bottom of the chin lengthwise, and from ear to ear widthwise. Rinsing the mouth and inhaling water into the nose beforehand is recommended.',
+  'lesson.wudu.point.2.title': 'Washing the Hands to the Elbows',
+  'lesson.wudu.point.2.body':
+      'Including the elbows themselves, starting with the right hand then the left.',
+  'lesson.wudu.point.3.title': 'Wiping the Head',
+  'lesson.wudu.point.3.body':
+      'Passing wet hands over the head from front to back and then back again, wiping the ears along with it.',
+  'lesson.wudu.point.4.title': 'Washing the Feet to the Ankles',
+  'lesson.wudu.point.4.body':
+      'Including the ankles, working the fingers between the toes, and starting with the right foot. Doing each part three times is recommended; once, covering the whole limb, is the minimum required.',
+  'lesson.salah.point.0.title': 'The Five Obligatory Prayers',
+  'lesson.salah.point.0.body':
+      'Fajr is two rak\'ahs, Dhuhr four, Asr four, Maghrib three, and Isha four. A traveller may shorten a four-rak\'ah prayer to two.',
+  'lesson.salah.point.1.title': 'Its Conditions Before Beginning',
+  'lesson.salah.point.1.body':
+      'Purification from both major and minor impurity, covering the private parts, facing the qiblah, and the prayer time having actually begun — whoever prays before its time is not credited.',
+  'lesson.salah.point.2.title': 'Its Pillars',
+  'lesson.salah.point.2.body':
+      'The opening takbir, standing if able, reciting al-Fatihah, bowing, rising from bowing, prostrating, sitting between the two prostrations, stillness in every pillar, the final tashahhud, then the closing greeting.',
+  'lesson.salah.point.3.title': 'Khushu\' Is Its Spirit',
+  'lesson.salah.point.3.body':
+      'The presence of the heart and the stillness of the limbs. It is by this that Allah described the believers who have succeeded.',
+  'lesson.niyyah.point.0.title': 'Action Without Intention Bears No Fruit',
+  'lesson.niyyah.point.0.body':
+      'A habit becomes an act of worship through intention, and an act of worship becomes a mere habit when intention is missing. So the sleeper who meant to rise in worship is rewarded, while the one who prays to be seen is deprived.',
+  'lesson.niyyah.point.1.title': 'Every Person Gets What They Intended',
+  'lesson.niyyah.point.1.body':
+      'A servant is rewarded according to the measure of their intention, not the measure of their deed alone — someone with little action but sincere intent may attain what another with far more action does not.',
+  'lesson.niyyah.point.2.title': 'Sincerity Is the Condition for Acceptance',
+  'lesson.niyyah.point.2.body':
+      'That the deed be intended for Allah\'s sake alone, and that it follow the guidance of the Prophet ﷺ. By these two, a deed is accepted.',
 
   // Card shelves
   'cardshelf.daily.title': 'Daily Cards',
@@ -1337,6 +1496,8 @@ const _en = <String, String>{
   'account.adminSection': 'Admin',
   'account.adminTitle': 'Manage Sections',
   'account.adminSub': 'Show, hide and reorder home screen sections',
+  'account.adminDuasTitle': 'Public Duas',
+  'account.adminDuasSub': 'Edit the dua collection everyone sees',
   'account.aboutSection': 'About',
   'account.version': 'Version',
   'account.sources': 'Sources & Credits',
@@ -1508,6 +1669,7 @@ const _en = <String, String>{
   'tahfeez.myGender': 'Your gender',
   'tahfeez.myGenderSub':
       'Set once so matching teachers appear, and mismatched requests are refused automatically',
+  'tahfeez.genderHint': 'Gender',
   'tahfeez.genderSaved': 'Saved',
   'tahfeez.genderMismatch':
       'This teacher does not accept students of your gender',

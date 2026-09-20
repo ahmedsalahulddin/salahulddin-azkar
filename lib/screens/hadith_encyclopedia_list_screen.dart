@@ -292,25 +292,27 @@ class _HadeethCardState extends State<_HadeethCard> {
               height: 1.9,
             ),
           ),
-          const SizedBox(height: 10),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: AppColors.goldMuted,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              d.hadeeth,
-              textDirection: TextDirection.ltr,
-              textAlign: TextAlign.left,
-              style: const TextStyle(
-                color: AppColors.textGold,
-                fontSize: 13.5,
-                height: 1.55,
+          if (widget.lang != 'ar') ...[
+            const SizedBox(height: 10),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppColors.goldMuted,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                d.hadeeth,
+                textDirection: TextDirection.ltr,
+                textAlign: TextAlign.left,
+                style: const TextStyle(
+                  color: AppColors.textGold,
+                  fontSize: 13.5,
+                  height: 1.55,
+                ),
               ),
             ),
-          ),
+          ],
           if (d.grade != null || d.attribution != null) ...[
             const SizedBox(height: 10),
             Wrap(
@@ -344,7 +346,9 @@ class _HadeethCardState extends State<_HadeethCard> {
               ),
             ),
           ],
-          if (d.explanation != null && d.explanation!.isNotEmpty) ...[
+          if (widget.lang != 'ar' &&
+              d.explanation != null &&
+              d.explanation!.isNotEmpty) ...[
             const SizedBox(height: 8),
             Text(
               d.explanation!,

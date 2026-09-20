@@ -285,8 +285,8 @@ class _AccountScreenState extends State<AccountScreen> {
                   const SizedBox(height: 8),
                   _tile(
                     icon: Icons.volunteer_activism,
-                    title: 'الأدعية العامة',
-                    subtitle: 'تعديل مجموعة الأدعية اللي يشوفها الكل',
+                    title: t('account.adminDuasTitle'),
+                    subtitle: t('account.adminDuasSub'),
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(

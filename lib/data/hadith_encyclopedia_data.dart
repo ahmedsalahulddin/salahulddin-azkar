@@ -116,10 +116,13 @@ class HadeethPage {
 class HadithEncyclopediaService {
   static const _host = 'https://hadeethenc.com/api/v1';
 
-  /// Languages this source actually covers, in menu order. Arabic is
-  /// implicit — every hadith is shown with its Arabic text regardless of
-  /// which of these is picked, so it is not listed separately here.
+  /// Languages this source actually covers, in menu order. Every hadith is
+  /// shown with its Arabic text regardless of which is picked (see
+  /// HadeethDetail below), but Arabic is still listed as a pick of its own —
+  /// without it, browsing the topic tree itself (category names, not just
+  /// the hadith text) had no way to be read in Arabic at all.
   static const supportedLanguages = <(String code, String name)>[
+    ('ar', 'العربية'),
     ('en', 'English'),
     ('fr', 'Français'),
     ('ur', 'اردو'),

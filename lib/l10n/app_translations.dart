@@ -554,6 +554,90 @@ const appTranslations = <String, Map<String, String>>{
     'lesson.niyyah.title': 'L\'intention',
     'lesson.niyyah.summary':
         'Premier hadith des Quarante, fondement de toutes les œuvres',
+    'lesson.pillars-islam.point.0.title':
+        'Les deux attestations de foi (la Chahada)',
+    'lesson.pillars-islam.point.0.body':
+        'Témoigner qu\'il n\'y a de divinité digne d\'adoration en dehors d\'Allah, et que Muhammad est Son messager. C\'est la première chose par laquelle une personne entre en Islam, et cela signifie vouer l\'adoration à Allah seul, croire le Prophète ﷺ dans ce qu\'il a annoncé et le suivre dans ce qu\'il a ordonné.',
+    'lesson.pillars-islam.point.1.title': 'L\'accomplissement de la prière',
+    'lesson.pillars-islam.point.1.body':
+        'Cinq prières par jour et par nuit : le Fajr, le Dhuhr, le Asr, le Maghrib et le Isha. C\'est la première chose dont le serviteur devra rendre compte le Jour de la Résurrection, et ses horaires sont fixes — on ne les avance ni ne les retarde sans excuse valable.',
+    'lesson.pillars-islam.point.2.title': 'L\'acquittement de la zakat',
+    'lesson.pillars-islam.point.2.body':
+        'Un droit déterminé sur les biens, à acquitter par quiconque possède un patrimoine atteignant le nisab et sur lequel une année lunaire complète (hawl) s\'est écoulée. Son taux, pour l\'argent et les marchandises commerciales, est d\'un quart du dixième — soit deux virgule cinq pour cent (2,5 %).',
+    'lesson.pillars-islam.point.3.title': 'Le jeûne du Ramadan',
+    'lesson.pillars-islam.point.3.body':
+        'S\'abstenir de nourriture, de boisson et de tout ce qui annule le jeûne, de l\'aube jusqu\'au coucher du soleil, pendant tout le mois de Ramadan — tout en préservant sa langue et ses membres.',
+    'lesson.pillars-islam.point.4.title':
+        'Le Hajj à la Maison sacrée, pour qui en a la capacité',
+    'lesson.pillars-islam.point.4.body':
+        'Une seule fois dans la vie, pour quiconque en a la capacité physique et financière et dont le chemin est sûr. La capacité (istita\'ah) est une condition : celui qui ne le peut pas n\'est pas tenu d\'accomplir le Hajj.',
+    'lesson.pillars-faith.point.0.title': 'La foi en Allah',
+    'lesson.pillars-faith.point.0.body':
+        'Croire en Son existence, en Sa seigneurie (rububiyyah) et en ce qu\'Il est le seul à mériter d\'être adoré, ainsi qu\'en Ses noms et attributs — qu\'Il est l\'unique digne d\'adoration, et que rien ne Lui est semblable.',
+    'lesson.pillars-faith.point.1.title': 'Et en Ses anges',
+    'lesson.pillars-faith.point.1.body':
+        'Des créatures faites de lumière, qui ne désobéissent jamais à Allah dans ce qu\'Il leur ordonne et qui font ce qui leur est commandé. Parmi eux, Jibril, chargé de la révélation, ainsi que Mika\'il et Israfil.',
+    'lesson.pillars-faith.point.2.title': 'Et en Ses livres',
+    'lesson.pillars-faith.point.2.body':
+        'Ce qu\'Il a révélé à Ses messagers, parmi lesquels la Torah, l\'Évangile et les Psaumes, scellés par le Coran qui leur sert de garant et qui est préservé de toute altération.',
+    'lesson.pillars-faith.point.3.title': 'Et en Ses messagers',
+    'lesson.pillars-faith.point.3.body':
+        'Croire qu\'Allah a envoyé des messagers annonciateurs et avertisseurs, le premier étant Noé et le dernier Muhammad ﷺ — nous ne faisons de distinction entre aucun d\'eux.',
+    'lesson.pillars-faith.point.4.title': 'Et au Jour dernier',
+    'lesson.pillars-faith.point.4.body':
+        'La résurrection, le jugement, la balance (mizan) et le pont (sirat), ainsi que le Paradis et l\'Enfer. Chaque âme sera rétribuée selon ce qu\'elle a acquis, sans la moindre injustice.',
+    'lesson.pillars-faith.point.5.title':
+        'Et le décret divin (al-qadar), en bien comme en mal',
+    'lesson.pillars-faith.point.5.body':
+        'Qu\'Allah connaît toute chose et l\'a consignée, et que ce qu\'Il a voulu s\'est réalisé tandis que ce qu\'Il n\'a pas voulu ne s\'est pas réalisé — tout en laissant au serviteur un choix réel et la responsabilité de ses actes.',
+    'lesson.ihsan.point.0.title': 'Adorer Allah comme si tu Le voyais',
+    'lesson.ihsan.point.0.body':
+        'Que le serviteur garde à l\'esprit la proximité d\'Allah pendant qu\'il L\'adore, de sorte à accomplir l\'adoration avec toute la perfection dont il est capable — et non un accomplissement minimal qui ne fait que s\'acquitter de l\'obligation.',
+    'lesson.ihsan.point.1.title': 'Et si tu ne Le vois pas, Lui te voit',
+    'lesson.ihsan.point.1.body':
+        'Celui qui n\'atteint pas ce degré doit savoir qu\'Allah l\'observe, en secret comme en public. C\'est ce qu\'on appelle la muraqabah.',
+    'lesson.ihsan.point.2.title': 'Et l\'excellence en toute chose',
+    'lesson.ihsan.point.2.body':
+        'Non seulement dans l\'adoration, mais aussi dans le travail, les relations et la parole — et même dans la manière d\'égorger un animal et dans la douceur envers ce dont on a la charge.',
+    'lesson.wudu.point.0.title': 'L\'intention (niyyah)',
+    'lesson.wudu.point.0.body':
+        'Elle se situe dans le cœur et ne se formule pas à voix haute. C\'est elle qui distingue un acte d\'adoration d\'un simple lavage des membres.',
+    'lesson.wudu.point.1.title': 'Le lavage du visage',
+    'lesson.wudu.point.1.body':
+        'De la racine des cheveux jusqu\'au bas du menton en longueur, et d\'une oreille à l\'autre en largeur. Il est recommandé de se rincer la bouche et de faire pénétrer l\'eau dans le nez avant.',
+    'lesson.wudu.point.2.title': 'Le lavage des mains jusqu\'aux coudes',
+    'lesson.wudu.point.2.body':
+        'En incluant les coudes eux-mêmes, en commençant par la main droite puis la gauche.',
+    'lesson.wudu.point.3.title': 'L\'essuyage de la tête',
+    'lesson.wudu.point.3.body':
+        'Passer les mains mouillées sur la tête de l\'avant vers l\'arrière, puis les ramener en sens inverse, en essuyant les oreilles en même temps.',
+    'lesson.wudu.point.4.title': 'Le lavage des pieds jusqu\'aux chevilles',
+    'lesson.wudu.point.4.body':
+        'En incluant les chevilles, en passant les doigts entre les orteils et en commençant par le pied droit. Il est recommandé de laver et d\'essuyer trois fois ; une seule fois, couvrant tout le membre, suffit pour l\'obligation.',
+    'lesson.salah.point.0.title': 'Les cinq prières obligatoires',
+    'lesson.salah.point.0.body':
+        'Le Fajr comporte deux rak\'ah, le Dhuhr quatre, le Asr quatre, le Maghrib trois et le Isha quatre. Le voyageur peut raccourcir (qasr) une prière de quatre rak\'ah à deux.',
+    'lesson.salah.point.1.title': 'Ses conditions avant d\'y entrer',
+    'lesson.salah.point.1.body':
+        'La purification de l\'impureté majeure et mineure, le fait de couvrir les parties intimes (\'awrah), le fait de se tourner vers la qiblah, et l\'entrée effective du temps de la prière. Celui qui prie avant l\'heure ne voit pas sa prière validée.',
+    'lesson.salah.point.2.title': 'Ses piliers',
+    'lesson.salah.point.2.body':
+        'Le takbir d\'entrée (takbirat al-ihram), la station debout pour qui en est capable, la récitation de la Fatiha, l\'inclinaison (ruku\'), le redressement qui suit, la prosternation (sujud), l\'assise entre les deux prosternations, la quiétude (tuma\'ninah) dans chaque pilier, le tashahhud final, puis le taslim.',
+    'lesson.salah.point.3.title': 'Le khushu\', son esprit',
+    'lesson.salah.point.3.body':
+        'C\'est la présence du cœur et le calme des membres. C\'est par cela qu\'Allah a décrit les croyants qui ont réussi.',
+    'lesson.niyyah.point.0.title':
+        'Un acte sans intention ne porte pas de fruit',
+    'lesson.niyyah.point.0.body':
+        'Une habitude devient un acte d\'adoration par l\'intention, et un acte d\'adoration devient une simple habitude quand elle lui fait défaut. Ainsi, celui qui dort avec l\'intention de se lever pour l\'adoration en est récompensé, tandis que celui qui prie par ostentation (riya) en est privé.',
+    'lesson.niyyah.point.1.title':
+        'À chacun selon ce qu\'il a eu l\'intention de faire',
+    'lesson.niyyah.point.1.body':
+        'Le serviteur est rétribué à la mesure de son intention, et non à la seule mesure de son action — celui qui accomplit peu, mais avec une intention sincère, peut atteindre ce qu\'un autre n\'atteint pas avec beaucoup plus d\'actions.',
+    'lesson.niyyah.point.2.title':
+        'Et la sincérité, condition de l\'acceptation',
+    'lesson.niyyah.point.2.body':
+        'Que l\'acte soit accompli uniquement pour la Face d\'Allah, et qu\'il soit conforme à la voie du Prophète ﷺ. C\'est par ces deux conditions qu\'un acte est accepté.',
     'shelf.adhkar.title': 'Adhkar',
     'shelf.cards.title': 'Cartes de vœux',
     'shelf.lessons.title': 'Leçons',
@@ -1090,6 +1174,87 @@ const appTranslations = <String, Map<String, String>>{
     'lesson.salah.summary': 'اوقات، رکعتوں کی تعداد اور شرائط',
     'lesson.niyyah.title': 'نیت',
     'lesson.niyyah.summary': 'اربعین کی پہلی حدیث، اور تمام اعمال کی اصل',
+    'lesson.pillars-islam.point.0.title': 'کلمہ شہادت',
+    'lesson.pillars-islam.point.0.body':
+        'یہ گواہی دینا کہ اللہ کے سوا کوئی معبود نہیں اور محمد ﷺ اللہ کے رسول ہیں۔ یہی وہ پہلی چیز ہے جس کے ذریعے انسان اسلام میں داخل ہوتا ہے، اور اس کا مطلب ہے صرف اللہ ہی کی عبادت کرنا، نبی ﷺ کی ہر خبر کی تصدیق کرنا اور آپ ﷺ کے ہر حکم کی اتباع کرنا۔',
+    'lesson.pillars-islam.point.1.title': 'نماز قائم کرنا',
+    'lesson.pillars-islam.point.1.body':
+        'دن رات میں پانچ نمازیں: فجر، ظہر، عصر، مغرب اور عشاء۔ قیامت کے دن بندے سے سب سے پہلے اسی کا حساب لیا جائے گا، اور اس کے اوقات مقرر ہیں جنہیں بلا عذر آگے پیچھے نہیں کیا جا سکتا۔',
+    'lesson.pillars-islam.point.2.title': 'زکوٰۃ ادا کرنا',
+    'lesson.pillars-islam.point.2.body':
+        'مال میں ایک مقررہ حق ہے جسے وہ شخص ادا کرتا ہے جس کا مال نصاب کو پہنچ جائے اور اس پر ایک سال گزر جائے۔ نقدی اور تجارتی سامان میں اس کی مقدار چالیسواں حصہ یعنی ڈھائی فیصد ہے۔',
+    'lesson.pillars-islam.point.3.title': 'رمضان کے روزے',
+    'lesson.pillars-islam.point.3.body':
+        'طلوعِ فجر سے غروبِ آفتاب تک کھانے، پینے اور دیگر تمام مفطرات سے رکنا، پورے رمضان کے مہینے میں، ساتھ ہی زبان اور اعضاء کی حفاظت کرنا۔',
+    'lesson.pillars-islam.point.4.title':
+        'استطاعت رکھنے والے پر بیت اللہ کا حج',
+    'lesson.pillars-islam.point.4.body':
+        'زندگی میں ایک بار، اس شخص پر فرض ہے جو جسمانی، مالی اور سفر کی حفاظت کے اعتبار سے استطاعت رکھتا ہو۔ استطاعت شرط ہے، جو استطاعت نہ رکھے اس پر حج فرض نہیں۔',
+    'lesson.pillars-faith.point.0.title': 'اللہ پر ایمان',
+    'lesson.pillars-faith.point.0.body':
+        'اس کے وجود، ربوبیت، الوہیت، اسمائے حسنیٰ اور صفات کی تصدیق کرنا، اور یہ کہ وہی اکیلا عبادت کے لائق ہے، اس جیسی کوئی چیز نہیں۔',
+    'lesson.pillars-faith.point.1.title': 'اور اس کے فرشتوں پر',
+    'lesson.pillars-faith.point.1.body':
+        'نور سے پیدا کی گئی مخلوق، جو اللہ کے حکم کی نافرمانی نہیں کرتے اور جو حکم دیا جائے وہی کرتے ہیں۔ ان میں جبریل علیہ السلام وحی پر مامور ہیں، اور میکائیل و اسرافیل علیہما السلام بھی شامل ہیں۔',
+    'lesson.pillars-faith.point.2.title': 'اور اس کی کتابوں پر',
+    'lesson.pillars-faith.point.2.body':
+        'جو کچھ اللہ نے اپنے رسولوں پر نازل کیا، جن میں تورات، انجیل اور زبور شامل ہیں، اور ان سب پر مہیمن اور تحریف سے محفوظ آخری کتاب قرآن مجید ہے۔',
+    'lesson.pillars-faith.point.3.title': 'اور اس کے رسولوں پر',
+    'lesson.pillars-faith.point.3.body':
+        'یہ ایمان رکھنا کہ اللہ نے خوشخبری دینے والے اور ڈرانے والے رسول بھیجے، جن میں پہلے نوح علیہ السلام اور آخری محمد ﷺ ہیں، ہم ان میں سے کسی کے درمیان فرق نہیں کرتے۔',
+    'lesson.pillars-faith.point.4.title': 'اور یومِ آخرت پر',
+    'lesson.pillars-faith.point.4.body':
+        'دوبارہ زندہ کیا جانا، حساب، میزان اور پل صراط، اور جنت اور دوزخ۔ اور یہ کہ ہر نفس کو اس کے کیے کا بدلہ دیا جائے گا اور ذرہ برابر ظلم نہیں کیا جائے گا۔',
+    'lesson.pillars-faith.point.5.title': 'اور تقدیر پر، اس کے اچھے اور برے پر',
+    'lesson.pillars-faith.point.5.body':
+        'یہ کہ اللہ نے ہر چیز کا علم رکھا اور اسے لکھ دیا، اور جو اس نے چاہا وہی ہوا اور جو نہیں چاہا وہ نہیں ہوا، جبکہ بندے کا اختیار اور اپنے کیے کی ذمہ داری بدستور باقی رہتی ہے۔',
+    'lesson.ihsan.point.0.title':
+        'اللہ کی عبادت اس طرح کرنا گویا تم اسے دیکھ رہے ہو',
+    'lesson.ihsan.point.0.body':
+        'بندہ عبادت کرتے وقت اللہ کی قربت کو محسوس کرے، تاکہ عبادت اپنی مکمل ترین صورت میں ادا ہو، نہ کہ محض فرض پورا کرنے والی ناقص ادائیگی۔',
+    'lesson.ihsan.point.1.title':
+        'اگر تم اسے نہیں دیکھتے تو وہ تمہیں دیکھ رہا ہے',
+    'lesson.ihsan.point.1.body':
+        'جو اس درجے کو نہ پہنچ سکے، وہ یہ جان لے کہ اللہ اس کے پوشیدہ اور ظاہر ہر حال سے باخبر ہے۔ یہی مراقبہ ہے۔',
+    'lesson.ihsan.point.2.title': 'اور ہر چیز میں احسان',
+    'lesson.ihsan.point.2.body':
+        'صرف عبادت میں نہیں بلکہ کام، معاملات اور گفتگو میں بھی، حتیٰ کہ ذبح کرنے اور اپنے زیرِ نگرانی جانداروں کے ساتھ نرمی میں بھی۔',
+    'lesson.wudu.point.0.title': 'نیت',
+    'lesson.wudu.point.0.body':
+        'اس کا مقام دل ہے، زبان سے اس کا کہنا ضروری نہیں۔ یہی وہ چیز ہے جو عبادت کو محض اعضاء دھونے سے ممتاز کرتی ہے۔',
+    'lesson.wudu.point.1.title': 'چہرہ دھونا',
+    'lesson.wudu.point.1.body':
+        'لمبائی میں پیشانی کے بالوں کی جگہ سے لے کر ٹھوڑی کے نیچے تک، اور چوڑائی میں ایک کان سے دوسرے کان تک۔ اس سے پہلے کلی کرنا اور ناک میں پانی چڑھانا سنت ہے۔',
+    'lesson.wudu.point.2.title': 'دونوں ہاتھ کہنیوں تک دھونا',
+    'lesson.wudu.point.2.body':
+        'کہنیوں کو بھی شامل کرتے ہوئے، پہلے دائیں ہاتھ سے شروع کر کے پھر بائیں ہاتھ سے۔',
+    'lesson.wudu.point.3.title': 'سر کا مسح کرنا',
+    'lesson.wudu.point.3.body':
+        'دونوں گیلے ہاتھوں کو سر کے اگلے حصے سے پچھلے حصے تک پھیرنا پھر واپس لانا، اور اس کے ساتھ کانوں کا بھی مسح کرنا۔',
+    'lesson.wudu.point.4.title': 'دونوں پاؤں ٹخنوں تک دھونا',
+    'lesson.wudu.point.4.body':
+        'ٹخنوں کو بھی شامل کرتے ہوئے، انگلیوں کا خلال کرتے ہوئے اور دائیں پاؤں سے شروع کرتے ہوئے۔ دھونے اور مسح میں تین بار کرنا سنت ہے، جبکہ پورے عضو کو شامل کرتے ہوئے ایک بار کرنا فرض ہے۔',
+    'lesson.salah.point.0.title': 'پانچ فرض نمازیں',
+    'lesson.salah.point.0.body':
+        'فجر دو رکعت، ظہر چار رکعت، عصر چار رکعت، مغرب تین رکعت اور عشاء چار رکعت۔ مسافر کو چار رکعت والی نماز قصر کر کے دو رکعت پڑھنے کی اجازت ہے۔',
+    'lesson.salah.point.1.title': 'نماز شروع کرنے سے پہلے کی شرائط',
+    'lesson.salah.point.1.body':
+        'حدث اور نجاست سے طہارت، ستر پوشی، قبلہ رخ ہونا، اور وقت کا داخل ہونا۔ جو وقت سے پہلے نماز پڑھے اس کی نماز کافی نہیں ہوتی۔',
+    'lesson.salah.point.2.title': 'نماز کے ارکان',
+    'lesson.salah.point.2.body':
+        'تکبیرِ تحریمہ، طاقت ہونے کی صورت میں کھڑا ہونا، سورہ فاتحہ پڑھنا، رکوع، رکوع سے اٹھنا، سجدہ، دونوں سجدوں کے درمیان بیٹھنا، ہر رکن میں اطمینان، آخری تشہد، پھر سلام پھیرنا۔',
+    'lesson.salah.point.3.title': 'خشوع اس کی روح ہے',
+    'lesson.salah.point.3.body':
+        'خشوع دل کی حاضری اور اعضاء کے سکون کا نام ہے۔ اسی صفت سے اللہ نے کامیاب مومنوں کو بیان فرمایا ہے۔',
+    'lesson.niyyah.point.0.title': 'بغیر نیت کے عمل ثمر آور نہیں ہوتا',
+    'lesson.niyyah.point.0.body':
+        'نیت کے ذریعے عادت عبادت بن جاتی ہے، اور نیت نہ ہونے سے عبادت محض عادت بن کر رہ جاتی ہے۔ چنانچہ جو شخص عبادت کے لیے اٹھنے کی نیت سے سویا وہ بھی اجر پاتا ہے، جبکہ ریاکاری سے نماز پڑھنے والا محروم رہتا ہے۔',
+    'lesson.niyyah.point.1.title': 'اور ہر شخص کے لیے وہی ہے جو اس نے نیت کی',
+    'lesson.niyyah.point.1.body':
+        'بندے کو اس کی نیت کے مطابق بدلہ دیا جاتا ہے نہ کہ صرف اس کے عمل کی مقدار کے مطابق۔ چنانچہ کم عمل کرنے والا اپنی نیت کی بدولت وہاں تک پہنچ سکتا ہے جہاں تک زیادہ عمل کرنے والا نہیں پہنچ پاتا۔',
+    'lesson.niyyah.point.2.title': 'اور اخلاص قبولیت کی شرط ہے',
+    'lesson.niyyah.point.2.body':
+        'یہ کہ عمل سے صرف اللہ کی رضا مقصود ہو، اور عمل نبی ﷺ کی ہدایت کے مطابق ہو۔ انہی دو شرطوں سے عمل قبول ہوتا ہے۔',
     'shelf.adhkar.title': 'اذکار',
     'shelf.cards.title': 'مبارک باد کارڈز',
     'shelf.lessons.title': 'اسباق',
@@ -1642,6 +1807,87 @@ const appTranslations = <String, Map<String, String>>{
     'lesson.niyyah.title': 'Niat',
     'lesson.niyyah.summary':
         'Hadis pertama dalam Arbain, pokok dari segala amal',
+    'lesson.pillars-islam.point.0.title': 'Dua Kalimat Syahadat',
+    'lesson.pillars-islam.point.0.body':
+        'Yaitu bersaksi bahwa tidak ada tuhan yang berhak disembah selain Allah dan bahwa Muhammad adalah utusan Allah. Ini adalah hal pertama yang dengannya seseorang masuk Islam, dan maknanya adalah mengesakan Allah semata dalam beribadah, membenarkan Nabi ﷺ dalam apa yang beliau kabarkan, dan mengikuti beliau dalam apa yang beliau perintahkan.',
+    'lesson.pillars-islam.point.1.title': 'Mendirikan Shalat',
+    'lesson.pillars-islam.point.1.body':
+        'Lima shalat dalam sehari semalam: Subuh, Zuhur, Asar, Magrib, dan Isya. Shalat adalah amal pertama yang akan dihisab dari seorang hamba pada hari Kiamat, dan waktu-waktunya telah ditentukan — tidak boleh dimajukan atau diakhirkan dari waktunya tanpa alasan yang dibenarkan.',
+    'lesson.pillars-islam.point.2.title': 'Menunaikan Zakat',
+    'lesson.pillars-islam.point.2.body':
+        'Hak yang telah ditetapkan atas harta, dikeluarkan oleh siapa saja yang hartanya mencapai nisab dan telah berlalu satu haul (setahun) atasnya. Kadarnya untuk uang dan barang dagangan adalah seperempat dari sepersepuluh — yaitu dua setengah persen.',
+    'lesson.pillars-islam.point.3.title': 'Puasa Ramadan',
+    'lesson.pillars-islam.point.3.body':
+        'Menahan diri dari makan, minum, dan segala hal lain yang membatalkan puasa, sejak terbit fajar hingga terbenam matahari, sepanjang bulan Ramadan, disertai menjaga lisan dan anggota tubuh.',
+    'lesson.pillars-islam.point.4.title': 'Haji ke Baitullah bagi yang Mampu',
+    'lesson.pillars-islam.point.4.body':
+        'Sekali seumur hidup bagi siapa saja yang mampu secara fisik, harta, dan keamanan perjalanan. Kemampuan (istitha\'ah) adalah syarat, maka siapa yang tidak mampu tidak diwajibkan menunaikan haji.',
+    'lesson.pillars-faith.point.0.title': 'Iman kepada Allah',
+    'lesson.pillars-faith.point.0.body':
+        'Membenarkan keberadaan-Nya, rububiyah-Nya, keesaan-Nya dalam hak untuk disembah, serta nama-nama dan sifat-sifat-Nya — bahwa hanya Dia yang berhak disembah, dan tidak ada sesuatu pun yang serupa dengan-Nya.',
+    'lesson.pillars-faith.point.1.title': 'Dan Malaikat-malaikat-Nya',
+    'lesson.pillars-faith.point.1.body':
+        'Makhluk yang diciptakan dari cahaya, tidak pernah mendurhakai Allah dalam apa yang Dia perintahkan dan senantiasa mengerjakan apa yang diperintahkan kepada mereka. Di antara mereka ada Jibril yang bertugas menyampaikan wahyu, Mikail, dan Israfil.',
+    'lesson.pillars-faith.point.2.title': 'Dan Kitab-kitab-Nya',
+    'lesson.pillars-faith.point.2.body':
+        'Yaitu apa yang Allah turunkan kepada para rasul-Nya, di antaranya Taurat, Injil, dan Zabur, yang ditutup oleh Al-Qur\'an sebagai penyaksi atas kitab-kitab tersebut dan terjaga dari perubahan.',
+    'lesson.pillars-faith.point.3.title': 'Dan Rasul-rasul-Nya',
+    'lesson.pillars-faith.point.3.body':
+        'Beriman bahwa Allah mengutus para rasul sebagai pembawa kabar gembira dan peringatan, yang pertama adalah Nuh dan yang terakhir adalah Muhammad ﷺ — kami tidak membeda-bedakan di antara mereka.',
+    'lesson.pillars-faith.point.4.title': 'Dan Hari Akhir',
+    'lesson.pillars-faith.point.4.body':
+        'Kebangkitan, hisab, mizan (timbangan amal), dan shirath (jembatan), serta surga dan neraka. Setiap jiwa akan dibalas sesuai apa yang diusahakannya tanpa dizalimi sedikit pun.',
+    'lesson.pillars-faith.point.5.title': 'Dan Takdir, Baik maupun Buruknya',
+    'lesson.pillars-faith.point.5.body':
+        'Bahwa Allah mengetahui segala sesuatu dan telah mencatatnya, dan bahwa apa yang Dia kehendaki pasti terjadi sedangkan apa yang tidak Dia kehendaki tidak akan pernah terjadi, dengan tetap adanya pilihan bagi hamba dan tanggung jawabnya atas apa yang ia usahakan.',
+    'lesson.ihsan.point.0.title':
+        'Engkau Beribadah kepada Allah Seakan-akan Melihat-Nya',
+    'lesson.ihsan.point.0.body':
+        'Hendaknya seorang hamba senantiasa menghadirkan kedekatan Allah dalam hatinya ketika beribadah kepada-Nya, sehingga ia menunaikan ibadah itu dengan sebaik-baik yang ia mampu, bukan sekadar menunaikan kewajiban secara minimal.',
+    'lesson.ihsan.point.1.title':
+        'Jika Engkau Tidak Melihat-Nya, Maka Sesungguhnya Dia Melihatmu',
+    'lesson.ihsan.point.1.body':
+        'Siapa yang belum mencapai derajat tersebut, hendaklah ia menyadari bahwa Allah senantiasa mengawasinya, baik dalam keadaan tersembunyi maupun terang-terangan. Inilah yang disebut muraqabah.',
+    'lesson.ihsan.point.2.title': 'Dan Ihsan dalam Segala Hal',
+    'lesson.ihsan.point.2.body':
+        'Bukan hanya dalam ibadah semata, melainkan juga dalam pekerjaan, muamalah, dan perkataan, bahkan dalam menyembelih dan bersikap lembut terhadap apa yang berada di bawah tanggung jawabnya.',
+    'lesson.wudu.point.0.title': 'Niat',
+    'lesson.wudu.point.0.body':
+        'Tempatnya di dalam hati, dan tidak diucapkan dengan lisan. Niat inilah yang membedakan sebuah ibadah dari sekadar mencuci anggota tubuh.',
+    'lesson.wudu.point.1.title': 'Membasuh Wajah',
+    'lesson.wudu.point.1.body':
+        'Dari batas tumbuhnya rambut kepala hingga bawah dagu secara memanjang, dan dari telinga ke telinga secara melebar. Disunnahkan sebelumnya berkumur dan menghirup air ke hidung (istinsyaq).',
+    'lesson.wudu.point.2.title': 'Membasuh Kedua Tangan hingga Siku',
+    'lesson.wudu.point.2.body':
+        'Termasuk kedua siku itu sendiri, dimulai dengan tangan kanan kemudian tangan kiri.',
+    'lesson.wudu.point.3.title': 'Mengusap Kepala',
+    'lesson.wudu.point.3.body':
+        'Mengusapkan kedua tangan yang basah ke kepala dari depan ke belakang lalu mengembalikannya lagi, sekaligus mengusap kedua telinga bersamanya.',
+    'lesson.wudu.point.4.title': 'Membasuh Kedua Kaki hingga Mata Kaki',
+    'lesson.wudu.point.4.body':
+        'Termasuk kedua mata kaki, menyela-nyela jari-jemari kaki, dan dimulai dengan kaki kanan. Disunnahkan membasuh dan mengusap sebanyak tiga kali, sedangkan yang wajib adalah satu kali dengan meratakan seluruh anggota.',
+    'lesson.salah.point.0.title': 'Shalat Fardu yang Lima',
+    'lesson.salah.point.0.body':
+        'Subuh dua rakaat, Zuhur empat rakaat, Asar empat rakaat, Magrib tiga rakaat, dan Isya empat rakaat. Musafir boleh mengqasar shalat yang empat rakaat menjadi dua rakaat.',
+    'lesson.salah.point.1.title': 'Syarat-syaratnya Sebelum Memulai',
+    'lesson.salah.point.1.body':
+        'Suci dari hadas dan najis, menutup aurat, menghadap kiblat, dan telah masuknya waktu shalat. Siapa yang shalat sebelum waktunya, shalatnya tidak sah.',
+    'lesson.salah.point.2.title': 'Rukun-rukunnya',
+    'lesson.salah.point.2.body':
+        'Takbiratul ihram, berdiri bagi yang mampu, membaca Al-Fatihah, rukuk, bangkit dari rukuk, sujud, duduk di antara dua sujud, tuma\'ninah pada setiap rukun, tasyahud akhir, kemudian salam.',
+    'lesson.salah.point.3.title': 'Khusyuk Adalah Ruhnya',
+    'lesson.salah.point.3.body':
+        'Yaitu hadirnya hati dan tenangnya anggota tubuh. Dengan sifat khusyuk inilah Allah menyifati orang-orang beriman yang beruntung.',
+    'lesson.niyyah.point.0.title': 'Amal Tanpa Niat Tidak Membuahkan Hasil',
+    'lesson.niyyah.point.0.body':
+        'Kebiasaan bisa berubah menjadi ibadah dengan adanya niat, dan ibadah bisa berubah menjadi sekadar kebiasaan bila niat itu hilang. Maka orang yang tidur dengan niat agar kuat beribadah malam akan mendapat pahala, sedangkan orang yang shalat karena riya akan terhalang dari pahala.',
+    'lesson.niyyah.point.1.title':
+        'Dan Setiap Orang Mendapat Sesuai Apa yang Diniatkannya',
+    'lesson.niyyah.point.1.body':
+        'Seorang hamba dibalas sesuai dengan kadar niatnya, bukan semata-mata kadar amalnya. Terkadang orang yang amalnya sedikit namun niatnya tulus dapat mencapai apa yang tidak dicapai orang lain dengan amal yang jauh lebih banyak.',
+    'lesson.niyyah.point.2.title': 'Dan Ikhlas adalah Syarat Diterimanya Amal',
+    'lesson.niyyah.point.2.body':
+        'Yaitu hendaknya suatu amal ditujukan semata-mata karena Allah, dan hendaknya amal itu sesuai dengan tuntunan Nabi ﷺ. Dengan kedua hal inilah suatu amal diterima.',
     'shelf.adhkar.title': 'Zikir',
     'shelf.cards.title': 'Kartu Ucapan',
     'shelf.lessons.title': 'Pelajaran',
@@ -2197,6 +2443,89 @@ const appTranslations = <String, Map<String, String>>{
     'lesson.niyyah.title': 'Niat',
     'lesson.niyyah.summary':
         'Hadis pertama dalam 40 Hadis An-Nawawi, asas kepada semua amalan',
+    'lesson.pillars-islam.point.0.title': 'Dua Kalimah Syahadah',
+    'lesson.pillars-islam.point.0.body':
+        'Iaitu bersaksi bahawa tiada Tuhan yang berhak disembah melainkan Allah dan bahawa Muhammad adalah Rasul Allah. Ia adalah perkara pertama yang dengannya seseorang itu memasuki Islam, dan maknanya ialah mengesakan Allah semata-mata dalam ibadah, membenarkan Nabi ﷺ dalam apa yang dikhabarkannya, serta mengikutinya dalam apa yang diperintahkannya.',
+    'lesson.pillars-islam.point.1.title': 'Mendirikan Solat',
+    'lesson.pillars-islam.point.1.body':
+        'Lima solat sehari semalam: Subuh, Zuhur, Asar, Maghrib dan Isyak. Ia adalah perkara pertama yang akan dihisab ke atas seorang hamba pada hari kiamat, dan waktu-waktunya telah ditetapkan — tidak boleh didahulukan atau dilewatkan daripada waktunya tanpa keuzuran.',
+    'lesson.pillars-islam.point.2.title': 'Menunaikan Zakat',
+    'lesson.pillars-islam.point.2.body':
+        'Satu hak yang diketahui pada harta, dikeluarkan oleh sesiapa yang hartanya mencapai nisab dan telah cukup haul (setahun). Kadarnya pada wang dan barang perniagaan ialah suku daripada sepersepuluh — iaitu dua setengah peratus.',
+    'lesson.pillars-islam.point.3.title': 'Berpuasa di Bulan Ramadan',
+    'lesson.pillars-islam.point.3.body':
+        'Menahan diri daripada makan, minum, dan segala perkara yang membatalkan puasa, dari terbit fajar sehingga terbenam matahari, sepanjang bulan Ramadan, disertai dengan menjaga lidah dan anggota badan.',
+    'lesson.pillars-islam.point.4.title': 'Menunaikan Haji bagi yang Mampu',
+    'lesson.pillars-islam.point.4.body':
+        'Sekali seumur hidup bagi sesiapa yang mampu dari segi tubuh badan, harta, dan keselamatan perjalanan. Kemampuan adalah syarat; sesiapa yang tidak mampu, tidak wajib baginya haji.',
+    'lesson.pillars-faith.point.0.title': 'Beriman kepada Allah',
+    'lesson.pillars-faith.point.0.body':
+        'Membenarkan kewujudan-Nya, rububiyah-Nya, uluhiyah-Nya, nama-nama dan sifat-sifat-Nya, dan bahawa Dia sahaja yang berhak disembah, tiada sesuatu pun yang menyerupai-Nya.',
+    'lesson.pillars-faith.point.1.title': 'Dan Para Malaikat-Nya',
+    'lesson.pillars-faith.point.1.body':
+        'Makhluk yang diciptakan daripada cahaya, tidak menderhakai Allah dalam apa yang diperintahkan-Nya dan sentiasa melakukan apa yang disuruh. Antaranya ialah Jibril yang diamanahkan dengan wahyu, Mikail, dan Israfil.',
+    'lesson.pillars-faith.point.2.title': 'Dan Kitab-Kitab-Nya',
+    'lesson.pillars-faith.point.2.body':
+        'Apa yang diturunkan-Nya kepada para rasul-Nya, termasuk Taurat, Injil, dan Zabur, dan penutupnya ialah al-Quran yang menjadi saksi ke atas kitab-kitab sebelumnya serta terpelihara daripada sebarang perubahan.',
+    'lesson.pillars-faith.point.3.title': 'Dan Para Rasul-Nya',
+    'lesson.pillars-faith.point.3.body':
+        'Beriman bahawa Allah mengutus para rasul yang membawa berita gembira dan peringatan, yang pertama ialah Nuh dan yang terakhir ialah Muhammad ﷺ — kita tidak membeza-bezakan antara seorang pun daripada mereka.',
+    'lesson.pillars-faith.point.4.title': 'Dan Hari Akhirat',
+    'lesson.pillars-faith.point.4.body':
+        'Kebangkitan, hisab, mizan (neraca), dan sirat (titian), serta syurga dan neraka. Dan bahawa setiap jiwa akan dibalas mengikut apa yang diusahakannya tanpa dizalimi sedikit pun.',
+    'lesson.pillars-faith.point.5.title':
+        'Dan Qada\' dan Qadar, Baik dan Buruknya',
+    'lesson.pillars-faith.point.5.body':
+        'Bahawa Allah mengetahui segala sesuatu dan telah menuliskannya, dan bahawa apa yang dikehendaki-Nya pasti berlaku dan apa yang tidak dikehendaki-Nya tidak akan berlaku, sementara hamba tetap memiliki pilihan yang sebenar dan bertanggungjawab atas apa yang diusahakannya.',
+    'lesson.ihsan.point.0.title':
+        'Engkau Menyembah Allah Seolah-olah Engkau Melihat-Nya',
+    'lesson.ihsan.point.0.body':
+        'Iaitu seorang hamba menghayati kedekatan Allah dengannya semasa beribadah, lalu dia melaksanakan ibadah itu sebaik dan sesempurna mungkin yang termampu olehnya, bukan sekadar melaksanakannya secara serba kekurangan untuk menggugurkan kewajipan semata-mata.',
+    'lesson.ihsan.point.1.title':
+        'Jika Engkau Tidak Melihat-Nya, Sesungguhnya Dia Melihatmu',
+    'lesson.ihsan.point.1.body':
+        'Sesiapa yang belum mencapai martabat itu, hendaklah dia mengetahui bahawa Allah sentiasa mengawasinya, sama ada secara tersembunyi mahupun terang-terangan. Inilah yang dimaksudkan dengan muraqabah — kesedaran yang berterusan akan kehadiran-Nya.',
+    'lesson.ihsan.point.2.title': 'Ihsan dalam Segala Perkara',
+    'lesson.ihsan.point.2.body':
+        'Bukan dalam ibadah semata-mata, tetapi juga dalam pekerjaan, urusan muamalah, dan percakapan, malah dalam cara menyembelih dan sikap belas kasihan seseorang terhadap apa yang berada di bawah jagaannya.',
+    'lesson.wudu.point.0.title': 'Niat',
+    'lesson.wudu.point.0.body':
+        'Tempatnya di hati, dan tidak dilafazkan. Ia adalah perkara yang membezakan ibadah daripada sekadar membasuh anggota badan.',
+    'lesson.wudu.point.1.title': 'Membasuh Muka',
+    'lesson.wudu.point.1.body':
+        'Dari tempat tumbuh rambut kepala sehingga ke bawah dagu mengikut panjang, dan dari telinga ke telinga mengikut lebar. Disunatkan berkumur dan memasukkan air ke hidung sebelumnya.',
+    'lesson.wudu.point.2.title': 'Membasuh Kedua Tangan hingga Siku',
+    'lesson.wudu.point.2.body':
+        'Termasuk kedua-dua siku itu sendiri, dimulakan dengan tangan kanan kemudian tangan kiri.',
+    'lesson.wudu.point.3.title': 'Menyapu Kepala',
+    'lesson.wudu.point.3.body':
+        'Menyapukan kedua tangan yang basah ke atas kepala dari depan ke belakang, kemudian mengembalikannya semula, serta menyapu kedua telinga bersama-sama dengannya.',
+    'lesson.wudu.point.4.title': 'Membasuh Kedua Kaki hingga Buku Lali',
+    'lesson.wudu.point.4.body':
+        'Termasuk kedua-dua buku lali, disertai dengan menyela-nyelai jari kaki, dan dimulakan dengan kaki kanan. Disunatkan membasuh dan menyapu sebanyak tiga kali, manakala yang wajib ialah sekali sahaja asalkan meratai seluruh anggota.',
+    'lesson.salah.point.0.title': 'Lima Solat Fardu',
+    'lesson.salah.point.0.body':
+        'Subuh dua rakaat, Zuhur empat rakaat, Asar empat rakaat, Maghrib tiga rakaat, dan Isyak empat rakaat. Musafir diharuskan mengqasarkan solat empat rakaat menjadi dua rakaat.',
+    'lesson.salah.point.1.title': 'Syarat-Syaratnya Sebelum Memulakannya',
+    'lesson.salah.point.1.body':
+        'Bersuci daripada hadas dan najis, menutup aurat, menghadap kiblat, dan telah masuk waktu. Sesiapa yang solat sebelum masuk waktu, solatnya tidak sah.',
+    'lesson.salah.point.2.title': 'Rukun-Rukunnya',
+    'lesson.salah.point.2.body':
+        'Takbiratul ihram, berdiri bagi yang mampu, membaca al-Fatihah, rukuk, bangkit daripada rukuk, sujud, duduk antara dua sujud, tomakninah pada setiap rukun, tasyahud akhir, kemudian salam.',
+    'lesson.salah.point.3.title': 'Khusyuk Adalah Rohnya',
+    'lesson.salah.point.3.body':
+        'Iaitu kehadiran hati dan ketenangan anggota badan. Dengan sifat inilah Allah menyifatkan orang-orang beriman yang berjaya.',
+    'lesson.niyyah.point.0.title': 'Amalan Tanpa Niat Tidak Membuahkan Hasil',
+    'lesson.niyyah.point.0.body':
+        'Kebiasaan boleh menjadi ibadah dengan adanya niat, dan ibadah boleh menjadi sekadar kebiasaan apabila hilangnya niat. Maka orang yang tidur dengan niat untuk bangun beribadah tetap diberi ganjaran, manakala orang yang solat kerana riak tidak mendapat apa-apa ganjaran.',
+    'lesson.niyyah.point.1.title':
+        'Dan Setiap Orang Akan Mendapat Apa yang Diniatkannya',
+    'lesson.niyyah.point.1.body':
+        'Seorang hamba diberi ganjaran mengikut kadar niatnya, bukan sekadar kadar amalannya sahaja. Kadangkala seseorang yang sedikit amalannya tetapi ikhlas niatnya boleh mencapai apa yang tidak dicapai oleh orang lain yang banyak amalannya.',
+    'lesson.niyyah.point.2.title':
+        'Dan Keikhlasan Adalah Syarat Diterimanya Amalan',
+    'lesson.niyyah.point.2.body':
+        'Iaitu amalan itu dilakukan semata-mata kerana Allah, dan amalan itu dilaksanakan mengikut petunjuk Nabi ﷺ. Dengan kedua-dua perkara inilah sesuatu amalan itu akan diterima.',
     'shelf.adhkar.title': 'Zikir',
     'shelf.cards.title': 'Kad Ucapan',
     'shelf.lessons.title': 'Pengajaran',
@@ -2734,6 +3063,89 @@ const appTranslations = <String, Map<String, String>>{
     'lesson.salah.summary': 'उसके अवक़ात, रकातों की संख्या और शर्तें',
     'lesson.niyyah.title': 'नीयत',
     'lesson.niyyah.summary': 'चालीस हदीसों में पहली, और हर अमल की जड़',
+    'lesson.pillars-islam.point.0.title': 'शहादतैन (दो गवाहियाँ)',
+    'lesson.pillars-islam.point.0.body':
+        'यह गवाही देना कि अल्लाह के सिवा कोई सच्चा माबूद नहीं और मुहम्मद ﷺ अल्लाह के रसूल हैं। यही वह पहली चीज़ है जिससे व्यक्ति इस्लाम में दाख़िल होता है, और इसका अर्थ है केवल अल्लाह की इबादत करना, नबी ﷺ ने जो कुछ बताया उसकी पुष्टि करना, और जिन बातों का आदेश दिया उनका पालन करना।',
+    'lesson.pillars-islam.point.1.title': 'सलात क़ायम करना',
+    'lesson.pillars-islam.point.1.body':
+        'दिन और रात में पाँच नमाज़ें: फ़ज्र, ज़ुहर, अस्र, मग़रिब और इशा। क़ियामत के दिन बंदे से सबसे पहले इसी का हिसाब लिया जाएगा, और इसके समय निश्चित हैं — बिना किसी वैध कारण के न समय से पहले पढ़ी जा सकती है, न देर से।',
+    'lesson.pillars-islam.point.2.title': 'ज़कात अदा करना',
+    'lesson.pillars-islam.point.2.body':
+        'माल में एक निश्चित हक़ है, जिसे वह व्यक्ति अदा करता है जिसका माल निसाब तक पहुँच जाए और उस पर एक साल गुज़र जाए। नक़दी और व्यापारिक माल में इसकी दर ढाई प्रतिशत (उश्र का चौथाई भाग) है।',
+    'lesson.pillars-islam.point.3.title': 'रमज़ान के रोज़े',
+    'lesson.pillars-islam.point.3.body':
+        'फ़ज्र (सुबह सादिक़) के उदय से लेकर सूरज डूबने तक खाने-पीने और रोज़ा तोड़ने वाली हर चीज़ से रुकना, पूरे रमज़ान महीने भर — साथ ही ज़बान और अंगों की भी हिफ़ाज़त करना।',
+    'lesson.pillars-islam.point.4.title':
+        'हज्जे बैतुल्लाह — सामर्थ्य रखने वालों के लिए',
+    'lesson.pillars-islam.point.4.body':
+        'जीवन में एक बार, उस व्यक्ति पर जो शरीर, माल और सुरक्षित रास्ते के लिहाज़ से सामर्थ्य रखता हो। सामर्थ्य होना शर्त है, जो सामर्थ्य नहीं रखता उस पर हज फ़र्ज़ नहीं।',
+    'lesson.pillars-faith.point.0.title': 'अल्लाह पर ईमान',
+    'lesson.pillars-faith.point.0.body':
+        'उसके अस्तित्व, उसकी रुबूबियत (पालनहार होने), उसकी उलूहियत (केवल वही इबादत के योग्य होना), और उसके नामों व गुणों की पुष्टि करना — कि वही अकेला इबादत के योग्य है, और उसके समान कोई चीज़ नहीं।',
+    'lesson.pillars-faith.point.1.title': 'और उसके फ़रिश्तों पर',
+    'lesson.pillars-faith.point.1.body':
+        'नूर से बनाई गई मख़लूक़, जो अल्लाह के आदेश की कभी अवज्ञा नहीं करते और जो उन्हें आदेश दिया जाता है वही करते हैं। इनमें वह्य पर नियुक्त जिब्रील (अलैहिस्सलाम), मीकाईल और इसराफ़ील शामिल हैं।',
+    'lesson.pillars-faith.point.2.title': 'और उसकी किताबों पर',
+    'lesson.pillars-faith.point.2.body':
+        'जो उसने अपने रसूलों पर उतारीं, जिनमें तौरात, इंजील और ज़बूर शामिल हैं, और इन सबकी अंतिम कड़ी क़ुरआन है, जो इन पर निगरान (गवाह) है और परिवर्तन से सुरक्षित है।',
+    'lesson.pillars-faith.point.3.title': 'और उसके रसूलों पर',
+    'lesson.pillars-faith.point.3.body':
+        'यह ईमान रखना कि अल्लाह ने ख़ुशख़बरी देने वाले और डराने वाले रसूल भेजे, जिनमें पहले नूह (अलैहिस्सलाम) और अंतिम मुहम्मद ﷺ हैं — हम उनमें से किसी में भेद नहीं करते।',
+    'lesson.pillars-faith.point.4.title': 'और आख़िरत के दिन पर',
+    'lesson.pillars-faith.point.4.body':
+        'पुनरुत्थान (हश्र), हिसाब, मीज़ान (तराज़ू) और पुल सिरात, तथा जन्नत और जहन्नम। और यह कि हर आत्मा को उसकी कमाई का बदला दिया जाएगा, उस पर तनिक भी अन्याय नहीं किया जाएगा।',
+    'lesson.pillars-faith.point.5.title':
+        'और तक़दीर पर, उसकी भलाई और बुराई दोनों पर',
+    'lesson.pillars-faith.point.5.body':
+        'यह कि अल्लाह ने हर चीज़ को जान लिया और लिख दिया, और जो उसने चाहा वह हुआ और जो नहीं चाहा वह नहीं हुआ — साथ ही बंदे के पास वास्तविक विकल्प बना रहता है और वह अपनी कमाई के लिए ज़िम्मेदार है।',
+    'lesson.ihsan.point.0.title':
+        'अल्लाह की इबादत इस तरह करना जैसे तुम उसे देख रहे हो',
+    'lesson.ihsan.point.0.body':
+        'बंदा इबादत करते समय अल्लाह की निकटता का ध्यान रखे, ताकि इबादत जितनी पूर्णता से हो सके उतनी पूर्णता से अदा हो — न कि केवल फ़र्ज़ पूरा करने भर की अधूरी अदायगी।',
+    'lesson.ihsan.point.1.title':
+        'और अगर तुम उसे नहीं देख रहे, तो वह तुम्हें देख रहा है',
+    'lesson.ihsan.point.1.body':
+        'जो इस दर्जे तक न पहुँच सके, उसे यह जान लेना चाहिए कि अल्लाह उसे उसकी गुप्त और प्रकट दोनों स्थितियों में देख रहा है। इसी को मुराक़बा (निरंतर सजगता) कहा जाता है।',
+    'lesson.ihsan.point.2.title': 'और हर चीज़ में इहसान',
+    'lesson.ihsan.point.2.body':
+        'केवल इबादत में ही नहीं, बल्कि काम, लेन-देन और बातचीत में भी — यहाँ तक कि जानवर ज़बह करने और अपने अधीन चीज़ों के प्रति नरमी बरतने में भी।',
+    'lesson.wudu.point.0.title': 'नीयत',
+    'lesson.wudu.point.0.body':
+        'इसका स्थान दिल है, इसे ज़बान से नहीं कहा जाता। यही वह चीज़ है जो इबादत को केवल अंगों की धुलाई से अलग करती है।',
+    'lesson.wudu.point.1.title': 'चेहरा धोना',
+    'lesson.wudu.point.1.body':
+        'लंबाई में बालों के उगने की जगह से ठोड़ी के नीचे तक, और चौड़ाई में एक कान से दूसरे कान तक। इससे पहले कुल्ली करना और नाक में पानी डालना सुन्नत है।',
+    'lesson.wudu.point.2.title': 'दोनों हाथ कोहनियों तक धोना',
+    'lesson.wudu.point.2.body':
+        'कोहनियों को भी शामिल करते हुए, पहले दाएँ हाथ से शुरू करके फिर बाएँ हाथ से।',
+    'lesson.wudu.point.3.title': 'सिर का मसह करना',
+    'lesson.wudu.point.3.body':
+        'गीले हाथों को सिर के अगले हिस्से से पिछले हिस्से तक फिराना फिर वापस लाना, और साथ ही कानों का भी मसह करना।',
+    'lesson.wudu.point.4.title': 'दोनों पैर टख़नों तक धोना',
+    'lesson.wudu.point.4.body':
+        'टख़नों को शामिल करते हुए और पैर की उँगलियों के बीच ख़िलाल करते हुए, दाएँ पैर से शुरुआत करना। धोने और मसह करने में तीन बार करना सुन्नत है, जबकि पूरे अंग को एक बार धो लेना ही फ़र्ज़ की न्यूनतम शर्त है।',
+    'lesson.salah.point.0.title': 'पाँच फ़र्ज़ नमाज़ें',
+    'lesson.salah.point.0.body':
+        'फ़ज्र दो रकात, ज़ुहर चार रकात, अस्र चार रकात, मग़रिब तीन रकात, और इशा चार रकात। मुसाफ़िर चार रकात वाली नमाज़ को घटाकर दो रकात पढ़ सकता है।',
+    'lesson.salah.point.1.title': 'नमाज़ में दाख़िल होने से पहले की शर्तें',
+    'lesson.salah.point.1.body':
+        'हदस (छोटी/बड़ी अपवित्रता) और गंदगी से पाक होना, सतर (शरीर के ढाँकने योग्य हिस्सों) को ढाँकना, क़िबले की ओर मुँह करना, और नमाज़ का समय हो जाना। जो समय से पहले नमाज़ पढ़ ले, उसकी नमाज़ मान्य नहीं होती।',
+    'lesson.salah.point.2.title': 'उसके अरकान (स्तंभ)',
+    'lesson.salah.point.2.body':
+        'तकबीरे तहरीमा, सामर्थ्य होने पर खड़ा होना, सूरह फ़ातिहा पढ़ना, रुकू करना, रुकू से उठना, सजदा करना, दो सजदों के बीच बैठना, हर रुक्न में इत्मीनान (ठहराव) रखना, अंतिम तशह्हुद, फिर सलाम फेरना।',
+    'lesson.salah.point.3.title': 'खुशू ही इसकी रूह है',
+    'lesson.salah.point.3.body':
+        'यह दिल की हाज़िरी और अंगों की शांति है। इसी गुण से अल्लाह ने सफल मोमिनों का वर्णन किया है।',
+    'lesson.niyyah.point.0.title': 'नीयत के बिना अमल फलदायी नहीं होता',
+    'lesson.niyyah.point.0.body':
+        'आदत नीयत से इबादत बन जाती है, और इबादत नीयत के न होने से मात्र आदत बनकर रह जाती है। इसलिए जो सोया हुआ व्यक्ति इबादत के लिए उठने की नीयत रखता है वह भी अज्र पाता है, जबकि दिखावे के लिए नमाज़ पढ़ने वाला (उसके सवाब से) वंचित रहता है।',
+    'lesson.niyyah.point.1.title':
+        'और हर व्यक्ति के लिए वही है जिसकी उसने नीयत की',
+    'lesson.niyyah.point.1.body':
+        'बंदे को उसकी नीयत की मात्रा के अनुसार बदला मिलता है, न कि केवल उसके अमल की मात्रा के अनुसार — कभी थोड़े अमल वाला व्यक्ति अपनी सच्ची नीयत से वह मक़ाम पा लेता है जो अधिक अमल करने वाला दूसरा व्यक्ति नहीं पा पाता।',
+    'lesson.niyyah.point.2.title': 'और इख़लास (निष्ठा) क़बूलियत की शर्त है',
+    'lesson.niyyah.point.2.body':
+        'यह कि अमल से केवल अल्लाह की रज़ा चाही जाए, और अमल नबी ﷺ के तरीक़े के अनुसार हो। इन्हीं दो बातों से अमल क़बूल होता है।',
     'shelf.adhkar.title': 'अज़कार',
     'shelf.cards.title': 'मुबारकबाद कार्ड',
     'shelf.lessons.title': 'सबक़',
@@ -3275,6 +3687,84 @@ const appTranslations = <String, Map<String, String>>{
     'lesson.salah.summary': 'Vakitleri, rekat sayıları ve şartları',
     'lesson.niyyah.title': 'Niyet',
     'lesson.niyyah.summary': 'Kırk Hadis\'in ilki, tüm amellerin aslı',
+    'lesson.pillars-islam.point.0.title': 'Kelime-i Şehadet',
+    'lesson.pillars-islam.point.0.body':
+        'Allah\'tan başka ilah olmadığına ve Muhammed\'in O\'nun Rasûlü olduğuna şehadet etmektir. Bu, kişinin İslam\'a girdiği ilk şeydir; anlamı, ibadeti yalnızca Allah\'a has kılmak, Peygamber\'in ﷺ haber verdiklerinde onu tasdik etmek ve emrettiklerinde ona uymaktır.',
+    'lesson.pillars-islam.point.1.title': 'Namazı İkame Etmek',
+    'lesson.pillars-islam.point.1.body':
+        'Gün ve gecede beş vakit namaz: sabah, öğle, ikindi, akşam ve yatsı. Kul, kıyamet günü ilk olarak namazdan hesaba çekilecektir. Namaz vakitleri bellidir; geçerli bir mazeret olmaksızın ne öne alınır ne de geciktirilir.',
+    'lesson.pillars-islam.point.2.title': 'Zekâtı Vermek',
+    'lesson.pillars-islam.point.2.body':
+        'Malı nisap miktarına ulaşıp üzerinden bir yıl (havl) geçen kişinin malında bulunan bilinen bir haktır. Para ve ticaret malında oranı kırkta bir, yani yüzde iki buçuktur.',
+    'lesson.pillars-islam.point.3.title': 'Ramazan Orucu',
+    'lesson.pillars-islam.point.3.body':
+        'Ramazan ayı boyunca, fecrin doğuşundan güneşin batışına kadar yemekten, içmekten ve orucu bozan diğer şeylerden sakınmaktır; bununla birlikte dili ve organları da günahtan korumak gerekir.',
+    'lesson.pillars-islam.point.4.title': 'Gücü Yetene Hac',
+    'lesson.pillars-islam.point.4.body':
+        'Bedenen, malen imkânı olan ve yol güvenliği bulunan kişiye ömründe bir kez farzdır. İstitâat (güç yetirebilme) şarttır; gücü yetmeyene hac farz değildir.',
+    'lesson.pillars-faith.point.0.title': 'Allah\'a İman',
+    'lesson.pillars-faith.point.0.body':
+        'Allah\'ın varlığını, rububiyetini, ulûhiyetini, isimlerini ve sıfatlarını tasdik etmek; ibadete yalnızca O\'nun layık olduğuna inanmaktır. O\'nun benzeri hiçbir şey yoktur.',
+    'lesson.pillars-faith.point.1.title': 'Ve Meleklerine İman',
+    'lesson.pillars-faith.point.1.body':
+        'Nurdan yaratılmış varlıklardır; Allah\'ın kendilerine emrettiği hiçbir şeyde O\'na isyan etmezler ve emrolundukları şeyi yaparlar. Bunlardan vahiyle görevli Cebrail, ayrıca Mikail ve İsrafil de vardır.',
+    'lesson.pillars-faith.point.2.title': 'Ve Kitaplarına İman',
+    'lesson.pillars-faith.point.2.body':
+        'Allah\'ın peygamberlerine indirdiği kitaplardır; bunlar arasında Tevrat, İncil ve Zebur da vardır. Bunların sonuncusu, hepsinin üzerine şahit olan ve değişmekten korunmuş Kur\'an\'dır.',
+    'lesson.pillars-faith.point.3.title': 'Ve Rasûllerine İman',
+    'lesson.pillars-faith.point.3.body':
+        'Allah\'ın, müjdeleyici ve uyarıcı olarak peygamberler gönderdiğine iman etmektir; ilki Nuh, sonuncusu Muhammed ﷺ\'dir. Onlardan hiçbirini diğerinden ayırt etmeyiz.',
+    'lesson.pillars-faith.point.4.title': 'Ve Ahiret Gününe İman',
+    'lesson.pillars-faith.point.4.body':
+        'Ba\'s (yeniden diriliş), hesap, mizan ve sırat; cennet ve cehennem. Her nefis kazandığıyla karşılık görür, kendisine zerre kadar haksızlık yapılmaz.',
+    'lesson.pillars-faith.point.5.title': 'Ve Kadere, Hayrına ve Şerrine İman',
+    'lesson.pillars-faith.point.5.body':
+        'Allah\'ın her şeyi bilip yazdığına, O\'nun dilediğinin olacağına, dilemediğinin olmayacağına iman etmektir; bununla birlikte kulun gerçek bir seçme hakkı vardır ve kazandığından sorumludur.',
+    'lesson.ihsan.point.0.title': 'Allah\'ı Görüyormuşçasına İbadet Etmek',
+    'lesson.ihsan.point.0.body':
+        'Kulun, Allah\'a ibadet ederken O\'nun kendisine yakınlığını hissetmesi, böylece ibadeti gücünün yettiği en mükemmel şekilde eda etmesidir; sadece farzı düşürecek eksik bir eda ile yetinmemektir.',
+    'lesson.ihsan.point.1.title': 'Sen O\'nu Görmesen de O Seni Görür',
+    'lesson.ihsan.point.1.body':
+        'Bu makama erişemeyen kişi, Allah\'ın kendisini gizli ve açık her halinde gözetlediğini bilmelidir. İşte bu, murakabedir.',
+    'lesson.ihsan.point.2.title': 'Her Şeyde İhsan',
+    'lesson.ihsan.point.2.body':
+        'İhsan yalnızca ibadette değil; işte, muamelede, sözde, hatta hayvan kesiminde ve insanın elinin altındakine karşı şefkatinde de olmalıdır.',
+    'lesson.wudu.point.0.title': 'Niyet',
+    'lesson.wudu.point.0.body':
+        'Yeri kalptir, dille söylenmez. İbadeti, uzuvları sadece yıkamaktan ayıran şey odur.',
+    'lesson.wudu.point.1.title': 'Yüzü Yıkamak',
+    'lesson.wudu.point.1.body':
+        'Uzunlamasına saç bittiği yerden çene altına, enlemesine kulaktan kulağa kadar. Bundan önce ağza ve buruna su vermek (mazmaza ve istinşak) sünnettir.',
+    'lesson.wudu.point.2.title': 'Elleri Dirseklere Kadar Yıkamak',
+    'lesson.wudu.point.2.body':
+        'Dirsekler de dahil olmak üzere, önce sağ sonra sol elle başlanır.',
+    'lesson.wudu.point.3.title': 'Başı Mesh Etmek',
+    'lesson.wudu.point.3.body':
+        'Islak ellerle başın önünden arkasına, sonra tekrar öne doğru geçirilir; kulaklar da bununla birlikte mesh edilir.',
+    'lesson.wudu.point.4.title': 'Ayakları Topuklara Kadar Yıkamak',
+    'lesson.wudu.point.4.body':
+        'Parmak aralarını hilâllemek ve sağ ayaktan başlamak şartıyla, topuklar dahil yıkanır. Yıkama ve meshi üç kez yapmak sünnettir; farz olan ise uzvun tamamını kaplayacak şekilde bir kez yapmaktır.',
+    'lesson.salah.point.0.title': 'Beş Vakit Farz Namaz',
+    'lesson.salah.point.0.body':
+        'Sabah namazı iki, öğle namazı dört, ikindi namazı dört, akşam namazı üç, yatsı namazı dört rekâttır. Yolcu, dört rekâtlı namazı iki rekâta kısaltabilir (kasr).',
+    'lesson.salah.point.1.title': 'Namaza Başlamadan Önceki Şartları',
+    'lesson.salah.point.1.body':
+        'Hadesten ve necasetten taharet (temizlik), avret yerini örtmek, kıbleye yönelmek ve vaktin girmiş olmasıdır. Vakit girmeden kılınan namaz geçerli olmaz.',
+    'lesson.salah.point.2.title': 'Rükünleri',
+    'lesson.salah.point.2.body':
+        'İftitah tekbiri, gücü yetiyorsa ayakta durmak, Fatiha\'yı okumak, rükû, rükûdan doğrulmak, secde, iki secde arasında oturmak, her rükünde tumanînet (sükûnet), son teşehhüd ve ardından selam vermektir.',
+    'lesson.salah.point.3.title': 'Huşû, Namazın Ruhudur',
+    'lesson.salah.point.3.body':
+        'Huşû, kalbin hazır bulunması ve organların sakin olmasıdır. Allah, kurtuluşa eren müminleri işte bu vasıfla nitelemiştir.',
+    'lesson.niyyah.point.0.title': 'Niyetsiz Amel Semere Vermez',
+    'lesson.niyyah.point.0.body':
+        'Âdet, niyetle ibadete dönüşür; ibadet de niyetin kaybolmasıyla âdete dönüşür. Bu yüzden ibadete kalkmayı niyet ederek uyuyan kişi ecir kazanır, gösteriş için (riya ile) namaz kılan kişi ise mahrum kalır.',
+    'lesson.niyyah.point.1.title': 'Herkese Niyet Ettiği Vardır',
+    'lesson.niyyah.point.1.body':
+        'Kul, yalnızca amelinin miktarına göre değil, niyetinin ölçüsüne göre karşılık görür. Nitekim ameli az olan biri, niyeti sayesinde başkasının çok amelle ulaşamadığı dereceye ulaşabilir.',
+    'lesson.niyyah.point.2.title': 'İhlas, Kabulün Şartıdır',
+    'lesson.niyyah.point.2.body':
+        'Amelin yalnızca Allah rızası için yapılması ve Peygamber\'in ﷺ yoluna (sünnetine) uygun olmasıdır. Amel, ancak bu iki şartla kabul edilir.',
     'shelf.adhkar.title': 'Zikirler',
     'shelf.cards.title': 'Tebrik Kartları',
     'shelf.lessons.title': 'Dersler',
@@ -3812,6 +4302,86 @@ const appTranslations = <String, Map<String, String>>{
     'lesson.salah.summary': 'সময়, রাকাতের সংখ্যা ও শর্তাবলি',
     'lesson.niyyah.title': 'নিয়্যত',
     'lesson.niyyah.summary': 'চল্লিশ হাদীসের প্রথমটি, সকল আমলের মূল',
+    'lesson.pillars-islam.point.0.title': 'দুই সাক্ষ্য',
+    'lesson.pillars-islam.point.0.body':
+        'এই সাক্ষ্য দেওয়া যে, আল্লাহ ছাড়া কোনো সত্য ইলাহ নেই এবং মুহাম্মদ (সা.) আল্লাহর রাসূল। এটিই সর্বপ্রথম যার মাধ্যমে একজন ব্যক্তি ইসলামে প্রবেশ করে। এর অর্থ হলো একমাত্র আল্লাহর ইবাদত করা, নবী (সা.) যা সংবাদ দিয়েছেন তা সত্য বলে বিশ্বাস করা এবং তিনি যা আদেশ করেছেন তা অনুসরণ করা।',
+    'lesson.pillars-islam.point.1.title': 'সালাত কায়েম করা',
+    'lesson.pillars-islam.point.1.body':
+        'দিন-রাতে পাঁচ ওয়াক্ত সালাত— ফজর, যুহর, আসর, মাগরিব ও এশা। কিয়ামতের দিন বান্দাকে সর্বপ্রথম এর হিসাব দিতে হবে। এর সময়সূচি নির্দিষ্ট, বিনা ওজরে তা আগে-পিছে করা যায় না।',
+    'lesson.pillars-islam.point.2.title': 'যাকাত প্রদান করা',
+    'lesson.pillars-islam.point.2.body':
+        'সম্পদের ওপর একটি নির্ধারিত অধিকার, যা আদায় করতে হয় তার ওপর যার সম্পদ নিসাব পরিমাণে পৌঁছেছে এবং তার ওপর এক বছর পূর্ণ হয়েছে। নগদ অর্থ ও ব্যবসায়িক পণ্যের ক্ষেত্রে এর হার হলো এক-চল্লিশাংশ—অর্থাৎ আড়াই শতাংশ।',
+    'lesson.pillars-islam.point.3.title': 'রমজানের রোজা রাখা',
+    'lesson.pillars-islam.point.3.body':
+        'সুবহে সাদিক থেকে সূর্যাস্ত পর্যন্ত পানাহার ও রোজা ভঙ্গকারী সকল বিষয় থেকে বিরত থাকা, সমগ্র রমজান মাসজুড়ে, সেই সঙ্গে জিহ্বা ও অঙ্গ-প্রত্যঙ্গকে সংযত রাখা।',
+    'lesson.pillars-islam.point.4.title': 'সামর্থ্যবানের জন্য হজ পালন করা',
+    'lesson.pillars-islam.point.4.body':
+        'জীবনে একবার, যার শারীরিক ও আর্থিক সামর্থ্য আছে এবং যাত্রাপথ নিরাপদ তার জন্য এটি ফরজ। সামর্থ্য থাকা শর্ত; যার সামর্থ্য নেই তার ওপর হজ ফরজ নয়।',
+    'lesson.pillars-faith.point.0.title': 'আল্লাহর প্রতি ঈমান',
+    'lesson.pillars-faith.point.0.body':
+        'আল্লাহর অস্তিত্ব, তাঁর রুবুবিয়্যাত (প্রতিপালকত্ব), তাঁর উলুহিয়্যাত (একমাত্র উপাস্য হওয়া), তাঁর নাম ও গুণাবলিতে বিশ্বাস স্থাপন করা এবং এই বিশ্বাস রাখা যে একমাত্র তিনিই ইবাদতের যোগ্য, তাঁর সদৃশ কিছুই নেই।',
+    'lesson.pillars-faith.point.1.title': 'এবং তাঁর ফেরেশতাগণ',
+    'lesson.pillars-faith.point.1.body':
+        'নূরের তৈরি সৃষ্টি, যারা আল্লাহ তাদের যা আদেশ করেন তাতে কখনো অবাধ্য হয় না এবং যা আদিষ্ট হয় তা-ই পালন করে। তাদের মধ্যে ওহী নিয়ে দায়িত্বপ্রাপ্ত জিবরাঈল (আ.), এবং মীকাঈল ও ইসরাফীল (আ.) রয়েছেন।',
+    'lesson.pillars-faith.point.2.title': 'এবং তাঁর কিতাবসমূহ',
+    'lesson.pillars-faith.point.2.body':
+        'যা আল্লাহ তাঁর রাসূলদের ওপর অবতীর্ণ করেছেন, যার মধ্যে রয়েছে তাওরাত, ইঞ্জিল ও যাবূর। এর সর্বশেষ ও সাক্ষীস্বরূপ কুরআন, যা পূর্ববর্তী কিতাবসমূহের ওপর প্রাধান্যকারী এবং যেকোনো পরিবর্তন-বিকৃতি থেকে সুরক্ষিত।',
+    'lesson.pillars-faith.point.3.title': 'এবং তাঁর রাসূলগণ',
+    'lesson.pillars-faith.point.3.body':
+        'এই বিশ্বাস রাখা যে আল্লাহ সুসংবাদদাতা ও সতর্ককারী রাসূলগণকে প্রেরণ করেছেন, তাদের মধ্যে প্রথম নূহ (আ.) এবং সর্বশেষ মুহাম্মদ (সা.)। আমরা তাদের কারো মধ্যে পার্থক্য করি না।',
+    'lesson.pillars-faith.point.4.title': 'এবং আখিরাতের দিন',
+    'lesson.pillars-faith.point.4.body':
+        'পুনরুত্থান, হিসাব-নিকাশ, মীযান (কর্মফল পরিমাপ) ও পুলসিরাত, এবং জান্নাত ও জাহান্নামে বিশ্বাস রাখা। প্রতিটি ব্যক্তি তার কৃতকর্ম অনুযায়ী প্রতিদান পাবে, তার প্রতি বিন্দুমাত্র অন্যায় করা হবে না।',
+    'lesson.pillars-faith.point.5.title': 'এবং তাকদীর—তার ভালো-মন্দ উভয়ই',
+    'lesson.pillars-faith.point.5.body':
+        'আল্লাহ প্রতিটি বিষয় জানেন এবং তা লিখে রেখেছেন; তিনি যা চান তা-ই সংঘটিত হয় এবং যা চান না তা কখনো সংঘটিত হয় না—তবে এর পাশাপাশি বান্দার প্রকৃত ইচ্ছা-স্বাধীনতা এবং তার কৃতকর্মের দায়বদ্ধতাও বহাল থাকে।',
+    'lesson.ihsan.point.0.title':
+        'আল্লাহর ইবাদত এমনভাবে করা যেন তুমি তাঁকে দেখছ',
+    'lesson.ihsan.point.0.body':
+        'ইবাদতের সময় বান্দা আল্লাহর নৈকট্যের কথা হৃদয়ে জাগ্রত রাখবে, ফলে সে যথাসাধ্য পরিপূর্ণভাবে ইবাদত সম্পাদন করবে—কেবল দায়িত্ব পালনের নামে অসম্পূর্ণ ইবাদত নয়।',
+    'lesson.ihsan.point.1.title':
+        'আর যদি তুমি তাঁকে দেখতে না পাও, তবু তিনি তোমাকে দেখছেন',
+    'lesson.ihsan.point.1.body':
+        'যে এই স্তরে পৌঁছাতে পারে না, সে যেন জেনে রাখে যে আল্লাহ তার গোপন ও প্রকাশ্য সকল অবস্থার ওপর সদা অবগত। একেই বলা হয় মুরাকাবা—আল্লাহর সার্বক্ষণিক পর্যবেক্ষণের প্রতি সচেতনতা।',
+    'lesson.ihsan.point.2.title': 'এবং প্রতিটি কাজে ইহসান',
+    'lesson.ihsan.point.2.body':
+        'শুধু ইবাদতেই নয়, বরং কাজে, লেনদেনে ও কথাবার্তায়—এমনকি পশু জবাইয়ের পদ্ধতিতে এবং নিজের অধীনস্থ যা কিছু আছে তার প্রতি মানুষের কোমলতায়ও ইহসান থাকতে হবে।',
+    'lesson.wudu.point.0.title': 'নিয়ত',
+    'lesson.wudu.point.0.body':
+        'এর স্থান হলো অন্তর, মুখে উচ্চারণ করা আবশ্যক নয়। এই নিয়তই ইবাদতকে নিছক অঙ্গ ধোয়া থেকে পৃথক করে।',
+    'lesson.wudu.point.1.title': 'মুখমণ্ডল ধোয়া',
+    'lesson.wudu.point.1.body':
+        'দৈর্ঘ্যে মাথার চুলের গোড়া থেকে থুতনির নিচ পর্যন্ত এবং প্রস্থে এক কান থেকে অপর কান পর্যন্ত। এর আগে কুলি করা ও নাকে পানি দেওয়া সুন্নত।',
+    'lesson.wudu.point.2.title': 'দুই হাত কনুইসহ ধোয়া',
+    'lesson.wudu.point.2.body':
+        'কনুইসহ সম্পূর্ণ ধুয়ে নেওয়া, প্রথমে ডান হাত পরে বাম হাত দিয়ে শুরু করা।',
+    'lesson.wudu.point.3.title': 'মাথা মাসেহ করা',
+    'lesson.wudu.point.3.body':
+        'ভেজা দুই হাত মাথার সামনের অংশ থেকে পেছন পর্যন্ত বুলিয়ে নেওয়া, এরপর আবার সামনের দিকে ফিরিয়ে আনা এবং সেই সঙ্গে দুই কান মাসেহ করা।',
+    'lesson.wudu.point.4.title': 'দুই পা গিরা পর্যন্ত ধোয়া',
+    'lesson.wudu.point.4.body':
+        'পায়ের আঙুলের ফাঁক খিলাল করাসহ গিরা পর্যন্ত ধোয়া, ডান পা দিয়ে শুরু করা। প্রতিটি অঙ্গ তিনবার ধোয়া ও মাসেহ করা সুন্নত, তবে সম্পূর্ণ অঙ্গ একবার ধুয়ে নেওয়াই ফরজ।',
+    'lesson.salah.point.0.title': 'পাঁচ ওয়াক্ত ফরজ সালাত',
+    'lesson.salah.point.0.body':
+        'ফজর দুই রাকাত, যুহর চার রাকাত, আসর চার রাকাত, মাগরিব তিন রাকাত এবং এশা চার রাকাত। মুসাফির চার রাকাতবিশিষ্ট সালাতকে সংক্ষিপ্ত করে দুই রাকাত পড়তে পারে।',
+    'lesson.salah.point.1.title': 'সালাতে প্রবেশের পূর্বশর্তসমূহ',
+    'lesson.salah.point.1.body':
+        'হাদাস (অজু-গোসল প্রয়োজনীয় অপবিত্রতা) ও নাজাসাত (শারীরিক অপবিত্রতা) থেকে পবিত্র হওয়া, সতর ঢেকে রাখা, কিবলামুখী হওয়া এবং সালাতের নির্ধারিত সময় হওয়া। সময়ের পূর্বে যে সালাত আদায় করে, তা তার পক্ষে যথেষ্ট হয় না।',
+    'lesson.salah.point.2.title': 'সালাতের রুকনসমূহ (স্তম্ভসমূহ)',
+    'lesson.salah.point.2.body':
+        'তাকবীরে তাহরীমা, সামর্থ্য থাকলে দাঁড়ানো, সূরা ফাতিহা পাঠ করা, রুকু করা, রুকু থেকে উঠা, সিজদা করা, দুই সিজদার মাঝে বসা, প্রতিটি রুকনে প্রশান্তচিত্তে স্থির থাকা, শেষ তাশাহহুদ পড়া এবং সালাম ফিরানো।',
+    'lesson.salah.point.3.title': 'খুশু হলো সালাতের প্রাণ',
+    'lesson.salah.point.3.body':
+        'এর অর্থ হলো অন্তরের উপস্থিতি ও অঙ্গ-প্রত্যঙ্গের স্থিরতা। এই গুণ দিয়েই আল্লাহ সফলকাম মুমিনদের বর্ণনা করেছেন।',
+    'lesson.niyyah.point.0.title': 'নিয়ত ছাড়া আমল ফলদায়ক হয় না',
+    'lesson.niyyah.point.0.body':
+        'নিয়তের মাধ্যমে অভ্যাস ইবাদতে পরিণত হয়, আর নিয়তের অভাবে ইবাদত নিছক অভ্যাসে পরিণত হয়। তাই যে ব্যক্তি ইবাদতের শক্তি অর্জনের জন্য ঘুমায়, সেও সওয়াব পায়; আর যে লোক দেখানোর জন্য সালাত আদায় করে, সে বঞ্চিত থাকে।',
+    'lesson.niyyah.point.1.title': 'প্রত্যেকে তার নিয়ত অনুযায়ী প্রতিদান পাবে',
+    'lesson.niyyah.point.1.body':
+        'বান্দাকে তার নিয়তের পরিমাণ অনুযায়ী প্রতিদান দেওয়া হয়, শুধু আমলের পরিমাণ অনুযায়ী নয়। কখনো কম আমলকারী তার আন্তরিক নিয়তের কারণে এমন মর্যাদায় পৌঁছে যায়, যা অধিক আমলকারী নিয়ত ছাড়া অর্জন করতে পারে না।',
+    'lesson.niyyah.point.2.title': 'ইখলাস কবুল হওয়ার শর্ত',
+    'lesson.niyyah.point.2.body':
+        'আমলের দ্বারা একমাত্র আল্লাহর সন্তুষ্টি লাভের ইচ্ছা রাখা, এবং আমলটি নবী (সা.)-এর দেখানো পথ অনুযায়ী হওয়া। এই দুটি শর্ত পূরণ হলেই আমল কবুল হয়।',
     'shelf.adhkar.title': 'আযকার',
     'shelf.cards.title': 'শুভেচ্ছা কার্ড',
     'shelf.lessons.title': 'শিক্ষা',
@@ -4357,6 +4927,86 @@ const appTranslations = <String, Map<String, String>>{
     'lesson.niyyah.title': 'Niyya',
     'lesson.niyyah.summary':
         'Hadisi na farko a cikin Arba\'ina, kuma asalin dukkan aiki',
+    'lesson.pillars-islam.point.0.title': 'Kalmar Shahada',
+    'lesson.pillars-islam.point.0.body':
+        'Shaidawa cewa babu abin bautawa da gaskiya sai Allah, kuma Annabi Muhammadu ﷺ Manzon Allah ne. Ita ce abu na farko da mutum yake shiga Musulunci da shi, ma\'anarta kuwa ita ce keɓance Allah shi kaɗai da bauta, da gaskata Annabi ﷺ a kan abin da ya labarta, da bin sa a kan abin da ya umarta.',
+    'lesson.pillars-islam.point.1.title': 'Tsayar da Salla',
+    'lesson.pillars-islam.point.1.body':
+        'Salloli guda biyar a cikin dare da rana: Asuba, Azahar, La\'asar, Magariba, da Isha\'i. Ita ce abu na farko da za a fara yin hisabin bawa da shi a Ranar Kiyama, kuma lokutanta ƙayyadaddu ne, ba a gaggauta su ba ko a jinkirta su daga lokacinsu sai da uzuri.',
+    'lesson.pillars-islam.point.2.title': 'Bayar da Zakka',
+    'lesson.pillars-islam.point.2.body':
+        'Wani hakki ne sananne a cikin dukiya, wanda duk wanda dukiyarsa ta kai nisabi tare da shekara guda ta cika a kanta yake fitarwa. Adadinta a cikin kuɗi da kayan kasuwanci shi ne kashi ɗaya bisa arba\'in - wato kashi biyu da rabi cikin ɗari (2.5%).',
+    'lesson.pillars-islam.point.3.title': 'Azumin Ramadan',
+    'lesson.pillars-islam.point.3.body':
+        'Kamewa daga ci da sha da sauran abubuwan da suke keta azumi, tun daga fitowar alfijir har zuwa faɗuwar rana, cikin dukan tsawon watan Ramadan, tare da kiyaye harshe da gaɓoɓin jiki.',
+    'lesson.pillars-islam.point.4.title': 'Aikin Hajji Ga Wanda Ya Iya',
+    'lesson.pillars-islam.point.4.body':
+        'Sau ɗaya ne kawai a rayuwa wajibi ne a kan wanda yake da ikon yi da jiki da dukiya, kuma hanyarsa amintacciya ce. Ikon yi sharaɗi ne, don haka wanda bai iya ba babu hajji a kansa.',
+    'lesson.pillars-faith.point.0.title': 'Imani da Allah',
+    'lesson.pillars-faith.point.0.body':
+        'Gaskata wanzuwarsa da Ubangijintakarsa da cewa shi kaɗai ne ya cancanci a bauta masa, tare da sunayensa da siffofinsa, babu wani abu da yake kama da shi.',
+    'lesson.pillars-faith.point.1.title': 'Da Mala\'ikunsa',
+    'lesson.pillars-faith.point.1.body':
+        'Halittu ne da aka yi su da haske, ba sa saɓa wa Allah cikin abin da ya umarce su, suna aikata duk abin da aka umarce su. Daga cikinsu akwai Jibril wanda aka danƙa masa wahayi, da Mika\'il, da Isrāfil.',
+    'lesson.pillars-faith.point.2.title': 'Da Littattafansa',
+    'lesson.pillars-faith.point.2.body':
+        'Abin da ya saukar wa Manzanninsa, daga cikinsu akwai Attaura da Linjila da Zabura, kuma Alkur\'ani shi ne na ƙarshensu, mai lura a kansu, kuma an kiyaye shi daga canzawa.',
+    'lesson.pillars-faith.point.3.title': 'Da Manzanninsa',
+    'lesson.pillars-faith.point.3.body':
+        'Imani da cewa Allah ya aiko Manzanni masu bayar da bishara da gargaɗi, na farkonsu Annabi Nuhu, na ƙarshensu kuwa Annabi Muhammadu ﷺ, ba mu bambanta tsakanin ko ɗayansu ba.',
+    'lesson.pillars-faith.point.4.title': 'Da Ranar Lahira',
+    'lesson.pillars-faith.point.4.body':
+        'Tashin ƙiyama, da hisabi, da ma\'auni, da sirāti, da Aljanna da Wuta. Kuma cewa kowane rai za a saka masa da abin da ya aikata, ba za a zalunce shi da kome ba.',
+    'lesson.pillars-faith.point.5.title': 'Da Kaddara, Alherinta Da Sharrinta',
+    'lesson.pillars-faith.point.5.body':
+        'Cewa Allah ya san komai ya kuma rubuta shi, abin da ya so shi ne zai kasance, abin da bai so ba kuwa ba zai kasance ba, tare da cewa bawa yana da zaɓi na gaske kuma yana da alhaki a kan abin da ya aikata.',
+    'lesson.ihsan.point.0.title': 'Ka Bauta wa Allah Kamar Kana Ganinsa',
+    'lesson.ihsan.point.0.body':
+        'Bawa ya tuna kusancin Allah da shi yayin da yake bauta masa, ta yadda zai gudanar da bauta a mafin kamalar da ya iya, ba wai kawai kammalawa ta kaɗan wadda kawai za ta cika wajibi ba.',
+    'lesson.ihsan.point.1.title': 'In Ba Ka Ganinsa, Shi Yana Ganinka',
+    'lesson.ihsan.point.1.body':
+        'Duk wanda bai kai wannan matsayi ba, to ya sani cewa Allah yana lura da shi a ɓoye da bayyane. Wannan ita ce ake kira muraƙaba - sanin kasancewar Allah a kowane lokaci.',
+    'lesson.ihsan.point.2.title': 'Ihsani a Cikin Kowane Abu',
+    'lesson.ihsan.point.2.body':
+        'Ba a cikin bauta kaɗai ba, har ma a cikin aiki da mu\'amala da magana, har ma a yadda ake yanka dabba da tausayin mutum ga duk abin da yake hannunsa.',
+    'lesson.wudu.point.0.title': 'Niyya',
+    'lesson.wudu.point.0.body':
+        'Wurinta zuciya ce, ba a furta ta da baki. Ita ce abin da yake bambance bauta da wanke gaɓoɓi kawai.',
+    'lesson.wudu.point.1.title': 'Wankin Fuska',
+    'lesson.wudu.point.1.body':
+        'Daga inda gashin kai yake fitowa har zuwa ƙasan haba a tsayi, da kuma daga kunne zuwa kunne a fadi. An so a yi kurkura da shaƙar ruwa a hanci kafin haka.',
+    'lesson.wudu.point.2.title': 'Wankin Hannaye Har Zuwa Gwiwoyin Hannu',
+    'lesson.wudu.point.2.body':
+        'Tare da shigar da gwiwoyin hannu, ana farawa da hannun dama sannan hagu.',
+    'lesson.wudu.point.3.title': 'Shafan Kai',
+    'lesson.wudu.point.3.body':
+        'Ana shafa hannaye masu jiƙa a kai daga gaba zuwa baya sannan a mayar da su, tare da shafan kunnuwa a lokaci guda.',
+    'lesson.wudu.point.4.title': 'Wankin Ƙafafu Har Zuwa Idon Sawu',
+    'lesson.wudu.point.4.body':
+        'Tare da shigar da idon sawu, da share tsakanin yatsun ƙafa, ana farawa da ƙafar dama. An so a yi wanka da shafawa sau uku-uku, wajibi kuwa shi ne sau ɗaya wadda ta kama dukan gaɓar.',
+    'lesson.salah.point.0.title': 'Salloli Wajibai Guda Biyar',
+    'lesson.salah.point.0.body':
+        'Asuba raka\'a biyu ce, Azahar raka\'a huɗu, La\'asar raka\'a huɗu, Magariba raka\'a uku, Isha\'i kuma raka\'a huɗu. Matafiyi yana da izinin taƙaita sallar da take raka\'a huɗu zuwa raka\'a biyu.',
+    'lesson.salah.point.1.title': 'Sharuɗɗanta Kafin Shiga Cikinta',
+    'lesson.salah.point.1.body':
+        'Tsarki daga ƙazanta da najasa, da rufe al\'aura, da fuskantar alƙibla, da shigar lokaci. Duk wanda ya yi salla kafin lokacinta bai isa ba.',
+    'lesson.salah.point.2.title': 'Rukunanta',
+    'lesson.salah.point.2.body':
+        'Kabbarar Ihrami, da tsayuwa ga wanda yake iyawa, da karatun Fatiha, da ruku\'i, da tashi daga gare shi, da sujada, da zamowa tsakanin sujadu biyu, da natsuwa a cikin kowane rukuni, da tahiyyatu na ƙarshe, sannan sallama.',
+    'lesson.salah.point.3.title': 'Khushu\'i Shi Ne Ruhinta',
+    'lesson.salah.point.3.body':
+        'Shi ne halartar zuciya da natsuwar gaɓoɓi. Da wannan ne Allah ya siffanta muminai masu nasara.',
+    'lesson.niyyah.point.0.title':
+        'Aiki Ba Tare Da Niyya Ba Ba Ya Haifar Da \'Ya\'Ya',
+    'lesson.niyyah.point.0.body':
+        'Al\'ada takan zama bauta ta dalilin niyya, bauta kuma takan zama al\'ada ta rashinta. Mai barci domin ya sami ƙarfin yin biyayya yana samun lada, amma mai salla don a gan shi (riya) an hana shi lada.',
+    'lesson.niyyah.point.1.title':
+        'Kowane Mutum Yana Samun Abin Da Ya Yi Niyyarsa',
+    'lesson.niyyah.point.1.body':
+        'Ana saka wa bawa gwargwadon niyyarsa, ba gwargwadon aikinsa kaɗai ba. Mai ɗan aiki kaɗan na iya kaiwa, ta dalilin niyyarsa, matsayin da wani mai yawan aiki ba zai kai ba.',
+    'lesson.niyyah.point.2.title': 'Ikhlasi Shi Ne Sharaɗin Karɓan Aiki',
+    'lesson.niyyah.point.2.body':
+        'A yi niyyar aiki domin Allah shi kaɗai, neman yardarSa. Kuma aikin ya kasance bisa hanyar da Annabi ﷺ ya nuna. Da waɗannan abubuwa biyu ne ake karɓar aiki.',
     'shelf.adhkar.title': 'Azkari',
     'shelf.cards.title': 'Katunan Gaisuwa',
     'shelf.lessons.title': 'Darussa',

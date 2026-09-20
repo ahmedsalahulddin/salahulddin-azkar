@@ -328,6 +328,11 @@ class _QuranTranslationSurahScreen extends StatefulWidget {
 
 class _QuranTranslationSurahScreenState
     extends State<_QuranTranslationSurahScreen> {
+  /// The surah on screen — starts at [_info] but moves on to the next
+  /// one when playback finishes it, so this can't stay tied to the widget's
+  /// own (immutable) construction argument.
+  late SurahInfo _info = widget.info;
+  List<SurahInfo> _quranIndex = const [];
   Surah? _surah;
   List<String>? _translation;
   bool _loadingArabic = true;
@@ -358,6 +363,9 @@ class _QuranTranslationSurahScreenState
     _langCode = widget.langCode;
     _initTts();
     Future.wait([_loadArabic(), _loadTranslation()]);
+    QuranService.index().then((i) {
+      if (mounted) _quranIndex = i;
+    });
   }
 
   String get _langName => _langs.firstWhere((l) => l.code == _langCode).name;
@@ -387,7 +395,7 @@ class _QuranTranslationSurahScreenState
   Future<void> _playArabicOnce(Ayah ayah, int s) async {
     final uri = await RecitationDownloads.sourceFor(
       reciter: _reciter,
-      surah: widget.info.number,
+      surah: _info.number,
       ayah: ayah.number,
     );
     await AppAudio.player.stop();
@@ -396,9 +404,9 @@ class _QuranTranslationSurahScreenState
       AudioSource.uri(
         uri,
         tag: MediaItem(
-          id: 'trans:${_reciter.id}:${widget.info.number}:${ayah.number}',
+          id: 'trans:${_reciter.id}:${_info.number}:${ayah.number}',
           title:
-              '${widget.info.name} — ${t('qs.ayahWord')} ${QuranService.toArabicDigits(ayah.number)}',
+              '${_info.name} — ${t('qs.ayahWord')} ${QuranService.toArabicDigits(ayah.number)}',
           artist: _reciter.displayName,
           album: t('qs.quranTitle'),
         ),
@@ -485,7 +493,33 @@ class _QuranTranslationSurahScreenState
       if (_cancelled(s)) return;
       if (_transOn && trans != null) await _speakTranslation(trans, s);
     }
+    if (_cancelled(s)) return;
     _clearSpeaking(s);
+    // Reaching the end of the surah's ayahs, rather than being cancelled out
+    // from under it, means playback ran to completion — carry on into the
+    // next surah instead of falling silent, the same as every other Quran
+    // card in the app now does.
+    await _advanceToNextSurah(s);
+  }
+
+  Future<void> _advanceToNextSurah(int s) async {
+    if (_cancelled(s) || _quranIndex.isEmpty) return;
+    final nextNumber = _info.number >= 114 ? 1 : _info.number + 1;
+    final nextInfo = _quranIndex
+        .where((x) => x.number == nextNumber)
+        .firstOrNull;
+    if (nextInfo == null) return;
+    final surah = await QuranService.surah(nextNumber);
+    final trans = await _fetchTranslation(_langCode, nextNumber);
+    if (_cancelled(s) || !mounted) return;
+    setState(() {
+      _info = nextInfo;
+      _surah = surah;
+      _translation = trans;
+      _translationFailed = trans == null;
+      _ayahKeys.clear();
+    });
+    await _speakFrom(0);
   }
 
   // One ayah only, repeated as many times as its own card counter says.
@@ -542,7 +576,7 @@ class _QuranTranslationSurahScreenState
   }
 
   Future<void> _loadArabic() async {
-    final surah = await QuranService.surah(widget.info.number);
+    final surah = await QuranService.surah(_info.number);
     if (!mounted) return;
     setState(() {
       _surah = surah;
@@ -551,7 +585,7 @@ class _QuranTranslationSurahScreenState
   }
 
   Future<void> _loadTranslation() async {
-    final trans = await _fetchTranslation(_langCode, widget.info.number);
+    final trans = await _fetchTranslation(_langCode, _info.number);
     if (!mounted) return;
     setState(() {
       _translation = trans;
@@ -686,10 +720,10 @@ class _QuranTranslationSurahScreenState
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
             children: [
-              Text(widget.info.name),
+              Text(_info.name),
               const SizedBox(width: 6),
               Text(
-                '(${widget.info.nameEn})',
+                '(${_info.nameEn})',
                 textDirection: TextDirection.ltr,
                 style: const TextStyle(
                   color: AppColors.textMuted,

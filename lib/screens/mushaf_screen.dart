@@ -59,20 +59,56 @@ class _MushafScreenState extends State<MushafScreen> {
   Reciter _reciter = RecitationService.defaultReciter;
   RepeatSettings _repeat = const RepeatSettings();
   StreamSubscription<int?>? _indexSub;
+  StreamSubscription<PlayerState>? _completionSub;
   bool _autoTurning = false;
+
+  /// The surah the current playlist belongs to — tracked separately from
+  /// [_selected] because a per-surah reciter's single track never updates
+  /// [_selected] as it plays, and reading it back at completion would still
+  /// be racing whatever _indexSub last set it to.
+  int? _playingSurah;
+
+  /// Guards against the completion handler firing again while the next
+  /// surah is still being loaded — the same race [ContinuousListening]
+  /// guards against.
+  bool _advancingSurah = false;
 
   @override
   void initState() {
     super.initState();
     _load();
+    // A surah finishing is not "done reading" here the way it is for a
+    // read-along screen with nothing after it — the Mushaf is the whole
+    // book, so recitation carries on into the next surah exactly like
+    // continuous listening does, unless a repetition drill is running (that
+    // has its own idea of when a page of ayat is "done").
+    _completionSub = _player.playerStateStream.listen((state) {
+      if (!mounted || _advancingSurah || _repeat.isActive) return;
+      if (state.processingState != ProcessingState.completed) return;
+      if (!AppAudio.ownsCurrent('${_reciter.id}:')) return;
+      final finished = _playingSurah;
+      if (finished == null) return;
+      _advanceToNextSurah(finished);
+    });
   }
 
   @override
   void dispose() {
+    _completionSub?.cancel();
     _indexSub?.cancel();
     _player.stop();
     _controller.dispose();
     super.dispose();
+  }
+
+  Future<void> _advanceToNextSurah(int finishedSurah) async {
+    _advancingSurah = true;
+    try {
+      final next = finishedSurah >= 114 ? 1 : finishedSurah + 1;
+      await _playFrom(AyahBoxes(surah: next, ayah: 1, rects: const []));
+    } finally {
+      _advancingSurah = false;
+    }
   }
 
   Future<void> _load() async {
@@ -144,6 +180,7 @@ class _MushafScreenState extends State<MushafScreen> {
   // ---- ayah actions ----------------------------------------------------
 
   Future<void> _playFrom(AyahBoxes start) async {
+    _playingSurah = start.surah;
     if (!_reciter.isPerAyah) {
       await _playWholeSurah(start.surah);
       return;
