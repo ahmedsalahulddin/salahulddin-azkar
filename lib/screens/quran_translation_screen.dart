@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:http/http.dart' as http;
@@ -76,9 +77,16 @@ const _ttsLocale = {
 const _quranComResourceId = {'bn': 213};
 
 Future<List<String>?> _fetchTranslation(String lang, int surahNum) async {
-  final dir = await getApplicationDocumentsDirectory();
-  final file = File('${dir.path}/quran_translations_v2/$lang/$surahNum.json');
-  if (await file.exists()) {
+  // path_provider has no web implementation — getApplicationDocumentsDirectory()
+  // throws MissingPluginException there, which used to take this whole call
+  // down before it ever reached the HTTP fetch below. The web build fetches
+  // fresh every time instead of caching to disk.
+  final file = kIsWeb
+      ? null
+      : File(
+          '${(await getApplicationDocumentsDirectory()).path}/quran_translations_v2/$lang/$surahNum.json',
+        );
+  if (file != null && await file.exists()) {
     return _parse(await file.readAsString(), lang);
   }
   final resourceId = _quranComResourceId[lang];
@@ -91,8 +99,10 @@ Future<List<String>?> _fetchTranslation(String lang, int surahNum) async {
         : Uri.parse('$_apiBase/$surahNum/${_edition[lang] ?? 'en.sahih'}');
     final res = await http.get(uri).timeout(const Duration(seconds: 20));
     if (res.statusCode != 200) return null;
-    await file.parent.create(recursive: true);
-    await file.writeAsBytes(res.bodyBytes);
+    if (file != null) {
+      await file.parent.create(recursive: true);
+      await file.writeAsBytes(res.bodyBytes);
+    }
     return _parse(res.body, lang);
   } catch (_) {
     return null;
