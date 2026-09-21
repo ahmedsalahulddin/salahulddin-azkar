@@ -15,8 +15,6 @@ import 'screens/favorites_screen.dart';
 import 'screens/account_screen.dart';
 import 'screens/tahfeez/tahfeez_tab.dart';
 import 'services/auth_service.dart';
-import 'services/account_lang.dart';
-import 'services/tahfeez_lang.dart';
 import 'services/tahfeez_service.dart';
 import 'services/notification_service.dart';
 import 'services/adhan_downloads.dart';
@@ -25,6 +23,7 @@ import 'services/recitation_downloads.dart';
 import 'services/daily_reminders.dart';
 import 'services/dhikr_reminder.dart';
 import 'services/prayer_alerts.dart';
+import 'services/prayer_service.dart';
 import 'services/app_locale.dart';
 import 'services/playback_speed.dart';
 import 'services/prayer_settings.dart';
@@ -76,8 +75,6 @@ void main() async {
   } catch (_) {}
 
   await AppLocale.load();
-  await TahfeezLang.load();
-  await AccountLang.load();
   await DhikrLangPref.load();
   await PlaybackSpeed.load();
   await PrayerSettings.load();
@@ -104,6 +101,15 @@ void main() async {
     await NotificationService.clearLegacyAdhkarAlerts();
     await DhikrReminder.reschedule();
     await NotificationService.scheduleDailyReminders();
+    // Prayer alerts are laid down from today's computed times, which until
+    // now only ever existed once the home screen's prayer-times card had
+    // built and loaded them — a reader who enabled the alerts but never
+    // scrolled to that card in a session had every setting on and nothing
+    // scheduled. Lay them down at launch too, the same way the other two
+    // reminder kinds already are.
+    if (PrayerAlerts.anyOn) {
+      unawaited(PrayerService.load());
+    }
   } catch (_) {}
   // Signing in on a second device should bring the reader's marks with it,
   // without them having to find a button first.

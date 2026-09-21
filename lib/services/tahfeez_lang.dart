@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app_locale.dart';
 
-/// The language the memorisation section is read in — chosen from the top
-/// of its tab, independently of the app language, because a circle may be
-/// shared by a teacher and students who do not read the same language.
-/// Null means "follow the app language".
+/// The language the memorisation section is read in — the app's own
+/// language, same as everywhere else. This used to be its own picker,
+/// independent of the app language; it now just mirrors [AppLocale] so the
+/// one toggle on the home screen covers the whole app.
 class TahfeezLang {
-  static const _key = 'tahfeez_lang';
-
   static const languages = <(String code, String name)>[
     ('ar', 'العربية'),
     ('en', 'English'),
@@ -23,13 +20,7 @@ class TahfeezLang {
     ('ha', 'Hausa'),
   ];
 
-  static final override = ValueNotifier<String?>(null);
-
-  /// The language actually in effect: the reader's own choice for this
-  /// section, or the app's general language if they never set one — now
-  /// that both cover the same ten languages, "follow the app" means all of
-  /// them, not just English.
-  static String get code => override.value ?? AppLocale.code;
+  static String get code => AppLocale.code;
 
   static bool get isRtl => code == 'ar' || code == 'ur';
 
@@ -41,24 +32,5 @@ class TahfeezLang {
       if (code == c) return name;
     }
     return c;
-  }
-
-  static Future<void> load() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      override.value = prefs.getString(_key);
-    } catch (_) {}
-  }
-
-  static Future<void> set(String? c) async {
-    override.value = c;
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      if (c == null) {
-        await prefs.remove(_key);
-      } else {
-        await prefs.setString(_key, c);
-      }
-    } catch (_) {}
   }
 }

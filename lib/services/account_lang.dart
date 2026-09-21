@@ -1,16 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app_locale.dart';
 
-/// The language "حسابي" (Account & Settings) is read in — chosen from the
-/// top of that screen, independently of the app's own ar/en toggle, so a
-/// reader who keeps the rest of the app in Arabic can still manage their
-/// account in a language they're more comfortable reading fine print in.
-/// Null means "follow the app language".
+/// The language "حسابي" (Account & Settings) is read in — the app's own
+/// language, same as everywhere else. This used to be its own picker,
+/// independent of the app's ar/en toggle; it now just mirrors [AppLocale]
+/// so the one toggle on the home screen covers the whole app.
 class AccountLang {
-  static const _key = 'account_lang';
-
   static const languages = <(String code, String name)>[
     ('ar', 'العربية'),
     ('en', 'English'),
@@ -24,13 +20,7 @@ class AccountLang {
     ('ha', 'Hausa'),
   ];
 
-  static final override = ValueNotifier<String?>(null);
-
-  /// The language actually in effect: the reader's own choice for this
-  /// screen, or the app's general language if they never set one — now that
-  /// both cover the same ten languages, "follow the app" means all of them,
-  /// not just English.
-  static String get code => override.value ?? AppLocale.code;
+  static String get code => AppLocale.code;
 
   static bool get isArabicDigits => code == 'ar';
 
@@ -44,24 +34,5 @@ class AccountLang {
       if (code == c) return name;
     }
     return c;
-  }
-
-  static Future<void> load() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      override.value = prefs.getString(_key);
-    } catch (_) {}
-  }
-
-  static Future<void> set(String? c) async {
-    override.value = c;
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      if (c == null) {
-        await prefs.remove(_key);
-      } else {
-        await prefs.setString(_key, c);
-      }
-    } catch (_) {}
   }
 }

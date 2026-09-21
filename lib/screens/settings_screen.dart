@@ -47,7 +47,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: Listenable.merge([AppLocale.locale, AccountLang.override]),
+      listenable: AppLocale.locale,
       builder: (context, _) => _buildContent(context),
     );
   }

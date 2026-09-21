@@ -7,7 +7,6 @@ import '../../data/tahfeez_countries.dart';
 import '../../l10n/strings.dart';
 import '../../services/app_locale.dart';
 import '../../services/auth_service.dart';
-import '../../services/tahfeez_lang.dart';
 import '../../services/tahfeez_service.dart';
 import '../../widgets/sign_in_buttons.dart';
 import '../account_screen.dart' show UserAvatar;
@@ -158,65 +157,12 @@ class _TahfeezTabState extends State<TahfeezTab> {
   @override
   Widget build(BuildContext context) {
     // This tab is kept alive in an IndexedStack, so it must listen for the
-    // app's general language changing too — not just its own override —
+    // app's general language changing — the only language it follows now —
     // or a language picked from the home screen never reaches a tab that
-    // was already mounted and never set an override of its own.
+    // was already mounted.
     return ValueListenableBuilder<String>(
       valueListenable: AppLocale.locale,
-      builder: (context, _, _) => ValueListenableBuilder<String?>(
-        valueListenable: TahfeezLang.override,
-        builder: (context, _, _) => _build(context),
-      ),
-    );
-  }
-
-  Widget _languageMenu() {
-    return PopupMenuButton<String>(
-      tooltip: TahfeezLang.nameOf(TahfeezLang.code),
-      color: AppColors.blackCard,
-      onSelected: (c) => TahfeezLang.set(c),
-      itemBuilder: (_) => [
-        for (final (code, name) in TahfeezLang.languages)
-          PopupMenuItem(
-            value: code,
-            child: Row(
-              children: [
-                Icon(
-                  code == TahfeezLang.code
-                      ? Icons.radio_button_checked
-                      : Icons.radio_button_off,
-                  size: 16,
-                  color: code == TahfeezLang.code
-                      ? AppColors.gold
-                      : AppColors.textMuted,
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  name,
-                  style: TextStyle(
-                    color: code == TahfeezLang.code
-                        ? AppColors.gold
-                        : AppColors.textPrimary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-      ],
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.translate, size: 18, color: AppColors.gold),
-            const SizedBox(width: 4),
-            Text(
-              TahfeezLang.nameOf(TahfeezLang.code),
-              style: const TextStyle(color: AppColors.gold, fontSize: 13),
-            ),
-          ],
-        ),
-      ),
+      builder: (context, _, _) => _build(context),
     );
   }
 
@@ -230,7 +176,6 @@ class _TahfeezTabState extends State<TahfeezTab> {
           foregroundColor: AppColors.gold,
           title: Text(t('tahfeez.title')),
           centerTitle: true,
-          actions: [_languageMenu()],
         ),
         body: ValueListenableBuilder<AppUser?>(
           valueListenable: AuthService.user,

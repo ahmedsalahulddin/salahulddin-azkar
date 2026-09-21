@@ -5,10 +5,10 @@ import 'account_translations.dart';
 import 'app_translations.dart';
 import 'tahfeez_translations.dart';
 
-/// Returns the string for [key] in the current app locale — or, for the
-/// memorisation section's own keys, in the language chosen at the top of
-/// that tab, or for the Account & Settings screen's own keys, in the
-/// language chosen at the top of that screen.
+/// Returns the string for [key] in the current app locale — including the
+/// memorisation section's and the Account & Settings screen's own keys,
+/// which are kept in separate translation tables but always follow the
+/// same app-wide language now.
 String t(String key) {
   if (key.startsWith('tahfeez.')) {
     final code = TahfeezLang.code;

@@ -247,7 +247,7 @@ class _AccountScreenState extends State<AccountScreen> {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: Listenable.merge([AppLocale.locale, AccountLang.override]),
+      listenable: AppLocale.locale,
       builder: (context2, child2) => Directionality(
         textDirection: AccountLang.direction,
         child: Scaffold(
@@ -256,7 +256,6 @@ class _AccountScreenState extends State<AccountScreen> {
             title: Text(t('account.title')),
             backgroundColor: AppColors.black,
             foregroundColor: AppColors.gold,
-            actions: [_languageMenu()],
           ),
           body: ValueListenableBuilder<AppUser?>(
             valueListenable: AuthService.user,
@@ -564,56 +563,6 @@ class _AccountScreenState extends State<AccountScreen> {
             ),
             const SizedBox(width: 4),
             const Icon(Icons.edit, size: 12, color: AppColors.textMuted),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _languageMenu() {
-    return PopupMenuButton<String>(
-      tooltip: AccountLang.nameOf(AccountLang.code),
-      color: AppColors.blackCard,
-      onSelected: (c) => AccountLang.set(c),
-      itemBuilder: (_) => [
-        for (final (code, name) in AccountLang.languages)
-          PopupMenuItem(
-            value: code,
-            child: Row(
-              children: [
-                Icon(
-                  code == AccountLang.code
-                      ? Icons.radio_button_checked
-                      : Icons.radio_button_off,
-                  size: 16,
-                  color: code == AccountLang.code
-                      ? AppColors.gold
-                      : AppColors.textMuted,
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  name,
-                  style: TextStyle(
-                    color: code == AccountLang.code
-                        ? AppColors.gold
-                        : AppColors.textPrimary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-      ],
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.translate, size: 18, color: AppColors.gold),
-            const SizedBox(width: 4),
-            Text(
-              AccountLang.nameOf(AccountLang.code),
-              style: const TextStyle(color: AppColors.gold, fontSize: 13),
-            ),
           ],
         ),
       ),
