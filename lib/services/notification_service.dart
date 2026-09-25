@@ -293,7 +293,7 @@ class NotificationService {
       await init();
       final soundResource = PrayerAlerts.bundledResource;
       final channel =
-          'salahulddin_prayer_sound_v4_${soundResource ?? 'default'}';
+          'salahulddin_prayer_sound_v5_${soundResource ?? 'default'}';
       await _plugin.show(
         _testId + 1,
         'جرّبت صوت الأذان',
@@ -404,6 +404,11 @@ class NotificationService {
       'salahulddin_prayer_sound_v3_adhan_makkah',
       'salahulddin_prayer_sound_v3_adhan_madinah',
       'salahulddin_prayer_sound_v3_default',
+      // v4 channels may exist without a sound: until res/raw/keep.xml, the
+      // adhan files were stripped from release builds.
+      'salahulddin_prayer_sound_v4_adhan_makkah',
+      'salahulddin_prayer_sound_v4_adhan_madinah',
+      'salahulddin_prayer_sound_v4_default',
     ];
     try {
       final android = _plugin
@@ -511,10 +516,10 @@ class NotificationService {
     // channel id therefore carries both the mode and the chosen sound, and a
     // new combination simply creates a new channel.
     //
-    // v4: old v2/v3 channels are deleted at startup (_dropQuietChannels) so
+    // v5: old v2/v3/v4 channels are deleted at startup (_dropQuietChannels) so
     // that any created without a sound get recreated here with the adhan.
     final channel = mode.sound
-        ? 'salahulddin_prayer_sound_v4_${soundResource ?? 'default'}'
+        ? 'salahulddin_prayer_sound_v5_${soundResource ?? 'default'}'
         : 'salahulddin_prayer_silent_v2';
 
     final androidDetails = AndroidNotificationDetails(

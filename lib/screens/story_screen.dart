@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../constants/theme.dart';
 import '../data/stories_data.dart';
 import '../l10n/strings.dart';
+import '../services/app_locale.dart';
 import '../widgets/speak_button.dart';
 
 /// One story: its full text, read aloud on request by the device's voice,
@@ -16,7 +17,11 @@ class StoryScreen extends StatefulWidget {
 }
 
 class _StoryScreenState extends State<StoryScreen> {
-  String _lang = 'ar';
+  // Opens in the app's own language when this story has been translated
+  // into it, rather than always in Arabic until the reader picks again.
+  late String _lang = translationFor(widget.story.id, AppLocale.code) != null
+      ? AppLocale.code
+      : 'ar';
 
   StoryTranslation? get _translation =>
       _lang == 'ar' ? null : translationFor(widget.story.id, _lang);
@@ -29,6 +34,10 @@ class _StoryScreenState extends State<StoryScreen> {
   void _pickLang() {
     showModalBottomSheet<void>(
       context: context,
+      isScrollControlled: true,
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.85,
+      ),
       backgroundColor: AppColors.blackCard,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
@@ -36,8 +45,8 @@ class _StoryScreenState extends State<StoryScreen> {
       builder: (ctx) => Directionality(
         textDirection: TextDirection.rtl,
         child: SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
+          child: ListView(
+            shrinkWrap: true,
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),

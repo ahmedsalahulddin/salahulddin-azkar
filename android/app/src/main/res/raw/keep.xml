@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The adhan sounds are only ever looked up by name at runtime (by
+     flutter_local_notifications' RawResourceAndroidNotificationSound), so
+     release resource shrinking saw no reference and stripped them from every
+     APK/AAB — the notification then failed with "invalid_sound: resource
+     adhan_makkah could not be found". -->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@raw/*" />

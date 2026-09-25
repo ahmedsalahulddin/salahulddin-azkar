@@ -228,7 +228,7 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
           child: Text(
-            locale == 'ar' ? 'EN' : locale.toUpperCase(),
+            locale.toUpperCase(),
             style: TextStyle(
               color: locale == 'ar' ? AppColors.textMuted : AppColors.gold,
               fontSize: 13,

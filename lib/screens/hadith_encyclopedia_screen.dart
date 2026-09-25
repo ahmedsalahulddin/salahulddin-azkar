@@ -55,6 +55,10 @@ class _HadithEncyclopediaScreenState extends State<HadithEncyclopediaScreen> {
   void _pickLang() {
     showModalBottomSheet<void>(
       context: context,
+      isScrollControlled: true,
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.85,
+      ),
       backgroundColor: AppColors.blackCard,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
@@ -62,8 +66,8 @@ class _HadithEncyclopediaScreenState extends State<HadithEncyclopediaScreen> {
       builder: (ctx) => Directionality(
         textDirection: TextDirection.rtl,
         child: SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
+          child: ListView(
+            shrinkWrap: true,
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
