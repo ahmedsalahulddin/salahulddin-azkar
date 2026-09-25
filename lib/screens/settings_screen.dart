@@ -14,12 +14,24 @@ import '../services/prayer_settings.dart';
 import 'prayer_alerts_screen.dart';
 import '../services/storage_service.dart';
 
+/// One group of settings, each opened from its own tile on the account
+/// page, so no one screen is a wall of switches.
+enum SettingsSection { display, prayer, reminders }
+
 class SettingsScreen extends StatefulWidget {
-  /// True when the settings sit inside another screen's scroll view, which is
-  /// how they are reached now — the account page carries them.
+  /// True when the settings sit inside another screen's scroll view.
   final bool embedded;
 
-  const SettingsScreen({super.key, this.embedded = false});
+  /// Only this group, or every group when null.
+  final SettingsSection? section;
+
+  const SettingsScreen({super.key, this.embedded = false, this.section});
+
+  static String titleOf(SettingsSection s) => switch (s) {
+    SettingsSection.display => t('settings.fontSize'),
+    SettingsSection.prayer => t('acct.group.prayer'),
+    SettingsSection.reminders => t('settings.reminders'),
+  };
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -59,71 +71,85 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ? 28.0
         : 22.0;
 
+    final only = widget.section;
+    bool show(SettingsSection s) => only == null || only == s;
+    // A lone group already has its name in the app bar.
+    final titled = only == null;
+
     final body = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _sectionTitle(t('settings.fontSize')),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            children: [
-              _fontBtn(t('settings.fontSize.small'), 'small'),
-              const SizedBox(width: 8),
-              _fontBtn(t('settings.fontSize.medium'), 'medium'),
-              const SizedBox(width: 8),
-              _fontBtn(t('settings.fontSize.large'), 'large'),
-            ],
-          ),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppColors.blackCard,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.goldBorder),
-          ),
-          child: Text(
-            'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ',
-            style: TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: previewSize,
+        if (!titled) const SizedBox(height: 8),
+        if (show(SettingsSection.display)) ...[
+          if (titled) _sectionTitle(t('settings.fontSize')),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                _fontBtn(t('settings.fontSize.small'), 'small'),
+                const SizedBox(width: 8),
+                _fontBtn(t('settings.fontSize.medium'), 'medium'),
+                const SizedBox(width: 8),
+                _fontBtn(t('settings.fontSize.large'), 'large'),
+              ],
             ),
-            textAlign: TextAlign.center,
           ),
-        ),
-        _muteAll(),
-        _sectionTitle(t('settings.prayerCalc')),
-        _prayerMethod(),
-        const SizedBox(height: 10),
-        _asrSchool(),
-        const SizedBox(height: 10),
-        _alertsRow(),
-        _sectionTitle(t('settings.reminders')),
-        _notificationHealth(),
-        const SizedBox(height: 10),
-        _dhikrReminder(),
-        const SizedBox(height: 10),
-        _verseReminder(),
-        const SizedBox(height: 10),
-        _adhkarWindow(
-          title: t('settings.adhkar.morning.title'),
-          note: t('settings.adhkar.morning.note'),
-          on: DailyReminders.morningOn,
-          at: DailyReminders.morningAt,
-          window: DailyReminders.morningWindow,
-          apply: (v, t) => DailyReminders.setMorning(on: v, at: t),
-        ),
-        const SizedBox(height: 10),
-        _adhkarWindow(
-          title: t('settings.adhkar.evening.title'),
-          note: t('settings.adhkar.evening.note'),
-          on: DailyReminders.eveningOn,
-          at: DailyReminders.eveningAt,
-          window: DailyReminders.eveningWindow,
-          apply: (v, t) => DailyReminders.setEvening(on: v, at: t),
-        ),
+          const SizedBox(height: 8),
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.blackCard,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.goldBorder),
+            ),
+            child: Text(
+              'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ',
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: previewSize,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+        if (show(SettingsSection.prayer)) ...[
+          if (titled) _sectionTitle(t('settings.prayerCalc')),
+          _prayerMethod(),
+          const SizedBox(height: 10),
+          _asrSchool(),
+          const SizedBox(height: 10),
+          _alertsRow(),
+        ],
+        if (show(SettingsSection.reminders)) ...[
+          if (titled) _sectionTitle(t('settings.reminders')),
+          _muteAll(),
+          const SizedBox(height: 10),
+          _notificationHealth(),
+          const SizedBox(height: 10),
+          _dhikrReminder(),
+          const SizedBox(height: 10),
+          _verseReminder(),
+          const SizedBox(height: 10),
+          _adhkarWindow(
+            title: t('settings.adhkar.morning.title'),
+            note: t('settings.adhkar.morning.note'),
+            on: DailyReminders.morningOn,
+            at: DailyReminders.morningAt,
+            window: DailyReminders.morningWindow,
+            apply: (v, t) => DailyReminders.setMorning(on: v, at: t),
+          ),
+          const SizedBox(height: 10),
+          _adhkarWindow(
+            title: t('settings.adhkar.evening.title'),
+            note: t('settings.adhkar.evening.note'),
+            on: DailyReminders.eveningOn,
+            at: DailyReminders.eveningAt,
+            window: DailyReminders.eveningWindow,
+            apply: (v, t) => DailyReminders.setEvening(on: v, at: t),
+          ),
+        ],
+        const SizedBox(height: 24),
       ],
     );
 
@@ -134,7 +160,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
-          title: Text(t('settings.reminders')),
+          title: Text(
+            only == null
+                ? t('settings.reminders')
+                : SettingsScreen.titleOf(only),
+          ),
           backgroundColor: AppColors.black,
           foregroundColor: AppColors.gold,
         ),

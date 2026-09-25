@@ -198,4 +198,19 @@ class RecitationDownloads {
     ready.value = {...ready.value}..remove(keyOf(reciterId, surah));
     await _persist();
   }
+
+  /// How many of [reciterId]'s surahs are on the device.
+  static int countFor(String reciterId) =>
+      ready.value.where((k) => k.startsWith('$reciterId:')).length;
+
+  /// Every downloaded surah of [reciterId], in one go.
+  static Future<void> removeAllFor(String reciterId) async {
+    final surahs = [
+      for (final k in ready.value)
+        if (k.startsWith('$reciterId:')) int.parse(k.split(':').last),
+    ];
+    for (final s in surahs) {
+      await remove(reciterId: reciterId, surah: s);
+    }
+  }
 }

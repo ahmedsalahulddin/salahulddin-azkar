@@ -14,6 +14,7 @@ import '../widgets/sign_in_buttons.dart';
 import 'admin_duas_screen.dart';
 import 'admin_screen.dart';
 import 'admin_translation_feedback_screen.dart';
+import 'downloads_screen.dart';
 import 'tahfeez/reports_screen.dart';
 import 'tahfeez/tahfeez_widgets.dart';
 import 'tahfeez/teacher_requests_screen.dart';
@@ -37,7 +38,7 @@ class _AccountScreenState extends State<AccountScreen> {
   bool _deleting = false;
   bool _isAdmin = false;
   String _version = '';
-  bool _checkingUpdate = false;
+  final _checkingUpdate = ValueNotifier<bool>(false);
   TahfeezProfile? _tahfeezProfile;
 
   @override
@@ -109,10 +110,10 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 
   Future<void> _checkForUpdate() async {
-    setState(() => _checkingUpdate = true);
+    _checkingUpdate.value = true;
     final result = await UpdateChecker.check();
     if (!mounted) return;
-    setState(() => _checkingUpdate = false);
+    _checkingUpdate.value = false;
 
     if (result.failed) {
       ScaffoldMessenger.of(
@@ -268,90 +269,33 @@ class _AccountScreenState extends State<AccountScreen> {
                   const SizedBox(height: 12),
                   _syncCard(),
                 ],
-                const SizedBox(height: 10),
-                const SettingsScreen(embedded: true),
+                const SizedBox(height: 16),
+                _groupGrid(),
+                const SizedBox(height: 12),
+                _groupRow(
+                  icon: Icons.info_outline,
+                  title: t('account.aboutSection'),
+                  subtitle: '${t('account.version')} $_version',
+                  onTap: () => _openGroup(t('account.aboutSection'), [
+                    _aboutCard(),
+                    const SizedBox(height: 10),
+                    _sourcesLink(),
+                  ]),
+                ),
                 if (_isAdmin) ...[
-                  const SizedBox(height: 20),
-                  _sectionTitle(t('account.adminSection')),
-                  _tile(
-                    icon: Icons.dashboard_customize,
-                    title: t('account.adminTitle'),
-                    subtitle: t('account.adminSub'),
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const AdminScreen()),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  _tile(
-                    icon: Icons.volunteer_activism,
-                    title: t('account.adminDuasTitle'),
-                    subtitle: t('account.adminDuasSub'),
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const AdminDuasScreen(),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  _tile(
-                    icon: Icons.mark_email_unread_outlined,
-                    title: t('admin.feedback.title'),
-                    subtitle: t('admin.feedback.sub'),
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const AdminTranslationFeedbackScreen(),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
                   ValueListenableBuilder<int>(
-                    valueListenable: TahfeezService.pendingBadge,
-                    builder: (_, n, _) => _tile(
-                      icon: Icons.how_to_reg,
-                      title: n > 0
-                          ? '${t('account.teacherRequestsTitle')} ($n)'
-                          : t('account.teacherRequestsTitle'),
-                      subtitle: t('account.teacherRequestsSub'),
-                      onTap: () async {
-                        await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const TeacherRequestsScreen(),
-                          ),
-                        );
-                        TahfeezService.refreshPendingBadge();
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  ValueListenableBuilder<int>(
-                    valueListenable: TahfeezService.reportsBadge,
-                    builder: (_, n, _) => _tile(
-                      icon: Icons.flag_outlined,
-                      title: n > 0
-                          ? '${t('tahfeez.reports')} ($n)'
-                          : t('tahfeez.reports'),
-                      subtitle: t('tahfeez.reportsSub'),
-                      onTap: () async {
-                        await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const ReportsScreen(),
-                          ),
-                        );
-                        TahfeezService.refreshPendingBadge();
-                      },
+                    valueListenable: TahfeezService.adminBadge,
+                    builder: (_, n, _) => _groupRow(
+                      icon: Icons.admin_panel_settings_outlined,
+                      title: t('account.adminSection'),
+                      subtitle: t('acct.group.admin.sub'),
+                      badge: n,
+                      onTap: () =>
+                          _openGroup(t('account.adminSection'), _adminTiles()),
                     ),
                   ),
                 ],
-                const SizedBox(height: 20),
-                _sectionTitle(t('account.aboutSection')),
-                _aboutCard(),
-                const SizedBox(height: 10),
-                _sourcesLink(),
               ],
             ),
           ),
@@ -837,17 +781,245 @@ class _AccountScreenState extends State<AccountScreen> {
     );
   }
 
-  Widget _sectionTitle(String title) => Padding(
-    padding: const EdgeInsets.only(bottom: 8, right: 4),
-    child: Text(
-      title,
-      style: const TextStyle(
-        color: AppColors.textGold,
-        fontSize: 15,
-        fontWeight: FontWeight.bold,
+  /// Everything a reader sets, as four tiles that each open their own
+  /// screen — instead of one page several screens long.
+  Widget _groupGrid() {
+    final groups = [
+      (
+        Icons.mosque_outlined,
+        t('acct.group.prayer'),
+        t('acct.group.prayer.sub'),
+        () => _push(const SettingsScreen(section: SettingsSection.prayer)),
+      ),
+      (
+        Icons.notifications_active_outlined,
+        t('settings.reminders'),
+        t('acct.group.reminders.sub'),
+        () => _push(const SettingsScreen(section: SettingsSection.reminders)),
+      ),
+      (
+        Icons.download_for_offline_outlined,
+        t('acct.group.downloads'),
+        t('acct.group.downloads.sub'),
+        () => _push(const DownloadsScreen()),
+      ),
+      (
+        Icons.text_fields,
+        t('settings.fontSize'),
+        t('acct.group.display.sub'),
+        () => _push(const SettingsScreen(section: SettingsSection.display)),
+      ),
+    ];
+    return GridView.count(
+      crossAxisCount: 2,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      mainAxisSpacing: 12,
+      crossAxisSpacing: 12,
+      childAspectRatio: 1.0,
+      children: [
+        for (final (icon, title, sub, onTap) in groups)
+          GestureDetector(
+            onTap: onTap,
+            behavior: HitTestBehavior.opaque,
+            child: Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [AppColors.navyLight, AppColors.navy],
+                ),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.goldBorder),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(9),
+                    decoration: const BoxDecoration(
+                      color: AppColors.goldMuted,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(icon, color: AppColors.gold, size: 22),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        sub,
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: AppColors.textMuted,
+                          fontSize: 11,
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  /// A full-width group: About, and Admin for the admin.
+  Widget _groupRow({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+    int badge = 0,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+        decoration: BoxDecoration(
+          color: AppColors.blackCard,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.goldBorder),
+        ),
+        child: Row(
+          children: [
+            Badge(
+              isLabelVisible: badge > 0,
+              label: Text('$badge'),
+              backgroundColor: AppColors.error,
+              child: Icon(icon, color: AppColors.gold, size: 22),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      color: AppColors.textMuted,
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_left, color: AppColors.textMuted, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _push(Widget screen) =>
+      Navigator.push(context, MaterialPageRoute(builder: (_) => screen));
+
+  /// A group whose contents live on this screen (About, Admin), shown on a
+  /// page of its own.
+  void _openGroup(String title, List<Widget> children) => _push(
+    Directionality(
+      textDirection: AccountLang.direction,
+      child: Scaffold(
+        backgroundColor: AppColors.black,
+        appBar: AppBar(
+          title: Text(title),
+          backgroundColor: AppColors.black,
+          foregroundColor: AppColors.gold,
+        ),
+        body: ListView(padding: const EdgeInsets.all(16), children: children),
       ),
     ),
   );
+
+  List<Widget> _adminTiles() => [
+    _tile(
+      icon: Icons.dashboard_customize,
+      title: t('account.adminTitle'),
+      subtitle: t('account.adminSub'),
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const AdminScreen()),
+      ),
+    ),
+    const SizedBox(height: 8),
+    _tile(
+      icon: Icons.volunteer_activism,
+      title: t('account.adminDuasTitle'),
+      subtitle: t('account.adminDuasSub'),
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const AdminDuasScreen()),
+      ),
+    ),
+    const SizedBox(height: 8),
+    _tile(
+      icon: Icons.mark_email_unread_outlined,
+      title: t('admin.feedback.title'),
+      subtitle: t('admin.feedback.sub'),
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const AdminTranslationFeedbackScreen(),
+        ),
+      ),
+    ),
+    const SizedBox(height: 8),
+    ValueListenableBuilder<int>(
+      valueListenable: TahfeezService.pendingBadge,
+      builder: (_, n, _) => _tile(
+        icon: Icons.how_to_reg,
+        title: n > 0
+            ? '${t('account.teacherRequestsTitle')} ($n)'
+            : t('account.teacherRequestsTitle'),
+        subtitle: t('account.teacherRequestsSub'),
+        onTap: () async {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const TeacherRequestsScreen()),
+          );
+          TahfeezService.refreshPendingBadge();
+        },
+      ),
+    ),
+    const SizedBox(height: 8),
+    ValueListenableBuilder<int>(
+      valueListenable: TahfeezService.reportsBadge,
+      builder: (_, n, _) => _tile(
+        icon: Icons.flag_outlined,
+        title: n > 0 ? '${t('tahfeez.reports')} ($n)' : t('tahfeez.reports'),
+        subtitle: t('tahfeez.reportsSub'),
+        onTap: () async {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const ReportsScreen()),
+          );
+          TahfeezService.refreshPendingBadge();
+        },
+      ),
+    ),
+  ];
 
   Widget _tile({
     required IconData icon,
@@ -917,27 +1089,33 @@ class _AccountScreenState extends State<AccountScreen> {
             style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
           ),
           const SizedBox(height: 6),
-          TextButton.icon(
-            onPressed: _checkingUpdate ? null : _checkForUpdate,
-            icon: _checkingUpdate
-                ? const SizedBox(
-                    width: 14,
-                    height: 14,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: AppColors.gold,
-                    ),
-                  )
-                : const Icon(Icons.system_update, size: 16),
-            label: Text(
-              t('account.checkUpdate'),
-              style: const TextStyle(fontSize: 12),
-            ),
-            style: TextButton.styleFrom(
-              foregroundColor: AppColors.gold,
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              minimumSize: Size.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ValueListenableBuilder<bool>(
+            valueListenable: _checkingUpdate,
+            builder: (context, checking, _) => TextButton.icon(
+              onPressed: checking ? null : _checkForUpdate,
+              icon: checking
+                  ? const SizedBox(
+                      width: 14,
+                      height: 14,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.gold,
+                      ),
+                    )
+                  : const Icon(Icons.system_update, size: 16),
+              label: Text(
+                t('account.checkUpdate'),
+                style: const TextStyle(fontSize: 12),
+              ),
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.gold,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
             ),
           ),
           const SizedBox(height: 4),

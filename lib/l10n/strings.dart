@@ -72,6 +72,35 @@ String tBoth(String key) {
 // ─── Arabic (default) ──────────────────────────────────────────────────────
 
 const _ar = <String, String>{
+  // Account groups & downloads
+  'acct.group.prayer': 'الصلاة',
+  'acct.group.prayer.sub': 'طريقة الحساب ووقت العصر وتنبيهات الأذان',
+  'acct.group.reminders.sub': 'ذكر اليوم والآية وأذكار الصباح والمساء',
+  'acct.group.downloads': 'التنزيلات',
+  'acct.group.downloads.sub': 'القرآن والتلاوات والتفاسير والكتب',
+  'acct.group.display.sub': 'حجم خط القراءة',
+  'acct.group.admin.sub': 'الأقسام والأدعية والطلبات والبلاغات',
+  'dl.tab.quran': 'القرآن الكريم',
+  'dl.tab.tafsir': 'التفاسير',
+  'dl.tab.translations': 'التراجم',
+  'dl.tab.books': 'الكتب',
+  'dl.tab.adhan': 'الأذان',
+  'dl.mushafPages': 'صفحات المصحف',
+  'dl.recitations': 'التلاوات',
+  'dl.recitationsNote':
+      'اختر القارئ لتنزيل سوره أو حذفها. التلاوة تعمل بالإنترنت دائمًا، والتنزيل يجعلها تعمل بدونه.',
+  'dl.surahCount': '{n} / 114 سورة',
+  'dl.translationsNote':
+      'ترجمات معاني القرآن التي تظهر بجوار الآيات في التفسير والمصحف.',
+  'dl.bundled': 'مدمج في التطبيق',
+  'dl.bookText': 'النص العربي',
+  'dl.adhanNote':
+      'الأذان المنزَّل يُسمع من داخل التطبيق، ولا يمكن استخدامه كصوت للتنبيه — تنبيه الأذان يستخدم أذان مكة أو المدينة المدمجين.',
+  'dl.delete': 'حذف',
+  'dl.deleteConfirm': 'حذف هذا التنزيل من الجهاز؟',
+  'dl.deleteAll': 'حذف الكل',
+  'dl.deleteAllConfirm': 'حذف كل التنزيلات في هذا القسم من الجهاز؟',
+  'dl.webNote': 'التنزيل للاستخدام بدون إنترنت متاح في تطبيق الجوال فقط.',
   // Admin: translation feedback inbox
   'admin.feedback.title': 'ملاحظات الترجمة',
   'admin.feedback.empty': 'لا توجد ملاحظات بعد',
@@ -374,7 +403,6 @@ const _ar = <String, String>{
   // Books
   'book.nawawi': 'الأربعون النووية',
   'book.qudsi': 'الأربعون القدسية',
-  'book.dehlawi': 'أربعون الدهلوي',
   'book.seerah_mukhtasar': 'مختصر سيرة الرسول ﷺ',
   'book.raheeq_makhtoom': 'الرحيق المختوم',
   'book.bukhari': 'صحيح البخاري',
@@ -1189,6 +1217,38 @@ const _ar = <String, String>{
 // ─── English ───────────────────────────────────────────────────────────────
 
 const _en = <String, String>{
+  // Account groups & downloads
+  'acct.group.prayer': 'Prayer',
+  'acct.group.prayer.sub': 'Calculation method, Asr time and adhan alerts',
+  'acct.group.reminders.sub':
+      'Daily dhikr, verse, and morning & evening adhkar',
+  'acct.group.downloads': 'Downloads',
+  'acct.group.downloads.sub': 'Quran, recitations, tafsir and books',
+  'acct.group.display.sub': 'Reading font size',
+  'acct.group.admin.sub': 'Sections, duas, requests and reports',
+  'dl.tab.quran': 'Quran',
+  'dl.tab.tafsir': 'Tafsir',
+  'dl.tab.translations': 'Translations',
+  'dl.tab.books': 'Books',
+  'dl.tab.adhan': 'Adhan',
+  'dl.mushafPages': 'Mushaf pages',
+  'dl.recitations': 'Recitations',
+  'dl.recitationsNote':
+      'Pick a reciter to download or delete surahs. Recitations always stream online; downloading makes them play without a connection.',
+  'dl.surahCount': '{n} / 114 surahs',
+  'dl.translationsNote':
+      'Quran meaning translations shown beside the verses in the tafsir and Mushaf.',
+  'dl.bundled': 'Built into the app',
+  'dl.bookText': 'Arabic text',
+  'dl.adhanNote':
+      'Downloaded adhans play inside the app only and can\'t be used as the alert sound — the adhan alert uses the built-in Makkah or Madinah adhan.',
+  'dl.delete': 'Delete',
+  'dl.deleteConfirm': 'Delete this download from the device?',
+  'dl.deleteAll': 'Delete all',
+  'dl.deleteAllConfirm':
+      'Delete all downloads in this section from the device?',
+  'dl.webNote':
+      'Downloading for offline use is available in the mobile app only.',
   // Admin: translation feedback inbox
   'admin.feedback.title': 'Translation Feedback',
   'admin.feedback.empty': 'No feedback yet',
@@ -1500,7 +1560,6 @@ const _en = <String, String>{
   // Books
   'book.nawawi': "Al-Nawawi's Forty",
   'book.qudsi': 'Forty Qudsi Hadith',
-  'book.dehlawi': "Al-Dehlawi's Forty",
   'book.seerah_mukhtasar': "A Brief Biography of the Prophet ﷺ",
   'book.raheeq_makhtoom': 'Ar-Raheeq Al-Makhtoom (The Sealed Nectar)',
   'book.bukhari': 'Sahih Al-Bukhari',

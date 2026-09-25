@@ -124,8 +124,8 @@ class Sources {
       detail: 'رخصة MIT',
     ),
     AppSource(
-      title: 'الأربعون النووية وأربعون قدسية وأربعون الدهلوي',
-      holder: 'النووي والدهلوي — رحمهما الله',
+      title: 'الأربعون النووية والأربعون القدسية',
+      holder: 'الإمام النووي وأهل العلم — رحمهم الله',
       kind: SourceKind.scripture,
       standing: Standing.publicDomain,
     ),

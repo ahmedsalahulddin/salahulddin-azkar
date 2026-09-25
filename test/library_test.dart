@@ -38,7 +38,8 @@ void main() {
   group('bundled books', () {
     test('each opens with the number of hadiths it advertises', () async {
       final bundled = LibraryService.books.where((b) => b.isBundled).toList();
-      expect(bundled.length, 5);
+      // Four since the Dehlawi Forty was removed (Sunni sources only).
+      expect(bundled.length, 4);
 
       for (final book in bundled) {
         final hadiths = await LibraryService.hadiths(book);

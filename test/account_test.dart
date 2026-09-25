@@ -81,10 +81,11 @@ void main() {
     await tester.pump();
 
     expect(find.text('تقرأ كضيف'), findsOneWidget);
-    // The settings live on the page itself now, not behind a link.
-    expect(find.text('حجم الخط'), findsOneWidget);
+    // The settings are grouped into tiles, each opening its own screen.
+    expect(find.text('الصلاة'), findsOneWidget);
     expect(find.text('التذكيرات'), findsOneWidget);
-    expect(find.text('حساب مواقيت الصلاة'), findsOneWidget);
+    expect(find.text('التنزيلات'), findsOneWidget);
+    expect(find.text('حجم الخط'), findsOneWidget);
     // While no provider is on, the buttons are replaced by an honest note.
     expect(find.textContaining('قريباً'), findsOneWidget);
     expect(find.byType(SignInButton), findsNothing);

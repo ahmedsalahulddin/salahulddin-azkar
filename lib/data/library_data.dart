@@ -84,14 +84,6 @@ class LibraryService {
       translations: {'en': 'eng-qudsi', 'fr': 'fra-qudsi'},
     ),
     IslamicBook(
-      id: 'dehlawi',
-      title: 'أربعون الدهلوي',
-      author: 'شاه ولي الله الدهلوي',
-      description: 'أربعون حديثاً في الرقائق والآداب',
-      hadithCount: 40,
-      translations: {'en': 'eng-dehlawi', 'fr': 'fra-dehlawi'},
-    ),
-    IslamicBook(
       id: 'seerah_mukhtasar',
       title: 'مختصر سيرة الرسول صلى الله عليه وسلم',
       author: 'الشيخ محمد بن عبد الوهاب',

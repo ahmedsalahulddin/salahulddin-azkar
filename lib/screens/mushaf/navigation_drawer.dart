@@ -5,7 +5,6 @@ import '../../l10n/strings.dart';
 import '../../services/bookmark_service.dart';
 import 'appearance_tabs.dart';
 import 'browse_tabs.dart';
-import 'downloads_tab.dart';
 
 /// Everything the reader can reach without leaving the page: where to go, what
 /// to search, what is saved, and what the page looks like.
@@ -76,7 +75,6 @@ class _DrawerBodyState extends State<_DrawerBody> {
     (icon: Icons.auto_stories, label: t('mushaf.tabJuz')),
     (icon: Icons.search, label: t('mushaf.tabWords')),
     (icon: Icons.bookmark, label: t('mushaf.tabBookmarks')),
-    (icon: Icons.download, label: t('mushaf.tabDownloads')),
     (icon: Icons.filter_frames, label: t('mushaf.tabFrame')),
     (icon: Icons.palette, label: t('mushaf.tabColor')),
   ];
@@ -95,7 +93,6 @@ class _DrawerBodyState extends State<_DrawerBody> {
               JuzTab(pages: widget.pages, onPage: widget.onPage),
               WordSearchTab(onGoTo: widget.onSurah, index: widget.index),
               BookmarksTab(index: widget.index, onBookmark: widget.onBookmark),
-              const DownloadsTab(),
               const FrameTab(),
               const PaletteTab(),
             ],
