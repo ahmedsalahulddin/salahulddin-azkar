@@ -6,6 +6,7 @@ import '../services/app_locale.dart';
 import '../services/duas_service.dart';
 import '../services/section_config.dart';
 import '../widgets/bilingual_text.dart';
+import '../widgets/language_notice_dialog.dart';
 import '../widgets/prayer_times_card.dart';
 import 'search_screen.dart';
 
@@ -173,13 +174,22 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
+  /// Switches the language, then — unless the reader just picked Arabic,
+  /// where nothing is missing — shows what's fully translated in it and a
+  /// way to flag anything that still isn't.
+  Future<void> _changeLang(BuildContext context, String code) async {
+    await AppLocale.set(code);
+    if (code == 'ar' || !context.mounted) return;
+    await showLanguageNotice(context, code);
+  }
+
   Widget _langToggle() {
     return ValueListenableBuilder<String>(
       valueListenable: AppLocale.locale,
-      builder: (_, locale, __) => PopupMenuButton<String>(
+      builder: (context, locale, __) => PopupMenuButton<String>(
         tooltip: AppLocale.nameOf(locale),
         color: AppColors.blackCard,
-        onSelected: AppLocale.set,
+        onSelected: (code) => _changeLang(context, code),
         itemBuilder: (_) => [
           for (final (code, name) in AppLocale.languages)
             PopupMenuItem(

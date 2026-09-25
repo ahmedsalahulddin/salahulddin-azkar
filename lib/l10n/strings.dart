@@ -72,6 +72,28 @@ String tBoth(String key) {
 // ─── Arabic (default) ──────────────────────────────────────────────────────
 
 const _ar = <String, String>{
+  // Admin: translation feedback inbox
+  'admin.feedback.title': 'ملاحظات الترجمة',
+  'admin.feedback.empty': 'لا توجد ملاحظات بعد',
+  'admin.feedback.allRead': 'كل الملاحظات مقروءة',
+  'admin.feedback.unreadCount': '{count} ملاحظة غير مقروءة',
+  'admin.feedback.sub': 'رسائل القراء بعد تغيير اللغة',
+
+  // Language-switch notice
+  'langNotice.title': 'رسالة من فريق التطبيق',
+  'langNotice.intro':
+      '🌍 هذا التطبيق مجاني بالكامل، وهدفنا أن يصل لأكبر عدد من المسلمين حول العالم، كلٌّ بلغته.',
+  'langNotice.translatedIntro': 'هذه الأقسام متاحة بالكامل بلغتك:',
+  'langNotice.dailyAdhkarCard': 'الأذكار اليومية',
+  'langNotice.moreComing': 'وباقي الأقسام لا نزال نعمل على ترجمتها، بإذن الله.',
+  'langNotice.feedbackPrompt':
+      'إن وجدت شيئًا غير مترجم أو فيه خطأ، اكتبه هنا وسنضيفه:',
+  'langNotice.hint': 'اكتب ملاحظتك هنا (اختياري)',
+  'langNotice.send': 'إرسال',
+  'langNotice.close': 'إغلاق',
+  'langNotice.sent': 'تم الإرسال، شكرًا لك',
+  'langNotice.sendFailed': 'تعذر الإرسال، حاول مرة أخرى',
+
   // Bottom navigation
   'nav.adhkar': 'أذكاري',
   'nav.home': 'الرئيسية',
@@ -1167,6 +1189,30 @@ const _ar = <String, String>{
 // ─── English ───────────────────────────────────────────────────────────────
 
 const _en = <String, String>{
+  // Admin: translation feedback inbox
+  'admin.feedback.title': 'Translation Feedback',
+  'admin.feedback.empty': 'No feedback yet',
+  'admin.feedback.allRead': 'All caught up',
+  'admin.feedback.unreadCount': '{count} unread',
+  'admin.feedback.sub': "Readers' notes after switching language",
+
+  // Language-switch notice
+  'langNotice.title': 'A note from the app team',
+  'langNotice.intro':
+      "🌍 This app is completely free, and our goal is to reach as many Muslims worldwide as possible, each in their own language.",
+  'langNotice.translatedIntro':
+      'These sections are fully available in your language:',
+  'langNotice.dailyAdhkarCard': 'Daily Adhkar',
+  'langNotice.moreComing':
+      "We're still working on translating the rest, God willing.",
+  'langNotice.feedbackPrompt':
+      "Found something untranslated or wrong? Write it here and we'll add it:",
+  'langNotice.hint': 'Write your note here (optional)',
+  'langNotice.send': 'Send',
+  'langNotice.close': 'Close',
+  'langNotice.sent': 'Sent — thank you',
+  'langNotice.sendFailed': "Couldn't send — try again",
+
   // Bottom navigation
   'nav.adhkar': 'My Adhkar',
   'nav.home': 'Home',

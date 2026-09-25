@@ -713,6 +713,21 @@ const appTranslations = <String, Map<String, String>>{
         'Horaires de prière, rappel avant l\'adhan, et dhikr tout au long de la journée.',
     'shelf.duas.title': 'Invocations',
     'story.countSuffix': 'histoires',
+    'langNotice.title': 'Un message de l\'équipe de l\'application',
+    'langNotice.intro':
+        '🌍 Cette application est entièrement gratuite, et notre objectif est d\'atteindre un maximum de musulmans dans le monde, chacun dans sa propre langue.',
+    'langNotice.translatedIntro':
+        'Ces sections sont entièrement disponibles dans votre langue :',
+    'langNotice.dailyAdhkarCard': 'Adhkar quotidiens',
+    'langNotice.moreComing':
+        'Nous continuons à traduire le reste, si Dieu le veut.',
+    'langNotice.feedbackPrompt':
+        'Vous avez trouvé quelque chose de non traduit ou d\'incorrect ? Écrivez-le ici et nous l\'ajouterons :',
+    'langNotice.hint': 'Écrivez votre remarque ici (facultatif)',
+    'langNotice.send': 'Envoyer',
+    'langNotice.close': 'Fermer',
+    'langNotice.sent': 'Envoyé — merci',
+    'langNotice.sendFailed': 'Échec de l\'envoi — réessayez',
   },
   'ur': {
     'qs.quranTitle': 'قرآن کریم',
@@ -1391,6 +1406,20 @@ const appTranslations = <String, Map<String, String>>{
         'نماز کے اوقات، اذان سے پہلے یاد دہانی، اور دن بھر ذکر۔',
     'shelf.duas.title': 'دعائیں',
     'story.countSuffix': 'کہانیاں',
+    'langNotice.title': 'ایپ ٹیم کی طرف سے ایک پیغام',
+    'langNotice.intro':
+        '🌍 یہ ایپ مکمل طور پر مفت ہے، اور ہمارا مقصد دنیا بھر کے زیادہ سے زیادہ مسلمانوں تک، ہر ایک کو اس کی اپنی زبان میں، پہنچنا ہے۔',
+    'langNotice.translatedIntro':
+        'یہ حصے آپ کی زبان میں مکمل طور پر دستیاب ہیں:',
+    'langNotice.dailyAdhkarCard': 'روزانہ کے اذکار',
+    'langNotice.moreComing': 'باقی حصوں کا ترجمہ ابھی جاری ہے، ان شاء اللہ۔',
+    'langNotice.feedbackPrompt':
+        'اگر آپ کو کوئی چیز غیر مترجم یا غلط ملے تو یہاں لکھیں، ہم اسے شامل کر دیں گے:',
+    'langNotice.hint': 'اپنی رائے یہاں لکھیں (اختیاری)',
+    'langNotice.send': 'بھیجیں',
+    'langNotice.close': 'بند کریں',
+    'langNotice.sent': 'بھیج دیا گیا — شکریہ',
+    'langNotice.sendFailed': 'بھیجا نہیں جا سکا — دوبارہ کوشش کریں',
   },
   'id': {
     'qs.quranTitle': 'Al-Qur\'an Al-Karim',
@@ -2085,6 +2114,21 @@ const appTranslations = <String, Map<String, String>>{
         'Waktu salat, pengingat sebelum azan, dan zikir sepanjang hari.',
     'shelf.duas.title': 'Doa',
     'story.countSuffix': 'kisah',
+    'langNotice.title': 'Pesan dari tim aplikasi',
+    'langNotice.intro':
+        '🌍 Aplikasi ini sepenuhnya gratis, dan tujuan kami adalah menjangkau sebanyak mungkin umat Muslim di seluruh dunia, masing-masing dalam bahasanya sendiri.',
+    'langNotice.translatedIntro':
+        'Bagian-bagian ini sudah tersedia sepenuhnya dalam bahasa Anda:',
+    'langNotice.dailyAdhkarCard': 'Zikir Harian',
+    'langNotice.moreComing':
+        'Kami masih terus menerjemahkan bagian lainnya, insyaAllah.',
+    'langNotice.feedbackPrompt':
+        'Menemukan sesuatu yang belum diterjemahkan atau salah? Tuliskan di sini dan kami akan menambahkannya:',
+    'langNotice.hint': 'Tulis catatan Anda di sini (opsional)',
+    'langNotice.send': 'Kirim',
+    'langNotice.close': 'Tutup',
+    'langNotice.sent': 'Terkirim — terima kasih',
+    'langNotice.sendFailed': 'Gagal mengirim — coba lagi',
   },
   'ms': {
     'qs.quranTitle': 'Al-Quran Al-Karim',
@@ -2784,6 +2828,21 @@ const appTranslations = <String, Map<String, String>>{
         'Waktu solat, peringatan sebelum azan, dan zikir sepanjang hari.',
     'shelf.duas.title': 'Doa',
     'story.countSuffix': 'kisah',
+    'langNotice.title': 'Mesej daripada pasukan aplikasi',
+    'langNotice.intro':
+        '🌍 Aplikasi ini percuma sepenuhnya, dan matlamat kami adalah untuk sampai kepada seramai mungkin umat Islam di seluruh dunia, masing-masing dalam bahasa mereka sendiri.',
+    'langNotice.translatedIntro':
+        'Bahagian-bahagian ini tersedia sepenuhnya dalam bahasa anda:',
+    'langNotice.dailyAdhkarCard': 'Zikir Harian',
+    'langNotice.moreComing':
+        'Kami masih meneruskan penterjemahan bahagian yang lain, insya-Allah.',
+    'langNotice.feedbackPrompt':
+        'Jumpa sesuatu yang belum diterjemah atau salah? Tuliskan di sini dan kami akan menambahkannya:',
+    'langNotice.hint': 'Tulis catatan anda di sini (pilihan)',
+    'langNotice.send': 'Hantar',
+    'langNotice.close': 'Tutup',
+    'langNotice.sent': 'Dihantar — terima kasih',
+    'langNotice.sendFailed': 'Gagal menghantar — cuba lagi',
   },
   'hi': {
     'qs.quranTitle': 'क़ुरआन करीम',
@@ -3465,6 +3524,20 @@ const appTranslations = <String, Map<String, String>>{
         'नमाज़ के समय, अज़ान से पहले याद दिलाना, और दिन भर में एक ज़िक्र।',
     'shelf.duas.title': 'दुआएं',
     'story.countSuffix': 'कहानी',
+    'langNotice.title': 'ऐप टीम की ओर से एक संदेश',
+    'langNotice.intro':
+        '🌍 यह ऐप पूरी तरह मुफ़्त है, और हमारा लक्ष्य दुनिया भर के अधिक से अधिक मुसलमानों तक, हर एक को उसकी अपनी भाषा में, पहुँचना है।',
+    'langNotice.translatedIntro':
+        'ये हिस्से आपकी भाषा में पूरी तरह उपलब्ध हैं:',
+    'langNotice.dailyAdhkarCard': 'दैनिक अज़कार',
+    'langNotice.moreComing': 'बाकी हिस्सों का अनुवाद अभी जारी है, इंशाअल्लाह।',
+    'langNotice.feedbackPrompt':
+        'कोई चीज़ अअनुवादित या ग़लत मिली? यहाँ लिखें, हम उसे जोड़ देंगे:',
+    'langNotice.hint': 'अपना नोट यहाँ लिखें (वैकल्पिक)',
+    'langNotice.send': 'भेजें',
+    'langNotice.close': 'बंद करें',
+    'langNotice.sent': 'भेज दिया गया — शुक्रिया',
+    'langNotice.sendFailed': 'भेजा नहीं जा सका — फिर कोशिश करें',
   },
   'tr': {
     'qs.quranTitle': 'Kur\'an-ı Kerim',
@@ -4146,6 +4219,21 @@ const appTranslations = <String, Map<String, String>>{
         'Namaz vakitleri, ezandan önce hatırlatma ve gün boyunca bir zikir.',
     'shelf.duas.title': 'Dualar',
     'story.countSuffix': 'kıssa',
+    'langNotice.title': 'Uygulama ekibinden bir not',
+    'langNotice.intro':
+        '🌍 Bu uygulama tamamen ücretsizdir ve amacımız dünya çapında mümkün olduğunca çok Müslümana, her birine kendi dilinde, ulaşmaktır.',
+    'langNotice.translatedIntro':
+        'Bu bölümler dilinizde tamamen kullanılabilir:',
+    'langNotice.dailyAdhkarCard': 'Günlük Zikirler',
+    'langNotice.moreComing':
+        'Diğer bölümleri çevirmeye devam ediyoruz, inşallah.',
+    'langNotice.feedbackPrompt':
+        'Çevrilmemiş veya hatalı bir şey mi buldunuz? Buraya yazın, ekleyeceğiz:',
+    'langNotice.hint': 'Notunuzu buraya yazın (isteğe bağlı)',
+    'langNotice.send': 'Gönder',
+    'langNotice.close': 'Kapat',
+    'langNotice.sent': 'Gönderildi — teşekkürler',
+    'langNotice.sendFailed': 'Gönderilemedi — tekrar deneyin',
   },
   'bn': {
     'qs.quranTitle': 'আল-কুরআনুল কারীম',
@@ -4823,6 +4911,20 @@ const appTranslations = <String, Map<String, String>>{
         'নামাজের সময়, আজানের আগে সতর্কতা, এবং সারাদিন একটি যিকর।',
     'shelf.duas.title': 'দোয়া',
     'story.countSuffix': 'গল্প',
+    'langNotice.title': 'অ্যাপ টিমের পক্ষ থেকে একটি বার্তা',
+    'langNotice.intro':
+        '🌍 এই অ্যাপটি সম্পূর্ণ বিনামূল্যে, এবং আমাদের লক্ষ্য বিশ্বজুড়ে যতটা সম্ভব মুসলিমদের কাছে, প্রত্যেককে তার নিজের ভাষায়, পৌঁছানো।',
+    'langNotice.translatedIntro':
+        'এই অংশগুলো আপনার ভাষায় সম্পূর্ণভাবে উপলব্ধ:',
+    'langNotice.dailyAdhkarCard': 'দৈনিক জিকির',
+    'langNotice.moreComing': 'বাকি অংশগুলোর অনুবাদ এখনও চলছে, ইনশাআল্লাহ।',
+    'langNotice.feedbackPrompt':
+        'অনুবাদহীন বা ভুল কিছু পেয়েছেন? এখানে লিখুন, আমরা তা যোগ করব:',
+    'langNotice.hint': 'আপনার মন্তব্য এখানে লিখুন (ঐচ্ছিক)',
+    'langNotice.send': 'পাঠান',
+    'langNotice.close': 'বন্ধ করুন',
+    'langNotice.sent': 'পাঠানো হয়েছে — ধন্যবাদ',
+    'langNotice.sendFailed': 'পাঠানো যায়নি — আবার চেষ্টা করুন',
   },
   'ha': {
     'qs.quranTitle': 'Al-Qur\'ani Mai Girma',
@@ -5509,5 +5611,20 @@ const appTranslations = <String, Map<String, String>>{
         'Lokutan sallah, tunatarwa kafin azan, da zikiri a duk tsawon yini.',
     'shelf.duas.title': 'Addu\'o\'i',
     'story.countSuffix': 'labari',
+    'langNotice.title': 'Sako daga ƙungiyar manhajar',
+    'langNotice.intro':
+        '🌍 Wannan manhaja kyauta ce gaba ɗaya, kuma manufarmu ita ce mu kai ga Musulmi da yawa a duniya, kowanne da harshensa.',
+    'langNotice.translatedIntro':
+        'Waɗannan sassa suna samuwa gaba ɗaya cikin harshenka:',
+    'langNotice.dailyAdhkarCard': 'Zikirin Yau da Kullum',
+    'langNotice.moreComing':
+        'Muna ci gaba da fassara sauran sassan, in Allah Ya so.',
+    'langNotice.feedbackPrompt':
+        'Ka sami wani abu da ba a fassara ba ko kuskure? Rubuta a nan, za mu ƙara shi:',
+    'langNotice.hint': 'Rubuta bayaninka a nan (na zaɓi ne)',
+    'langNotice.send': 'Aika',
+    'langNotice.close': 'Rufe',
+    'langNotice.sent': 'An aika — na gode',
+    'langNotice.sendFailed': 'An kasa aikawa — sake gwadawa',
   },
 };

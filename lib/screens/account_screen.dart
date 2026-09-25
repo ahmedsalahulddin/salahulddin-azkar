@@ -13,6 +13,7 @@ import '../services/update_checker.dart';
 import '../widgets/sign_in_buttons.dart';
 import 'admin_duas_screen.dart';
 import 'admin_screen.dart';
+import 'admin_translation_feedback_screen.dart';
 import 'tahfeez/reports_screen.dart';
 import 'tahfeez/tahfeez_widgets.dart';
 import 'tahfeez/teacher_requests_screen.dart';
@@ -290,6 +291,18 @@ class _AccountScreenState extends State<AccountScreen> {
                       context,
                       MaterialPageRoute(
                         builder: (_) => const AdminDuasScreen(),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  _tile(
+                    icon: Icons.mark_email_unread_outlined,
+                    title: t('admin.feedback.title'),
+                    subtitle: t('admin.feedback.sub'),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const AdminTranslationFeedbackScreen(),
                       ),
                     ),
                   ),
