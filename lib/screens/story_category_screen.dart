@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../constants/theme.dart';
 import '../data/stories_data.dart';
 import '../l10n/strings.dart';
+import '../services/app_locale.dart';
 import '../widgets/bilingual_text.dart';
 import 'story_screen.dart';
 
@@ -76,13 +77,30 @@ class StoryCategoryScreen extends StatelessWidget {
                       child: Row(
                         children: [
                           Expanded(
-                            child: Text(
-                              story.title,
-                              style: const TextStyle(
-                                color: AppColors.textPrimary,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                              ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  story.title,
+                                  style: const TextStyle(
+                                    color: AppColors.textPrimary,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                // The reader's own language underneath,
+                                // same as the category header above.
+                                if (translationFor(story.id, AppLocale.code)
+                                    case final tr?)
+                                  Text(
+                                    tr.title,
+                                    textDirection: AppLocale.direction,
+                                    style: const TextStyle(
+                                      color: AppColors.textMuted,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                              ],
                             ),
                           ),
                           const Icon(

@@ -1,4 +1,5 @@
 import 'story_translations/bn.dart';
+import 'story_translations/en.dart';
 import 'story_translations/fr.dart';
 import 'story_translations/ha.dart';
 import 'story_translations/hi.dart';
@@ -54,6 +55,7 @@ class Story {
 /// file's own story content.
 final Map<String, Map<String, StoryTranslation>> storyTranslations = {
   'bn': bnStoryTranslations,
+  'en': enStoryTranslations,
   'fr': frStoryTranslations,
   'ha': haStoryTranslations,
   'hi': hiStoryTranslations,
@@ -70,6 +72,7 @@ StoryTranslation? translationFor(String storyId, String lang) =>
 
 /// Language codes with at least one story translated, in menu order.
 const supportedStoryLanguages = <(String code, String name)>[
+  ('en', 'English'),
   ('fr', 'Français'),
   ('ur', 'اردو'),
   ('id', 'Indonesia'),

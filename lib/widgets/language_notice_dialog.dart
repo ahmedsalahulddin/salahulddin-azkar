@@ -21,6 +21,19 @@ const _translatedShelves = [
   ('shelf.duas.title', ['shelf.duas.title']),
 ];
 
+/// The cards to list after a shelf's name, or null when the shelf has a
+/// single card of the same name — "Duas: Duas" says nothing twice.
+String? _cardsLine(String shelfKey, List<String> cardKeys) {
+  final shelf = t(shelfKey);
+  final cards = [
+    for (final c in cardKeys.map(t).toSet())
+      if (c != shelf) c,
+  ];
+  if (cards.isEmpty) return null;
+  final rtl = AppLocale.code == 'ar' || AppLocale.code == 'ur';
+  return cards.join(rtl ? '، ' : ', ');
+}
+
 /// Shows the language-switch notice, in [code]'s own direction and text.
 /// Called right after [AppLocale.set] resolves, every time — not just the
 /// first time — since a reader may switch back and forth and each language
@@ -126,9 +139,8 @@ class _LanguageNoticeDialogState extends State<_LanguageNoticeDialog> {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            TextSpan(
-                              text: ': ${cardKeys.map(t).toSet().join('، ')}',
-                            ),
+                            if (_cardsLine(shelfKey, cardKeys) case final line?)
+                              TextSpan(text: ': $line'),
                           ],
                         ),
                       ),
