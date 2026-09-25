@@ -283,8 +283,12 @@ class NotificationService {
   /// Sends an immediate notification on the prayer sound channel with the
   /// chosen adhan, so the reader can hear whether the adhan plays correctly
   /// without waiting for prayer time.
-  static Future<bool> sendPrayerSoundTest() async {
-    if (kIsWeb) return false;
+  ///
+  /// Returns the exception's own text on failure rather than a plain bool —
+  /// a silent catch here left readers reporting "it doesn't work" with
+  /// nothing to diagnose from.
+  static Future<String?> sendPrayerSoundTest() async {
+    if (kIsWeb) return 'web';
     try {
       await init();
       final soundResource = PrayerAlerts.bundledResource;
@@ -310,9 +314,9 @@ class NotificationService {
           iOS: const DarwinNotificationDetails(presentSound: true),
         ),
       );
-      return true;
-    } catch (_) {
-      return false;
+      return null;
+    } catch (e) {
+      return e.toString();
     }
   }
 

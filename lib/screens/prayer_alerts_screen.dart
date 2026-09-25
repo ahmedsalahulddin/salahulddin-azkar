@@ -22,15 +22,17 @@ class PrayerAlertsScreen extends StatefulWidget {
 
 class _PrayerAlertsScreenState extends State<PrayerAlertsScreen> {
   Future<void> _testSound() async {
-    final sent = await NotificationService.sendPrayerSoundTest();
+    final error = await NotificationService.sendPrayerSoundTest();
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          sent ? t('adh.adhanTestSentMsg') : t('adh.adhanTestFailedMsg'),
+          error == null
+              ? t('adh.adhanTestSentMsg')
+              : '${t('adh.adhanTestFailedMsg')}\n$error',
           textDirection: TextDirection.rtl,
         ),
-        duration: const Duration(seconds: 3),
+        duration: const Duration(seconds: 8),
       ),
     );
   }

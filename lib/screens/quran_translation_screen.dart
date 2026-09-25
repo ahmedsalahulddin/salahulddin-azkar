@@ -13,6 +13,7 @@ import '../constants/theme.dart';
 import '../data/quran_data.dart';
 import '../l10n/strings.dart';
 import '../services/app_audio.dart';
+import '../services/app_locale.dart';
 import '../services/connectivity_check.dart';
 import '../services/recitation_downloads.dart';
 import '../services/recitation_service.dart';
@@ -37,6 +38,14 @@ const _langs = [
   _Lang('hi', 'हिन्दी'),
   _Lang('ha', 'Hausa'),
 ];
+
+/// The language this screen should open in: the reader's own app language
+/// when there's a translation for it, English otherwise (Arabic has no
+/// "translation" here — it's the text already on the page).
+String _defaultLangCode() {
+  final code = AppLocale.code;
+  return _langs.any((l) => l.code == code) ? code : 'en';
+}
 
 const _apiBase = 'https://api.alquran.cloud/v1/surah';
 
@@ -144,7 +153,7 @@ class QuranTranslationScreen extends StatefulWidget {
 class _QuranTranslationScreenState extends State<QuranTranslationScreen> {
   List<SurahInfo> _index = const [];
   bool _loading = true;
-  String _langCode = 'en';
+  String _langCode = _defaultLangCode();
 
   @override
   void initState() {
