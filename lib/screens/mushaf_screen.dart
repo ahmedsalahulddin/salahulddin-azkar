@@ -88,6 +88,14 @@ class _MushafScreenState extends State<MushafScreen> {
   /// change that means "the reader went elsewhere".
   bool _userSwiping = false;
 
+  /// Whether the pages follow the recitation. Turning away by hand (or
+  /// jumping from the index) lets the reader browse while it keeps playing;
+  /// coming back to the page being recited picks the following up again.
+  bool _following = true;
+
+  /// The page of the ayah being recited right now.
+  int? _recitingPage;
+
   @override
   void initState() {
     super.initState();
@@ -156,16 +164,10 @@ class _MushafScreenState extends State<MushafScreen> {
     });
     StorageService.setLastMushafPage(i + 1);
     _prefetchAround(i + 1);
-    // Only a page dragged by hand stops the recitation. A flag set before
-    // each automatic turn was not enough: one animation crossing several
-    // pages (catching up after the screen had been off) reports each page
-    // it passes, the first cleared the flag, and the next stopped playback.
-    if (byHand) {
-      _playGen++;
-      _indexSub?.cancel();
-      _indexSub = null;
-      _player.stop();
-    }
+    // Turning the page never stops the recitation. A page turned by hand
+    // only stops the pages from being pulled back to it, until the reader
+    // returns to the page being recited.
+    if (byHand) _following = i + 1 == _recitingPage;
   }
 
   void _prefetchAround(int page) {
@@ -174,7 +176,12 @@ class _MushafScreenState extends State<MushafScreen> {
     }
   }
 
-  void _goToPage(int page) =>
+  void _goToPage(int page) {
+    _following = page == _recitingPage;
+    _jumpTo(page);
+  }
+
+  void _jumpTo(int page) =>
       _controller.jumpToPage(page.clamp(1, QuranService.pageCount) - 1);
 
   Future<void> _goToSurah(SurahInfo info) async =>
@@ -203,7 +210,11 @@ class _MushafScreenState extends State<MushafScreen> {
   /// Returns whether playback started. [quiet] is for recovery: no new
   /// generation (it continues the reader's own session) and no error toast.
   Future<bool> _playFrom(AyahBoxes start, {bool quiet = false}) async {
-    if (!quiet) _playGen++;
+    if (!quiet) {
+      _playGen++;
+      // Starting recitation (tapping play) is always a request to follow it.
+      _following = true;
+    }
     _playingSurah = start.surah;
     if (!_reciter.isPerAyah) {
       _playingOrder = const [];
@@ -253,8 +264,10 @@ class _MushafScreenState extends State<MushafScreen> {
           targetAyah,
         );
 
-        // Navigate automatically when the recitation crosses a page boundary.
-        if (targetPage != _current && mounted) {
+        _recitingPage = targetPage;
+        // Navigate automatically when the recitation crosses a page
+        // boundary — unless the reader has turned away to read elsewhere.
+        if (_following && targetPage != _current && mounted) {
           _controller.animateToPage(
             targetPage - 1,
             duration: const Duration(milliseconds: 500),
@@ -266,7 +279,9 @@ class _MushafScreenState extends State<MushafScreen> {
         final match = boxes
             .where((b) => b.surah == start.surah && b.ayah == targetAyah)
             .firstOrNull;
-        if (match != null && mounted) setState(() => _selected = match);
+        if (match != null && mounted && _following) {
+          setState(() => _selected = match);
+        }
       });
 
       unawaited(_player.play());
