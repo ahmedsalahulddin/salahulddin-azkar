@@ -271,6 +271,17 @@ class ContinuousListening {
     required int number,
     required int fromAyah,
   }) async {
+    // No connection at all: skipping ahead would only fail at every ayah
+    // after this one too. Wait for it, then carry on from the same place.
+    if (!await ConnectivityCheck.online) {
+      if (await _waitForConnection()) {
+        await play(number, fromAyah: fromAyah);
+      } else if (!_stopRequested) {
+        active.value = false;
+        lastError.value = await _failureMessage();
+      }
+      return;
+    }
     if (_errorRetries < 3) {
       _errorRetries++;
       await Future.delayed(const Duration(seconds: 2));
@@ -293,6 +304,18 @@ class ContinuousListening {
       active.value = false;
       lastError.value = await _failureMessage();
     }
+  }
+
+  /// Polls for a connection for up to ten minutes; false if it never came
+  /// back or the listener stopped in the meantime.
+  static Future<bool> _waitForConnection() async {
+    final until = DateTime.now().add(const Duration(minutes: 10));
+    while (DateTime.now().isBefore(until)) {
+      await Future.delayed(const Duration(seconds: 5));
+      if (_stopRequested || !active.value) return false;
+      if (await ConnectivityCheck.online) return true;
+    }
+    return false;
   }
 
   /// Al-Fatiha follows An-Nas: the Mushaf is read in a circle, not to an end.
@@ -396,6 +419,16 @@ class ContinuousListening {
       // server that just failed.
       await Future.delayed(const Duration(seconds: 2));
       if (!active.value || !AppAudio.ownsCurrent(owner)) return;
+
+      if (!await ConnectivityCheck.online) {
+        if (await _waitForConnection()) {
+          await play(surah.value, fromAyah: ayah.value);
+        } else if (!_stopRequested) {
+          active.value = false;
+          lastError.value = await _failureMessage();
+        }
+        return;
+      }
 
       _errorRetries++;
       if (_errorRetries <= 3) {

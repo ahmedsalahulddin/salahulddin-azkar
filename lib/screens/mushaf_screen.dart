@@ -60,7 +60,6 @@ class _MushafScreenState extends State<MushafScreen> {
   RepeatSettings _repeat = const RepeatSettings();
   StreamSubscription<int?>? _indexSub;
   StreamSubscription<PlayerState>? _completionSub;
-  bool _autoTurning = false;
 
   /// The surah the current playlist belongs to — tracked separately from
   /// [_selected] because a per-surah reciter's single track never updates
@@ -72,6 +71,22 @@ class _MushafScreenState extends State<MushafScreen> {
   /// surah is still being loaded — the same race [ContinuousListening]
   /// guards against.
   bool _advancingSurah = false;
+
+  StreamSubscription<PlayerException>? _errorSub;
+
+  /// The ayah numbers of the loaded playlist, so a failure can be resumed at
+  /// the ayah that failed rather than from the top.
+  List<int> _playingOrder = const [];
+
+  /// Bumped whenever the reader starts or stops recitation themselves. A
+  /// recovery in progress checks it and gives way, so a retry never
+  /// overrides something the reader just chose.
+  int _playGen = 0;
+  bool _recovering = false;
+
+  /// True only while a finger is dragging the pages — the one kind of page
+  /// change that means "the reader went elsewhere".
+  bool _userSwiping = false;
 
   @override
   void initState() {
@@ -90,11 +105,15 @@ class _MushafScreenState extends State<MushafScreen> {
       if (finished == null) return;
       _advanceToNextSurah(finished);
     });
+    // Streaming one file per ayah means hundreds of requests an hour; one
+    // dropping mid-recitation used to end it silently.
+    _errorSub = _player.errorStream.listen((_) => _recoverFromError());
   }
 
   @override
   void dispose() {
     _completionSub?.cancel();
+    _errorSub?.cancel();
     _indexSub?.cancel();
     _player.stop();
     _controller.dispose();
@@ -130,17 +149,19 @@ class _MushafScreenState extends State<MushafScreen> {
       _index!.firstWhere((s) => s.number == number);
 
   void _onPageChanged(int i) {
-    final wasAutoTurning = _autoTurning;
-    _autoTurning = false;
+    final byHand = _userSwiping;
     setState(() {
       _current = i + 1;
-      if (!wasAutoTurning) _selected = null;
+      if (byHand) _selected = null;
     });
     StorageService.setLastMushafPage(i + 1);
     _prefetchAround(i + 1);
-    // Only stop recitation when the user manually swipes. Auto page-turns
-    // (triggered by the recitation reaching a new page) keep playing.
-    if (!wasAutoTurning) {
+    // Only a page dragged by hand stops the recitation. A flag set before
+    // each automatic turn was not enough: one animation crossing several
+    // pages (catching up after the screen had been off) reports each page
+    // it passes, the first cleared the flag, and the next stopped playback.
+    if (byHand) {
+      _playGen++;
       _indexSub?.cancel();
       _indexSub = null;
       _player.stop();
@@ -179,11 +200,14 @@ class _MushafScreenState extends State<MushafScreen> {
 
   // ---- ayah actions ----------------------------------------------------
 
-  Future<void> _playFrom(AyahBoxes start) async {
+  /// Returns whether playback started. [quiet] is for recovery: no new
+  /// generation (it continues the reader's own session) and no error toast.
+  Future<bool> _playFrom(AyahBoxes start, {bool quiet = false}) async {
+    if (!quiet) _playGen++;
     _playingSurah = start.surah;
     if (!_reciter.isPerAyah) {
-      await _playWholeSurah(start.surah);
-      return;
+      _playingOrder = const [];
+      return _playWholeSurah(start.surah, quiet: quiet);
     }
 
     final surah = await QuranService.surah(start.surah);
@@ -193,6 +217,7 @@ class _MushafScreenState extends State<MushafScreen> {
     final order = _repeat.isActive
         ? _repeat.playbackOrder(start.ayah, surah.ayahs.length)
         : [for (var n = start.ayah; n <= surah.ayahs.length; n++) n];
+    _playingOrder = order;
 
     try {
       final sources = <AudioSource>[
@@ -230,7 +255,6 @@ class _MushafScreenState extends State<MushafScreen> {
 
         // Navigate automatically when the recitation crosses a page boundary.
         if (targetPage != _current && mounted) {
-          _autoTurning = true;
           _controller.animateToPage(
             targetPage - 1,
             duration: const Duration(milliseconds: 500),
@@ -245,9 +269,10 @@ class _MushafScreenState extends State<MushafScreen> {
         if (match != null && mounted) setState(() => _selected = match);
       });
 
-      await _player.play();
+      unawaited(_player.play());
+      return true;
     } catch (_) {
-      if (!mounted) return;
+      if (!mounted || quiet) return false;
       final online = await ConnectivityCheck.online;
       _toast(
         online
@@ -255,12 +280,13 @@ class _MushafScreenState extends State<MushafScreen> {
             : t('mushaf.recitationNeedsInternet'),
         error: true,
       );
+      return false;
     }
   }
 
   // Per-surah reciters (mp3quran.net): one MP3 for the whole surah, so there
   // is no ayah index to track — no highlighting, no auto page-turn.
-  Future<void> _playWholeSurah(int surah) async {
+  Future<bool> _playWholeSurah(int surah, {bool quiet = false}) async {
     try {
       _indexSub?.cancel();
       _indexSub = null;
@@ -277,9 +303,11 @@ class _MushafScreenState extends State<MushafScreen> {
         ),
       );
       await PlaybackSpeed.apply();
-      await _player.play();
+      // play() resolves only when playback stops, so it isn't awaited.
+      unawaited(_player.play());
+      return true;
     } catch (_) {
-      if (!mounted) return;
+      if (!mounted || quiet) return false;
       final online = await ConnectivityCheck.online;
       _toast(
         online
@@ -287,7 +315,65 @@ class _MushafScreenState extends State<MushafScreen> {
             : t('mushaf.recitationNeedsInternet'),
         error: true,
       );
+      return false;
     }
+  }
+
+  /// Keeps a recitation going through a failed load.
+  ///
+  /// A hiccup is retried in place; an ayah that keeps failing is skipped;
+  /// and with no connection at all it waits — up to ten minutes — and picks
+  /// up at the same ayah, instead of racing through the rest of the Quran
+  /// failing one file after another.
+  Future<void> _recoverFromError() async {
+    if (!mounted || _recovering || _playingSurah == null) return;
+    if (!AppAudio.ownsCurrent('${_reciter.id}:')) return;
+    _recovering = true;
+    final gen = _playGen;
+    try {
+      var surah = _playingSurah!;
+      final i = _player.currentIndex ?? 0;
+      var ayah = i < _playingOrder.length ? _playingOrder[i] : 1;
+      var attempts = 0;
+      while (mounted && gen == _playGen) {
+        await Future.delayed(const Duration(seconds: 2));
+        if (!mounted || gen != _playGen) return;
+        if (!await ConnectivityCheck.online) {
+          if (!await _waitForConnection(gen)) {
+            if (mounted && gen == _playGen) {
+              _toast(t('mushaf.recitationNeedsInternet'), error: true);
+            }
+            return;
+          }
+        } else if (++attempts > 3) {
+          attempts = 0;
+          final count = _surahInfo(surah).ayahCount;
+          if (_reciter.isPerAyah && !_repeat.isActive && ayah < count) {
+            ayah++;
+          } else {
+            surah = surah >= 114 ? 1 : surah + 1;
+            ayah = 1;
+          }
+        }
+        final ok = await _playFrom(
+          AyahBoxes(surah: surah, ayah: ayah, rects: const []),
+          quiet: true,
+        );
+        if (ok) return;
+      }
+    } finally {
+      _recovering = false;
+    }
+  }
+
+  Future<bool> _waitForConnection(int gen) async {
+    final until = DateTime.now().add(const Duration(minutes: 10));
+    while (DateTime.now().isBefore(until)) {
+      await Future.delayed(const Duration(seconds: 5));
+      if (!mounted || gen != _playGen) return false;
+      if (await ConnectivityCheck.online) return true;
+    }
+    return false;
   }
 
   Future<void> _openRepeatSettings() async {
@@ -506,25 +592,35 @@ class _MushafScreenState extends State<MushafScreen> {
                 )
               : Stack(
                   children: [
-                    PageView.builder(
-                      controller: _controller,
-                      itemCount: pages.length,
-                      onPageChanged: _onPageChanged,
-                      itemBuilder: (context, i) => MushafPageSheet(
-                        page: pages[i],
-                        surahInfo: _surahInfo,
-                        selected: i + 1 == _current ? _selected : null,
-                        onAyahTapped: (a) => setState(() {
-                          _selected = a;
-                          _chromeVisible = true;
-                        }),
-                        onBackgroundTapped: () => setState(() {
-                          if (_selected != null) {
-                            _selected = null;
-                          } else {
-                            _chromeVisible = !_chromeVisible;
-                          }
-                        }),
+                    NotificationListener<ScrollNotification>(
+                      onNotification: (n) {
+                        if (n is ScrollStartNotification) {
+                          _userSwiping = n.dragDetails != null;
+                        } else if (n is ScrollEndNotification) {
+                          _userSwiping = false;
+                        }
+                        return false;
+                      },
+                      child: PageView.builder(
+                        controller: _controller,
+                        itemCount: pages.length,
+                        onPageChanged: _onPageChanged,
+                        itemBuilder: (context, i) => MushafPageSheet(
+                          page: pages[i],
+                          surahInfo: _surahInfo,
+                          selected: i + 1 == _current ? _selected : null,
+                          onAyahTapped: (a) => setState(() {
+                            _selected = a;
+                            _chromeVisible = true;
+                          }),
+                          onBackgroundTapped: () => setState(() {
+                            if (_selected != null) {
+                              _selected = null;
+                            } else {
+                              _chromeVisible = !_chromeVisible;
+                            }
+                          }),
+                        ),
                       ),
                     ),
                     if (_chromeVisible) _topBar(pages[_current - 1]),
