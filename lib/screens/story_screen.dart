@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import '../constants/theme.dart';
 import '../data/stories_data.dart';
+import '../data/story_sunnah_links.dart';
 import '../l10n/strings.dart';
 import '../services/app_locale.dart';
 import '../widgets/speak_button.dart';
+import '../widgets/sunnah_links.dart';
 
 /// One story: its full text, read aloud on request by the device's voice,
 /// with an optional switch to any language it has been translated into.
@@ -194,6 +196,11 @@ class _StoryScreenState extends State<StoryScreen> {
                             fontSize: 12,
                           ),
                         ),
+                        if (storySunnahRefs[widget.story.id]
+                            case final refs?) ...[
+                          const SizedBox(height: 10),
+                          SunnahLinks(refs: refs, isArabic: _isArabic),
+                        ],
                         if (_translation != null) ...[
                           const SizedBox(height: 4),
                           Text(

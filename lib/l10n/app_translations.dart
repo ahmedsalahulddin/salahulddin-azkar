@@ -718,6 +718,8 @@ const appTranslations = <String, Map<String, String>>{
     'langNotice.translatedIntro':
         'Ces sections sont entièrement disponibles dans votre langue :',
     'langNotice.dailyAdhkarCard': 'Adhkar quotidiens',
+    'sunnah.readOn': 'Lire le hadith sur sunnah.com',
+    'sunnah.openFailed': 'Impossible d\'ouvrir le lien',
     'langNotice.moreComing':
         'Nous continuons à traduire le reste, si Dieu le veut.',
     'langNotice.feedbackPrompt':
@@ -1442,6 +1444,8 @@ const appTranslations = <String, Map<String, String>>{
     'langNotice.translatedIntro':
         'یہ حصے آپ کی زبان میں مکمل طور پر دستیاب ہیں:',
     'langNotice.dailyAdhkarCard': 'روزانہ کے اذکار',
+    'sunnah.readOn': 'حدیث sunnah.com پر پڑھیں',
+    'sunnah.openFailed': 'لنک نہیں کھل سکا',
     'langNotice.moreComing': 'باقی حصوں کا ترجمہ ابھی جاری ہے، ان شاء اللہ۔',
     'langNotice.feedbackPrompt':
         'اگر آپ کو کوئی چیز غیر مترجم یا غلط ملے تو یہاں لکھیں، ہم اسے شامل کر دیں گے:',
@@ -2178,6 +2182,8 @@ const appTranslations = <String, Map<String, String>>{
     'langNotice.translatedIntro':
         'Bagian-bagian ini sudah tersedia sepenuhnya dalam bahasa Anda:',
     'langNotice.dailyAdhkarCard': 'Zikir Harian',
+    'sunnah.readOn': 'Baca hadis di sunnah.com',
+    'sunnah.openFailed': 'Tautan tidak dapat dibuka',
     'langNotice.moreComing':
         'Kami masih terus menerjemahkan bagian lainnya, insyaAllah.',
     'langNotice.feedbackPrompt':
@@ -2921,6 +2927,8 @@ const appTranslations = <String, Map<String, String>>{
     'langNotice.translatedIntro':
         'Bahagian-bahagian ini tersedia sepenuhnya dalam bahasa anda:',
     'langNotice.dailyAdhkarCard': 'Zikir Harian',
+    'sunnah.readOn': 'Baca hadis di sunnah.com',
+    'sunnah.openFailed': 'Pautan tidak dapat dibuka',
     'langNotice.moreComing':
         'Kami masih meneruskan penterjemahan bahagian yang lain, insya-Allah.',
     'langNotice.feedbackPrompt':
@@ -3646,6 +3654,8 @@ const appTranslations = <String, Map<String, String>>{
     'langNotice.translatedIntro':
         'ये हिस्से आपकी भाषा में पूरी तरह उपलब्ध हैं:',
     'langNotice.dailyAdhkarCard': 'दैनिक अज़कार',
+    'sunnah.readOn': 'हदीस sunnah.com पर पढ़ें',
+    'sunnah.openFailed': 'लिंक नहीं खुल सका',
     'langNotice.moreComing': 'बाकी हिस्सों का अनुवाद अभी जारी है, इंशाअल्लाह।',
     'langNotice.feedbackPrompt':
         'कोई चीज़ अअनुवादित या ग़लत मिली? यहाँ लिखें, हम उसे जोड़ देंगे:',
@@ -4369,6 +4379,8 @@ const appTranslations = <String, Map<String, String>>{
     'langNotice.translatedIntro':
         'Bu bölümler dilinizde tamamen kullanılabilir:',
     'langNotice.dailyAdhkarCard': 'Günlük Zikirler',
+    'sunnah.readOn': 'Hadisi sunnah.com\'da okuyun',
+    'sunnah.openFailed': 'Bağlantı açılamadı',
     'langNotice.moreComing':
         'Diğer bölümleri çevirmeye devam ediyoruz, inşallah.',
     'langNotice.feedbackPrompt':
@@ -5090,6 +5102,8 @@ const appTranslations = <String, Map<String, String>>{
     'langNotice.translatedIntro':
         'এই অংশগুলো আপনার ভাষায় সম্পূর্ণভাবে উপলব্ধ:',
     'langNotice.dailyAdhkarCard': 'দৈনিক জিকির',
+    'sunnah.readOn': 'হাদিসটি sunnah.com-এ পড়ুন',
+    'sunnah.openFailed': 'লিংক খোলা যায়নি',
     'langNotice.moreComing': 'বাকি অংশগুলোর অনুবাদ এখনও চলছে, ইনশাআল্লাহ।',
     'langNotice.feedbackPrompt':
         'অনুবাদহীন বা ভুল কিছু পেয়েছেন? এখানে লিখুন, আমরা তা যোগ করব:',
@@ -5818,6 +5832,8 @@ const appTranslations = <String, Map<String, String>>{
     'langNotice.translatedIntro':
         'Waɗannan sassa suna samuwa gaba ɗaya cikin harshenka:',
     'langNotice.dailyAdhkarCard': 'Zikirin Yau da Kullum',
+    'sunnah.readOn': 'Karanta hadisin a sunnah.com',
+    'sunnah.openFailed': 'Ba a iya buɗe mahaɗin ba',
     'langNotice.moreComing':
         'Muna ci gaba da fassara sauran sassan, in Allah Ya so.',
     'langNotice.feedbackPrompt':

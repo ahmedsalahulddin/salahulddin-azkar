@@ -114,6 +114,8 @@ const _ar = <String, String>{
       '🌍 هذا التطبيق مجاني بالكامل، وهدفنا أن يصل لأكبر عدد من المسلمين حول العالم، كلٌّ بلغته.',
   'langNotice.translatedIntro': 'هذه الأقسام متاحة بالكامل بلغتك:',
   'langNotice.dailyAdhkarCard': 'الأذكار اليومية',
+  'sunnah.readOn': 'اقرأ الحديث على sunnah.com',
+  'sunnah.openFailed': 'تعذّر فتح الرابط',
   'langNotice.moreComing': 'وباقي الأقسام لا نزال نعمل على ترجمتها، بإذن الله.',
   'langNotice.feedbackPrompt':
       'إن وجدت شيئًا غير مترجم أو فيه خطأ، اكتبه هنا وسنضيفه:',
@@ -1263,6 +1265,8 @@ const _en = <String, String>{
   'langNotice.translatedIntro':
       'These sections are fully available in your language:',
   'langNotice.dailyAdhkarCard': 'Daily Adhkar',
+  'sunnah.readOn': 'Read the hadith on sunnah.com',
+  'sunnah.openFailed': 'Couldn\'t open the link',
   'langNotice.moreComing':
       "We're still working on translating the rest, God willing.",
   'langNotice.feedbackPrompt':

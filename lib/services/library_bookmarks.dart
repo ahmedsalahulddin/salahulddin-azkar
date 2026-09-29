@@ -8,13 +8,14 @@ class LibraryBookmarks {
 
   static const _key = '@noor_library_bookmarks';
 
-  /// "$bookId:$number" for every marked entry, loaded once at startup.
+  /// "$bookId:$ref" for every marked entry, loaded once at startup — the
+  /// same "$bookId:$number" older versions saved, for a plain number.
   static final marks = ValueNotifier<Set<String>>({});
 
-  static String _of(String bookId, int number) => '$bookId:$number';
+  static String _of(String bookId, String ref) => '$bookId:$ref';
 
-  static bool has(String bookId, int number) =>
-      marks.value.contains(_of(bookId, number));
+  static bool has(String bookId, String ref) =>
+      marks.value.contains(_of(bookId, ref));
 
   static Future<void> load() async {
     try {
@@ -25,8 +26,8 @@ class LibraryBookmarks {
     }
   }
 
-  static Future<void> toggle(String bookId, int number) async {
-    final key = _of(bookId, number);
+  static Future<void> toggle(String bookId, String ref) async {
+    final key = _of(bookId, ref);
     final updated = {...marks.value};
     if (!updated.remove(key)) updated.add(key);
     marks.value = updated;

@@ -6,6 +6,7 @@ import '../l10n/strings.dart';
 import '../services/app_locale.dart';
 import '../widgets/speed_button.dart';
 import '../widgets/speak_button.dart';
+import '../widgets/sunnah_links.dart';
 import '../data/library_data.dart';
 import '../data/quran_data.dart' show QuranService;
 import '../services/library_bookmarks.dart';
@@ -37,6 +38,10 @@ class BookLangPref {
 /// Reads one book, searching across its hadiths.
 ///
 /// A downloadable book offers its download here rather than opening empty.
+/// Abjad letters for a hadith's second, third, … version (see Hadith.part):
+/// "٤٠٢ب" is sunnah.com's 402b.
+const _variantLetters = ['أ', 'ب', 'ج', 'د', 'هـ', 'و', 'ز', 'ح', 'ط', 'ي'];
+
 class BookReaderScreen extends StatefulWidget {
   final IslamicBook book;
 
@@ -58,7 +63,7 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
   int _received = 0;
   int? _expectedBytes;
 
-  Map<int, String>? _translation;
+  Map<String, String>? _translation;
   bool _translationDownloading = false;
   int _tReceived = 0;
   int? _tExpectedBytes;
@@ -264,7 +269,7 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
     var all = _hadiths ?? const <Hadith>[];
     if (_bookmarkedOnly) {
       all = all
-          .where((h) => LibraryBookmarks.has(widget.book.id, h.number))
+          .where((h) => LibraryBookmarks.has(widget.book.id, h.ref))
           .toList();
     }
     final q = _search.trim();
@@ -273,7 +278,7 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
   }
 
   Future<void> _toggleBookmark(Hadith h) async {
-    await LibraryBookmarks.toggle(widget.book.id, h.number);
+    await LibraryBookmarks.toggle(widget.book.id, h.ref);
     HapticFeedback.lightImpact();
     if (mounted) setState(() {});
   }
@@ -283,7 +288,7 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
       ClipboardData(
         text:
             '${h.text}\n\n[${widget.book.title} — '
-            '${t('lib2.hadithUnit')} ${h.number}]',
+            '${t('lib2.hadithUnit')} ${h.ref}]',
       ),
     );
     if (!mounted) return;
@@ -670,10 +675,10 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
                   ),
                 ),
               ),
-              SpeakButton(id: '${widget.book.id}:${h.number}', text: h.text),
+              SpeakButton(id: '${widget.book.id}:${h.ref}', text: h.text),
             ],
           ),
-          if (_translation?[h.number] case final translated?) ...[
+          if (_translation?[h.ref] case final translated?) ...[
             const SizedBox(height: 8),
             Container(
               width: double.infinity,
@@ -708,7 +713,8 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
                   border: Border.all(color: AppColors.goldBorder),
                 ),
                 child: Text(
-                  '${t('lib2.hadithUnit')} ${QuranService.toArabicDigits(h.number)}',
+                  '${t('lib2.hadithUnit')} ${QuranService.toArabicDigits(h.number)}'
+                  '${h.part == 0 ? '' : _variantLetters[h.part - 1]}',
                   style: const TextStyle(
                     color: AppColors.textGold,
                     fontSize: 11,
@@ -736,16 +742,34 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
                 child: Padding(
                   padding: const EdgeInsets.all(4),
                   child: Icon(
-                    LibraryBookmarks.has(widget.book.id, h.number)
+                    LibraryBookmarks.has(widget.book.id, h.ref)
                         ? Icons.bookmark
                         : Icons.bookmark_border,
-                    color: LibraryBookmarks.has(widget.book.id, h.number)
+                    color: LibraryBookmarks.has(widget.book.id, h.ref)
                         ? AppColors.gold
                         : AppColors.textMuted,
                     size: 17,
                   ),
                 ),
               ),
+              if (sunnahSlugOfBook[widget.book.id] case final slug?) ...[
+                const SizedBox(width: 4),
+                Tooltip(
+                  message: t('sunnah.readOn'),
+                  child: GestureDetector(
+                    onTap: () => openSunnah(context, '$slug:${h.ref}'),
+                    behavior: HitTestBehavior.opaque,
+                    child: const Padding(
+                      padding: EdgeInsets.all(4),
+                      child: Icon(
+                        Icons.open_in_new,
+                        color: AppColors.textMuted,
+                        size: 17,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(width: 4),
               GestureDetector(
                 onTap: () => _copy(h),

@@ -182,7 +182,9 @@ class Lessons {
         case HadithSource(:final bookId, :final number):
           final book = LibraryService.books.firstWhere((b) => b.id == bookId);
           final hadiths = await LibraryService.hadiths(book);
-          final hadith = hadiths.firstWhere((h) => h.number == number);
+          final hadith = hadiths.firstWhere(
+            (h) => h.part == 0 && h.number == number,
+          );
           return ResolvedSource(
             text: hadith.text,
             citation:

@@ -7,17 +7,52 @@ import 'package:path_provider/path_provider.dart';
 
 /// One hadith as it appears in its collection.
 class Hadith {
+  /// The whole hadith number.
   final int number;
+
+  /// Which narration under [number] this is: 0 for the plain number, 2 for
+  /// its second version, 3 for its third, and so on. The source marks these
+  /// with a fraction (402.2, or 3604.02 … 3604.1 where a number has ten), the
+  /// same versions sunnah.com letters b, c, … (bukhari:402b).
+  final int part;
   final String text;
 
   /// Grading, where the collection records one.
   final String? grade;
 
-  const Hadith({required this.number, required this.text, this.grade});
+  const Hadith({
+    required this.number,
+    this.part = 0,
+    required this.text,
+    this.grade,
+  });
 
-  factory Hadith.fromJson(Map<String, dynamic> j) =>
-      Hadith(number: j['n'], text: j['t'], grade: j['g']);
+  factory Hadith.fromJson(Map<String, dynamic> j) {
+    final (number, part) = splitHadithNumber(j['n'] as num);
+    return Hadith(number: number, part: part, text: j['t'], grade: j['g']);
+  }
+
+  /// Unique within its book: "402" or "402b". Keys bookmarks and
+  /// translations, and is sunnah.com's own reference for the hadith.
+  String get ref => hadithRef(number, part);
 }
+
+/// Splits the source's hadith number into its whole number and version
+/// (see [Hadith.part]). Fractions come in one digit (402.2, 1433.3) or, for
+/// a number with ten or more versions, two (3604.02 … 3604.09, 3604.1 = .10);
+/// one-digit versions start at .2, so a lone .1 can only be the tenth.
+(int, int) splitHadithNumber(num n) {
+  final whole = n.floor();
+  final hundredths = ((n - whole) * 100).round();
+  if (hundredths == 0) return (whole, 0);
+  final tenths = hundredths ~/ 10;
+  final part = hundredths % 10 == 0 && tenths >= 2 ? tenths : hundredths;
+  return (whole, part);
+}
+
+String hadithRef(int number, int part) => part == 0
+    ? '$number'
+    : '$number${String.fromCharCode('a'.codeUnitAt(0) + part - 1)}';
 
 /// A book in the library.
 class IslamicBook {
@@ -339,7 +374,7 @@ class LibraryService {
   // as a plain list, since a translation is only ever read alongside the
   // Arabic hadith it matches.
 
-  static final Map<String, Map<int, String>> _translationCache = {};
+  static final Map<String, Map<String, String>> _translationCache = {};
 
   static Future<File?> _translationFileFor(
     IslamicBook book,
@@ -360,7 +395,8 @@ class LibraryService {
 
   /// Throws if [lang]'s edition has not been downloaded for [book], so the
   /// caller can offer the download rather than showing blank translations.
-  static Future<Map<int, String>> translation(
+  /// Keyed by [Hadith.ref].
+  static Future<Map<String, String>> translation(
     IslamicBook book,
     String lang,
   ) async {
@@ -373,9 +409,13 @@ class LibraryService {
       throw StateError('${book.title} has no $lang translation downloaded');
     }
     final j = jsonDecode(await file.readAsString()) as Map<String, dynamic>;
-    final map = <int, String>{
+    final map = <String, String>{
       for (final e in (j['hadiths'] as List))
-        (e as Map<String, dynamic>)['n'] as int: e['t'] as String,
+        if (splitHadithNumber((e as Map<String, dynamic>)['n'] as num) case (
+          final number,
+          final part,
+        ))
+          hadithRef(number, part): e['t'] as String,
     };
     return _translationCache[key] = map;
   }
