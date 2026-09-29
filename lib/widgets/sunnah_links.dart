@@ -75,46 +75,50 @@ class SunnahLinks extends StatelessWidget {
           style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
         ),
         const SizedBox(height: 6),
-        Wrap(
-          alignment: isArabic ? WrapAlignment.end : WrapAlignment.start,
-          spacing: 6,
-          runSpacing: 6,
-          children: [
-            for (final ref in refs)
-              InkWell(
-                onTap: () => openSunnah(context, ref),
-                borderRadius: BorderRadius.circular(20),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 5,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.goldMuted,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: AppColors.goldBorder),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        _label(ref),
-                        style: const TextStyle(
-                          color: AppColors.textGold,
-                          fontSize: 12,
+        // The chips line up under the source line, which follows the
+        // story's language rather than the app's.
+        Directionality(
+          textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
+          child: Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              for (final ref in refs)
+                InkWell(
+                  onTap: () => openSunnah(context, ref),
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.goldMuted,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: AppColors.goldBorder),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          _label(ref),
+                          style: const TextStyle(
+                            color: AppColors.textGold,
+                            fontSize: 12,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 4),
-                      const Icon(
-                        Icons.open_in_new,
-                        color: AppColors.textGold,
-                        size: 13,
-                      ),
-                    ],
+                        const SizedBox(width: 4),
+                        const Icon(
+                          Icons.open_in_new,
+                          color: AppColors.textGold,
+                          size: 13,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ],
     );
