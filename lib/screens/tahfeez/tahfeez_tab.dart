@@ -221,12 +221,15 @@ class _TahfeezTabState extends State<TahfeezTab> {
                 ),
               ),
               const SizedBox(height: 20),
-              if (providers.contains(SignInProvider.google))
-                SignInButton(
-                  provider: SignInProvider.google,
-                  busy: _signingIn,
-                  onPressed: _signingIn ? null : _signIn,
-                )
+              if (providers.isNotEmpty)
+                for (final provider in SignInProvider.values.where(
+                  providers.contains,
+                ))
+                  SignInButton(
+                    provider: provider,
+                    busy: _signingIn,
+                    onPressed: _signingIn ? null : () => _signIn(provider),
+                  )
               else
                 Text(
                   t('tahfeez.signInComingSoon'),
@@ -242,9 +245,9 @@ class _TahfeezTabState extends State<TahfeezTab> {
     );
   }
 
-  Future<void> _signIn() async {
+  Future<void> _signIn(SignInProvider provider) async {
     setState(() => _signingIn = true);
-    final ok = await AuthService.signInWith(SignInProvider.google);
+    final ok = await AuthService.signInWith(provider);
     if (!mounted) return;
     setState(() => _signingIn = false);
     if (!ok) showNote(context, t('tahfeez.signInFailed'), error: true);

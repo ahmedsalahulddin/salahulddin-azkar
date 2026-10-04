@@ -110,6 +110,19 @@ class AuthService {
   static bool get googleAvailable =>
       availableProviders.value.contains(SignInProvider.google);
 
+  /// What this platform may offer out of [enabled]. App Store Review
+  /// Guideline 4.8: an iPhone app that offers a third-party sign-in must offer
+  /// Sign in with Apple beside it, so on iOS every button stays hidden until
+  /// Apple is switched on for the project — and then all of them appear at
+  /// once, without an app update.
+  static Set<SignInProvider> offeredOn(
+    TargetPlatform platform,
+    Set<SignInProvider> enabled,
+  ) {
+    if (kIsWeb || platform != TargetPlatform.iOS) return enabled;
+    return enabled.contains(SignInProvider.apple) ? enabled : {};
+  }
+
   static Future<void> init() async {
     if (_initialised || !isConfigured) return;
 
@@ -145,10 +158,10 @@ class AuthService {
           (jsonDecode(res.body) as Map<String, dynamic>)['external'];
       if (external is! Map) return;
 
-      availableProviders.value = {
+      availableProviders.value = offeredOn(defaultTargetPlatform, {
         for (final provider in SignInProvider.values)
           if (external[provider.key] == true) provider,
-      };
+      });
     } catch (_) {
       // Leave them off: offering a button that cannot work is worse than
       // hiding it.
