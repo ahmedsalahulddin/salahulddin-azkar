@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, visibleForTesting;
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:http/http.dart' as http;
@@ -55,7 +55,6 @@ const _edition = {
   'tr': 'tr.diyanet',
   'ur': 'ur.maududi',
   'de': 'de.aburida',
-  'es': 'es.asad',
   'ru': 'ru.kuliev',
   'id': 'id.indonesian',
   'ms': 'ms.basmeih',
@@ -89,6 +88,18 @@ const _fawazEdition = {'bn': 'ben-abubakrzakaria'};
 const _fawazHost =
     'https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/editions';
 
+/// Spanish comes from QuranEnc (the Encyclopedia of the Translated Meanings
+/// of the Holy Qur'an): the Noor International Center (Montada Islam)
+/// translation, reviewed and published there. It replaced Muhammad Asad's,
+/// whose rationalist readings fall outside the Ahl al-Sunnah sources this
+/// app keeps to. QuranEnc serves text and footnotes separately, so the text
+/// arrives clean.
+const _quranEncKey = {'es': 'spanish_montada_eu'};
+
+/// Where a language's surahs are cached. Spanish changed translation, so it
+/// caches under a new name — the old folder still holds Asad's text.
+String _cacheFolder(String lang) => lang == 'es' ? 'es_montada' : lang;
+
 Future<List<String>?> _fetchTranslation(String lang, int surahNum) async {
   // path_provider has no web implementation — getApplicationDocumentsDirectory()
   // throws MissingPluginException there, which used to take this whole call
@@ -97,14 +108,19 @@ Future<List<String>?> _fetchTranslation(String lang, int surahNum) async {
   final file = kIsWeb
       ? null
       : File(
-          '${(await getApplicationDocumentsDirectory()).path}/quran_translations_v2/$lang/$surahNum.json',
+          '${(await getApplicationDocumentsDirectory()).path}/quran_translations_v2/${_cacheFolder(lang)}/$surahNum.json',
         );
   if (file != null && await file.exists()) {
-    return _parse(await file.readAsString(), lang);
+    return parseTranslationBody(await file.readAsString());
   }
   final fawaz = _fawazEdition[lang];
+  final quranEnc = _quranEncKey[lang];
   try {
-    final uri = fawaz != null
+    final uri = quranEnc != null
+        ? Uri.parse(
+            'https://quranenc.com/api/v1/translation/sura/$quranEnc/$surahNum',
+          )
+        : fawaz != null
         ? Uri.parse('$_fawazHost/$fawaz/$surahNum.json')
         : Uri.parse('$_apiBase/$surahNum/${_edition[lang] ?? 'en.sahih'}');
     final res = await http.get(uri).timeout(const Duration(seconds: 20));
@@ -113,13 +129,15 @@ Future<List<String>?> _fetchTranslation(String lang, int surahNum) async {
       await file.parent.create(recursive: true);
       await file.writeAsBytes(res.bodyBytes);
     }
-    return _parse(res.body, lang);
+    return parseTranslationBody(res.body);
   } catch (_) {
     return null;
   }
 }
 
-List<String>? _parse(String body, String lang) {
+/// One surah's verses from any of the three sources' response shapes.
+@visibleForTesting
+List<String>? parseTranslationBody(String body) {
   try {
     final json = jsonDecode(body) as Map;
     // The Zakaria text carries footnote markers like "[১]" — meaningless
@@ -127,12 +145,14 @@ List<String>? _parse(String body, String lang) {
     // they're stripped rather than left dangling. 'chapter' is the
     // fawazahmed0 shape; 'translations' is the api.quran.com shape still
     // sitting in caches from before the switch.
-    final verses = json['chapter'] ?? json['translations'];
+    // QuranEnc ('result') names the field 'translation'; the others 'text'.
+    final verses = json['result'] ?? json['chapter'] ?? json['translations'];
     if (verses is List) {
       return verses
           .map(
-            (e) => ((e as Map)['text'] as String)
+            (e) => (((e as Map)['translation'] ?? e['text']) as String)
                 .replaceAll(RegExp(r'\[[^\]]*\]'), '')
+                .replaceAll(RegExp(r' {2,}'), ' ')
                 .trim(),
           )
           .toList();

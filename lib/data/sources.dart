@@ -137,9 +137,18 @@ class Sources {
           'Kementerian Agama RI (Indonesia) · Abdullah Muhammad Basmeih (Melayu) · '
           'Suhel Farooq Khan & Saifur Rahman Nadwi (हिन्दी) · '
           'Abubakar Mahmoud Gumi (Hausa) · Abu Rida (Deutsch) · '
-          'Muhammad Asad (Español) · Elmir Kuliev (Русский) — '
-          'والبنغالية: د. أبو بكر محمد زكريا، طبعة مجمع الملك فهد، من مستودع fawazahmed0',
+          'Elmir Kuliev (Русский) — '
+          'والبنغالية: د. أبو بكر محمد زكريا، طبعة مجمع الملك فهد، من مستودع fawazahmed0 — '
+          'والإسبانية: مركز نور الدولي (منتدى الإسلام) من موسوعة QuranEnc',
       url: 'https://alquran.cloud',
+    ),
+    AppSource(
+      title: 'موسوعة القرآن الكريم المترجمة',
+      holder: 'QuranEnc.com — جمعية خدمة المحتوى الإسلامي باللغات',
+      kind: SourceKind.scripture,
+      standing: Standing.permission,
+      detail: 'الترجمة الإسبانية لمركز نور الدولي، تُعرض دون تعديل',
+      url: 'https://quranenc.com',
     ),
     AppSource(
       title: 'ملفات التفاسير المُنزَّلة',
