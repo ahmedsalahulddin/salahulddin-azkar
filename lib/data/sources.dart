@@ -51,12 +51,18 @@ class AppSource {
   /// the question, a licence name.
   final String? detail;
 
+  /// The source's own site. Several of them (EveryAyah, HadeethEnc,
+  /// alquran.cloud) make a link back a condition of use, so it is shown, and
+  /// tappable, rather than only named.
+  final String? url;
+
   const AppSource({
     required this.title,
     required this.holder,
     required this.kind,
     required this.standing,
     this.detail,
+    this.url,
   });
 }
 
@@ -72,10 +78,12 @@ class Sources {
     ),
     AppSource(
       title: 'صور صفحات المصحف',
-      holder: 'files.quran.app — بخطوط مجمع الملك فهد',
+      holder:
+          'مجمع الملك فهد لطباعة المصحف الشريف — تُبثّ من مشروع Quran.com (files.quran.app)',
       kind: SourceKind.scripture,
       standing: Standing.hosted,
-      detail: '٦٠٤ صفحة بمقاس مصحف المدينة',
+      detail: '٦٠٤ صفحة بمقاس مصحف المدينة، تُعرض كما هي دون تعديل',
+      url: 'https://quran.com',
     ),
     AppSource(
       title: 'حصن المسلم',
@@ -89,7 +97,9 @@ class Sources {
       holder: 'hadeethenc.com — جمعية الدعوة والإرشاد وتوعية الجاليات بالربوة',
       kind: SourceKind.scripture,
       standing: Standing.hosted,
-      detail: 'أحاديث مصنّفة بالموضوع مع شرحها، بترجمات معتمدة لا آلية',
+      detail:
+          'أحاديث مصنّفة بالموضوع مع شرحها، بترجمات معتمدة لا آلية، تُعرض دون تعديل',
+      url: 'https://hadeethenc.com',
     ),
     AppSource(
       title: 'التفسير الميسّر',
@@ -117,11 +127,35 @@ class Sources {
       standing: Standing.publicDomain,
     ),
     AppSource(
+      title: 'ترجمات معاني القرآن',
+      holder: 'alquran.cloud (Islamic Network) — ولكل ترجمة مترجمها',
+      kind: SourceKind.scripture,
+      standing: Standing.permission,
+      detail:
+          'Saheeh International (English) · Muhammad Hamidullah (Français) · '
+          'Diyanet İşleri (Türkçe) · Abul A\'la Maududi (اردو) · '
+          'Kementerian Agama RI (Indonesia) · Abdullah Muhammad Basmeih (Melayu) · '
+          'Suhel Farooq Khan & Saifur Rahman Nadwi (हिन्दी) · '
+          'Abubakar Mahmoud Gumi (Hausa) · Abu Rida (Deutsch) · '
+          'Muhammad Asad (Español) · Elmir Kuliev (Русский) — '
+          'والبنغالية: د. أبو بكر محمد زكريا، طبعة مجمع الملك فهد، من مستودع fawazahmed0',
+      url: 'https://alquran.cloud',
+    ),
+    AppSource(
       title: 'ملفات التفاسير المُنزَّلة',
-      holder: 'مستودع spa5k/tafsir_api',
+      holder: 'مستودع spa5k/tafsir_api — نصوص التفاسير من Quran.com',
       kind: SourceKind.scripture,
       standing: Standing.licensed,
       detail: 'رخصة MIT',
+      url: 'https://github.com/spa5k/tafsir_api',
+    ),
+    AppSource(
+      title: 'روابط التحقق من الأحاديث',
+      holder: 'sunnah.com',
+      kind: SourceKind.scripture,
+      standing: Standing.hosted,
+      detail: 'روابط فقط تفتح الحديث على موقعهم، دون نسخ أي نصّ منه',
+      url: 'https://sunnah.com',
     ),
     AppSource(
       title: 'الأربعون النووية والأربعون القدسية',
@@ -131,38 +165,55 @@ class Sources {
     ),
     AppSource(
       title: 'ملفات الأحاديث والترجمات المُنزَّلة',
-      holder: 'مستودعات fawazahmed0',
+      holder: 'مستودعات fawazahmed0 — ولكل ترجمة مترجمها',
       kind: SourceKind.scripture,
       standing: Standing.licensed,
       detail: 'رخصة Unlicense — ملك عام',
+      url: 'https://github.com/fawazahmed0/hadith-api',
     ),
 
     // ---- audio -----------------------------------------------------------
     AppSource(
       title: 'تلاوات القرّاء التسعة',
-      holder: 'كل قارئ وناشر تسجيله — تُبثّ من everyayah.com و mp3quran.net',
+      holder: 'كل قارئ وناشر تسجيله — تُبثّ من EveryAyah.com و mp3quran.net',
       kind: SourceKind.audio,
       standing: Standing.hosted,
-      detail: 'التسجيل عملٌ محفوظ لصاحبه، والتطبيق لا ينسخه',
+      detail:
+          'التسجيل عملٌ محفوظ لصاحبه، والتطبيق لا ينسخه. يُستخدم لغير '
+          'غرض تجاري، وفق ما يسمح به الموقعان',
+      url: 'https://everyayah.com',
+    ),
+    AppSource(
+      title: 'تلاوات mp3quran والإذاعة',
+      holder: 'mp3quran.net و qurango.net',
+      kind: SourceKind.audio,
+      standing: Standing.hosted,
+      detail: 'يسمح الموقع لأي زائر أو مطوّر باستخدام موادّه وروابطه',
+      url: 'https://mp3quran.net',
     ),
     AppSource(
       title: 'تسجيلات الأذكار',
       holder: 'hisnmuslim.com',
       kind: SourceKind.audio,
       standing: Standing.hosted,
+      url: 'https://www.hisnmuslim.com',
     ),
     AppSource(
       title: 'أصوات الأذان',
-      holder: 'qurango.net و islamcan.com',
+      holder: 'qurango.net و IslamCan.com',
       kind: SourceKind.audio,
       standing: Standing.hosted,
+      url: 'https://www.islamcan.com',
     ),
     AppSource(
       title: 'الإذاعات',
-      holder: 'كل إذاعة وبثّها المباشر',
+      holder:
+          'إذاعة القرآن الكريم من القاهرة، وإذاعة القرآن الكريم من السعودية '
+          '(عبر Radiojar)، وإذاعات تراتيل والقرّاء ومشاري العفاسي (عبر mp3quran)',
       kind: SourceKind.audio,
       standing: Standing.hosted,
-      detail: 'يُشغَّل البثّ كما تنشره الإذاعة، دون إعادة بثّ',
+      detail:
+          'يُشغَّل البثّ كما تنشره الإذاعة، دون إعادة بثّ، ويبقى حقّه لأصحابه',
     ),
 
     // ---- type ------------------------------------------------------------

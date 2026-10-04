@@ -78,12 +78,16 @@ const _ttsLocale = {
   'ha': 'ha-NG',
 };
 
-/// Bengali has no King Fahd Complex edition on alquran.cloud, so it is
-/// fetched from quran.com instead — resource 213 is Dr. Abu Bakr
-/// Muhammad Zakaria's translation, the one the Complex (the Saudi
-/// government's Quran-printing body) itself published and distributed,
-/// the same standard the app already holds every other language to.
-const _quranComResourceId = {'bn': 213};
+/// Bengali has no King Fahd Complex edition on alquran.cloud, so it comes
+/// from the fawazahmed0 quran-api repository instead (Unlicense, served by
+/// jsDelivr) — Dr. Abu Bakr Muhammad Zakaria's translation, the one the
+/// Complex (the Saudi government's Quran-printing body) itself published and
+/// distributed, the same standard the app already holds every other language
+/// to. It used to come from api.quran.com, whose developer terms require a
+/// registered account; this source has no such condition.
+const _fawazEdition = {'bn': 'ben-abubakrzakaria'};
+const _fawazHost =
+    'https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/editions';
 
 Future<List<String>?> _fetchTranslation(String lang, int surahNum) async {
   // path_provider has no web implementation — getApplicationDocumentsDirectory()
@@ -98,13 +102,10 @@ Future<List<String>?> _fetchTranslation(String lang, int surahNum) async {
   if (file != null && await file.exists()) {
     return _parse(await file.readAsString(), lang);
   }
-  final resourceId = _quranComResourceId[lang];
+  final fawaz = _fawazEdition[lang];
   try {
-    final uri = resourceId != null
-        ? Uri.parse(
-            'https://api.quran.com/api/v4/quran/translations/$resourceId'
-            '?chapter_number=$surahNum',
-          )
+    final uri = fawaz != null
+        ? Uri.parse('$_fawazHost/$fawaz/$surahNum.json')
         : Uri.parse('$_apiBase/$surahNum/${_edition[lang] ?? 'en.sahih'}');
     final res = await http.get(uri).timeout(const Duration(seconds: 20));
     if (res.statusCode != 200) return null;
@@ -121,11 +122,14 @@ Future<List<String>?> _fetchTranslation(String lang, int surahNum) async {
 List<String>? _parse(String body, String lang) {
   try {
     final json = jsonDecode(body) as Map;
-    if (_quranComResourceId.containsKey(lang)) {
-      // quran.com's Zakaria text carries footnote markers like "[১]" —
-      // meaningless without the footnotes themselves, which this app
-      // doesn't fetch, so they're stripped rather than left dangling.
-      return (json['translations'] as List)
+    // The Zakaria text carries footnote markers like "[১]" — meaningless
+    // without the footnotes themselves, which this app doesn't fetch, so
+    // they're stripped rather than left dangling. 'chapter' is the
+    // fawazahmed0 shape; 'translations' is the api.quran.com shape still
+    // sitting in caches from before the switch.
+    final verses = json['chapter'] ?? json['translations'];
+    if (verses is List) {
+      return verses
           .map(
             (e) => ((e as Map)['text'] as String)
                 .replaceAll(RegExp(r'\[[^\]]*\]'), '')

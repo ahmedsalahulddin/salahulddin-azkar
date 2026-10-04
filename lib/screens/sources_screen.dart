@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../constants/theme.dart';
 import '../data/sources.dart';
@@ -96,6 +97,26 @@ class SourcesScreen extends StatelessWidget {
                 color: AppColors.textMuted,
                 fontSize: 11,
                 height: 1.6,
+              ),
+            ),
+          ],
+          if (source.url case final url?) ...[
+            const SizedBox(height: 4),
+            GestureDetector(
+              onTap: () => launchUrl(
+                Uri.parse(url),
+                mode: LaunchMode.externalApplication,
+              ),
+              child: Text(
+                url.replaceFirst(RegExp(r'^https?://'), ''),
+                textDirection: TextDirection.ltr,
+                textAlign: TextAlign.right,
+                style: const TextStyle(
+                  color: AppColors.gold,
+                  fontSize: 11.5,
+                  decoration: TextDecoration.underline,
+                  decorationColor: AppColors.gold,
+                ),
               ),
             ),
           ],

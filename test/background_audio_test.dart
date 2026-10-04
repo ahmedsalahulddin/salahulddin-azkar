@@ -9,8 +9,9 @@ void main() {
   late String manifest;
 
   setUpAll(() {
-    manifest =
-        File('android/app/src/main/AndroidManifest.xml').readAsStringSync();
+    manifest = File(
+      'android/app/src/main/AndroidManifest.xml',
+    ).readAsStringSync();
   });
 
   test('the media service and its permissions are declared', () {
@@ -35,7 +36,10 @@ void main() {
     // MainActivity extends AudioServiceActivity; the manifest uses the short
     // form (.MainActivity) which Android resolves to the full package name.
     expect(manifest, contains('.MainActivity'));
-    expect(manifest, contains('com.ryanheise.audioservice.MediaButtonReceiver'));
+    expect(
+      manifest,
+      contains('com.ryanheise.audioservice.MediaButtonReceiver'),
+    );
     expect(manifest, contains('android.intent.action.MEDIA_BUTTON'));
   });
 
@@ -49,9 +53,16 @@ void main() {
       'lib/widgets/adhkar_card.dart',
     ]) {
       final source = File(path).readAsStringSync();
-      expect(source, contains('MediaItem('), reason: '$path plays untagged audio');
-      expect(source, isNot(contains('.setUrl(')),
-          reason: '$path uses setUrl, which cannot carry a MediaItem');
+      expect(
+        source,
+        contains('MediaItem('),
+        reason: '$path plays untagged audio',
+      );
+      expect(
+        source,
+        isNot(contains('.setUrl(')),
+        reason: '$path uses setUrl, which cannot carry a MediaItem',
+      );
     }
   });
 
@@ -62,36 +73,55 @@ void main() {
     // phone, which is exactly why they are pinned here.
     expect(manifest, contains('android:networkSecurityConfig'));
     expect(manifest, contains('android.intent.action.TTS_SERVICE'));
-    final config = File('android/app/src/main/res/xml/network_security_config.xml')
-        .readAsStringSync();
+    final config = File(
+      'android/app/src/main/res/xml/network_security_config.xml',
+    ).readAsStringSync();
     expect(config, contains('radiojar.com'));
-    expect(config,
-        contains('<base-config cleartextTrafficPermitted="false"/>'),
-        reason: 'cleartext must stay off for everything except the radio');
+    expect(
+      config,
+      contains('<base-config cleartextTrafficPermitted="false"/>'),
+      reason: 'cleartext must stay off for everything except the radio',
+    );
   });
 
-  test('no restricted permission is declared that the code never uses', () {
-    // USE_EXACT_ALARM is restricted by Play to alarm clocks and calendars.
-    // Every schedule this app writes is inexact, so declaring it would invite
-    // a policy review the app cannot pass and does not need.
-    expect(manifest,
-        isNot(contains('android:name="android.permission.USE_EXACT_ALARM"')));
-    for (final source in Directory('lib').listSync(recursive: true)) {
-      if (source is! File || !source.path.endsWith('.dart')) continue;
-      // 'ScheduleMode.exact', not 'exactAllowWhileIdle' — the inexact name
-      // contains the exact one, so the looser pattern matches everything.
-      final code = source.readAsStringSync();
-      expect(code, isNot(contains('ScheduleMode.exact')),
-          reason: '${source.path} schedules exactly; the permission is gone');
-      expect(code, isNot(contains('ScheduleMode.alarmClock')),
-          reason: '${source.path} uses an alarm clock; Play restricts those');
-    }
-  });
+  test(
+    'exact prayer alerts declare the permission they use, not the restricted one',
+    () {
+      // USE_EXACT_ALARM is restricted by Play to alarm clocks and calendars, so
+      // it is never declared. Prayer alerts use AlarmManager.setAlarmClock
+      // (AndroidScheduleMode.alarmClock) so the adhan sounds at the minute on a
+      // locked, dozing phone; that needs SCHEDULE_EXACT_ALARM on every Android
+      // version, which the reader grants from the Prayer alerts screen.
+      expect(
+        manifest,
+        isNot(contains('android:name="android.permission.USE_EXACT_ALARM"')),
+      );
+      final usesAlarmClock = Directory('lib')
+          .listSync(recursive: true)
+          .whereType<File>()
+          .where((f) => f.path.endsWith('.dart'))
+          .any((f) => f.readAsStringSync().contains('ScheduleMode.alarmClock'));
+      if (usesAlarmClock) {
+        expect(
+          manifest,
+          contains('android:name="android.permission.SCHEDULE_EXACT_ALARM"/>'),
+          reason: 'alarmClock needs SCHEDULE_EXACT_ALARM with no maxSdkVersion',
+        );
+        expect(
+          File('lib/services/notification_service.dart').readAsStringSync(),
+          contains('requestExactAlarmsPermission'),
+          reason: 'from Android 13 the permission has to be asked for',
+        );
+      }
+    },
+  );
 
   test('the background service is started before any player is built', () {
     final main = File('lib/main.dart').readAsStringSync();
     expect(main, contains('JustAudioBackground.init('));
-    expect(main.indexOf('JustAudioBackground.init('),
-        lessThan(main.indexOf('runApp(')));
+    expect(
+      main.indexOf('JustAudioBackground.init('),
+      lessThan(main.indexOf('runApp(')),
+    );
   });
 }

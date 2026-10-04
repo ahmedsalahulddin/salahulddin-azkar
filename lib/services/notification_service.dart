@@ -436,6 +436,40 @@ class NotificationService {
   /// a reader who did not open the app for a day had nothing waiting for
   /// them the next. Tomorrow's are set too, so the alerts survive a day of
   /// not opening it.
+  /// Whether alerts can be laid down for the exact minute. Without this,
+  /// Android 13+ falls back to an inexact alarm that a locked, dozing phone
+  /// may hold back for many minutes — so the adhan arrives late or not at
+  /// prayer time at all. Always true off Android.
+  static Future<bool> exactAlarmsAllowed() async {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return true;
+    try {
+      return await _plugin
+              .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin
+              >()
+              ?.canScheduleExactNotifications() ??
+          true;
+    } catch (_) {
+      return true;
+    }
+  }
+
+  /// Opens Android's "Alarms & reminders" page for this app. Returns whether
+  /// exact alarms are allowed afterwards.
+  static Future<bool> requestExactAlarms() async {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return true;
+    try {
+      await _plugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >()
+          ?.requestExactAlarmsPermission();
+    } catch (_) {
+      // The page could not open; the card stays up and can be tapped again.
+    }
+    return exactAlarmsAllowed();
+  }
+
   static Future<void> schedulePrayerAlerts(
     Map<AlertPrayer, DateTime> times, [
     Map<AlertPrayer, DateTime> tomorrow = const {},
@@ -534,6 +568,9 @@ class NotificationService {
           ? RawResourceAndroidNotificationSound(soundResource)
           : null,
       visibility: NotificationVisibility.public,
+      // Marks it as an alarm rather than a chat-style notification, so Do Not
+      // Disturb's "alarms" exception and the lock screen treat it as one.
+      category: AndroidNotificationCategory.alarm,
     );
     final iosDetails = DarwinNotificationDetails(presentSound: mode.sound);
     final details = NotificationDetails(

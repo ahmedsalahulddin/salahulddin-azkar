@@ -282,6 +282,10 @@ const appTranslations = <String, Map<String, String>>{
     'adh.adhanTestFailedMsg': 'Impossible d\'envoyer l\'alerte.',
     'adh.prayerAlertsScreenTitle': 'Horaires de prière',
     'adh.tryAdhanSoundButton': 'Essayer le son de l\'adhan',
+    'adh.exactTitle': 'Alerte à la minute près',
+    'adh.exactBody':
+        'Pour que l\'adhan retentisse à l\'heure même téléphone verrouillé, autorisez l\'application dans « Alarmes et rappels ». Sans cela, le système peut retarder l\'alerte.',
+    'adh.exactButton': 'Autoriser',
     'adh.alertsAutoUpdateNote':
         'Les alertes sont réglées sur vos horaires de prière du jour et se renouvellent chaque jour.',
     'adh.tapHeadingHint':
@@ -1028,6 +1032,10 @@ const appTranslations = <String, Map<String, String>>{
     'adh.adhanTestFailedMsg': 'تنبیہ بھیجی نہیں جا سکی۔',
     'adh.prayerAlertsScreenTitle': 'اوقاتِ نماز',
     'adh.tryAdhanSoundButton': 'اذان کی آواز آزمائیں',
+    'adh.exactTitle': 'بالکل وقت پر اطلاع',
+    'adh.exactBody':
+        'تاکہ فون لاک ہونے پر بھی اذان وقت پر بجے، ایپ کو «الارمز اور یاد دہانیاں» میں اجازت دیں۔ اس کے بغیر سسٹم اطلاع میں تاخیر کر سکتا ہے۔',
+    'adh.exactButton': 'ابھی اجازت دیں',
     'adh.alertsAutoUpdateNote':
         'تنبیہات آپ کی روزانہ کی نماز کے اوقات پر مقرر ہوتی ہیں اور ہر روز خود بخود تازہ ہوتی ہیں۔',
     'adh.tapHeadingHint':
@@ -1759,6 +1767,10 @@ const appTranslations = <String, Map<String, String>>{
     'adh.adhanTestFailedMsg': 'Gagal mengirim notifikasi.',
     'adh.prayerAlertsScreenTitle': 'Waktu Salat',
     'adh.tryAdhanSoundButton': 'Coba suara azan',
+    'adh.exactTitle': 'Pengingat tepat waktu',
+    'adh.exactBody':
+        'Agar azan berbunyi tepat waktu meski ponsel terkunci, izinkan aplikasi di “Alarm & pengingat”. Tanpa izin ini sistem bisa menunda pengingat.',
+    'adh.exactButton': 'Izinkan sekarang',
     'adh.alertsAutoUpdateNote':
         'Notifikasi disesuaikan dengan waktu salat harian Anda dan diperbarui setiap hari.',
     'adh.tapHeadingHint':
@@ -2500,6 +2512,10 @@ const appTranslations = <String, Map<String, String>>{
     'adh.adhanTestFailedMsg': 'Tidak dapat menghantar makluman.',
     'adh.prayerAlertsScreenTitle': 'Waktu Solat',
     'adh.tryAdhanSoundButton': 'Cuba bunyi azan',
+    'adh.exactTitle': 'Peringatan tepat pada minitnya',
+    'adh.exactBody':
+        'Supaya azan berkumandang tepat pada waktunya walaupun telefon dikunci, benarkan aplikasi dalam “Penggera & peringatan”. Tanpanya sistem mungkin melewatkan peringatan.',
+    'adh.exactButton': 'Benarkan sekarang',
     'adh.alertsAutoUpdateNote':
         'Makluman ditetapkan mengikut waktu solat harian anda dan diperbaharui setiap hari.',
     'adh.tapHeadingHint':
@@ -3234,6 +3250,10 @@ const appTranslations = <String, Map<String, String>>{
     'adh.adhanTestFailedMsg': 'तनबीह नहीं भेजी जा सकी।',
     'adh.prayerAlertsScreenTitle': 'नमाज़ के अवक़ात',
     'adh.tryAdhanSoundButton': 'अज़ान की आवाज़ आज़माएँ',
+    'adh.exactTitle': 'ठीक समय पर सूचना',
+    'adh.exactBody':
+        'ताकि फ़ोन लॉक होने पर भी अज़ान समय पर बजे, ऐप को “अलार्म और रिमाइंडर” में अनुमति दें। इसके बिना सिस्टम सूचना में देरी कर सकता है।',
+    'adh.exactButton': 'अभी अनुमति दें',
     'adh.alertsAutoUpdateNote':
         'तनबीहें आपकी रोज़ की नमाज़ों के अवक़ात पर सेट होती हैं और हर दिन ख़ुद-ब-ख़ुद नई होती हैं।',
     'adh.tapHeadingHint':
@@ -3964,6 +3984,10 @@ const appTranslations = <String, Map<String, String>>{
     'adh.adhanTestFailedMsg': 'Bildirim gönderilemedi.',
     'adh.prayerAlertsScreenTitle': 'Namaz Vakitleri',
     'adh.tryAdhanSoundButton': 'Ezan sesini dene',
+    'adh.exactTitle': 'Tam dakikasında uyarı',
+    'adh.exactBody':
+        'Telefon kilitliyken bile ezanın vaktinde okunması için uygulamaya “Alarmlar ve hatırlatıcılar” izni verin. Bu izin olmadan sistem uyarıyı geciktirebilir.',
+    'adh.exactButton': 'Şimdi izin ver',
     'adh.alertsAutoUpdateNote':
         'Bildirimler günlük namaz vakitlerinize göre ayarlanır ve her gün yenilenir.',
     'adh.tapHeadingHint': 'Beş vakti birlikte ayarlamak için başlığa dokunun',
@@ -4688,6 +4712,10 @@ const appTranslations = <String, Map<String, String>>{
     'adh.adhanTestFailedMsg': 'সতর্কবার্তা পাঠানো যায়নি।',
     'adh.prayerAlertsScreenTitle': 'নামাজের সময়',
     'adh.tryAdhanSoundButton': 'আযানের শব্দ শুনুন',
+    'adh.exactTitle': 'ঠিক সময়ে সতর্কতা',
+    'adh.exactBody':
+        'ফোন লক থাকলেও যেন আজান সময়মতো বাজে, অ্যাপটিকে “অ্যালার্ম ও রিমাইন্ডার”-এ অনুমতি দিন। এটি ছাড়া সিস্টেম সতর্কতা দেরি করতে পারে।',
+    'adh.exactButton': 'এখনই অনুমতি দিন',
     'adh.alertsAutoUpdateNote':
         'সতর্কবার্তা আপনার দিনের নামাজের সময় অনুযায়ী নির্ধারিত হয় এবং প্রতিদিন নবায়ন হয়।',
     'adh.tapHeadingHint': 'পাঁচ ওয়াক্ত একসাথে নির্ধারণ করতে শিরোনামে চাপুন',
@@ -5413,6 +5441,10 @@ const appTranslations = <String, Map<String, String>>{
     'adh.adhanTestFailedMsg': 'Ba a iya aika tunatarwar ba.',
     'adh.prayerAlertsScreenTitle': 'Lokutan Sallah',
     'adh.tryAdhanSoundButton': 'Gwada sautin azãni',
+    'adh.exactTitle': 'Sanarwa a daidai minti',
+    'adh.exactBody':
+        'Domin kiran sallah ya yi a kan lokaci ko da wayar a kulle take, ba wa manhajar izini a “Agogon ƙararrawa da tunatarwa”. Ba tare da shi ba tsarin zai iya jinkirta sanarwar.',
+    'adh.exactButton': 'Bayar da izini yanzu',
     'adh.alertsAutoUpdateNote':
         'Ana saita tunatarwa bisa lokutan sallar yau da kullum, kuma suna sabuntuwa kowace rana.',
     'adh.tapHeadingHint': 'Danna take don saita sallolin biyar a lokaci guda',

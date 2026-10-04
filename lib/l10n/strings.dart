@@ -1019,6 +1019,10 @@ const _ar = <String, String>{
   'adh.adhanTestFailedMsg': 'تعذّر إرسال التنبيه.',
   'adh.prayerAlertsScreenTitle': 'مواقيت الصلاة',
   'adh.tryAdhanSoundButton': 'جرّب صوت الأذان',
+  'adh.exactTitle': 'التنبيه في وقته بالظبط',
+  'adh.exactBody':
+      'عشان الأذان يشتغل في دقيقته حتى والجوال مقفول، اسمح للتطبيق بـ «المنبّهات والتذكيرات». من غير الإذن ده ممكن النظام يأخّر التنبيه.',
+  'adh.exactButton': 'تفعيل الآن',
   'adh.alertsAutoUpdateNote':
       'التنبيهات تُضبط على مواقيت يومك وتُجدَّد كل يوم.',
   'adh.tapHeadingHint': 'اضغط العنوان لضبط الخمس صلوات معاً',
@@ -2198,6 +2202,10 @@ const _en = <String, String>{
   'adh.adhanTestFailedMsg': 'Could not send the alert.',
   'adh.prayerAlertsScreenTitle': 'Prayer Times',
   'adh.tryAdhanSoundButton': 'Try the adhan sound',
+  'adh.exactTitle': 'Alert at the exact minute',
+  'adh.exactBody':
+      'So the adhan plays on time even with the phone locked, allow the app under “Alarms & reminders”. Without it the system may delay the alert.',
+  'adh.exactButton': 'Allow now',
   'adh.alertsAutoUpdateNote':
       'Alerts are set to your daily prayer times and renew every day.',
   'adh.tapHeadingHint': 'Tap the heading to set all five prayers at once',

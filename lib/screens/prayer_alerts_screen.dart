@@ -7,6 +7,7 @@ import '../l10n/strings.dart';
 import '../services/adhan_downloads.dart';
 import '../services/notification_service.dart';
 import '../services/prayer_alerts.dart';
+import '../services/prayer_service.dart';
 
 /// The two moments a prayer announces itself, each with its own settings.
 ///
@@ -20,7 +21,43 @@ class PrayerAlertsScreen extends StatefulWidget {
   State<PrayerAlertsScreen> createState() => _PrayerAlertsScreenState();
 }
 
-class _PrayerAlertsScreenState extends State<PrayerAlertsScreen> {
+class _PrayerAlertsScreenState extends State<PrayerAlertsScreen>
+    with WidgetsBindingObserver {
+  /// Null until checked. False means alerts fall back to inexact alarms that
+  /// a locked phone may hold back, so the card asking for the permission
+  /// shows.
+  bool? _exactAllowed;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _checkExact();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  /// The permission is granted on a system page; coming back from it is a
+  /// resume, so that is when it is read again.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _checkExact();
+  }
+
+  Future<void> _checkExact() async {
+    final allowed = await NotificationService.exactAlarmsAllowed();
+    if (!mounted) return;
+    final gained = _exactAllowed == false && allowed;
+    setState(() => _exactAllowed = allowed);
+    // Alerts laid down before the permission were inexact; lay them down
+    // again now that they can be exact.
+    if (gained && PrayerAlerts.anyOn) await PrayerService.load();
+  }
+
   Future<void> _testSound() async {
     final error = await NotificationService.sendPrayerSoundTest();
     if (!mounted) return;
@@ -53,6 +90,10 @@ class _PrayerAlertsScreenState extends State<PrayerAlertsScreen> {
           builder: (context, _, _) => ListView(
             padding: const EdgeInsets.all(16),
             children: [
+              if (_exactAllowed == false) ...[
+                _exactCard(),
+                const SizedBox(height: 16),
+              ],
               _section(AlertWhen.before),
               const SizedBox(height: 10),
               _leadPicker(),
@@ -95,6 +136,59 @@ class _PrayerAlertsScreenState extends State<PrayerAlertsScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _exactCard() {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.goldMuted,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.gold),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.alarm, color: AppColors.gold, size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  t('adh.exactTitle'),
+                  style: const TextStyle(
+                    color: AppColors.gold,
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            t('adh.exactBody'),
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 12.5,
+              height: 1.7,
+            ),
+          ),
+          const SizedBox(height: 10),
+          FilledButton(
+            onPressed: () async {
+              await NotificationService.requestExactAlarms();
+              await _checkExact();
+            },
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.gold,
+              foregroundColor: AppColors.black,
+            ),
+            child: Text(t('adh.exactButton')),
+          ),
+        ],
       ),
     );
   }
