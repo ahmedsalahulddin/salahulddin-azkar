@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:in_app_update/in_app_update.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -33,6 +34,11 @@ class UpdateCheckResult {
 class UpdateChecker {
   static const _repo = 'ahmedsalahulddin/salahulddin-azkar';
   static const downloadPageUrl = 'https://azkar.salahulddin.com/download';
+
+  /// Whether to offer an update check at all. On iPhone the App Store
+  /// updates the app itself, and pointing readers at the Android download
+  /// page from an iOS app is grounds for App Review rejection.
+  static bool get offered => defaultTargetPlatform != TargetPlatform.iOS;
 
   static Future<UpdateCheckResult> check() async {
     if (Platform.isAndroid) {

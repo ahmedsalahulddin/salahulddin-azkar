@@ -1088,36 +1088,38 @@ class _AccountScreenState extends State<AccountScreen> {
             '${t('account.version')} $_version',
             style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
           ),
-          const SizedBox(height: 6),
-          ValueListenableBuilder<bool>(
-            valueListenable: _checkingUpdate,
-            builder: (context, checking, _) => TextButton.icon(
-              onPressed: checking ? null : _checkForUpdate,
-              icon: checking
-                  ? const SizedBox(
-                      width: 14,
-                      height: 14,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: AppColors.gold,
-                      ),
-                    )
-                  : const Icon(Icons.system_update, size: 16),
-              label: Text(
-                t('account.checkUpdate'),
-                style: const TextStyle(fontSize: 12),
-              ),
-              style: TextButton.styleFrom(
-                foregroundColor: AppColors.gold,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
+          if (UpdateChecker.offered) ...[
+            const SizedBox(height: 6),
+            ValueListenableBuilder<bool>(
+              valueListenable: _checkingUpdate,
+              builder: (context, checking, _) => TextButton.icon(
+                onPressed: checking ? null : _checkForUpdate,
+                icon: checking
+                    ? const SizedBox(
+                        width: 14,
+                        height: 14,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.gold,
+                        ),
+                      )
+                    : const Icon(Icons.system_update, size: 16),
+                label: Text(
+                  t('account.checkUpdate'),
+                  style: const TextStyle(fontSize: 12),
                 ),
-                minimumSize: Size.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.gold,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
               ),
             ),
-          ),
+          ],
           const SizedBox(height: 4),
           Text(
             t('account.aboutText'),
