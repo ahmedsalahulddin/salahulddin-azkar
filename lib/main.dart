@@ -205,13 +205,42 @@ class _MainNavigationState extends State<MainNavigation> {
 
   void _onLocale() => setState(() {});
 
+  static const _updateAskedKey = 'update_prompt_asked_at';
+
+  /// An update is offered, never forced: Google Play's small "update?"
+  /// prompt (a flexible update) at most once every three days, a background
+  /// download if the reader agrees, then a bar to restart into it when they
+  /// choose. Saying no — or ignoring the bar — keeps the current version.
   Future<void> _checkForUpdate() async {
     if (!Platform.isAndroid) return;
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final last = prefs.getInt(_updateAskedKey) ?? 0;
+      final now = DateTime.now().millisecondsSinceEpoch;
+      if (now - last < const Duration(days: 3).inMilliseconds) return;
       final info = await InAppUpdate.checkForUpdate();
-      if (info.updateAvailability == UpdateAvailability.updateAvailable) {
-        await InAppUpdate.performImmediateUpdate();
+      if (info.updateAvailability != UpdateAvailability.updateAvailable ||
+          !info.flexibleUpdateAllowed) {
+        return;
       }
+      await prefs.setInt(_updateAskedKey, now);
+      final result = await InAppUpdate.startFlexibleUpdate();
+      if (result != AppUpdateResult.success || !mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(t('update.ready')),
+          duration: const Duration(seconds: 10),
+          backgroundColor: AppColors.blackCard,
+          behavior: SnackBarBehavior.floating,
+          action: SnackBarAction(
+            label: t('update.restart'),
+            textColor: AppColors.gold,
+            onPressed: () => InAppUpdate.completeFlexibleUpdate().catchError(
+              (_) {},
+            ),
+          ),
+        ),
+      );
     } catch (_) {
       // Not distributed via Play Store (debug builds, direct APK) — ignore.
     }

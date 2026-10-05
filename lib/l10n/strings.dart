@@ -133,6 +133,8 @@ const _ar = <String, String>{
 
   // Search bar
   'search.label': 'بحث شامل',
+  'update.ready': 'التحديث الجديد اتنزّل — تقدر تكمّله دلوقتي أو بعدين',
+  'update.restart': 'تحديث',
   'search.hint': 'ابحث في كل أقسام التطبيق…',
   'myrem.title': 'تذكيراتي',
   'myrem.rowSub': 'سورة أو ذكر في الأيام والأوقات اللي تختارها',
@@ -1406,6 +1408,8 @@ const _en = <String, String>{
 
   // Search bar
   'search.label': 'Search',
+  'update.ready': 'The update has downloaded — finish it now or later',
+  'update.restart': 'Update',
   'search.hint': 'Search all sections…',
   'myrem.title': 'My reminders',
   'myrem.rowSub': 'A surah or adhkar on the days and times you choose',
