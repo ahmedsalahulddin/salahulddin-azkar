@@ -74,7 +74,16 @@ class AppUser {
   final String? email;
   final String? photoUrl;
 
-  const AppUser({required this.id, this.name, this.email, this.photoUrl});
+  /// Whether [photoUrl] is one the reader chose in the app.
+  final bool hasCustomPhoto;
+
+  const AppUser({
+    required this.id,
+    this.name,
+    this.email,
+    this.photoUrl,
+    this.hasCustomPhoto = false,
+  });
 
   String get displayName => name?.trim().isNotEmpty == true
       ? name!
@@ -186,8 +195,79 @@ class AuthService {
       id: account.id,
       name: (meta['full_name'] ?? meta['name']) as String?,
       email: account.email,
-      photoUrl: (meta['avatar_url'] ?? meta['picture']) as String?,
+      // A picture the reader chose in the app wins over the provider's, and
+      // lives under its own key so signing in again doesn't overwrite it.
+      photoUrl:
+          (meta[_customAvatarKey] ?? meta['avatar_url'] ?? meta['picture'])
+              as String?,
+      hasCustomPhoto: meta[_customAvatarKey] != null,
     );
+  }
+
+  static const _customAvatarKey = 'custom_avatar';
+  static const _avatarBucket = 'avatars';
+
+  static String _avatarPath(String userId) => '$userId/avatar.jpg';
+
+  /// Replaces the reader's picture with [jpeg] (already resized by the
+  /// picker). Stored in the public `avatars` bucket under their own folder
+  /// (see supabase/avatars.sql) and remembered on the profile, so every
+  /// device shows it. Returns false if it did not land.
+  static Future<bool> setAvatar(Uint8List jpeg) async {
+    final current = user.value;
+    if (!_initialised || current == null) return false;
+    try {
+      final client = Supabase.instance.client;
+      final path = _avatarPath(current.id);
+      await client.storage
+          .from(_avatarBucket)
+          .uploadBinary(
+            path,
+            jpeg,
+            fileOptions: const FileOptions(
+              contentType: 'image/jpeg',
+              upsert: true,
+            ),
+          );
+      // The path never changes, so the version busts every image cache.
+      final url =
+          '${client.storage.from(_avatarBucket).getPublicUrl(path)}'
+          '?v=${DateTime.now().millisecondsSinceEpoch}';
+      final res = await client.auth.updateUser(
+        UserAttributes(data: {_customAvatarKey: url}),
+      );
+      _adopt(res.user);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Goes back to the provider's picture (or initials).
+  static Future<bool> clearAvatar() async {
+    final current = user.value;
+    if (!_initialised || current == null) return false;
+    try {
+      final client = Supabase.instance.client;
+      final res = await client.auth.updateUser(
+        UserAttributes(data: {_customAvatarKey: null}),
+      );
+      _adopt(res.user);
+      await _removeAvatarFile(current.id);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  static Future<void> _removeAvatarFile(String userId) async {
+    try {
+      await Supabase.instance.client.storage.from(_avatarBucket).remove([
+        _avatarPath(userId),
+      ]);
+    } catch (_) {
+      // A leftover file is harmless; nothing points at it any more.
+    }
   }
 
   /// Opens the chosen provider's sign-in. Returns false if it was cancelled or
@@ -265,6 +345,9 @@ class AuthService {
   /// through, so the reader is never told their account is gone when it is not.
   static Future<bool> deleteAccount() async {
     if (!_initialised || user.value == null) return false;
+    // While still signed in, since the storage policy only lets the owner
+    // delete their own picture.
+    await _removeAvatarFile(user.value!.id);
     try {
       await Supabase.instance.client.rpc('delete_own_account');
     } catch (_) {

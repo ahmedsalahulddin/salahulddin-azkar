@@ -44,7 +44,7 @@
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>نستخدم موقعك لحساب أوقات الصلاة بدقة</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>نستخدم صورك فقط عندما تختار صورة لإضافتها إلى كروتك</string>
+	<string>نستخدم صورك فقط عندما تختار صورة لإضافتها إلى كروتك أو لتكون صورة حسابك</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

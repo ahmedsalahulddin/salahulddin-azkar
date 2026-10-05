@@ -122,6 +122,14 @@ class _TahfeezTabState extends State<TahfeezTab> {
     final notices = await TahfeezService.takeNotices();
     if (!mounted) return;
     for (final body in notices) {
+      if (body == TahfeezService.teacherApprovedNotice ||
+          body == TahfeezService.teacherRejectedNotice) {
+        await _requestDecidedDialog(
+          approved: body == TahfeezService.teacherApprovedNotice,
+        );
+        if (!mounted) return;
+        continue;
+      }
       final text = body.startsWith('cancelled_request:')
           ? t('tahfeez.notice.cancelledRequest').replaceAll(
               '{name}',
@@ -132,6 +140,53 @@ class _TahfeezTabState extends State<TahfeezTab> {
           : body;
       showNote(context, text);
     }
+  }
+
+  /// The answer to the reader's own teacher request — a dialog, not a
+  /// snackbar, since it is news they were waiting for.
+  Future<void> _requestDecidedDialog({required bool approved}) {
+    return showDialog<void>(
+      context: context,
+      builder: (ctx) => Directionality(
+        textDirection: tahfeezDirection(),
+        child: AlertDialog(
+          backgroundColor: AppColors.blackCard,
+          icon: Icon(
+            approved ? Icons.verified : Icons.info_outline,
+            color: approved ? AppColors.gold : AppColors.textMuted,
+            size: 36,
+          ),
+          title: Text(
+            t(
+              approved
+                  ? 'tahfeez.notice.approvedTitle'
+                  : 'tahfeez.notice.rejectedTitle',
+            ),
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: AppColors.gold, fontSize: 17),
+          ),
+          content: Text(
+            t(
+              approved
+                  ? 'tahfeez.notice.approvedBody'
+                  : 'tahfeez.notice.rejectedBody',
+            ),
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 14,
+              height: 1.6,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(t('tahfeez.notice.ok')),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   List<Halaqa> get _taught =>

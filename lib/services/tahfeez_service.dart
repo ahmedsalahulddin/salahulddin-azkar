@@ -1092,6 +1092,12 @@ class TahfeezService {
 
   /// One-line notices addressed to this user (a student withdrawing a
   /// pending request, for now), each returned exactly once.
+  /// Notice bodies left by decide_teacher_request
+  /// (supabase/tahfeez_request_notices.sql) — must match it exactly.
+  static const teacherApprovedNotice = 'تم قبولك كمحفّظ ✅';
+  static const teacherRejectedNotice =
+      'لم يُقبل طلبك كمحفّظ هذه المرة — تقدر تبعت طلب جديد';
+
   static Future<List<String>> takeNotices() async {
     if (AuthService.user.value == null) return const [];
     try {

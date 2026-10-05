@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../constants/theme.dart';
@@ -12,6 +13,7 @@ import '../services/section_config.dart';
 import '../services/tahfeez_service.dart';
 import '../services/update_checker.dart';
 import '../widgets/contact_dialog.dart';
+import '../widgets/profile_header.dart';
 import '../widgets/sign_in_buttons.dart';
 import 'admin_admins_screen.dart';
 import 'admin_duas_screen.dart';
@@ -249,6 +251,76 @@ class _AccountScreenState extends State<AccountScreen> {
     await AuthService.signOut();
   }
 
+  /// Choose a picture from the phone, or go back to the provider's one.
+  Future<void> _changePhoto() async {
+    final user = AuthService.user.value;
+    if (user == null) return;
+    final choice = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: AppColors.blackCard,
+      builder: (ctx) => Directionality(
+        textDirection: AccountLang.direction,
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(14),
+                child: Text(
+                  t('account.photoTitle'),
+                  style: const TextStyle(color: AppColors.gold, fontSize: 15),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library, color: AppColors.gold),
+                title: Text(
+                  t('account.photoPick'),
+                  style: const TextStyle(color: AppColors.textPrimary),
+                ),
+                onTap: () => Navigator.pop(ctx, 'pick'),
+              ),
+              if (user.hasCustomPhoto)
+                ListTile(
+                  leading: const Icon(
+                    Icons.restore,
+                    color: AppColors.textMuted,
+                  ),
+                  title: Text(
+                    t('account.photoRemove'),
+                    style: const TextStyle(color: AppColors.textPrimary),
+                  ),
+                  onTap: () => Navigator.pop(ctx, 'remove'),
+                ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (choice == null || !mounted) return;
+    bool ok;
+    if (choice == 'pick') {
+      final picked = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 512,
+        maxHeight: 512,
+        imageQuality: 85,
+      );
+      if (picked == null) return;
+      ok = await AuthService.setAvatar(await picked.readAsBytes());
+    } else {
+      ok = await AuthService.clearAvatar();
+    }
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(ok ? t('account.photoSaved') : t('account.photoFail')),
+        backgroundColor: AppColors.blackCard,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -267,11 +339,18 @@ class _AccountScreenState extends State<AccountScreen> {
             builder: (context, user, _) => ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                _profileCard(user),
-                if (SyncService.available) ...[
-                  const SizedBox(height: 12),
-                  _syncCard(),
-                ],
+                if (user == null)
+                  _profileCard(null)
+                else
+                  ProfileHeader(
+                    user: user,
+                    nameChip: _tahfeezNameRow(),
+                    onChangePhoto: _changePhoto,
+                    onSignOut: _signOut,
+                    onDelete: _deleteAccount,
+                    deleting: _deleting,
+                    showSync: SyncService.available,
+                  ),
                 const SizedBox(height: 16),
                 _groupGrid(),
                 const SizedBox(height: 12),
@@ -410,90 +489,6 @@ class _AccountScreenState extends State<AccountScreen> {
     );
   }
 
-  /// Sync, said plainly: what travels, and when it last did.
-  Widget _syncCard() {
-    return ValueListenableBuilder<bool>(
-      valueListenable: SyncService.syncing,
-      builder: (context, busy, _) => ValueListenableBuilder<DateTime?>(
-        valueListenable: SyncService.lastSynced,
-        builder: (context, at, _) => Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: AppColors.blackCard,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.goldBorder),
-          ),
-          child: Row(
-            children: [
-              const Icon(Icons.cloud_sync, color: AppColors.gold, size: 22),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      t('account.sync'),
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 14,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      at == null
-                          ? t('account.syncNever')
-                          : '${t('account.syncLast')} ${_clock(at)}',
-                      style: const TextStyle(
-                        color: AppColors.textMuted,
-                        fontSize: 11,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              busy
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: AppColors.gold,
-                      ),
-                    )
-                  : TextButton(
-                      onPressed: () async {
-                        final ok = await SyncService.sync();
-                        if (!context.mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              ok
-                                  ? t('account.syncDone')
-                                  : t('account.syncFail'),
-                            ),
-                            backgroundColor: AppColors.blackCard,
-                            behavior: SnackBarBehavior.floating,
-                          ),
-                        );
-                      },
-                      child: Text(
-                        t('account.syncNow'),
-                        style: const TextStyle(color: AppColors.gold),
-                      ),
-                    ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  String _clock(DateTime at) {
-    final h = at.hour % 12 == 0 ? 12 : at.hour % 12;
-    final m = at.minute.toString().padLeft(2, '0');
-    return '$h:$m ${at.hour >= 12 ? t('account.pm') : t('account.am')}';
-  }
-
   Widget _profileCard(AppUser? user) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -525,9 +520,8 @@ class _AccountScreenState extends State<AccountScreen> {
               style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
             ),
           ],
-          if (user != null) ...[const SizedBox(height: 10), _tahfeezNameRow()],
           const SizedBox(height: 16),
-          if (user == null) _guestActions() else _signedInActions(),
+          _guestActions(),
         ],
       ),
     );
@@ -644,47 +638,6 @@ class _AccountScreenState extends State<AccountScreen> {
         Text(
           t('account.optional'),
           style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
-        ),
-      ],
-    );
-  }
-
-  Widget _signedInActions() {
-    return Column(
-      children: [
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton.icon(
-            onPressed: _deleting ? null : _signOut,
-            icon: const Icon(Icons.logout, size: 17),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.textMuted,
-              side: const BorderSide(color: AppColors.goldBorder),
-              padding: const EdgeInsets.symmetric(vertical: 11),
-            ),
-            label: Text(t('account.signOut')),
-          ),
-        ),
-        const SizedBox(height: 8),
-        SizedBox(
-          width: double.infinity,
-          child: TextButton.icon(
-            onPressed: _deleting ? null : _deleteAccount,
-            icon: _deleting
-                ? const SizedBox(
-                    width: 15,
-                    height: 15,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: AppColors.error,
-                    ),
-                  )
-                : const Icon(Icons.delete_forever, size: 17),
-            style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            label: Text(
-              _deleting ? t('account.deleting') : t('account.delete'),
-            ),
-          ),
         ),
       ],
     );
