@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../constants/theme.dart';
 import '../l10n/strings.dart';
 import '../services/account_lang.dart';
+import '../services/hidden_teachers.dart';
 import '../services/app_locale.dart';
 import '../services/auth_service.dart';
 import '../services/sync_service.dart';
@@ -20,6 +21,7 @@ import 'admin_duas_screen.dart';
 import 'admin_screen.dart';
 import 'admin_translation_feedback_screen.dart';
 import 'downloads_screen.dart';
+import 'tahfeez/hidden_teachers_screen.dart';
 import 'tahfeez/reports_screen.dart';
 import 'tahfeez/tahfeez_widgets.dart';
 import 'tahfeez/teacher_requests_screen.dart';
@@ -49,6 +51,7 @@ class _AccountScreenState extends State<AccountScreen> {
   @override
   void initState() {
     super.initState();
+    HiddenTeachers.load();
     _onAuthChanged();
     AuthService.user.addListener(_onAuthChanged);
     PackageInfo.fromPlatform().then((i) {
@@ -353,6 +356,20 @@ class _AccountScreenState extends State<AccountScreen> {
                   ),
                 const SizedBox(height: 16),
                 _groupGrid(),
+                if (user != null) ...[
+                  const SizedBox(height: 12),
+                  ValueListenableBuilder<Set<String>>(
+                    valueListenable: HiddenTeachers.ids,
+                    builder: (_, hidden, _) => _groupRow(
+                      icon: Icons.visibility_off_outlined,
+                      title: hidden.isEmpty
+                          ? t('tahfeez.hiddenTeachers')
+                          : '${t('tahfeez.hiddenTeachers')} (${hidden.length})',
+                      subtitle: t('tahfeez.hiddenRowSub'),
+                      onTap: () => _push(const HiddenTeachersScreen()),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 12),
                 _groupRow(
                   icon: Icons.info_outline,

@@ -913,7 +913,7 @@ class _TeachersDirectoryScreenState extends State<TeachersDirectoryScreen> {
             alignment: AlignmentDirectional.centerStart,
             child: TextButton.icon(
               onPressed: () async {
-                await HiddenTeachers.set(p.userId, true);
+                await HiddenTeachers.set(p.userId, true, name: p.displayName);
                 if (!ctx.mounted || !mounted) return;
                 Navigator.pop(ctx);
                 showNote(context, t('tahfeez.teacherHidden'));
