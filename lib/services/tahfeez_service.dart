@@ -106,6 +106,10 @@ class TahfeezProfile {
   /// When a teacher says they are free to teach; empty if they haven't said.
   final List<AvailabilitySlot> availability;
 
+  /// Fixed per person, so teachers can tell students apart by it
+  /// (supabase/tahfeez_student_codes.sql); null until that has run.
+  final String? studentCode;
+
   const TahfeezProfile({
     required this.userId,
     required this.displayName,
@@ -125,6 +129,7 @@ class TahfeezProfile {
     this.country,
     this.teachesChildren = false,
     this.availability = const [],
+    this.studentCode,
   });
 
   bool get isTeacher => role == TahfeezRole.teacher;
@@ -159,6 +164,7 @@ class TahfeezProfile {
     country: country ?? this.country,
     teachesChildren: teachesChildren,
     availability: availability ?? this.availability,
+    studentCode: studentCode,
   );
 
   factory TahfeezProfile.fromJson(Map<String, dynamic> j) => TahfeezProfile(
@@ -191,6 +197,31 @@ class TahfeezProfile {
       for (final a in (j['availability'] as List?) ?? const [])
         if (a is Map) AvailabilitySlot.fromJson(Map<String, dynamic>.from(a)),
     ],
+    studentCode: j['student_code'] as String?,
+  );
+}
+
+/// One student as their teacher knows them: name and the code that tells
+/// them apart, for the "My students" records. Never their email.
+@immutable
+class TeacherStudent {
+  final String id;
+  final String name;
+  final String? code;
+  final String? photoUrl;
+
+  const TeacherStudent({
+    required this.id,
+    required this.name,
+    this.code,
+    this.photoUrl,
+  });
+
+  factory TeacherStudent.fromJson(Map<String, dynamic> j) => TeacherStudent(
+    id: j['student_id'] as String,
+    name: j['display_name'] as String? ?? '',
+    code: j['student_code'] as String?,
+    photoUrl: j['photo_url'] as String?,
   );
 }
 
@@ -414,7 +445,18 @@ class TahfeezSession {
       '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}:00';
 }
 
-enum EvalGrade { excellent, veryGood, good, redo }
+enum EvalGrade { excellent, veryGood, good, acceptable, redo }
+
+/// Points each grade is worth toward a student's total.
+extension EvalGradeScore on EvalGrade {
+  int get score => switch (this) {
+    EvalGrade.excellent => 10,
+    EvalGrade.veryGood => 7,
+    EvalGrade.good => 5,
+    EvalGrade.acceptable => 2,
+    EvalGrade.redo => 0,
+  };
+}
 
 /// What a student was assessed on for one of the three points.
 class EvalPoint {
@@ -474,6 +516,15 @@ class Evaluation {
     this.newHifz,
     this.tafsir,
   });
+
+  /// The points this assessment earned: each assessed part's grade, summed.
+  int get score =>
+      (review?.grade.score ?? 0) +
+      (newHifz?.grade.score ?? 0) +
+      (tafsir?.grade.score ?? 0);
+
+  /// The most it could have earned, for "23 / 30".
+  int get maxScore => pointCount * EvalGrade.excellent.score;
 
   int get pointCount =>
       (review == null ? 0 : 1) +
@@ -940,9 +991,10 @@ class TahfeezService {
     }
   }
 
-  /// Student id -> email, for a circle the caller teaches. Restricted by the
-  /// tahfeez_halaqa_emails() function itself, not just by RLS on a table —
-  /// a display name alone is not enough to find one student among many.
+  /// Student id -> student code, for a circle the caller teaches (the
+  /// server function kept its old name; emails are for admins only, see
+  /// supabase/tahfeez_student_codes.sql) — a display name alone is not
+  /// enough to find one student among many.
   static Future<Map<String, String>> memberEmails(String halaqaId) async {
     try {
       final c = await _client;
@@ -1009,6 +1061,26 @@ class TahfeezService {
           .select()
           .single();
       return TahfeezSession.fromJson(row);
+    } catch (e) {
+      _throw(e);
+    }
+  }
+
+  /// Moves a session to new times on the same day, keeping its assessments.
+  static Future<void> updateSessionTime(
+    String id,
+    TimeOfDay start,
+    TimeOfDay end,
+  ) async {
+    try {
+      final c = await _client;
+      await c
+          .from('tahfeez_sessions')
+          .update({
+            'start_time': TahfeezSession.encodeTime(start),
+            'end_time': TahfeezSession.encodeTime(end),
+          })
+          .eq('id', id);
     } catch (e) {
       _throw(e);
     }
@@ -1306,6 +1378,60 @@ class TahfeezService {
           .order('on_date', ascending: false)
           .limit(200);
       return rows.map(Evaluation.fromJson).toList();
+    } catch (e) {
+      _throw(e);
+    }
+  }
+
+  /// Every student this teacher has had, with their code.
+  static Future<List<TeacherStudent>> teacherStudents() async {
+    try {
+      final c = await _client;
+      final rows = await c.rpc('tahfeez_teacher_students') as List;
+      return [
+        for (final r in rows)
+          TeacherStudent.fromJson(Map<String, dynamic>.from(r as Map)),
+      ];
+    } catch (e) {
+      _throw(e);
+    }
+  }
+
+  /// Every assessment given in these sessions — a teacher's whole record.
+  static Future<List<Evaluation>> evaluationsInSessions(
+    List<String> sessionIds,
+  ) async {
+    if (sessionIds.isEmpty) return const [];
+    try {
+      final c = await _client;
+      final rows = await c
+          .from('tahfeez_evaluations')
+          .select()
+          .inFilter('session_id', sessionIds)
+          .order('on_date', ascending: false);
+      return rows.map(Evaluation.fromJson).toList();
+    } catch (e) {
+      _throw(e);
+    }
+  }
+
+  /// Who is in each of these circles now.
+  static Future<List<HalaqaMember>> membersOf(List<String> halaqaIds) async {
+    if (halaqaIds.isEmpty) return const [];
+    try {
+      final c = await _client;
+      final rows = await c
+          .from('tahfeez_members')
+          .select()
+          .inFilter('halaqa_id', halaqaIds);
+      return [
+        for (final r in rows)
+          HalaqaMember(
+            halaqaId: r['halaqa_id'] as String,
+            studentId: r['student_id'] as String,
+            joinedAt: DateTime.parse(r['joined_at'] as String),
+          ),
+      ];
     } catch (e) {
       _throw(e);
     }

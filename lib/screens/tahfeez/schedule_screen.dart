@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../constants/theme.dart';
 import '../../l10n/strings.dart';
 import '../../services/tahfeez_service.dart';
+import 'availability_screen.dart' show availabilityWeekOrder, minutesLabel;
 import 'session_evaluation_screen.dart';
 import 'tahfeez_widgets.dart';
 
@@ -27,11 +28,21 @@ class ScheduleScreen extends StatefulWidget {
   /// from one who isn't, in the picker's filter.
   final List<Enrollment> enrollments;
 
+  /// The teacher's available working hours, for the "free times" view: what
+  /// is left of them once the sessions are taken out.
+  final List<AvailabilitySlot> availability;
+
+  /// Members to use instead of fetching — previews only.
+  @visibleForTesting
+  final List<HalaqaMember>? initialMembers;
+
   const ScheduleScreen({
     super.key,
     required this.halaqat,
     required this.sessions,
     this.enrollments = const [],
+    this.availability = const [],
+    this.initialMembers,
   });
 
   @override
@@ -51,10 +62,44 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   List<Evaluation> _studentEvals = const [];
   bool _loadingEvals = false;
 
+  /// Working times (the sessions) or free times (available hours left over).
+  bool _freeMode = false;
+
   @override
   void initState() {
     super.initState();
-    _loadStudents();
+    if (widget.initialMembers != null) {
+      for (final m in widget.initialMembers!) {
+        (_studentHalaqaIds[m.studentId] ??= {}).add(m.halaqaId);
+      }
+      _students = {
+        for (final m in widget.initialMembers!) m.studentId: m,
+      }.values.toList();
+      _loadingStudents = false;
+    } else {
+      _loadStudents();
+    }
+  }
+
+  /// What is left of [weekday]'s available hours once its sessions are taken
+  /// out, as (from, to) minutes.
+  List<(int, int)> _freeRanges(int weekday) {
+    var free = [
+      for (final a in widget.availability)
+        if (a.weekday == weekday) (a.from, a.to),
+    ]..sort((a, b) => a.$1.compareTo(b.$1));
+    for (final s in _sessionsOnWeekday(weekday)) {
+      final bs = _minutes(s.start);
+      final be = _minutes(s.end);
+      free = [
+        for (final (f, t) in free) ...[
+          if (be <= f || bs >= t) (f, t),
+          if (!(be <= f || bs >= t) && bs > f) (f, bs),
+          if (!(be <= f || bs >= t) && be < t) (be, t),
+        ],
+      ];
+    }
+    return free.where((r) => r.$2 - r.$1 >= 15).toList();
   }
 
   static DateTime _dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);
@@ -182,6 +227,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   /// evaluated/scheduled days once one is.
   bool _isActive(DateTime date) {
     final weekday = weekdayOf(date);
+    if (_freeMode) return _freeRanges(weekday).isNotEmpty;
     if (_studentId == null) return _sessionsOnWeekday(weekday).isNotEmpty;
 
     final today = _dateOnly(DateTime.now());
@@ -231,18 +277,32 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
           foregroundColor: AppColors.gold,
           title: Text(t('tahfeez.calendar')),
         ),
-        body: Column(
+        body: ListView(
+          padding: const EdgeInsets.only(bottom: 90),
           children: [
-            if (!_loadingStudents && _students.isNotEmpty)
-              _studentFilterButton(),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+              child: Row(
+                children: [
+                  Expanded(child: _modeSwitch()),
+                  if (!_loadingStudents && _students.isNotEmpty) ...[
+                    const SizedBox(width: 8),
+                    Expanded(child: _studentFilterButton()),
+                  ],
+                ],
+              ),
+            ),
             _monthHeader(),
             _weekdayHeader(),
             _monthGrid(),
             const Divider(color: AppColors.goldBorder, height: 1),
-            Expanded(child: _dayDetail()),
+            const SizedBox(height: 8),
+            ..._weekList(),
           ],
         ),
-        floatingActionButton: _selected == null ? null : _addButton(_selected!),
+        floatingActionButton: _selected == null || _freeMode
+            ? null
+            : _addButton(_selected!),
       ),
     );
   }
@@ -253,12 +313,12 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   Widget _studentFilterButton() {
     final label = _nameOf(_studentId) ?? t('tahfeez.allStudents');
     return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+      padding: EdgeInsets.zero,
       child: GestureDetector(
         onTap: _openStudentPicker,
         behavior: HitTestBehavior.opaque,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
           decoration: BoxDecoration(
             color: _studentId == null
                 ? AppColors.blackSurface
@@ -351,7 +411,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 8),
       child: Row(
         children: [
-          for (var d = 0; d < 7; d++)
+          for (final d in availabilityWeekOrder)
             Expanded(
               child: Center(
                 child: Text(
@@ -378,7 +438,8 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   }
 
   Widget _monthGrid() {
-    final lead = weekdayOf(_month);
+    // Columns run Saturday … Friday.
+    final lead = availabilityWeekOrder.indexOf(weekdayOf(_month));
     final gridStart = _month.subtract(Duration(days: lead));
     final today = _dateOnly(DateTime.now());
 
@@ -412,108 +473,230 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     return GestureDetector(
       onTap: () => setState(() => _selected = date),
       behavior: HitTestBehavior.opaque,
-      child: Container(
-        margin: const EdgeInsets.all(2),
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        decoration: BoxDecoration(
-          color: selected ? AppColors.gold : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
-          border: isToday && !selected
-              ? Border.all(color: AppColors.gold)
-              : null,
-        ),
-        child: Column(
-          children: [
-            Text(
+      child: SizedBox(
+        height: 42,
+        child: Center(
+          child: Container(
+            width: 36,
+            height: 36,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: selected
+                  ? AppColors.gold
+                  : active
+                  ? AppColors.gold.withValues(alpha: 0.28)
+                  : Colors.transparent,
+              border: selected
+                  ? null
+                  : active
+                  ? Border.all(color: AppColors.gold)
+                  : isToday
+                  ? Border.all(color: AppColors.gold.withValues(alpha: 0.6))
+                  : null,
+            ),
+            child: Text(
               '${date.day}',
               style: TextStyle(
                 color: !inMonth
                     ? AppColors.textMuted.withValues(alpha: 0.4)
                     : selected
                     ? AppColors.black
+                    : active
+                    ? AppColors.gold
                     : AppColors.textPrimary,
                 fontSize: 13,
-                fontWeight: selected || isToday
+                fontWeight: selected || active || isToday
                     ? FontWeight.bold
                     : FontWeight.normal,
               ),
             ),
-            const SizedBox(height: 2),
-            SizedBox(
-              height: 5,
-              width: 5,
-              child: active
-                  ? DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: selected ? AppColors.black : AppColors.gold,
-                        shape: BoxShape.circle,
-                      ),
-                    )
-                  : null,
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _dayDetail() {
-    final selected = _selected;
-    if (selected == null) {
-      return EmptyNote(
-        icon: Icons.event_available,
-        text: t('tahfeez.pickDayHint'),
-        hint: '',
-      );
-    }
-
-    final weekday = weekdayOf(selected);
-    final sessions = _sessionsOnWeekday(weekday);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  formatDate(selected),
-                  style: const TextStyle(
-                    color: AppColors.textGold,
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
+  /// Working times / free times as one switch.
+  Widget _modeSwitch() {
+    return Container(
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: AppColors.blackSurface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.goldBorder),
+      ),
+      child: Row(
+        children: [
+          for (final (free, label) in [
+            (false, t('tahfeez.mode.work')),
+            (true, t('tahfeez.mode.free')),
+          ])
+            Expanded(
+              child: GestureDetector(
+                onTap: () => setState(() => _freeMode = free),
+                behavior: HitTestBehavior.opaque,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  decoration: BoxDecoration(
+                    color: free == _freeMode
+                        ? AppColors.gold
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(9),
+                  ),
+                  child: Text(
+                    label,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: free == _freeMode
+                          ? AppColors.black
+                          : AppColors.textSecondary,
+                      fontSize: 12,
+                      fontWeight: free == _freeMode
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                    ),
                   ),
                 ),
               ),
-              Text(
-                '${sessions.length} / ${TahfeezService.maxSessionsPerDay}',
-                style: TextStyle(
-                  color: sessions.length >= TahfeezService.maxSessionsPerDay
-                      ? AppColors.error
-                      : AppColors.textMuted,
-                  fontSize: 13,
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// The week under the calendar, Saturday first: each day with its session
+  /// times (for the picked student, if any) or its free times. The selected
+  /// date's day is outlined, and in working times its sessions open below.
+  List<Widget> _weekList() {
+    final selectedDay = _selected == null ? null : weekdayOf(_selected!);
+    if (_freeMode && widget.availability.isEmpty) {
+      return [
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: EmptyNote(
+            icon: Icons.event_available,
+            text: t('tahfeez.freeNeedsAvail'),
+          ),
+        ),
+      ];
+    }
+    final studentHalaqat = _studentId == null
+        ? null
+        : (_studentHalaqaIds[_studentId] ?? const <String>{});
+    return [
+      for (final d in availabilityWeekOrder) ...[
+        Padding(
+          padding: const EdgeInsets.fromLTRB(12, 0, 12, 6),
+          child: _dayRow(d, d == selectedDay, studentHalaqat),
+        ),
+      ],
+    ];
+  }
+
+  Widget _dayRow(int weekday, bool selected, Set<String>? studentHalaqat) {
+    final sessions = _sessionsOnWeekday(weekday)
+        .where(
+          (s) => studentHalaqat == null || studentHalaqat.contains(s.halaqaId),
+        )
+        .toList();
+    final free = _freeMode ? _freeRanges(weekday) : const <(int, int)>[];
+    final chips = _freeMode
+        ? [
+            for (final (f, to) in free)
+              '${minutesLabel(f)} – ${minutesLabel(to)}',
+          ]
+        : [
+            for (final s in sessions)
+              '${formatTime(s.start)} – ${formatTime(s.end)}'
+                  '${_halaqaOf(s.halaqaId) == null ? '' : ' · ${_halaqaOf(s.halaqaId)!.name}'}',
+          ];
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+      decoration: BoxDecoration(
+        color: AppColors.blackCard,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: selected ? AppColors.gold : AppColors.goldBorder,
+          width: selected ? 1.5 : 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: 70,
+                child: Text(
+                  weekdayName(weekday),
+                  style: TextStyle(
+                    color: chips.isEmpty ? AppColors.textMuted : AppColors.gold,
+                    fontSize: 13,
+                    fontWeight: chips.isEmpty
+                        ? FontWeight.normal
+                        : FontWeight.bold,
+                  ),
                 ),
+              ),
+              Expanded(
+                child: chips.isEmpty
+                    ? Text(
+                        _freeMode ? t('tahfeez.freeNone') : '—',
+                        style: const TextStyle(
+                          color: AppColors.textMuted,
+                          fontSize: 12,
+                        ),
+                      )
+                    : Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: [
+                          for (final c in chips)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 3,
+                              ),
+                              decoration: BoxDecoration(
+                                color: _freeMode
+                                    ? AppColors.success.withValues(alpha: 0.12)
+                                    : AppColors.goldMuted,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                c,
+                                style: TextStyle(
+                                  color: _freeMode
+                                      ? AppColors.success
+                                      : AppColors.gold,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
               ),
             ],
           ),
-        ),
-        Expanded(
-          child: sessions.isEmpty
-              ? EmptyNote(
-                  icon: Icons.event_available,
-                  text: t('tahfeez.noSessions'),
-                  hint: t('tahfeez.noSessionsHint'),
-                )
-              : ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 90),
-                  itemCount: sessions.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: 8),
-                  itemBuilder: (_, i) => _sessionCard(sessions[i], selected),
-                ),
-        ),
-      ],
+          if (selected && !_freeMode && sessions.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Text(
+              formatDate(_selected!),
+              style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+            ),
+            const SizedBox(height: 6),
+            for (final s in sessions) ...[
+              _sessionCard(s, _selected!),
+              const SizedBox(height: 6),
+            ],
+          ],
+        ],
+      ),
     );
   }
 
@@ -799,7 +982,7 @@ class _AddSessionSheetState extends State<_AddSessionSheet> {
 
 enum _SubFilter { all, subscribed, unsubscribed }
 
-/// Searchable by name or email, with a subscribed/not-subscribed toggle —
+/// Searchable by name or student code, with a subscribed/not-subscribed toggle —
 /// the flat chip row it replaces had no way to find one student among two
 /// hundred.
 class _StudentPickerSheet extends StatefulWidget {

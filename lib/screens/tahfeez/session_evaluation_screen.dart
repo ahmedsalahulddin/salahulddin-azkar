@@ -463,7 +463,7 @@ class _EvaluationEditorScreenState extends State<EvaluationEditorScreen> {
               children: [
                 for (final g in EvalGrade.values)
                   ChoiceChip(
-                    label: Text(gradeLabel(g)),
+                    label: Text('${gradeLabel(g)} · ${g.score}'),
                     selected: d.grade == g,
                     selectedColor: gradeColor(g).withValues(alpha: 0.25),
                     backgroundColor: AppColors.blackSurface,

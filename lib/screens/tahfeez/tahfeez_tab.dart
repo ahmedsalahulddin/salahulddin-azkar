@@ -246,7 +246,7 @@ class _TahfeezTabState extends State<TahfeezTab> {
                   ? 'tahfeez.notice.approvedBody'
                   : 'tahfeez.notice.rejectedBody',
             ),
-            textAlign: TextAlign.center,
+            textAlign: approved ? TextAlign.start : TextAlign.center,
             style: const TextStyle(
               color: AppColors.textPrimary,
               fontSize: 14,
@@ -254,10 +254,28 @@ class _TahfeezTabState extends State<TahfeezTab> {
             ),
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text(t('tahfeez.notice.ok')),
-            ),
+            if (approved) ...[
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text(t('tahfeez.later')),
+              ),
+              FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.gold,
+                  foregroundColor: AppColors.black,
+                ),
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  final p = _profile;
+                  if (p != null) _openAvailability(p);
+                },
+                child: Text(t('tahfeez.avail.setNow')),
+              ),
+            ] else
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text(t('tahfeez.notice.ok')),
+              ),
           ],
         ),
       ),
@@ -1288,6 +1306,9 @@ class _TahfeezTabState extends State<TahfeezTab> {
                   if (code != null) ...[
                     const SizedBox(height: 6),
                     _teacherCodeCompact(code),
+                  ] else if (profile.studentCode != null) ...[
+                    const SizedBox(height: 6),
+                    _studentCodeCompact(profile.studentCode!),
                   ],
                 ],
               ),
@@ -1341,6 +1362,38 @@ class _TahfeezTabState extends State<TahfeezTab> {
           ),
         ),
       ],
+    );
+  }
+
+  /// A student's own code, which their teachers see beside their name.
+  Widget _studentCodeCompact(String code) {
+    return GestureDetector(
+      onTap: () async {
+        await Clipboard.setData(ClipboardData(text: code));
+        if (mounted) showNote(context, t('tahfeez.codeCopied'));
+      },
+      behavior: HitTestBehavior.opaque,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            '${t('tahfeez.myStudentCode')} ',
+            style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+          ),
+          Text(
+            code,
+            textDirection: TextDirection.ltr,
+            style: const TextStyle(
+              color: AppColors.gold,
+              fontSize: 13,
+              letterSpacing: 1.5,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(width: 4),
+          const Icon(Icons.copy, color: AppColors.gold, size: 14),
+        ],
+      ),
     );
   }
 
@@ -1684,6 +1737,49 @@ class _TahfeezTabState extends State<TahfeezTab> {
   }
 
   Future<void> _createHalaqa() async {
+    final profile = _profile;
+    if (profile != null && profile.availability.isEmpty) {
+      final go = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => Directionality(
+          textDirection: tahfeezDirection(),
+          child: AlertDialog(
+            backgroundColor: AppColors.blackCard,
+            icon: const Icon(
+              Icons.event_available,
+              color: AppColors.gold,
+              size: 34,
+            ),
+            title: Text(
+              t('tahfeez.availFirstTitle'),
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: AppColors.gold, fontSize: 16),
+            ),
+            content: Text(
+              t('tahfeez.availFirstBody'),
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: AppColors.textPrimary, height: 1.6),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: Text(t('tahfeez.later')),
+              ),
+              FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.gold,
+                  foregroundColor: AppColors.black,
+                ),
+                onPressed: () => Navigator.pop(ctx, true),
+                child: Text(t('tahfeez.avail.setNow')),
+              ),
+            ],
+          ),
+        ),
+      );
+      if (go == true && mounted) await _openAvailability(profile);
+      return;
+    }
     final name = await promptText(
       context,
       title: t('tahfeez.newHalaqa'),
@@ -1707,6 +1803,7 @@ class _TahfeezTabState extends State<TahfeezTab> {
           halaqat: _taught,
           sessions: _sessions,
           enrollments: _myStudents,
+          availability: _profile?.availability ?? const [],
         ),
       ),
     );

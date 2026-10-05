@@ -40,10 +40,37 @@ String formatDate(DateTime d) =>
 
 String gradeLabel(EvalGrade g) => t('tahfeez.grade.${g.name}');
 
+/// How long a session runs, as people say it: "ساعة", "ساعة ونصف",
+/// "ساعتين", or hours and minutes otherwise.
+String durationLabel(int minutes) {
+  switch (minutes) {
+    case 30:
+      return t('tahfeez.dur.halfHour');
+    case 60:
+      return t('tahfeez.dur.hour');
+    case 90:
+      return t('tahfeez.dur.hourHalf');
+    case 120:
+      return t('tahfeez.dur.twoHours');
+  }
+  final h = minutes ~/ 60;
+  final m = minutes % 60;
+  return [
+    if (h == 1) t('tahfeez.dur.hour'),
+    if (h == 2) t('tahfeez.dur.twoHours'),
+    if (h > 2) t('tahfeez.dur.hours').replaceAll('{h}', '$h'),
+    if (m > 0) t('tahfeez.dur.minutes').replaceAll('{m}', '$m'),
+  ].join(t('tahfeez.dur.and'));
+}
+
+int sessionMinutes(TahfeezSession s) =>
+    (s.end.hour * 60 + s.end.minute) - (s.start.hour * 60 + s.start.minute);
+
 Color gradeColor(EvalGrade g) => switch (g) {
   EvalGrade.excellent => AppColors.success,
   EvalGrade.veryGood => AppColors.emeraldLight,
   EvalGrade.good => AppColors.goldLight,
+  EvalGrade.acceptable => AppColors.textSecondary,
   EvalGrade.redo => AppColors.error,
 };
 
@@ -367,6 +394,7 @@ void showNote(BuildContext context, String text, {bool error = false}) {
 String describeError(Object e) {
   if (e is TahfeezException) {
     return switch (e.code) {
+      'name_locked' => t('tahfeez.nameLocked'),
       'max_sessions_per_day' => t('tahfeez.sessionLimit'),
       'no_such_code' => t('tahfeez.noSuchCode'),
       'own_halaqa' => t('tahfeez.ownHalaqa'),
