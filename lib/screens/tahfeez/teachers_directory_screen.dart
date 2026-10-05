@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../constants/theme.dart';
 import '../../data/tahfeez_countries.dart';
@@ -6,6 +7,7 @@ import '../../l10n/strings.dart';
 import '../../services/auth_service.dart';
 import '../../services/hidden_teachers.dart';
 import '../../services/tahfeez_service.dart';
+import 'availability_screen.dart';
 import 'tahfeez_widgets.dart';
 
 /// Whom a teacher takes on, as the directory filters it: a student ticks any
@@ -30,11 +32,29 @@ class TeachersDirectoryScreen extends StatefulWidget {
   @visibleForTesting
   final List<TahfeezProfile>? initialTeachers;
 
+  /// Shown as a section of the Tahfeez tab rather than a page of its own:
+  /// no app bar, and changes are reported through [onChanged].
+  final bool embedded;
+
+  /// Placed above the list (the teacher's own "show me here" switch).
+  final Widget? header;
+
+  /// The country the reader set on their profile, used until they pick one
+  /// here. Without either, the first visit asks.
+  final String? defaultCountry;
+
+  /// Called after the reader asks a teacher or cancels a request.
+  final VoidCallback? onChanged;
+
   const TeachersDirectoryScreen({
     super.key,
     required this.enrollments,
     this.myGender,
     this.initialTeachers,
+    this.embedded = false,
+    this.header,
+    this.defaultCountry,
+    this.onChanged,
   });
 
   @override
@@ -53,6 +73,10 @@ class _TeachersDirectoryScreenState extends State<TeachersDirectoryScreen> {
   final _countries = <String>{};
   final _codeController = TextEditingController();
   bool _joining = false;
+
+  /// The country the reader picked the first time they opened the directory
+  /// ('' for every country); it starts the country filter each visit.
+  static const _countryKey = 'tahfeez_directory_country';
 
   @override
   void initState() {
@@ -76,11 +100,19 @@ class _TeachersDirectoryScreenState extends State<TeachersDirectoryScreen> {
     try {
       await HiddenTeachers.load();
       final list = widget.initialTeachers ?? await TahfeezService.teachers();
+      final prefs = await SharedPreferences.getInstance();
+      final saved = prefs.getString(_countryKey) ?? widget.defaultCountry;
       if (!mounted) return;
       setState(() {
         _teachers = list;
         _loading = false;
+        _countries.clear();
+        if (saved != null && saved.isNotEmpty) _countries.add(saved);
       });
+      // First visit with no country anywhere: ask before showing everyone
+      // everywhere. Inside the Tahfeez tab the tab asks instead, saving it
+      // to the profile.
+      if (saved == null && !widget.embedded) _pickCountry(first: true);
     } catch (e) {
       if (!mounted) return;
       setState(() => _loading = false);
@@ -131,245 +163,240 @@ class _TeachersDirectoryScreenState extends State<TeachersDirectoryScreen> {
 
   // ---- filters -------------------------------------------------------------
 
+  /// The filters, laid out flat: where (one pill that opens the country
+  /// list), whom (three toggles side by side), and which language (toggles
+  /// side by side, only those some teacher speaks).
   Widget _filterBar() {
+    final base = _eligible;
+    final languages = [
+      for (final (code, _) in tahfeezLanguages)
+        if (base.any((p) => p.languages.contains(code))) code,
+    ];
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 6, 16, 2),
-      child: Row(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 2),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Expanded(
-            child: _filterButton(
-              t('tahfeez.filter.language'),
-              _languages.length,
-              _pickLanguages,
-            ),
+          Row(
+            children: [
+              _countryPill(),
+              const SizedBox(width: 8),
+              Expanded(child: _audienceToggle()),
+            ],
           ),
-          const SizedBox(width: 6),
-          Expanded(
-            child: _filterButton(
-              t('tahfeez.filterGender'),
-              _audiences.length,
-              _pickAudiences,
+          if (languages.length > 1) ...[
+            const SizedBox(height: 8),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  for (final code in languages) ...[
+                    _toggleChip(
+                      label: languageName(code),
+                      on: _languages.contains(code),
+                      onTap: () => setState(() {
+                        if (!_languages.remove(code)) _languages.add(code);
+                      }),
+                    ),
+                    const SizedBox(width: 6),
+                  ],
+                ],
+              ),
             ),
-          ),
-          const SizedBox(width: 6),
-          Expanded(
-            child: _filterButton(
-              t('tahfeez.filter.country'),
-              _countries.length,
-              _pickCountries,
-            ),
-          ),
+          ],
         ],
       ),
     );
   }
 
-  Widget _filterButton(String label, int chosen, VoidCallback onTap) {
-    final active = chosen > 0;
+  Widget _countryPill() {
+    final code = _countries.isEmpty ? null : _countries.first;
     return GestureDetector(
-      onTap: onTap,
+      onTap: _pickCountry,
       behavior: HitTestBehavior.opaque,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+        height: 36,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
         decoration: BoxDecoration(
-          color: active ? AppColors.goldMuted : AppColors.blackSurface,
-          borderRadius: BorderRadius.circular(10),
+          color: code == null ? AppColors.blackSurface : AppColors.goldMuted,
+          borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: active ? AppColors.gold : AppColors.goldBorder,
+            color: code == null ? AppColors.goldBorder : AppColors.gold,
           ),
         ),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Flexible(
-              child: Text(
-                active ? '$label ($chosen)' : label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: active ? AppColors.gold : AppColors.textSecondary,
-                  fontSize: 12,
-                  fontWeight: active ? FontWeight.bold : FontWeight.normal,
-                ),
+            const Icon(Icons.place_outlined, size: 16, color: AppColors.gold),
+            const SizedBox(width: 4),
+            Text(
+              code == null ? t('tahfeez.allCountries') : countryName(code),
+              style: TextStyle(
+                color: code == null ? AppColors.textSecondary : AppColors.gold,
+                fontSize: 12,
+                fontWeight: code == null ? FontWeight.normal : FontWeight.bold,
               ),
             ),
-            Icon(
-              Icons.expand_more,
-              size: 16,
-              color: active ? AppColors.gold : AppColors.textMuted,
-            ),
+            const Icon(Icons.expand_more, size: 16, color: AppColors.textMuted),
           ],
         ),
       ),
     );
   }
 
-  Future<void> _pickLanguages() async {
-    final base = _eligible;
-    final options = [
-      for (final (code, _) in tahfeezLanguages)
-        if (base.any((p) => p.languages.contains(code)))
-          (
-            code,
-            languageName(code),
-            base.where((p) => p.languages.contains(code)).length,
-          ),
-    ];
-    final picked = await _pickSheet<String>(
-      title: t('tahfeez.filter.language'),
-      options: options,
-      chosen: _languages,
+  /// Men / women / children as one segmented switch; any number may be on,
+  /// none on means everyone.
+  Widget _audienceToggle() {
+    return Container(
+      height: 36,
+      decoration: BoxDecoration(
+        color: AppColors.blackSurface,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.goldBorder),
+      ),
+      padding: const EdgeInsets.all(3),
+      child: Row(
+        children: [
+          for (final a in _Audience.values)
+            Expanded(
+              child: GestureDetector(
+                onTap: () => setState(() {
+                  if (!_audiences.remove(a)) _audiences.add(a);
+                }),
+                behavior: HitTestBehavior.opaque,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: _audiences.contains(a)
+                        ? AppColors.gold
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: Text(
+                    t('tahfeez.filter.${a.name}'),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: _audiences.contains(a)
+                          ? AppColors.black
+                          : AppColors.textSecondary,
+                      fontSize: 12,
+                      fontWeight: _audiences.contains(a)
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
-    if (picked == null) return;
-    setState(() {
-      _languages
-        ..clear()
-        ..addAll(picked);
-    });
   }
 
-  Future<void> _pickAudiences() async {
-    final base = _eligible;
-    final options = [
-      for (final a in _Audience.values)
-        (
-          a,
-          t('tahfeez.filter.${a.name}'),
-          base.where((p) => _teaches(p, a)).length,
-        ),
-    ];
-    final picked = await _pickSheet<_Audience>(
-      title: t('tahfeez.filterGender'),
-      options: options,
-      chosen: _audiences,
-    );
-    if (picked == null) return;
-    setState(() {
-      _audiences
-        ..clear()
-        ..addAll(picked);
-    });
-  }
-
-  Future<void> _pickCountries() async {
-    final base = _eligible;
-    final options = [
-      for (final (code, _, _) in tahfeezCountries)
-        if (base.any((p) => p.country == code))
-          (
-            code,
-            countryName(code),
-            base.where((p) => p.country == code).length,
-          ),
-    ];
-    final picked = await _pickSheet<String>(
-      title: t('tahfeez.filter.country'),
-      options: options,
-      chosen: _countries,
-    );
-    if (picked == null) return;
-    setState(() {
-      _countries
-        ..clear()
-        ..addAll(picked);
-    });
-  }
-
-  /// A checklist with how many teachers each choice would show. Returns the
-  /// new selection, or null if dismissed.
-  Future<Set<T>?> _pickSheet<T>({
-    required String title,
-    required List<(T, String, int)> options,
-    required Set<T> chosen,
+  Widget _toggleChip({
+    required String label,
+    required bool on,
+    required VoidCallback onTap,
   }) {
-    final working = Set<T>.of(chosen);
-    return showModalBottomSheet<Set<T>>(
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: on ? AppColors.goldMuted : AppColors.blackSurface,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: on ? AppColors.gold : AppColors.goldBorder),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: on ? AppColors.gold : AppColors.textSecondary,
+            fontSize: 12,
+            fontWeight: on ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// One country, or all of them. Countries with teachers come first, with
+  /// how many each has. On the first visit it also explains why it asks.
+  Future<void> _pickCountry({bool first = false}) async {
+    final base = _eligible;
+    int count(String code) => base.where((p) => p.country == code).length;
+    final ordered = [
+      for (final (code, _, _) in tahfeezCountries)
+        if (count(code) > 0) code,
+      for (final (code, _, _) in tahfeezCountries)
+        if (count(code) == 0) code,
+    ];
+    final current = _countries.isEmpty ? '' : _countries.first;
+    final picked = await showModalBottomSheet<String>(
       context: context,
+      isScrollControlled: true,
+      isDismissible: !first,
+      enableDrag: !first,
       backgroundColor: AppColors.blackCard,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) => Directionality(
         textDirection: tahfeezDirection(),
-        child: StatefulBuilder(
-          builder: (ctx, setSheet) => SafeArea(
+        child: SafeArea(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(ctx).size.height * 0.75,
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          title,
-                          style: const TextStyle(
-                            color: AppColors.gold,
-                            fontSize: 17,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () => setSheet(working.clear),
-                        child: Text(
-                          t('tahfeez.filter.clear'),
-                          style: const TextStyle(color: AppColors.textMuted),
-                        ),
-                      ),
-                    ],
+                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 4),
+                  child: Text(
+                    t('tahfeez.pickCountryTitle'),
+                    style: const TextStyle(
+                      color: AppColors.gold,
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-                if (options.isEmpty)
+                if (first)
                   Padding(
-                    padding: const EdgeInsets.all(24),
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
                     child: Text(
-                      t('tahfeez.noTeachers'),
-                      style: const TextStyle(color: AppColors.textMuted),
+                      t('tahfeez.pickCountrySub'),
+                      style: const TextStyle(
+                        color: AppColors.textMuted,
+                        fontSize: 12,
+                      ),
                     ),
                   ),
                 Flexible(
                   child: ListView(
                     shrinkWrap: true,
                     children: [
-                      for (final (value, label, count) in options)
-                        CheckboxListTile(
-                          value: working.contains(value),
-                          dense: true,
-                          activeColor: AppColors.gold,
-                          checkColor: AppColors.black,
-                          controlAffinity: ListTileControlAffinity.leading,
-                          title: Text(
-                            label,
-                            style: const TextStyle(
-                              color: AppColors.textPrimary,
-                              fontSize: 14,
-                            ),
-                          ),
-                          secondary: Text(
-                            '$count',
-                            style: const TextStyle(
-                              color: AppColors.textGold,
-                              fontSize: 13,
-                            ),
-                          ),
-                          onChanged: (v) => setSheet(() {
-                            if (v == true) {
-                              working.add(value);
-                            } else {
-                              working.remove(value);
-                            }
-                          }),
+                      _countryOption(
+                        ctx,
+                        '',
+                        t('tahfeez.allCountries'),
+                        base.length,
+                        current,
+                      ),
+                      for (final code in ordered)
+                        _countryOption(
+                          ctx,
+                          code,
+                          countryName(code),
+                          count(code),
+                          current,
                         ),
                     ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-                  child: GoldButton(
-                    label: t('tahfeez.filter.apply'),
-                    icon: Icons.check,
-                    onPressed: () => Navigator.pop(ctx, working),
                   ),
                 ),
               ],
@@ -377,6 +404,49 @@ class _TeachersDirectoryScreenState extends State<TeachersDirectoryScreen> {
           ),
         ),
       ),
+    );
+    if (picked == null || !mounted) return;
+    setState(() {
+      _countries.clear();
+      if (picked.isNotEmpty) _countries.add(picked);
+    });
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_countryKey, picked);
+    } catch (_) {
+      // The filter still applies for this visit.
+    }
+  }
+
+  Widget _countryOption(
+    BuildContext ctx,
+    String code,
+    String label,
+    int count,
+    String current,
+  ) {
+    final selected = code == current;
+    return ListTile(
+      dense: true,
+      onTap: () => Navigator.pop(ctx, code),
+      leading: Icon(
+        selected ? Icons.radio_button_checked : Icons.radio_button_off,
+        color: selected ? AppColors.gold : AppColors.textMuted,
+        size: 20,
+      ),
+      title: Text(
+        label,
+        style: TextStyle(
+          color: count > 0 ? AppColors.textPrimary : AppColors.textMuted,
+          fontSize: 14,
+        ),
+      ),
+      trailing: count > 0
+          ? Text(
+              '$count',
+              style: const TextStyle(color: AppColors.textGold, fontSize: 13),
+            )
+          : null,
     );
   }
 
@@ -386,6 +456,91 @@ class _TeachersDirectoryScreenState extends State<TeachersDirectoryScreen> {
   Widget build(BuildContext context) {
     final visible = _visible;
     final hidden = _hidden;
+    final body = Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 2),
+          child: TextField(
+            onChanged: (v) => setState(() => _query = v),
+            style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
+            decoration: InputDecoration(
+              hintText: t('tahfeez.searchTeachers'),
+              hintStyle: const TextStyle(
+                color: AppColors.textMuted,
+                fontSize: 13,
+              ),
+              prefixIcon: const Icon(
+                Icons.search,
+                color: AppColors.textMuted,
+                size: 20,
+              ),
+              isDense: true,
+              filled: true,
+              fillColor: AppColors.blackCard,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppColors.goldBorder),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppColors.goldBorder),
+              ),
+            ),
+          ),
+        ),
+        _filterBar(),
+        Expanded(
+          child: _loading
+              ? const Center(
+                  child: CircularProgressIndicator(color: AppColors.gold),
+                )
+              : ListView(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                  children: [
+                    if (widget.header != null) ...[
+                      widget.header!,
+                      const SizedBox(height: 8),
+                    ],
+                    if (visible.isEmpty)
+                      EmptyNote(
+                        icon: Icons.person_search,
+                        text: _teachers.isEmpty
+                            ? t('tahfeez.noTeachers')
+                            : t('tahfeez.noTeachersForFilter'),
+                      )
+                    else
+                      for (final p in visible) ...[
+                        _teacherRow(p),
+                        const SizedBox(height: 6),
+                      ],
+                    if (hidden.isNotEmpty)
+                      Align(
+                        alignment: AlignmentDirectional.centerStart,
+                        child: TextButton.icon(
+                          onPressed: () => _showHidden(hidden),
+                          icon: const Icon(
+                            Icons.visibility_off_outlined,
+                            size: 16,
+                            color: AppColors.textMuted,
+                          ),
+                          label: Text(
+                            '${t('tahfeez.hiddenTeachers')} (${hidden.length})',
+                            style: const TextStyle(
+                              color: AppColors.textMuted,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ),
+                    const SizedBox(height: 10),
+                    _codeCard(),
+                    const SizedBox(height: 30),
+                  ],
+                ),
+        ),
+      ],
+    );
+    if (widget.embedded) return body;
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
@@ -400,89 +555,7 @@ class _TeachersDirectoryScreenState extends State<TeachersDirectoryScreen> {
             foregroundColor: AppColors.gold,
             title: Text(t('tahfeez.directory')),
           ),
-          body: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 10, 16, 2),
-                child: TextField(
-                  onChanged: (v) => setState(() => _query = v),
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 14,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: t('tahfeez.searchTeachers'),
-                    hintStyle: const TextStyle(
-                      color: AppColors.textMuted,
-                      fontSize: 13,
-                    ),
-                    prefixIcon: const Icon(
-                      Icons.search,
-                      color: AppColors.textMuted,
-                      size: 20,
-                    ),
-                    isDense: true,
-                    filled: true,
-                    fillColor: AppColors.blackCard,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AppColors.goldBorder),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AppColors.goldBorder),
-                    ),
-                  ),
-                ),
-              ),
-              _filterBar(),
-              Expanded(
-                child: _loading
-                    ? const Center(
-                        child: CircularProgressIndicator(color: AppColors.gold),
-                      )
-                    : ListView(
-                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                        children: [
-                          if (visible.isEmpty)
-                            EmptyNote(
-                              icon: Icons.person_search,
-                              text: _teachers.isEmpty
-                                  ? t('tahfeez.noTeachers')
-                                  : t('tahfeez.noTeachersForFilter'),
-                            )
-                          else
-                            for (final p in visible) ...[
-                              _teacherRow(p),
-                              const SizedBox(height: 6),
-                            ],
-                          if (hidden.isNotEmpty)
-                            Align(
-                              alignment: AlignmentDirectional.centerStart,
-                              child: TextButton.icon(
-                                onPressed: () => _showHidden(hidden),
-                                icon: const Icon(
-                                  Icons.visibility_off_outlined,
-                                  size: 16,
-                                  color: AppColors.textMuted,
-                                ),
-                                label: Text(
-                                  '${t('tahfeez.hiddenTeachers')} (${hidden.length})',
-                                  style: const TextStyle(
-                                    color: AppColors.textMuted,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          const SizedBox(height: 10),
-                          _codeCard(),
-                          const SizedBox(height: 30),
-                        ],
-                      ),
-              ),
-            ],
-          ),
+          body: body,
         ),
       ),
     );
@@ -742,6 +815,51 @@ class _TeachersDirectoryScreenState extends State<TeachersDirectoryScreen> {
               _chip(Icons.payments_outlined, p.priceNote!),
           ],
         ),
+        if (p.availability.isNotEmpty) ...[
+          const SizedBox(height: 14),
+          Text(
+            t('tahfeez.avail.shown'),
+            style: const TextStyle(
+              color: AppColors.textGold,
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 6),
+          for (final (day, slots) in availabilityByDay(p.availability))
+            Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    width: 70,
+                    child: Text(
+                      weekdayName(day),
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      slots
+                          .map(
+                            (s) =>
+                                '${minutesLabel(s.from)} – ${minutesLabel(s.to)}',
+                          )
+                          .join('،  '),
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
         const SizedBox(height: 16),
         if (e == null || e.status == EnrollmentStatus.rejected)
           GoldButton(
@@ -913,6 +1031,7 @@ class _TeachersDirectoryScreenState extends State<TeachersDirectoryScreen> {
       if (!mounted) return;
       showNote(context, '${t('tahfeez.requestJoinSent')} ${p.displayName}');
       _changed = true;
+      widget.onChanged?.call();
       await _refreshEnrollment(p.userId);
     } catch (e) {
       if (mounted) showNote(context, describeError(e), error: true);
@@ -930,6 +1049,7 @@ class _TeachersDirectoryScreenState extends State<TeachersDirectoryScreen> {
       await TahfeezService.cancelEnrollment(e.id);
       if (!mounted) return;
       _changed = true;
+      widget.onChanged?.call();
       setState(() => _enrollments.remove(p.userId));
       showNote(context, t('tahfeez.requestCancelled'));
     } catch (err) {
@@ -1051,6 +1171,7 @@ class _TeachersDirectoryScreenState extends State<TeachersDirectoryScreen> {
       FocusScope.of(context).unfocus();
       showNote(context, '${t('tahfeez.requestJoinSent')} $name');
       _changed = true;
+      widget.onChanged?.call();
       Navigator.pop(context, true);
     } catch (e) {
       if (mounted) showNote(context, describeError(e), error: true);

@@ -48,6 +48,40 @@ String languageName(String code) {
   return code;
 }
 
+/// One stretch of the week a teacher says they are free to teach, so a
+/// student can see when to ask before asking. [weekday] counts from Sunday
+/// = 0 like the sessions table; times are minutes after midnight.
+@immutable
+class AvailabilitySlot {
+  final int weekday;
+  final int from;
+  final int to;
+
+  const AvailabilitySlot({
+    required this.weekday,
+    required this.from,
+    required this.to,
+  });
+
+  factory AvailabilitySlot.fromJson(Map<String, dynamic> j) => AvailabilitySlot(
+    weekday: (j['d'] as num).toInt(),
+    from: (j['f'] as num).toInt(),
+    to: (j['t'] as num).toInt(),
+  );
+
+  Map<String, dynamic> toJson() => {'d': weekday, 'f': from, 't': to};
+
+  @override
+  bool operator ==(Object other) =>
+      other is AvailabilitySlot &&
+      other.weekday == weekday &&
+      other.from == from &&
+      other.to == to;
+
+  @override
+  int get hashCode => Object.hash(weekday, from, to);
+}
+
 class TahfeezProfile {
   final String userId;
   final String displayName;
@@ -69,6 +103,9 @@ class TahfeezProfile {
   final String? country;
   final bool teachesChildren;
 
+  /// When a teacher says they are free to teach; empty if they haven't said.
+  final List<AvailabilitySlot> availability;
+
   const TahfeezProfile({
     required this.userId,
     required this.displayName,
@@ -87,6 +124,7 @@ class TahfeezProfile {
     this.listed = true,
     this.country,
     this.teachesChildren = false,
+    this.availability = const [],
   });
 
   bool get isTeacher => role == TahfeezRole.teacher;
@@ -100,6 +138,8 @@ class TahfeezProfile {
     String? displayName,
     Gender? gender,
     String? country,
+    bool? listed,
+    List<AvailabilitySlot>? availability,
   }) => TahfeezProfile(
     userId: userId,
     displayName: displayName ?? this.displayName,
@@ -115,9 +155,10 @@ class TahfeezProfile {
     teachesGender: teachesGender,
     gender: gender ?? this.gender,
     blocked: blocked,
-    listed: listed,
+    listed: listed ?? this.listed,
     country: country ?? this.country,
     teachesChildren: teachesChildren,
+    availability: availability ?? this.availability,
   );
 
   factory TahfeezProfile.fromJson(Map<String, dynamic> j) => TahfeezProfile(
@@ -146,6 +187,10 @@ class TahfeezProfile {
     listed: j['listed'] != false,
     country: j['country'] as String?,
     teachesChildren: j['teaches_children'] == true,
+    availability: [
+      for (final a in (j['availability'] as List?) ?? const [])
+        if (a is Map) AvailabilitySlot.fromJson(Map<String, dynamic>.from(a)),
+    ],
   );
 }
 
@@ -591,6 +636,32 @@ class TahfeezService {
     try {
       final c = await _client;
       await c.rpc('set_tahfeez_country', params: {'p_country': code});
+    } catch (e) {
+      _throw(e);
+    }
+  }
+
+  /// Whether the teacher shows in the directory, on its own so nothing else
+  /// on the profile is touched (supabase/tahfeez_availability.sql).
+  static Future<void> setListed(bool listed) async {
+    try {
+      final c = await _client;
+      await c.rpc('set_teacher_listed', params: {'p_listed': listed});
+    } catch (e) {
+      _throw(e);
+    }
+  }
+
+  /// Replaces the teacher's free hours (supabase/tahfeez_availability.sql).
+  static Future<void> setAvailability(List<AvailabilitySlot> slots) async {
+    try {
+      final c = await _client;
+      await c.rpc(
+        'set_teacher_availability',
+        params: {
+          'p_slots': [for (final s in slots) s.toJson()],
+        },
+      );
     } catch (e) {
       _throw(e);
     }
