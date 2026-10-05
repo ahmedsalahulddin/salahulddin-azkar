@@ -43,6 +43,8 @@
 	<string>نستخدم الكاميرا فقط عندما تختار التقاط صورة لإضافتها إلى كروتك</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>نستخدم موقعك لحساب أوقات الصلاة بدقة</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>نستخدم موقعك لحساب أوقات الصلاة بدقة، فقط أثناء استخدام التطبيق ولا نتابع موقعك في الخلفية</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>نستخدم صورك فقط عندما تختار صورة لإضافتها إلى كروتك أو لتكون صورة حسابك</string>
 	<key>UIApplicationSceneManifest</key>
