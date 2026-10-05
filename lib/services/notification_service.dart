@@ -6,7 +6,10 @@ import 'package:timezone/timezone.dart' as tz;
 
 import '../data/adhkar_data.dart';
 import '../data/quran_data.dart';
+import '../l10n/strings.dart';
 import 'app_locale.dart';
+import 'custom_reminders.dart';
+import 'notification_router.dart';
 import 'daily_reminders.dart';
 import 'prayer_alerts.dart';
 
@@ -52,8 +55,21 @@ class NotificationService {
     );
     await _plugin.initialize(
       const InitializationSettings(android: android, iOS: ios),
+      // A tap on a reminder opens the surah or adhkar it is about.
+      onDidReceiveNotificationResponse: (r) =>
+          NotificationRouter.open(r.payload),
     );
     _initialized = true;
+    // Launched by tapping a notification while the app was closed: the tap
+    // is replayed once the first screen is up.
+    try {
+      final launch = await _plugin.getNotificationAppLaunchDetails();
+      if (launch?.didNotificationLaunchApp ?? false) {
+        NotificationRouter.open(launch!.notificationResponse?.payload);
+      }
+    } catch (_) {
+      // No launch details on this platform; the app simply opens.
+    }
   }
 
   /// The clock, and only the clock.
@@ -143,7 +159,7 @@ class NotificationService {
           .resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin
           >();
-      if (android != null) return android.areNotificationsEnabled();
+      if (android != null) return await android.areNotificationsEnabled();
 
       final ios = _plugin
           .resolvePlatformSpecificImplementation<
@@ -436,6 +452,128 @@ class NotificationService {
   /// a reader who did not open the app for a day had nothing waiting for
   /// them the next. Tomorrow's are set too, so the alerts survive a day of
   /// not opening it.
+  /// Lays down the reader's own reminders (see CustomReminders): one weekly
+  /// notification per chosen weekday and time. Rebuilt whole on every change
+  /// — every pending id in the custom range is cancelled first, so a deleted
+  /// reminder or a removed time leaves nothing behind.
+  static Future<void> scheduleCustomReminders() async {
+    if (kIsWeb) return;
+    await _ensureZone();
+    try {
+      for (final p in await _plugin.pendingNotificationRequests()) {
+        if (p.id >= CustomReminder.firstNotificationId) {
+          await _plugin.cancel(p.id);
+        }
+      }
+    } catch (_) {
+      // Could not list them; laying down below still overwrites by id.
+    }
+
+    final surahs = await QuranService.index();
+    for (final r in CustomReminders.list.value) {
+      if (!r.enabled || r.days.isEmpty || r.times.isEmpty) continue;
+      final (title, body) = _customText(r, surahs);
+      for (final day in r.days) {
+        for (var slot = 0; slot < r.times.length; slot++) {
+          final id = CustomReminder.notificationId(r.id, day, slot);
+          final at = nextWeekly(
+            tz.TZDateTime.now(tz.local),
+            day,
+            r.times[slot],
+          );
+          try {
+            await _scheduleWeekly(id, title, body, at, r.payload);
+          } catch (_) {
+            // One slot failing must not stop the rest.
+          }
+        }
+      }
+    }
+  }
+
+  /// The next [weekday] (1 = Monday) at [minutes] after midnight, strictly
+  /// after [now].
+  @visibleForTesting
+  static tz.TZDateTime nextWeekly(tz.TZDateTime now, int weekday, int minutes) {
+    var at = tz.TZDateTime(
+      now.location,
+      now.year,
+      now.month,
+      now.day,
+      minutes ~/ 60,
+      minutes % 60,
+    );
+    while (at.weekday != weekday || !at.isAfter(now)) {
+      at = at.add(const Duration(days: 1));
+    }
+    return at;
+  }
+
+  static (String, String) _customText(
+    CustomReminder r,
+    List<SurahInfo> surahs,
+  ) {
+    if (r.kind == ReminderKind.surah) {
+      final info = surahs.where((s) => s.number == r.surah).firstOrNull;
+      final name = info == null
+          ? '${r.surah}'
+          : (AppLocale.code == 'ar' ? info.name : info.nameEn);
+      return (
+        t('myrem.notifSurahTitle').replaceFirst('%s', name),
+        t('myrem.notifSurahBody').replaceFirst('%s', name),
+      );
+    }
+    final name = t('adhkar.cat.${r.adhkarId}');
+    return (
+      t('myrem.notifAdhkarTitle').replaceFirst('%s', name),
+      t('myrem.notifAdhkarBody').replaceFirst('%s', name),
+    );
+  }
+
+  static Future<void> _scheduleWeekly(
+    int id,
+    String title,
+    String body,
+    tz.TZDateTime at,
+    String payload,
+  ) async {
+    const details = NotificationDetails(
+      android: AndroidNotificationDetails(
+        'salahulddin_my_reminders',
+        'تذكيراتي',
+        channelDescription: 'التذكيرات التي يضبطها القارئ بنفسه',
+        importance: reminderImportance,
+        priority: reminderPriority,
+        visibility: NotificationVisibility.public,
+      ),
+      iOS: DarwinNotificationDetails(presentSound: true),
+    );
+    // Exact when allowed (the reader set a time and expects it), inexact
+    // otherwise — the same fallback the prayer alerts use.
+    for (final mode in [
+      AndroidScheduleMode.alarmClock,
+      AndroidScheduleMode.inexactAllowWhileIdle,
+    ]) {
+      try {
+        await _plugin.zonedSchedule(
+          id,
+          title,
+          body,
+          at,
+          details,
+          androidScheduleMode: mode,
+          matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
+          payload: payload,
+          uiLocalNotificationDateInterpretation:
+              UILocalNotificationDateInterpretation.absoluteTime,
+        );
+        return;
+      } catch (_) {
+        // Exact not permitted; try the next mode.
+      }
+    }
+  }
+
   /// Whether alerts can be laid down for the exact minute. Without this,
   /// Android 13+ falls back to an inexact alarm that a locked, dozing phone
   /// may hold back for many minutes — so the adhan arrives late or not at

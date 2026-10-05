@@ -15,6 +15,8 @@ import 'screens/favorites_screen.dart';
 import 'screens/account_screen.dart';
 import 'screens/tahfeez/tahfeez_tab.dart';
 import 'services/auth_service.dart';
+import 'services/custom_reminders.dart';
+import 'services/notification_router.dart';
 import 'services/tahfeez_service.dart';
 import 'services/notification_service.dart';
 import 'services/adhan_downloads.dart';
@@ -83,6 +85,8 @@ void main() async {
   await DhikrReminder.load();
   DailyReminders.onChanged = NotificationService.scheduleDailyReminders;
   await DailyReminders.load();
+  CustomReminders.onChanged = NotificationService.scheduleCustomReminders;
+  await CustomReminders.load();
   unawaited(AdhanDownloads.refresh());
   unawaited(RecitationDownloads.refresh());
   unawaited(LibraryBookmarks.load());
@@ -101,6 +105,7 @@ void main() async {
     await NotificationService.clearLegacyAdhkarAlerts();
     await DhikrReminder.reschedule();
     await NotificationService.scheduleDailyReminders();
+    await NotificationService.scheduleCustomReminders();
     // Prayer alerts are laid down from today's computed times, which until
     // now only ever existed once the home screen's prayer-times card had
     // built and loaded them — a reader who enabled the alerts but never
@@ -124,6 +129,7 @@ class NoorAzkarApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: NotificationRouter.navigatorKey,
       title: 'SalaHulddin Azkar',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
@@ -181,6 +187,8 @@ class _MainNavigationState extends State<MainNavigation> {
     TahfeezService.refreshPendingBadge();
     if (!kIsWeb) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
+        // A reminder tapped while the app was closed opens its surah now.
+        NotificationRouter.flushPending();
         _checkNotifications();
         _checkForUpdate();
         Future<void>.delayed(const Duration(milliseconds: 600), _checkWhatsNew);
@@ -302,10 +310,7 @@ class _MainNavigationState extends State<MainNavigation> {
     // actually changed — an old list here points readers at things that
     // have moved or, on iPhone, do not exist.
     final items = [
-      ('🎙️', t('wn.amerTitle'), t('wn.amerSub')),
-      ('🔗', t('wn.sunnahTitle'), t('wn.sunnahSub')),
-      ('📖', t('wn.sourcesTitle'), t('wn.sourcesSub')),
-      ('✉️', t('wn.contactTitle'), t('wn.contactSub')),
+      ('⏰', t('wn.myremTitle'), t('wn.myremSub')),
     ];
 
     showModalBottomSheet<void>(

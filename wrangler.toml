@@ -1,0 +1,7 @@
+name = "noor-azkar-flutter"
+compatibility_date = "2026-08-08"
+compatibility_flags = ["nodejs_compat"]
+account_id = "1f7651255224e2ce213815dd83a3bb0c"
+
+[assets]
+directory = "./web"

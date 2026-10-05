@@ -5,12 +5,14 @@ import '../data/adhans.dart';
 import '../l10n/strings.dart';
 import '../services/account_lang.dart';
 import '../services/app_locale.dart';
+import '../services/custom_reminders.dart';
 import '../services/daily_reminders.dart';
 import '../services/dhikr_reminder.dart';
 import '../services/notification_service.dart';
 import '../services/prayer_alerts.dart';
 import '../services/prayer_service.dart';
 import '../services/prayer_settings.dart';
+import 'custom_reminders_screen.dart';
 import 'prayer_alerts_screen.dart';
 import '../services/storage_service.dart';
 
@@ -126,6 +128,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _muteAll(),
           const SizedBox(height: 10),
           _notificationHealth(),
+          const SizedBox(height: 10),
+          _myRemindersRow(),
           const SizedBox(height: 10),
           _dhikrReminder(),
           const SizedBox(height: 10),
@@ -1314,6 +1318,62 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   /// Opens the grid where each prayer's two alerts are set.
+  /// The way into the reader's own reminders (custom_reminders_screen.dart).
+  Widget _myRemindersRow() {
+    return ValueListenableBuilder<List<CustomReminder>>(
+      valueListenable: CustomReminders.list,
+      builder: (context, list, _) {
+        final on = list.where((r) => r.enabled).length;
+        return GestureDetector(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const CustomRemindersScreen()),
+          ),
+          behavior: HitTestBehavior.opaque,
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+            decoration: BoxDecoration(
+              color: AppColors.blackCard,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.gold),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.add_alarm, color: AppColors.gold, size: 20),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        on == 0
+                            ? t('myrem.title')
+                            : '${t('myrem.title')} ($on)',
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 14,
+                        ),
+                      ),
+                      Text(
+                        t('myrem.rowSub'),
+                        style: const TextStyle(
+                          color: AppColors.textMuted,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.chevron_left, color: AppColors.textMuted),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _alertsRow() {
     return ValueListenableBuilder<Map<String, AlertMode>>(
       valueListenable: PrayerAlerts.settings,
