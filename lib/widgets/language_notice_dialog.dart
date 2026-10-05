@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../constants/theme.dart';
 import '../l10n/strings.dart';
 import '../services/app_locale.dart';
-import '../services/translation_feedback_service.dart';
+import '../services/support_service.dart';
 
 /// Which cards are fully translated, grouped by the shelf they sit under —
 /// shown after every language change so a reader knows where to expect
@@ -74,7 +74,8 @@ class _LanguageNoticeDialogState extends State<_LanguageNoticeDialog> {
     final text = _controller.text.trim();
     if (text.isEmpty || _sending) return;
     setState(() => _sending = true);
-    final ok = await TranslationFeedbackService.submit(text);
+    final ok =
+        await SupportService.open(SupportCategory.translation, text) != null;
     if (!mounted) return;
     setState(() => _sending = false);
     ScaffoldMessenger.of(context).showSnackBar(

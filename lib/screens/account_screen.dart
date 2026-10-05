@@ -7,6 +7,7 @@ import '../constants/theme.dart';
 import '../l10n/strings.dart';
 import '../services/account_lang.dart';
 import '../services/hidden_teachers.dart';
+import '../services/support_service.dart';
 import '../services/app_locale.dart';
 import '../services/auth_service.dart';
 import '../services/sync_service.dart';
@@ -19,7 +20,8 @@ import '../widgets/sign_in_buttons.dart';
 import 'admin_admins_screen.dart';
 import 'admin_duas_screen.dart';
 import 'admin_screen.dart';
-import 'admin_translation_feedback_screen.dart';
+import 'support/admin_inbox_screen.dart';
+import 'support/my_messages_screen.dart';
 import 'downloads_screen.dart';
 import 'tahfeez/hidden_teachers_screen.dart';
 import 'tahfeez/reports_screen.dart';
@@ -52,6 +54,7 @@ class _AccountScreenState extends State<AccountScreen> {
   void initState() {
     super.initState();
     HiddenTeachers.load();
+    SupportService.refreshMyUnread();
     _onAuthChanged();
     AuthService.user.addListener(_onAuthChanged);
     PackageInfo.fromPlatform().then((i) {
@@ -73,6 +76,7 @@ class _AccountScreenState extends State<AccountScreen> {
   Future<void> _checkAdmin() async {
     final admin = await SectionConfig.isAdmin();
     if (mounted && admin != _isAdmin) setState(() => _isAdmin = admin);
+    if (admin) SupportService.allThreads();
   }
 
   /// Silent on failure — the row is created lazily here too, for someone
@@ -358,6 +362,17 @@ class _AccountScreenState extends State<AccountScreen> {
                 _groupGrid(),
                 if (user != null) ...[
                   const SizedBox(height: 12),
+                  ValueListenableBuilder<int>(
+                    valueListenable: SupportService.myUnread,
+                    builder: (_, unread, _) => _groupRow(
+                      icon: Icons.forum_outlined,
+                      title: t('support.myTitle'),
+                      subtitle: t('support.myRowSub'),
+                      badge: unread,
+                      onTap: () => _push(const MyMessagesScreen()),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
                   ValueListenableBuilder<Set<String>>(
                     valueListenable: HiddenTeachers.ids,
                     builder: (_, hidden, _) => _groupRow(
@@ -1005,15 +1020,21 @@ class _AccountScreenState extends State<AccountScreen> {
       ),
     ),
     const SizedBox(height: 8),
-    _tile(
-      icon: Icons.mark_email_unread_outlined,
-      title: t('admin.feedback.title'),
-      subtitle: t('admin.feedback.sub'),
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => const AdminTranslationFeedbackScreen(),
-        ),
+    ValueListenableBuilder<int>(
+      valueListenable: SupportService.adminOpen,
+      builder: (_, open, _) => _tile(
+        icon: Icons.mark_email_unread_outlined,
+        title: open > 0
+            ? '${t('support.inboxTitle')} ($open)'
+            : t('support.inboxTitle'),
+        subtitle: t('support.inboxSub'),
+        onTap: () async {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const AdminInboxScreen()),
+          );
+          SupportService.allThreads();
+        },
       ),
     ),
     const SizedBox(height: 8),

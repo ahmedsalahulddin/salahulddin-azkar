@@ -3,7 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../constants/theme.dart';
 import '../l10n/strings.dart';
-import '../services/translation_feedback_service.dart';
+import '../services/support_service.dart';
 
 const _contactEmail = 'ahmed.salahulddin@gmail.com';
 
@@ -35,7 +35,7 @@ class _ContactDialogState extends State<_ContactDialog> {
     final text = _controller.text.trim();
     if (text.isEmpty || _sending) return;
     setState(() => _sending = true);
-    final ok = await TranslationFeedbackService.submit('✉️ $text');
+    final ok = await SupportService.open(SupportCategory.contact, text) != null;
     if (!mounted) return;
     setState(() => _sending = false);
     ScaffoldMessenger.of(context).showSnackBar(
