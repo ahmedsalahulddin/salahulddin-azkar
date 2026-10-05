@@ -1,9 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:characters/characters.dart';
+import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// The Supabase project's public credentials.
@@ -119,7 +122,12 @@ class AuthService {
     TargetPlatform platform,
     Set<SignInProvider> enabled,
   ) {
-    if (kIsWeb || platform != TargetPlatform.iOS) return enabled;
+    if (kIsWeb || platform != TargetPlatform.iOS) {
+      // Apple is signed into natively on iPhone only. Elsewhere it would go
+      // through the web flow, which needs a Services ID and a signing key
+      // this project does not have — so the button would only fail.
+      return {...enabled}..remove(SignInProvider.apple);
+    }
     return enabled.contains(SignInProvider.apple) ? enabled : {};
   }
 
@@ -187,6 +195,11 @@ class AuthService {
   static Future<bool> signInWith(SignInProvider provider) async {
     if (!isConfigured) return false;
     await init();
+    if (provider == SignInProvider.apple &&
+        !kIsWeb &&
+        defaultTargetPlatform == TargetPlatform.iOS) {
+      return _signInWithAppleNatively();
+    }
     try {
       return await Supabase.instance.client.auth.signInWithOAuth(
         provider.oauth,
@@ -198,6 +211,51 @@ class AuthService {
   }
 
   static Future<bool> signInWithGoogle() => signInWith(SignInProvider.google);
+
+  /// Sign in with Apple through the system sheet (Face ID / passcode), the
+  /// way App Review expects on iPhone, then hands Apple's identity token to
+  /// Supabase. Needs no Services ID or signing key: Supabase checks the token
+  /// against the app's bundle id, listed under the Apple provider's Client IDs.
+  ///
+  /// The nonce ties the token to this one request: Apple signs its SHA-256,
+  /// Supabase is given the raw value and checks they match, so a token lifted
+  /// from elsewhere cannot be replayed.
+  static Future<bool> _signInWithAppleNatively() async {
+    try {
+      final random = Random.secure();
+      final rawNonce = base64Url.encode(
+        List<int>.generate(32, (_) => random.nextInt(256)),
+      );
+      final credential = await SignInWithApple.getAppleIDCredential(
+        scopes: const [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+        nonce: sha256.convert(utf8.encode(rawNonce)).toString(),
+      );
+      final idToken = credential.identityToken;
+      if (idToken == null) return false;
+      final auth = Supabase.instance.client.auth;
+      await auth.signInWithIdToken(
+        provider: OAuthProvider.apple,
+        idToken: idToken,
+        nonce: rawNonce,
+      );
+      // Apple gives the name only the first time someone signs in, and never
+      // inside the token, so it is saved to the profile while it is here.
+      final name = [
+        credential.givenName,
+        credential.familyName,
+      ].whereType<String>().where((p) => p.trim().isNotEmpty).join(' ');
+      if (name.isNotEmpty) {
+        await auth.updateUser(UserAttributes(data: {'full_name': name}));
+      }
+      return true;
+    } catch (_) {
+      // Cancelled at the sheet, or the provider is not switched on yet.
+      return false;
+    }
+  }
 
   /// Deletes the signed-in account for good.
   ///

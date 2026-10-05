@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/theme.dart';
 import '../l10n/strings.dart';
+import '../services/app_locale.dart';
 import '../services/prayer_service.dart';
 import '../services/prayer_settings.dart';
 import 'rotating_verse.dart';
@@ -24,7 +26,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> {
   @override
   void initState() {
     super.initState();
-    _load();
+    _firstLoad();
     // The method and the Asr school change the times themselves, and the card
     // is kept alive by the IndexedStack behind the tabs — so without this it
     // goes on showing whatever it worked out when the app started. The school
@@ -43,6 +45,26 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> {
   }
 
   void _reload() => _load();
+
+  static const _askedKey = 'prayer_location_asked_once';
+
+  /// The first time the card ever loads, it asks for the location itself —
+  /// otherwise a fresh install (every iPhone, so far) showed Riyadh's times
+  /// until the reader happened to tap the marker, and read them as wrong.
+  /// After that one ask it never raises the dialog on its own again.
+  Future<void> _firstLoad() async {
+    var ask = false;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (!(prefs.getBool(_askedKey) ?? false)) {
+        await prefs.setBool(_askedKey, true);
+        ask = true;
+      }
+    } catch (_) {
+      // Without storage, behave as before: wait for the marker.
+    }
+    await _load(ask: ask);
+  }
 
   Future<void> _load({bool ask = false}) async {
     try {
@@ -228,6 +250,9 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> {
         const SizedBox(height: 2),
         Text(
           PrayerService.formatTime(p.time),
+          // "5:36 PM" reads left to right; inside the card's RTL layout it
+          // would otherwise come out as "PM 5:36".
+          textDirection: AppLocale.direction,
           style: TextStyle(
             color: p.isNext ? AppColors.textGold : AppColors.textMuted,
             fontSize: 11,
@@ -284,6 +309,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> {
                     : t(
                         'adh.locationHintTemplate',
                       ).replaceFirst('%s', status.label),
+                textDirection: AppLocale.direction,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   color: _locating ? AppColors.textGold : tint,

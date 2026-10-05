@@ -282,6 +282,43 @@ const appTranslations = <String, Map<String, String>>{
     'adh.adhanTestFailedMsg': 'Impossible d\'envoyer l\'alerte.',
     'adh.prayerAlertsScreenTitle': 'Horaires de prière',
     'adh.tryAdhanSoundButton': 'Essayer le son de l\'adhan',
+    'wn.title': 'Nouveautés',
+    'wn.gotIt': 'Compris',
+    'wn.amerTitle': 'La récitation de Cheikh Ahmed Amer',
+    'wn.amerSub':
+        'Dans le Mushaf, les traductions, la récitation et l’écoute continue',
+    'wn.sunnahTitle': 'Vérifier les hadiths sur sunnah.com',
+    'wn.sunnahSub': 'Des liens sous les histoires et à côté des hadiths',
+    'wn.sourcesTitle': 'Sources et crédits',
+    'wn.sourcesSub': 'Chaque source et traducteur, nommés avec un lien',
+    'wn.contactTitle': 'Nous contacter',
+    'wn.contactSub': 'Depuis Compte → À propos',
+    'contact.button': 'Nous contacter',
+    'contact.buttonSub':
+        'Une suggestion, un problème ou une question — envoyé directement à l\'équipe',
+    'contact.title': 'Contacter l\'équipe',
+    'contact.prompt':
+        'Écrivez votre message, il parviendra à l\'équipe. Pour une réponse, indiquez comment vous joindre.',
+    'contact.hint': 'Votre message…',
+    'contact.orEmail': 'Ou écrivez-nous :',
+    'contact.sent': 'Votre message a été envoyé — merci',
+    'contact.failed':
+        'Envoi impossible — vérifiez votre connexion et réessayez',
+    'loc.fixed': 'Votre position',
+    'loc.remembered': 'Votre position enregistrée',
+    'loc.default': 'Riyad',
+    'loc.exFixed':
+        'Votre position a été trouvée et les horaires sont calculés pour elle',
+    'loc.exRemembered':
+        'Impossible de mettre à jour votre position ; les horaires utilisent la dernière position connue',
+    'loc.exDenied':
+        'L\'application a besoin de votre position pour calculer les horaires de votre ville',
+    'loc.exBlocked':
+        'L\'accès à la position est désactivé dans les réglages et la demande ne réapparaîtra pas',
+    'loc.exServiceOff':
+        'Les services de localisation sont désactivés sur votre appareil',
+    'loc.exUnavailable':
+        'Position introuvable. Essayez près d\'une fenêtre ou à l\'extérieur',
     'adh.exactTitle': 'Alerte à la minute près',
     'adh.exactBody':
         'Pour que l\'adhan retentisse à l\'heure même téléphone verrouillé, autorisez l\'application dans « Alarmes et rappels ». Sans cela, le système peut retarder l\'alerte.',
@@ -722,6 +759,7 @@ const appTranslations = <String, Map<String, String>>{
     'langNotice.translatedIntro':
         'Ces sections sont entièrement disponibles dans votre langue :',
     'langNotice.dailyAdhkarCard': 'Adhkar quotidiens',
+    'langNotice.writeNote': 'Écrire une remarque (facultatif)',
     'sunnah.readOn': 'Lire le hadith sur sunnah.com',
     'sunnah.openFailed': 'Impossible d\'ouvrir le lien',
     'langNotice.moreComing':
@@ -1032,6 +1070,37 @@ const appTranslations = <String, Map<String, String>>{
     'adh.adhanTestFailedMsg': 'تنبیہ بھیجی نہیں جا سکی۔',
     'adh.prayerAlertsScreenTitle': 'اوقاتِ نماز',
     'adh.tryAdhanSoundButton': 'اذان کی آواز آزمائیں',
+    'wn.title': 'نیا کیا ہے',
+    'wn.gotIt': 'ٹھیک ہے',
+    'wn.amerTitle': 'شیخ احمد عامر کی تلاوت',
+    'wn.amerSub': 'مصحف، تراجم، تلاوت و تدبر اور مسلسل سماعت میں',
+    'wn.sunnahTitle': 'احادیث کی تصدیق sunnah.com پر',
+    'wn.sunnahSub': 'واقعات کے نیچے اور لائبریری کی احادیث کے ساتھ لنک',
+    'wn.sourcesTitle': 'ماخذ اور حقوق',
+    'wn.sourcesSub': 'ہر ماخذ اور مترجم نام اور لنک کے ساتھ',
+    'wn.contactTitle': 'ہم سے رابطہ',
+    'wn.contactSub': 'اکاؤنٹ ← ایپ کے بارے میں',
+    'contact.button': 'ہم سے رابطہ کریں',
+    'contact.buttonSub': 'تجویز، مسئلہ یا سوال — سیدھا ایپ ٹیم تک',
+    'contact.title': 'ایپ ٹیم سے رابطہ',
+    'contact.prompt':
+        'اپنا پیغام لکھیں، یہ ایپ ٹیم تک پہنچے گا۔ جواب چاہیں تو رابطے کا طریقہ بھی لکھیں۔',
+    'contact.hint': 'آپ کا پیغام…',
+    'contact.orEmail': 'یا ہمیں ای میل کریں:',
+    'contact.sent': 'آپ کا پیغام پہنچ گیا — شکریہ',
+    'contact.failed': 'بھیجا نہیں جا سکا — انٹرنیٹ چیک کر کے دوبارہ کوشش کریں',
+    'loc.fixed': 'آپ کا مقام',
+    'loc.remembered': 'آپ کا محفوظ مقام',
+    'loc.default': 'ریاض',
+    'loc.exFixed': 'آپ کا مقام مل گیا اور اوقات اسی کے مطابق ہیں',
+    'loc.exRemembered':
+        'ابھی مقام اپ ڈیٹ نہیں ہو سکا؛ اوقات آخری معلوم مقام کے مطابق ہیں',
+    'loc.exDenied': 'ایپ کو آپ کے شہر کے اوقات کے لیے مقام کی اجازت درکار ہے',
+    'loc.exBlocked':
+        'مقام کی اجازت ڈیوائس کی ترتیبات میں بند ہے، اور سوال دوبارہ نہیں آئے گا',
+    'loc.exServiceOff': 'آپ کے آلے میں لوکیشن سروس بند ہے',
+    'loc.exUnavailable':
+        'مقام نہیں مل سکا۔ کھڑکی کے قریب یا کھلی جگہ میں کوشش کریں',
     'adh.exactTitle': 'بالکل وقت پر اطلاع',
     'adh.exactBody':
         'تاکہ فون لاک ہونے پر بھی اذان وقت پر بجے، ایپ کو «الارمز اور یاد دہانیاں» میں اجازت دیں۔ اس کے بغیر سسٹم اطلاع میں تاخیر کر سکتا ہے۔',
@@ -1452,6 +1521,7 @@ const appTranslations = <String, Map<String, String>>{
     'langNotice.translatedIntro':
         'یہ حصے آپ کی زبان میں مکمل طور پر دستیاب ہیں:',
     'langNotice.dailyAdhkarCard': 'روزانہ کے اذکار',
+    'langNotice.writeNote': 'نوٹ لکھیں (اختیاری)',
     'sunnah.readOn': 'حدیث sunnah.com پر پڑھیں',
     'sunnah.openFailed': 'لنک نہیں کھل سکا',
     'langNotice.moreComing': 'باقی حصوں کا ترجمہ ابھی جاری ہے، ان شاء اللہ۔',
@@ -1767,6 +1837,40 @@ const appTranslations = <String, Map<String, String>>{
     'adh.adhanTestFailedMsg': 'Gagal mengirim notifikasi.',
     'adh.prayerAlertsScreenTitle': 'Waktu Salat',
     'adh.tryAdhanSoundButton': 'Coba suara azan',
+    'wn.title': 'Yang Baru',
+    'wn.gotIt': 'Mengerti',
+    'wn.amerTitle': 'Bacaan Syekh Ahmad Amir',
+    'wn.amerSub': 'Di mushaf, terjemahan, tilawah, dan mendengar berkelanjutan',
+    'wn.sunnahTitle': 'Periksa hadis di sunnah.com',
+    'wn.sunnahSub': 'Tautan di bawah kisah dan di samping hadis perpustakaan',
+    'wn.sourcesTitle': 'Sumber & Kredit',
+    'wn.sourcesSub': 'Setiap sumber dan penerjemah, dengan nama dan tautan',
+    'wn.contactTitle': 'Hubungi kami',
+    'wn.contactSub': 'Dari Akun → Tentang',
+    'contact.button': 'Hubungi kami',
+    'contact.buttonSub':
+        'Saran, masalah, atau pertanyaan — langsung ke tim aplikasi',
+    'contact.title': 'Hubungi tim aplikasi',
+    'contact.prompt':
+        'Tulis pesan Anda dan pesan akan sampai ke tim aplikasi. Jika ingin dibalas, sertakan cara menghubungi Anda.',
+    'contact.hint': 'Pesan Anda…',
+    'contact.orEmail': 'Atau kirim email:',
+    'contact.sent': 'Pesan Anda terkirim — terima kasih',
+    'contact.failed': 'Gagal mengirim — periksa koneksi lalu coba lagi',
+    'loc.fixed': 'Lokasi Anda',
+    'loc.remembered': 'Lokasi tersimpan',
+    'loc.default': 'Riyadh',
+    'loc.exFixed':
+        'Lokasi Anda ditemukan dan jadwal dihitung berdasarkan lokasi itu',
+    'loc.exRemembered':
+        'Lokasi tidak dapat diperbarui sekarang; jadwal memakai lokasi terakhir',
+    'loc.exDenied':
+        'Aplikasi memerlukan izin lokasi untuk menghitung jadwal kota Anda',
+    'loc.exBlocked':
+        'Izin lokasi ditolak di pengaturan perangkat, dan permintaan tidak akan muncul lagi',
+    'loc.exServiceOff': 'Layanan lokasi di perangkat Anda mati',
+    'loc.exUnavailable':
+        'Lokasi tidak dapat diperoleh. Coba di dekat jendela atau di tempat terbuka',
     'adh.exactTitle': 'Pengingat tepat waktu',
     'adh.exactBody':
         'Agar azan berbunyi tepat waktu meski ponsel terkunci, izinkan aplikasi di “Alarm & pengingat”. Tanpa izin ini sistem bisa menunda pengingat.',
@@ -2194,6 +2298,7 @@ const appTranslations = <String, Map<String, String>>{
     'langNotice.translatedIntro':
         'Bagian-bagian ini sudah tersedia sepenuhnya dalam bahasa Anda:',
     'langNotice.dailyAdhkarCard': 'Zikir Harian',
+    'langNotice.writeNote': 'Tulis catatan (opsional)',
     'sunnah.readOn': 'Baca hadis di sunnah.com',
     'sunnah.openFailed': 'Tautan tidak dapat dibuka',
     'langNotice.moreComing':
@@ -2512,6 +2617,39 @@ const appTranslations = <String, Map<String, String>>{
     'adh.adhanTestFailedMsg': 'Tidak dapat menghantar makluman.',
     'adh.prayerAlertsScreenTitle': 'Waktu Solat',
     'adh.tryAdhanSoundButton': 'Cuba bunyi azan',
+    'wn.title': 'Apa Yang Baharu',
+    'wn.gotIt': 'Faham',
+    'wn.amerTitle': 'Bacaan Syeikh Ahmad Amir',
+    'wn.amerSub': 'Dalam mushaf, terjemahan, tilawah dan dengar berterusan',
+    'wn.sunnahTitle': 'Semak hadis di sunnah.com',
+    'wn.sunnahSub': 'Pautan di bawah kisah dan di sebelah hadis perpustakaan',
+    'wn.sourcesTitle': 'Sumber & Kredit',
+    'wn.sourcesSub': 'Setiap sumber dan penterjemah, dengan nama dan pautan',
+    'wn.contactTitle': 'Hubungi kami',
+    'wn.contactSub': 'Dari Akaun → Perihal',
+    'contact.button': 'Hubungi kami',
+    'contact.buttonSub':
+        'Cadangan, masalah atau soalan — terus kepada pasukan aplikasi',
+    'contact.title': 'Hubungi pasukan aplikasi',
+    'contact.prompt':
+        'Tulis mesej anda dan ia akan sampai kepada pasukan aplikasi. Jika mahu balasan, nyatakan cara menghubungi anda.',
+    'contact.hint': 'Mesej anda…',
+    'contact.orEmail': 'Atau e-mel kami:',
+    'contact.sent': 'Mesej anda telah dihantar — terima kasih',
+    'contact.failed': 'Gagal dihantar — semak sambungan dan cuba lagi',
+    'loc.fixed': 'Lokasi anda',
+    'loc.remembered': 'Lokasi tersimpan',
+    'loc.default': 'Riyadh',
+    'loc.exFixed': 'Lokasi anda ditemui dan waktu dikira mengikutnya',
+    'loc.exRemembered':
+        'Lokasi tidak dapat dikemas kini sekarang; waktu menggunakan lokasi terakhir',
+    'loc.exDenied':
+        'Aplikasi memerlukan kebenaran lokasi untuk mengira waktu bandar anda',
+    'loc.exBlocked':
+        'Kebenaran lokasi ditolak dalam tetapan peranti, dan permintaan tidak akan muncul lagi',
+    'loc.exServiceOff': 'Perkhidmatan lokasi pada peranti anda dimatikan',
+    'loc.exUnavailable':
+        'Lokasi tidak dapat diperoleh. Cuba berhampiran tingkap atau di kawasan terbuka',
     'adh.exactTitle': 'Peringatan tepat pada minitnya',
     'adh.exactBody':
         'Supaya azan berkumandang tepat pada waktunya walaupun telefon dikunci, benarkan aplikasi dalam “Penggera & peringatan”. Tanpanya sistem mungkin melewatkan peringatan.',
@@ -2943,6 +3081,7 @@ const appTranslations = <String, Map<String, String>>{
     'langNotice.translatedIntro':
         'Bahagian-bahagian ini tersedia sepenuhnya dalam bahasa anda:',
     'langNotice.dailyAdhkarCard': 'Zikir Harian',
+    'langNotice.writeNote': 'Tulis nota (pilihan)',
     'sunnah.readOn': 'Baca hadis di sunnah.com',
     'sunnah.openFailed': 'Pautan tidak dapat dibuka',
     'langNotice.moreComing':
@@ -3250,6 +3389,38 @@ const appTranslations = <String, Map<String, String>>{
     'adh.adhanTestFailedMsg': 'तनबीह नहीं भेजी जा सकी।',
     'adh.prayerAlertsScreenTitle': 'नमाज़ के अवक़ात',
     'adh.tryAdhanSoundButton': 'अज़ान की आवाज़ आज़माएँ',
+    'wn.title': 'नया क्या है',
+    'wn.gotIt': 'ठीक है',
+    'wn.amerTitle': 'शेख़ अहमद आमिर की तिलावत',
+    'wn.amerSub': 'मुसहफ़, अनुवाद, तिलावत और लगातार सुनने में',
+    'wn.sunnahTitle': 'हदीसों की पुष्टि sunnah.com पर',
+    'wn.sunnahSub': 'क़िस्सों के नीचे और लाइब्रेरी की हदीसों के पास लिंक',
+    'wn.sourcesTitle': 'स्रोत और श्रेय',
+    'wn.sourcesSub': 'हर स्रोत और अनुवादक, नाम और लिंक के साथ',
+    'wn.contactTitle': 'हमसे संपर्क',
+    'wn.contactSub': 'खाता → ऐप के बारे में से',
+    'contact.button': 'हमसे संपर्क करें',
+    'contact.buttonSub': 'सुझाव, समस्या या सवाल — सीधे ऐप टीम तक',
+    'contact.title': 'ऐप टीम से संपर्क',
+    'contact.prompt':
+        'अपना संदेश लिखें, यह ऐप टीम तक पहुँचेगा। जवाब चाहिए तो संपर्क का तरीका भी लिखें।',
+    'contact.hint': 'आपका संदेश…',
+    'contact.orEmail': 'या हमें ईमेल करें:',
+    'contact.sent': 'आपका संदेश भेज दिया गया — धन्यवाद',
+    'contact.failed': 'भेजा नहीं जा सका — इंटरनेट जाँचकर फिर कोशिश करें',
+    'loc.fixed': 'आपका स्थान',
+    'loc.remembered': 'आपका सहेजा स्थान',
+    'loc.default': 'रियाद',
+    'loc.exFixed': 'आपका स्थान मिल गया और समय उसी के अनुसार हैं',
+    'loc.exRemembered':
+        'अभी स्थान अपडेट नहीं हो सका; समय पिछले ज्ञात स्थान के अनुसार हैं',
+    'loc.exDenied':
+        'आपके शहर का समय निकालने के लिए ऐप को स्थान की अनुमति चाहिए',
+    'loc.exBlocked':
+        'डिवाइस सेटिंग में स्थान की अनुमति बंद है, और अनुरोध दोबारा नहीं आएगा',
+    'loc.exServiceOff': 'आपके डिवाइस में लोकेशन सेवा बंद है',
+    'loc.exUnavailable':
+        'स्थान नहीं मिल सका। खिड़की के पास या खुली जगह में कोशिश करें',
     'adh.exactTitle': 'ठीक समय पर सूचना',
     'adh.exactBody':
         'ताकि फ़ोन लॉक होने पर भी अज़ान समय पर बजे, ऐप को “अलार्म और रिमाइंडर” में अनुमति दें। इसके बिना सिस्टम सूचना में देरी कर सकता है।',
@@ -3674,6 +3845,7 @@ const appTranslations = <String, Map<String, String>>{
     'langNotice.translatedIntro':
         'ये हिस्से आपकी भाषा में पूरी तरह उपलब्ध हैं:',
     'langNotice.dailyAdhkarCard': 'दैनिक अज़कार',
+    'langNotice.writeNote': 'नोट लिखें (वैकल्पिक)',
     'sunnah.readOn': 'हदीस sunnah.com पर पढ़ें',
     'sunnah.openFailed': 'लिंक नहीं खुल सका',
     'langNotice.moreComing': 'बाकी हिस्सों का अनुवाद अभी जारी है, इंशाअल्लाह।',
@@ -3984,6 +4156,40 @@ const appTranslations = <String, Map<String, String>>{
     'adh.adhanTestFailedMsg': 'Bildirim gönderilemedi.',
     'adh.prayerAlertsScreenTitle': 'Namaz Vakitleri',
     'adh.tryAdhanSoundButton': 'Ezan sesini dene',
+    'wn.title': 'Yenilikler',
+    'wn.gotIt': 'Anladım',
+    'wn.amerTitle': 'Şeyh Ahmed Âmir’in kıraati',
+    'wn.amerSub': 'Mushaf, mealler, tilavet ve kesintisiz dinlemede',
+    'wn.sunnahTitle': 'Hadisleri sunnah.com’da doğrulayın',
+    'wn.sunnahSub':
+        'Kıssaların altında ve kütüphane hadislerinin yanında bağlantılar',
+    'wn.sourcesTitle': 'Kaynaklar ve Haklar',
+    'wn.sourcesSub': 'Her kaynak ve mütercim, adı ve bağlantısıyla',
+    'wn.contactTitle': 'Bize ulaşın',
+    'wn.contactSub': 'Hesap → Hakkında bölümünden',
+    'contact.button': 'Bize ulaşın',
+    'contact.buttonSub': 'Öneri, sorun veya soru — doğrudan uygulama ekibine',
+    'contact.title': 'Uygulama ekibine ulaşın',
+    'contact.prompt':
+        'Mesajınızı yazın, uygulama ekibine ulaşacak. Yanıt isterseniz size nasıl ulaşabileceğimizi de yazın.',
+    'contact.hint': 'Mesajınız…',
+    'contact.orEmail': 'Ya da e-posta gönderin:',
+    'contact.sent': 'Mesajınız gönderildi — teşekkürler',
+    'contact.failed':
+        'Gönderilemedi — bağlantınızı kontrol edip tekrar deneyin',
+    'loc.fixed': 'Konumunuz',
+    'loc.remembered': 'Kayıtlı konumunuz',
+    'loc.default': 'Riyad',
+    'loc.exFixed': 'Konumunuz bulundu ve vakitler ona göre hesaplandı',
+    'loc.exRemembered':
+        'Konum şu an güncellenemedi; vakitler bilinen son konuma göre',
+    'loc.exDenied':
+        'Şehrinizin vakitlerini hesaplamak için uygulamanın konum iznine ihtiyacı var',
+    'loc.exBlocked':
+        'Konum izni cihaz ayarlarında kapalı ve istek tekrar görünmeyecek',
+    'loc.exServiceOff': 'Cihazınızda konum servisleri kapalı',
+    'loc.exUnavailable':
+        'Konum alınamadı. Pencere kenarında veya açık alanda deneyin',
     'adh.exactTitle': 'Tam dakikasında uyarı',
     'adh.exactBody':
         'Telefon kilitliyken bile ezanın vaktinde okunması için uygulamaya “Alarmlar ve hatırlatıcılar” izni verin. Bu izin olmadan sistem uyarıyı geciktirebilir.',
@@ -4403,6 +4609,7 @@ const appTranslations = <String, Map<String, String>>{
     'langNotice.translatedIntro':
         'Bu bölümler dilinizde tamamen kullanılabilir:',
     'langNotice.dailyAdhkarCard': 'Günlük Zikirler',
+    'langNotice.writeNote': 'Not yaz (isteğe bağlı)',
     'sunnah.readOn': 'Hadisi sunnah.com\'da okuyun',
     'sunnah.openFailed': 'Bağlantı açılamadı',
     'langNotice.moreComing':
@@ -4712,6 +4919,39 @@ const appTranslations = <String, Map<String, String>>{
     'adh.adhanTestFailedMsg': 'সতর্কবার্তা পাঠানো যায়নি।',
     'adh.prayerAlertsScreenTitle': 'নামাজের সময়',
     'adh.tryAdhanSoundButton': 'আযানের শব্দ শুনুন',
+    'wn.title': 'নতুন কী',
+    'wn.gotIt': 'বুঝেছি',
+    'wn.amerTitle': 'শায়খ আহমদ আমেরের তিলাওয়াত',
+    'wn.amerSub': 'মুসহাফ, অনুবাদ, তিলাওয়াত ও একটানা শোনায়',
+    'wn.sunnahTitle': 'sunnah.com-এ হাদিস যাচাই করুন',
+    'wn.sunnahSub': 'কাহিনির নিচে ও লাইব্রেরির হাদিসের পাশে লিংক',
+    'wn.sourcesTitle': 'উৎস ও কৃতজ্ঞতা',
+    'wn.sourcesSub': 'প্রতিটি উৎস ও অনুবাদক, নাম ও লিংকসহ',
+    'wn.contactTitle': 'যোগাযোগ করুন',
+    'wn.contactSub': 'অ্যাকাউন্ট → সম্পর্কে থেকে',
+    'contact.button': 'আমাদের সাথে যোগাযোগ',
+    'contact.buttonSub': 'পরামর্শ, সমস্যা বা প্রশ্ন — সরাসরি অ্যাপ টিমের কাছে',
+    'contact.title': 'অ্যাপ টিমের সাথে যোগাযোগ',
+    'contact.prompt':
+        'আপনার বার্তা লিখুন, এটি অ্যাপ টিমের কাছে পৌঁছাবে। উত্তর চাইলে যোগাযোগের উপায়ও লিখুন।',
+    'contact.hint': 'আপনার বার্তা…',
+    'contact.orEmail': 'অথবা ইমেইল করুন:',
+    'contact.sent': 'আপনার বার্তা পাঠানো হয়েছে — ধন্যবাদ',
+    'contact.failed': 'পাঠানো যায়নি — ইন্টারনেট দেখে আবার চেষ্টা করুন',
+    'loc.fixed': 'আপনার অবস্থান',
+    'loc.remembered': 'আপনার সংরক্ষিত অবস্থান',
+    'loc.default': 'রিয়াদ',
+    'loc.exFixed':
+        'আপনার অবস্থান পাওয়া গেছে, সময়সূচি সেই অনুযায়ী হিসাব করা হয়েছে',
+    'loc.exRemembered':
+        'এখন অবস্থান হালনাগাদ করা যায়নি; সময়সূচি শেষ জানা অবস্থান অনুযায়ী',
+    'loc.exDenied':
+        'আপনার শহরের সময় হিসাবের জন্য অ্যাপের অবস্থানের অনুমতি দরকার',
+    'loc.exBlocked':
+        'ডিভাইসের সেটিংসে অবস্থানের অনুমতি বন্ধ, অনুরোধটি আর দেখাবে না',
+    'loc.exServiceOff': 'আপনার ডিভাইসে লোকেশন সার্ভিস বন্ধ',
+    'loc.exUnavailable':
+        'অবস্থান পাওয়া যায়নি। জানালার কাছে বা খোলা জায়গায় চেষ্টা করুন',
     'adh.exactTitle': 'ঠিক সময়ে সতর্কতা',
     'adh.exactBody':
         'ফোন লক থাকলেও যেন আজান সময়মতো বাজে, অ্যাপটিকে “অ্যালার্ম ও রিমাইন্ডার”-এ অনুমতি দিন। এটি ছাড়া সিস্টেম সতর্কতা দেরি করতে পারে।',
@@ -5130,6 +5370,7 @@ const appTranslations = <String, Map<String, String>>{
     'langNotice.translatedIntro':
         'এই অংশগুলো আপনার ভাষায় সম্পূর্ণভাবে উপলব্ধ:',
     'langNotice.dailyAdhkarCard': 'দৈনিক জিকির',
+    'langNotice.writeNote': 'নোট লিখুন (ঐচ্ছিক)',
     'sunnah.readOn': 'হাদিসটি sunnah.com-এ পড়ুন',
     'sunnah.openFailed': 'লিংক খোলা যায়নি',
     'langNotice.moreComing': 'বাকি অংশগুলোর অনুবাদ এখনও চলছে, ইনশাআল্লাহ।',
@@ -5441,6 +5682,40 @@ const appTranslations = <String, Map<String, String>>{
     'adh.adhanTestFailedMsg': 'Ba a iya aika tunatarwar ba.',
     'adh.prayerAlertsScreenTitle': 'Lokutan Sallah',
     'adh.tryAdhanSoundButton': 'Gwada sautin azãni',
+    'wn.title': 'Abin da ke Sabo',
+    'wn.gotIt': 'Na gane',
+    'wn.amerTitle': 'Karatun Sheikh Ahmad Amir',
+    'wn.amerSub': 'A cikin Mushafi, fassarori, karatu da sauraro ba tsayawa',
+    'wn.sunnahTitle': 'Tabbatar da hadisai a sunnah.com',
+    'wn.sunnahSub':
+        'Hanyoyi a ƙarƙashin labarai da kusa da hadisan ɗakin karatu',
+    'wn.sourcesTitle': 'Tushe da Godiya',
+    'wn.sourcesSub': 'Kowane tushe da mai fassara, da suna da hanya',
+    'wn.contactTitle': 'Tuntube mu',
+    'wn.contactSub': 'Daga Asusu → Game da manhaja',
+    'contact.button': 'Tuntube mu',
+    'contact.buttonSub':
+        'Shawara, matsala ko tambaya — kai tsaye zuwa ga ma\'aikatan manhaja',
+    'contact.title': 'Tuntubi ma\'aikatan manhaja',
+    'contact.prompt':
+        'Rubuta sakonka kuma zai isa ga ma\'aikatan manhaja. Idan kana son amsa, rubuta yadda za mu same ka.',
+    'contact.hint': 'Sakonka…',
+    'contact.orEmail': 'Ko aiko mana imel:',
+    'contact.sent': 'An aika sakonka — mun gode',
+    'contact.failed': 'Ba a iya aikawa ba — duba intanet ka sake gwadawa',
+    'loc.fixed': 'Wurin da kake',
+    'loc.remembered': 'Wurin da aka adana',
+    'loc.default': 'Riyadh',
+    'loc.exFixed': 'An gano wurin da kake, kuma an lissafa lokutan bisa shi',
+    'loc.exRemembered':
+        'Ba a iya sabunta wurin yanzu ba; lokutan suna bisa wurin karshe da aka sani',
+    'loc.exDenied':
+        'Manhajar tana bukatar izinin wuri don lissafa lokutan garinku',
+    'loc.exBlocked':
+        'An kashe izinin wuri a saitunan na\'ura, kuma tambayar ba za ta sake bayyana ba',
+    'loc.exServiceOff': 'An kashe sabis na wuri a na\'urarka',
+    'loc.exUnavailable':
+        'Ba a iya samun wurin ba. Gwada kusa da taga ko a fili',
     'adh.exactTitle': 'Sanarwa a daidai minti',
     'adh.exactBody':
         'Domin kiran sallah ya yi a kan lokaci ko da wayar a kulle take, ba wa manhajar izini a “Agogon ƙararrawa da tunatarwa”. Ba tare da shi ba tsarin zai iya jinkirta sanarwar.',
@@ -5864,6 +6139,7 @@ const appTranslations = <String, Map<String, String>>{
     'langNotice.translatedIntro':
         'Waɗannan sassa suna samuwa gaba ɗaya cikin harshenka:',
     'langNotice.dailyAdhkarCard': 'Zikirin Yau da Kullum',
+    'langNotice.writeNote': 'Rubuta bayani (na zabi)',
     'sunnah.readOn': 'Karanta hadisin a sunnah.com',
     'sunnah.openFailed': 'Ba a iya buɗe mahaɗin ba',
     'langNotice.moreComing':

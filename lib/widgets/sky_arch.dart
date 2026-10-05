@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../constants/theme.dart';
+import '../services/app_locale.dart';
 import '../services/prayer_service.dart';
 
 /// The prayer day drawn as the sky it actually is: a dome on the horizon, and
@@ -318,7 +319,15 @@ class SkyArchPainter extends CustomPainter {
             ..color = _goldLight.withValues(alpha: 0.6),
         );
       }
-      _label(canvas, prayer.name, where, cx, horizon, marked);
+      _label(
+        canvas,
+        prayer.name,
+        where,
+        cx,
+        horizon,
+        marked,
+        shown: prayer.displayName,
+      );
     }
 
     fraction <= 1 ? _sun(canvas, here) : _moon(canvas, here);
@@ -377,18 +386,21 @@ class SkyArchPainter extends CustomPainter {
     Offset at,
     double cx,
     double horizon,
-    bool marked,
-  ) {
+    bool marked, {
+    required String shown,
+  }) {
+    // [name] stays Arabic: the placement below is decided by it. [shown] is
+    // the same prayer in the reader's language.
     final painter = TextPainter(
       text: TextSpan(
-        text: name,
+        text: shown,
         style: TextStyle(
           color: marked ? _goldLight : Colors.white.withValues(alpha: 0.78),
           fontSize: marked ? 13.2 : 12.1,
           fontWeight: FontWeight.bold,
         ),
       ),
-      textDirection: TextDirection.rtl,
+      textDirection: AppLocale.isRtl ? TextDirection.rtl : TextDirection.ltr,
     )..layout();
 
     final outward = at - Offset(cx, horizon);

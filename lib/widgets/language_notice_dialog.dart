@@ -60,6 +60,10 @@ class _LanguageNoticeDialogState extends State<_LanguageNoticeDialog> {
   final _controller = TextEditingController();
   bool _sending = false;
 
+  /// The note box stays folded away until the reader asks for it, so the
+  /// notice never reads as a form that has to be filled before closing.
+  bool _writing = false;
+
   @override
   void dispose() {
     _controller.dispose();
@@ -157,50 +161,74 @@ class _LanguageNoticeDialogState extends State<_LanguageNoticeDialog> {
                 height: 1.6,
               ),
             ),
-            const SizedBox(height: 16),
-            Text(
-              t('langNotice.feedbackPrompt'),
-              style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 13,
-              ),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _controller,
-              maxLines: 3,
-              style: const TextStyle(color: AppColors.textPrimary),
-              decoration: InputDecoration(
-                hintText: t('langNotice.hint'),
-                hintStyle: const TextStyle(color: AppColors.textMuted),
-                filled: true,
-                fillColor: AppColors.black,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: AppColors.goldBorder),
+            const SizedBox(height: 12),
+            if (!_writing)
+              Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: TextButton.icon(
+                  onPressed: () => setState(() => _writing = true),
+                  icon: const Icon(
+                    Icons.edit_note,
+                    color: AppColors.textGold,
+                    size: 20,
+                  ),
+                  label: Text(
+                    t('langNotice.writeNote'),
+                    style: const TextStyle(
+                      color: AppColors.textGold,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+              )
+            else ...[
+              Text(
+                t('langNotice.feedbackPrompt'),
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 13,
                 ),
               ),
-            ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _controller,
+                autofocus: true,
+                maxLines: 3,
+                style: const TextStyle(color: AppColors.textPrimary),
+                decoration: InputDecoration(
+                  hintText: t('langNotice.hint'),
+                  hintStyle: const TextStyle(color: AppColors.textMuted),
+                  filled: true,
+                  fillColor: AppColors.black,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: AppColors.goldBorder),
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text(
-            t('langNotice.close'),
-            style: const TextStyle(color: AppColors.textMuted),
-          ),
-        ),
-        TextButton(
-          onPressed: _sending ? null : _send,
-          child: Text(
-            _sending ? '…' : t('langNotice.send'),
-            style: const TextStyle(
-              color: AppColors.gold,
-              fontWeight: FontWeight.bold,
+        if (_writing)
+          TextButton(
+            onPressed: _sending ? null : _send,
+            child: Text(
+              _sending ? '…' : t('langNotice.send'),
+              style: const TextStyle(
+                color: AppColors.gold,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
+        FilledButton(
+          onPressed: () => Navigator.pop(context),
+          style: FilledButton.styleFrom(
+            backgroundColor: AppColors.gold,
+            foregroundColor: AppColors.black,
+          ),
+          child: Text(t('langNotice.close')),
         ),
       ],
     );

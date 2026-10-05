@@ -159,6 +159,18 @@ class _MainNavigationState extends State<MainNavigation> {
     AccountScreen(),
   ];
 
+  static const _tahfeezIndex = 2;
+
+  /// Tahfeez is built on accounts. On iPhone, while no sign-in is switched on
+  /// for the project (see AuthService.offeredOn), the tab would be a page of
+  /// "coming soon" — which App Review treats as unfinished — so it is left
+  /// out of the bar until sign-in appears, and returns by itself after.
+  bool get _showTahfeez =>
+      AuthService.availableProviders.value.isNotEmpty ||
+      AuthService.user.value != null ||
+      kIsWeb ||
+      defaultTargetPlatform != TargetPlatform.iOS;
+
   static const _promptKey = 'notification_prompt_shown';
 
   @override
@@ -275,51 +287,26 @@ class _MainNavigationState extends State<MainNavigation> {
     final info = await PackageInfo.fromPlatform();
     final version = info.version; // e.g. "1.1.0"
     final prefs = await SharedPreferences.getInstance();
-    if (prefs.getString(_whatsNewKey) == version) return;
+    final seen = prefs.getString(_whatsNewKey);
+    if (seen == version) return;
     await prefs.setString(_whatsNewKey, version);
+    // A first install has nothing "new" to show — the language notice and
+    // permission prompts are enough for a first launch.
+    if (seen == null) return;
     if (!mounted) return;
     _showWhatsNew(version);
   }
 
   void _showWhatsNew(String version) {
-    final isEn = AppLocale.isEn;
-    final items = isEn
-        ? [
-            (
-              '🎓',
-              'Memorisation tab',
-              'Circles, weekly timetable and per-student assessment',
-            ),
-            ('🧭', 'Qibla compass', 'Points straight to the Kaaba'),
-            (
-              '📚',
-              'Hadith Encyclopedia',
-              'Hadiths by topic with explanations, in 8 languages',
-            ),
-            (
-              '🔄',
-              'Check for updates',
-              'One tap in Account to see if a newer version is out',
-            ),
-          ]
-        : [
-            (
-              '🎓',
-              'تبويب التحفيظ',
-              'حلقات وجدول أسبوعي وتقييم لكل طالب في الحصة',
-            ),
-            ('🧭', 'بوصلة القبلة', 'تشير للكعبة مباشرة'),
-            (
-              '📚',
-              'موسوعة الحديث',
-              'أحاديث مبوّبة بالموضوع مع شرحها، بـ٨ لغات',
-            ),
-            (
-              '🔄',
-              'التحقق من التحديث',
-              'ضغطة واحدة في حسابي تعرف بها إن كان هناك إصدار أحدث',
-            ),
-          ];
+    // This version's own changes, in the reader's language. Keep it to what
+    // actually changed — an old list here points readers at things that
+    // have moved or, on iPhone, do not exist.
+    final items = [
+      ('🎙️', t('wn.amerTitle'), t('wn.amerSub')),
+      ('🔗', t('wn.sunnahTitle'), t('wn.sunnahSub')),
+      ('📖', t('wn.sourcesTitle'), t('wn.sourcesSub')),
+      ('✉️', t('wn.contactTitle'), t('wn.contactSub')),
+    ];
 
     showModalBottomSheet<void>(
       context: context,
@@ -329,7 +316,7 @@ class _MainNavigationState extends State<MainNavigation> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) => Directionality(
-        textDirection: isEn ? TextDirection.ltr : TextDirection.rtl,
+        textDirection: AppLocale.direction,
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
@@ -360,7 +347,7 @@ class _MainNavigationState extends State<MainNavigation> {
                     ),
                     const SizedBox(width: 10),
                     Text(
-                      isEn ? "What's New" : 'ما الجديد',
+                      t('wn.title'),
                       style: const TextStyle(
                         color: AppColors.textPrimary,
                         fontSize: 18,
@@ -418,7 +405,7 @@ class _MainNavigationState extends State<MainNavigation> {
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
                     child: Text(
-                      isEn ? 'Got it' : 'فهمت',
+                      t('wn.gotIt'),
                       style: const TextStyle(
                         color: AppColors.gold,
                         fontSize: 14,
@@ -437,6 +424,23 @@ class _MainNavigationState extends State<MainNavigation> {
 
   @override
   Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: Listenable.merge([
+        AuthService.availableProviders,
+        AuthService.user,
+      ]),
+      builder: (context, _) => _scaffold(),
+    );
+  }
+
+  Widget _scaffold() {
+    final showTahfeez = _showTahfeez;
+    // The bar's positions, as indexes into [_screens].
+    final tabs = [
+      for (var i = 0; i < _screens.length; i++)
+        if (i != _tahfeezIndex || showTahfeez) i,
+    ];
+    if (!tabs.contains(_currentIndex)) _currentIndex = 1;
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
@@ -448,43 +452,45 @@ class _MainNavigationState extends State<MainNavigation> {
             ),
           ),
           child: BottomNavigationBar(
-            currentIndex: _currentIndex,
-            onTap: (i) => setState(() => _currentIndex = i),
+            currentIndex: tabs.indexOf(_currentIndex),
+            onTap: (i) => setState(() => _currentIndex = tabs[i]),
             backgroundColor: AppColors.blackCard,
             selectedItemColor: AppColors.gold,
             unselectedItemColor: AppColors.textMuted,
             selectedFontSize: 12,
             unselectedFontSize: 12,
             type: BottomNavigationBarType.fixed,
-            items: [
-              BottomNavigationBarItem(
-                icon: const Icon(Icons.star_rounded),
-                label: t('nav.adhkar'),
-              ),
-              BottomNavigationBarItem(
-                icon: const Icon(Icons.home_rounded),
-                label: t('nav.home'),
-              ),
-              BottomNavigationBarItem(
-                icon: const Icon(Icons.school_rounded),
-                label: t('nav.tahfeez'),
-              ),
-              BottomNavigationBarItem(
-                icon: ValueListenableBuilder<int>(
-                  valueListenable: TahfeezService.adminBadge,
-                  builder: (_, n, _) => Badge(
-                    isLabelVisible: n > 0,
-                    label: Text('$n'),
-                    backgroundColor: AppColors.error,
-                    child: const Icon(Icons.person_rounded),
-                  ),
-                ),
-                label: t('nav.account'),
-              ),
-            ],
+            items: [for (final i in tabs) _item(i)],
           ),
         ),
       ),
     );
   }
+
+  BottomNavigationBarItem _item(int screen) => switch (screen) {
+    0 => BottomNavigationBarItem(
+      icon: const Icon(Icons.star_rounded),
+      label: t('nav.adhkar'),
+    ),
+    1 => BottomNavigationBarItem(
+      icon: const Icon(Icons.home_rounded),
+      label: t('nav.home'),
+    ),
+    2 => BottomNavigationBarItem(
+      icon: const Icon(Icons.school_rounded),
+      label: t('nav.tahfeez'),
+    ),
+    _ => BottomNavigationBarItem(
+      icon: ValueListenableBuilder<int>(
+        valueListenable: TahfeezService.adminBadge,
+        builder: (_, n, _) => Badge(
+          isLabelVisible: n > 0,
+          label: Text('$n'),
+          backgroundColor: AppColors.error,
+          child: const Icon(Icons.person_rounded),
+        ),
+      ),
+      label: t('nav.account'),
+    ),
+  };
 }

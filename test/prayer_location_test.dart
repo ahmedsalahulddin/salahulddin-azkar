@@ -62,34 +62,42 @@ void main() {
       final mine = await PrayerService.load();
 
       expect(mine.status, LocationStatus.fixed);
-      expect(mine.prayers.first.time, isNot(riyadh.prayers.first.time),
-          reason: 'Cairo and Riyadh cannot share a Fajr');
+      expect(
+        mine.prayers.first.time,
+        isNot(riyadh.prayers.first.time),
+        reason: 'Cairo and Riyadh cannot share a Fajr',
+      );
     });
 
-    test('the fix is remembered, so a later failure is not a trip to Riyadh',
-        () async {
-      GeolocatorPlatform.instance = _FakeGeolocator(
-        permission: LocationPermission.always,
-        at: cairo,
-      );
-      final fresh = await PrayerService.load();
+    test(
+      'the fix is remembered, so a later failure is not a trip to Riyadh',
+      () async {
+        GeolocatorPlatform.instance = _FakeGeolocator(
+          permission: LocationPermission.always,
+          at: cairo,
+        );
+        final fresh = await PrayerService.load();
 
-      // Same device, no signal this time.
-      GeolocatorPlatform.instance = _FakeGeolocator(
-        permission: LocationPermission.always,
-      );
-      final again = await PrayerService.load();
+        // Same device, no signal this time.
+        GeolocatorPlatform.instance = _FakeGeolocator(
+          permission: LocationPermission.always,
+        );
+        final again = await PrayerService.load();
 
-      expect(again.status, LocationStatus.remembered);
-      expect(again.prayers.first.time, fresh.prayers.first.time);
-    });
+        expect(again.status, LocationStatus.remembered);
+        expect(again.prayers.first.time, fresh.prayers.first.time);
+      },
+    );
 
     test('asking is what raises the dialog, not merely loading', () async {
       final quiet = _FakeGeolocator(at: cairo);
       GeolocatorPlatform.instance = quiet;
       await PrayerService.load();
-      expect(quiet.asked, isFalse,
-          reason: 'the automatic load must not demand the permission');
+      expect(
+        quiet.asked,
+        isFalse,
+        reason: 'the automatic load must not demand the permission',
+      );
       expect(quiet.granted, isFalse);
 
       final asked = _FakeGeolocator(at: cairo);
@@ -105,37 +113,54 @@ void main() {
         return (await PrayerService.load(ask: true)).status;
       }
 
-      expect(await statusWhen(_FakeGeolocator(serviceEnabled: false)),
-          LocationStatus.serviceOff);
       expect(
-          await statusWhen(
-              _FakeGeolocator(permission: LocationPermission.deniedForever)),
-          LocationStatus.blocked);
+        await statusWhen(_FakeGeolocator(serviceEnabled: false)),
+        LocationStatus.serviceOff,
+      );
+      expect(
+        await statusWhen(
+          _FakeGeolocator(permission: LocationPermission.deniedForever),
+        ),
+        LocationStatus.blocked,
+      );
       // Refused at the dialog.
-      expect(await statusWhen(_FakeGeolocator(grantOnRequest: false)),
-          LocationStatus.denied);
+      expect(
+        await statusWhen(_FakeGeolocator(grantOnRequest: false)),
+        LocationStatus.denied,
+      );
       // Allowed, but no fix arrives.
       expect(
-          await statusWhen(
-              _FakeGeolocator(permission: LocationPermission.whileInUse)),
-          LocationStatus.unavailable);
+        await statusWhen(
+          _FakeGeolocator(permission: LocationPermission.whileInUse),
+        ),
+        LocationStatus.unavailable,
+      );
     });
   });
 
   group('the card', () {
+    // These are about a card that has already had its one automatic ask —
+    // every launch after the first. The first launch has its own test below.
+    setUp(
+      () => SharedPreferences.setMockInitialValues({
+        'prayer_location_asked_once': true,
+      }),
+    );
+
     Future<void> pumpCard(WidgetTester tester) async {
       // Mounted the way the home screen mounts it: the header is taller than
       // a short screen, and scrolls there rather than being squeezed.
-      await tester.pumpWidget(const MaterialApp(
-        home: Scaffold(
-          body: SingleChildScrollView(child: PrayerTimesCard()),
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(body: SingleChildScrollView(child: PrayerTimesCard())),
         ),
-      ));
+      );
       await tester.pump(const Duration(milliseconds: 50));
     }
 
-    testWidgets('says it is showing Riyadh, and invites the tap',
-        (tester) async {
+    testWidgets('says it is showing Riyadh, and invites the tap', (
+      tester,
+    ) async {
       GeolocatorPlatform.instance = _FakeGeolocator(serviceEnabled: false);
       await pumpCard(tester);
 
@@ -170,8 +195,27 @@ void main() {
       await tester.pump(const Duration(seconds: 4));
     });
 
-    testWidgets('a refusal explains itself instead of silently staying put',
-        (tester) async {
+    testWidgets('the very first launch asks for the location by itself', (
+      tester,
+    ) async {
+      SharedPreferences.setMockInitialValues({});
+      final fake = _FakeGeolocator(at: cairo);
+      GeolocatorPlatform.instance = fake;
+      await pumpCard(tester);
+      await tester.pump(const Duration(milliseconds: 50));
+
+      expect(fake.asked, isTrue);
+      expect(find.text('حسب موقعك'), findsOneWidget);
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getBool('prayer_location_asked_once'), isTrue);
+
+      await tester.pumpWidget(const SizedBox());
+      await tester.pump(const Duration(seconds: 4));
+    });
+
+    testWidgets('a refusal explains itself instead of silently staying put', (
+      tester,
+    ) async {
       GeolocatorPlatform.instance = _FakeGeolocator(grantOnRequest: false);
       await pumpCard(tester);
 
@@ -188,10 +232,12 @@ void main() {
       await tester.pump(const Duration(seconds: 4));
     });
 
-    testWidgets('a permanently blocked permission offers the settings page',
-        (tester) async {
-      GeolocatorPlatform.instance =
-          _FakeGeolocator(permission: LocationPermission.deniedForever);
+    testWidgets('a permanently blocked permission offers the settings page', (
+      tester,
+    ) async {
+      GeolocatorPlatform.instance = _FakeGeolocator(
+        permission: LocationPermission.deniedForever,
+      );
       await pumpCard(tester);
 
       await tester.tap(find.textContaining('حدّد موقعك'));
@@ -201,8 +247,10 @@ void main() {
 
       // A dialog, not a snack bar — the app cannot ask again by itself.
       expect(find.text('فتح الإعدادات'), findsOneWidget);
-      expect(find.textContaining(LocationStatus.blocked.explanation),
-          findsOneWidget);
+      expect(
+        find.textContaining(LocationStatus.blocked.explanation),
+        findsOneWidget,
+      );
 
       await tester.tap(find.text('لاحقاً'));
       await tester.pumpAndSettle();
@@ -214,7 +262,8 @@ void main() {
 
 /// Stands in for the device. Every permission state the reader can be in is a
 /// constructor argument, so the tests never need a real GPS.
-class _FakeGeolocator extends GeolocatorPlatform with MockPlatformInterfaceMixin {
+class _FakeGeolocator extends GeolocatorPlatform
+    with MockPlatformInterfaceMixin {
   _FakeGeolocator({
     this.serviceEnabled = true,
     this.permission = LocationPermission.denied,
@@ -250,7 +299,9 @@ class _FakeGeolocator extends GeolocatorPlatform with MockPlatformInterfaceMixin
   }
 
   @override
-  Future<Position> getCurrentPosition({LocationSettings? locationSettings}) async {
+  Future<Position> getCurrentPosition({
+    LocationSettings? locationSettings,
+  }) async {
     final here = at;
     if (here == null) {
       throw const LocationServiceDisabledException();

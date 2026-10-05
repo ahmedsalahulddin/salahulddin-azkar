@@ -209,6 +209,24 @@ class RecitationService {
       },
       mp3quranPath: 'server8/bna',
     ),
+    Reciter(
+      id: 'ahmad_amer',
+      name: 'أحمد عامر',
+      nameEn: 'Ahmed Amer',
+      otherNames: {
+        'fr': 'Ahmed Amer',
+        'ur': 'احمد عامر',
+        'id': 'Ahmad Amir',
+        'ms': 'Ahmad Amir',
+        'hi': 'अहमद आमिर',
+        'tr': 'Ahmed Âmir',
+        'bn': 'আহমদ আমের',
+        'ha': 'Ahmad Amir',
+      },
+      // mp3quran's newer CDN (cdn.mp3quran.net/audio/ahmad-amer/r1): the
+      // proxy maps the first segment to the host, as with server8/server11.
+      mp3quranPath: 'cdn/audio/ahmad-amer/r1',
+    ),
   ];
 
   static Reciter get defaultReciter => reciters.first;

@@ -114,6 +114,7 @@ const _ar = <String, String>{
       '🌍 هذا التطبيق مجاني بالكامل، وهدفنا أن يصل لأكبر عدد من المسلمين حول العالم، كلٌّ بلغته.',
   'langNotice.translatedIntro': 'هذه الأقسام متاحة بالكامل بلغتك:',
   'langNotice.dailyAdhkarCard': 'الأذكار اليومية',
+  'langNotice.writeNote': 'اكتب ملاحظة (اختياري)',
   'sunnah.readOn': 'اقرأ الحديث على sunnah.com',
   'sunnah.openFailed': 'تعذّر فتح الرابط',
   'langNotice.moreComing': 'وباقي الأقسام لا نزال نعمل على ترجمتها، بإذن الله.',
@@ -133,6 +134,36 @@ const _ar = <String, String>{
   // Search bar
   'search.label': 'بحث شامل',
   'search.hint': 'ابحث في كل أقسام التطبيق…',
+  'wn.title': 'ما الجديد',
+  'wn.gotIt': 'فهمت',
+  'wn.amerTitle': 'تلاوة الشيخ أحمد عامر',
+  'wn.amerSub': 'في المصحف والترجمات والتلاوة والتدبر والاستماع الدائم',
+  'wn.sunnahTitle': 'تحقّق من الأحاديث على sunnah.com',
+  'wn.sunnahSub': 'روابط تحت القصص وبجوار أحاديث المكتبة',
+  'wn.sourcesTitle': 'المصادر والحقوق',
+  'wn.sourcesSub': 'كل مصدر ومترجم باسمه ورابطه',
+  'wn.contactTitle': 'تواصل معنا',
+  'wn.contactSub': 'من حسابي ← عن التطبيق',
+  'contact.button': 'تواصل معنا',
+  'contact.buttonSub': 'اقتراح أو مشكلة أو سؤال — يصل لإدارة التطبيق مباشرة',
+  'contact.title': 'تواصل مع إدارة التطبيق',
+  'contact.prompt':
+      'اكتب رسالتك وهتوصل لإدارة التطبيق. لو عايز رد، اكتب طريقة نتواصل بيها معاك.',
+  'contact.hint': 'رسالتك هنا…',
+  'contact.orEmail': 'أو راسلنا على البريد:',
+  'contact.sent': 'وصلت رسالتك، جزاك الله خيرًا',
+  'contact.failed': 'تعذّر الإرسال، تأكد من الإنترنت وحاول تاني',
+  'loc.fixed': 'حسب موقعك',
+  'loc.remembered': 'موقعك المحفوظ',
+  'loc.default': 'الرياض',
+  'loc.exFixed': 'تم تحديد موقعك، وحُسبت المواقيت عليه',
+  'loc.exRemembered':
+      'تعذّر تحديث الموقع الآن، والمواقيت محسوبة على آخر موقع معروف',
+  'loc.exDenied': 'التطبيق يحتاج إذن الموقع ليحسب المواقيت على مدينتك',
+  'loc.exBlocked':
+      'إذن الموقع مرفوض من إعدادات الجهاز، ولن يظهر السؤال مرة أخرى',
+  'loc.exServiceOff': 'خدمة الموقع مغلقة في جهازك',
+  'loc.exUnavailable': 'تعذّر الوصول للموقع. جرّب قرب نافذة أو في مكان مكشوف',
 
   // Home shelf: Quran
   'shelf.quran.title': 'القرآن الكريم',
@@ -1269,6 +1300,7 @@ const _en = <String, String>{
   'langNotice.translatedIntro':
       'These sections are fully available in your language:',
   'langNotice.dailyAdhkarCard': 'Daily Adhkar',
+  'langNotice.writeNote': 'Write a note (optional)',
   'sunnah.readOn': 'Read the hadith on sunnah.com',
   'sunnah.openFailed': 'Couldn\'t open the link',
   'langNotice.moreComing':
@@ -1289,6 +1321,40 @@ const _en = <String, String>{
   // Search bar
   'search.label': 'Search',
   'search.hint': 'Search all sections…',
+  'wn.title': 'What\'s New',
+  'wn.gotIt': 'Got it',
+  'wn.amerTitle': 'Sheikh Ahmed Amer’s recitation',
+  'wn.amerSub':
+      'In the Mushaf, translations, recitation and continuous listening',
+  'wn.sunnahTitle': 'Verify hadiths on sunnah.com',
+  'wn.sunnahSub': 'Links under the stories and beside library hadiths',
+  'wn.sourcesTitle': 'Sources & Credits',
+  'wn.sourcesSub': 'Every source and translator, named and linked',
+  'wn.contactTitle': 'Contact us',
+  'wn.contactSub': 'From Account → About',
+  'contact.button': 'Contact us',
+  'contact.buttonSub':
+      'A suggestion, problem or question — goes straight to the app team',
+  'contact.title': 'Contact the app team',
+  'contact.prompt':
+      'Write your message and it will reach the app team. If you\'d like a reply, include how we can reach you.',
+  'contact.hint': 'Your message…',
+  'contact.orEmail': 'Or email us:',
+  'contact.sent': 'Your message was sent — thank you',
+  'contact.failed': 'Couldn\'t send — check your connection and try again',
+  'loc.fixed': 'Your location',
+  'loc.remembered': 'Your saved location',
+  'loc.default': 'Riyadh',
+  'loc.exFixed': 'Your location was found and the times are calculated for it',
+  'loc.exRemembered':
+      'Your location could not be updated now; the times use your last known location',
+  'loc.exDenied':
+      'The app needs location access to calculate the times for your city',
+  'loc.exBlocked':
+      'Location access is turned off in the device settings, and the request won\'t appear again',
+  'loc.exServiceOff': 'Location services are off on your device',
+  'loc.exUnavailable':
+      'Couldn\'t get your location. Try near a window or in the open',
 
   // Home shelf: Quran
   'shelf.quran.title': 'Holy Quran',

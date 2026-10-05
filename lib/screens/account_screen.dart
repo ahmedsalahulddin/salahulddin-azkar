@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -10,6 +11,7 @@ import '../services/sync_service.dart';
 import '../services/section_config.dart';
 import '../services/tahfeez_service.dart';
 import '../services/update_checker.dart';
+import '../widgets/contact_dialog.dart';
 import '../widgets/sign_in_buttons.dart';
 import 'admin_duas_screen.dart';
 import 'admin_screen.dart';
@@ -279,6 +281,8 @@ class _AccountScreenState extends State<AccountScreen> {
                   onTap: () => _openGroup(t('account.aboutSection'), [
                     _aboutCard(),
                     const SizedBox(height: 10),
+                    _contactLink(),
+                    const SizedBox(height: 10),
                     _sourcesLink(),
                   ]),
                 ),
@@ -308,6 +312,49 @@ class _AccountScreenState extends State<AccountScreen> {
   ///
   /// Not buried at the bottom of a legal page: the reader trusting a text has
   /// a right to see whose text it is.
+  Widget _contactLink() {
+    return GestureDetector(
+      onTap: () => showContactDialog(context),
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+        decoration: BoxDecoration(
+          color: AppColors.blackCard,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.goldBorder),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.mail_outline, color: AppColors.gold, size: 20),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    t('contact.button'),
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 14,
+                    ),
+                  ),
+                  Text(
+                    t('contact.buttonSub'),
+                    style: const TextStyle(
+                      color: AppColors.textMuted,
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_left, color: AppColors.textMuted),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _sourcesLink() {
     return GestureDetector(
       onTap: () => Navigator.push(
@@ -551,18 +598,21 @@ class _AccountScreenState extends State<AccountScreen> {
           ),
         ),
         const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-          decoration: BoxDecoration(
-            color: AppColors.blackSurface,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: AppColors.goldBorder),
+        // On iPhone sign-in waits for Sign in with Apple; promising Google
+        // "soon" there reads to App Review as an unfinished feature.
+        if (defaultTargetPlatform != TargetPlatform.iOS)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: AppColors.blackSurface,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: AppColors.goldBorder),
+            ),
+            child: Text(
+              t('account.signInSoon'),
+              style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+            ),
           ),
-          child: Text(
-            t('account.signInSoon'),
-            style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
-          ),
-        ),
       ],
     );
   }

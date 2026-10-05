@@ -25,7 +25,12 @@ class HomeScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 10),
-                _searchBar(context),
+                // Its own listener: the shelves below rebuild on a language
+                // change, but this bar sat outside them and kept the old one.
+                ValueListenableBuilder<String>(
+                  valueListenable: AppLocale.locale,
+                  builder: (context, _, _) => _searchBar(context),
+                ),
                 const SizedBox(height: 12),
 
                 // The verse now turns under the arch, inside the card.

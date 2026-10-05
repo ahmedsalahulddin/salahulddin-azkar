@@ -6,8 +6,12 @@ void main() {
   const google = SignInProvider.google;
   const apple = SignInProvider.apple;
 
-  test('Android offers whatever the project has switched on', () {
+  test('Android offers what the project has switched on, except Apple', () {
     expect(AuthService.offeredOn(TargetPlatform.android, {google}), {google});
+    // Apple is native-only on iPhone; on Android it would need the web flow.
+    expect(AuthService.offeredOn(TargetPlatform.android, {google, apple}), {
+      google,
+    });
   });
 
   test('iPhone hides Google while Sign in with Apple is off', () {

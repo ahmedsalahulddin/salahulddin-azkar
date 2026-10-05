@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../l10n/strings.dart';
 import 'app_locale.dart';
 import 'dhikr_reminder.dart';
 import 'notification_service.dart';
@@ -45,23 +46,19 @@ extension LocationStatusLabel on LocationStatus {
 
   /// The caption on the prayer card.
   String get label => switch (this) {
-    LocationStatus.fixed => 'حسب موقعك',
-    LocationStatus.remembered => 'موقعك المحفوظ',
-    _ => 'الرياض',
+    LocationStatus.fixed => t('loc.fixed'),
+    LocationStatus.remembered => t('loc.remembered'),
+    _ => t('loc.default'),
   };
 
   /// Said once, after the reader taps the marker.
   String get explanation => switch (this) {
-    LocationStatus.fixed => 'تم تحديد موقعك، وحُسبت المواقيت عليه',
-    LocationStatus.remembered =>
-      'تعذّر تحديث الموقع الآن، والمواقيت محسوبة على آخر موقع معروف',
-    LocationStatus.denied =>
-      'التطبيق يحتاج إذن الموقع ليحسب المواقيت على مدينتك',
-    LocationStatus.blocked =>
-      'إذن الموقع مرفوض من إعدادات الجهاز، ولن يظهر السؤال مرة أخرى',
-    LocationStatus.serviceOff => 'خدمة الموقع مغلقة في جهازك',
-    LocationStatus.unavailable =>
-      'تعذّر الوصول للموقع. جرّب قرب نافذة أو في مكان مكشوف',
+    LocationStatus.fixed => t('loc.exFixed'),
+    LocationStatus.remembered => t('loc.exRemembered'),
+    LocationStatus.denied => t('loc.exDenied'),
+    LocationStatus.blocked => t('loc.exBlocked'),
+    LocationStatus.serviceOff => t('loc.exServiceOff'),
+    LocationStatus.unavailable => t('loc.exUnavailable'),
   };
 }
 
@@ -81,8 +78,84 @@ class PrayerInfo {
   });
 
   /// What the reader actually sees — the one to use in UI text.
-  String get displayName => AppLocale.isEn ? nameEn : name;
+  String get displayName => prayerNameIn(AppLocale.code, name, nameEn);
 }
+
+/// The six names in the app's other languages, keyed by the Arabic name the
+/// rest of the code identifies a prayer by. English comes from [nameEn].
+const _prayerNames = <String, Map<String, String>>{
+  'fr': {
+    'الفجر': 'Fajr',
+    'الشروق': 'Lever du soleil',
+    'الظهر': 'Dhuhr',
+    'العصر': 'Asr',
+    'المغرب': 'Maghrib',
+    'العشاء': 'Isha',
+  },
+  'ur': {
+    'الفجر': 'فجر',
+    'الشروق': 'طلوعِ آفتاب',
+    'الظهر': 'ظہر',
+    'العصر': 'عصر',
+    'المغرب': 'مغرب',
+    'العشاء': 'عشاء',
+  },
+  'id': {
+    'الفجر': 'Subuh',
+    'الشروق': 'Terbit',
+    'الظهر': 'Zuhur',
+    'العصر': 'Asar',
+    'المغرب': 'Magrib',
+    'العشاء': 'Isya',
+  },
+  'ms': {
+    'الفجر': 'Subuh',
+    'الشروق': 'Syuruk',
+    'الظهر': 'Zohor',
+    'العصر': 'Asar',
+    'المغرب': 'Maghrib',
+    'العشاء': 'Isyak',
+  },
+  'hi': {
+    'الفجر': 'फ़ज्र',
+    'الشروق': 'सूर्योदय',
+    'الظهر': 'ज़ुहर',
+    'العصر': 'अस्र',
+    'المغرب': 'मग़रिब',
+    'العشاء': 'इशा',
+  },
+  'tr': {
+    'الفجر': 'Sabah',
+    'الشروق': 'Güneş',
+    'الظهر': 'Öğle',
+    'العصر': 'İkindi',
+    'المغرب': 'Akşam',
+    'العشاء': 'Yatsı',
+  },
+  'bn': {
+    'الفجر': 'ফজর',
+    'الشروق': 'সূর্যোদয়',
+    'الظهر': 'যোহর',
+    'العصر': 'আসর',
+    'المغرب': 'মাগরিব',
+    'العشاء': 'এশা',
+  },
+  'ha': {
+    'الفجر': 'Asuba',
+    'الشروق': 'Fitowar rana',
+    'الظهر': 'Azahar',
+    'العصر': "La'asar",
+    'المغرب': 'Magariba',
+    'العشاء': 'Isha',
+  },
+};
+
+String prayerNameIn(String code, String arabic, String english) =>
+    switch (code) {
+      'ar' => arabic,
+      'en' => english,
+      _ => _prayerNames[code]?[arabic] ?? english,
+    };
 
 class PrayerData {
   final List<PrayerInfo> prayers;
@@ -91,7 +164,8 @@ class PrayerData {
   final DateTime nextTime;
   final LocationStatus status;
 
-  String get nextDisplayName => AppLocale.isEn ? nextNameEn : nextName;
+  String get nextDisplayName =>
+      prayerNameIn(AppLocale.code, nextName, nextNameEn);
 
   /// The method these times were actually computed with, so the reader can be
   /// told rather than left to assume.
@@ -329,7 +403,14 @@ class PrayerService {
   static String formatTime(DateTime dt) {
     final h = dt.hour % 12 == 0 ? 12 : dt.hour % 12;
     final m = dt.minute.toString().padLeft(2, '0');
-    return '$h:$m ${dt.hour >= 12 ? 'م' : 'ص'}';
+    final pm = dt.hour >= 12;
+    // Arabic and Urdu read ص/م; every other language here writes AM/PM.
+    final mark = switch (AppLocale.code) {
+      'ar' => pm ? 'م' : 'ص',
+      'ur' => pm ? 'شام' : 'صبح',
+      _ => pm ? 'PM' : 'AM',
+    };
+    return '$h:$m $mark';
   }
 
   static String formatCountdown(Duration d) {
