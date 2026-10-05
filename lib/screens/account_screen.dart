@@ -13,6 +13,7 @@ import '../services/tahfeez_service.dart';
 import '../services/update_checker.dart';
 import '../widgets/contact_dialog.dart';
 import '../widgets/sign_in_buttons.dart';
+import 'admin_admins_screen.dart';
 import 'admin_duas_screen.dart';
 import 'admin_screen.dart';
 import 'admin_translation_feedback_screen.dart';
@@ -1021,6 +1022,16 @@ class _AccountScreenState extends State<AccountScreen> {
       onTap: () => Navigator.push(
         context,
         MaterialPageRoute(builder: (_) => const AdminDuasScreen()),
+      ),
+    ),
+    const SizedBox(height: 8),
+    _tile(
+      icon: Icons.admin_panel_settings,
+      title: t('admins.title'),
+      subtitle: t('admins.rowSub'),
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const AdminAdminsScreen()),
       ),
     ),
     const SizedBox(height: 8),

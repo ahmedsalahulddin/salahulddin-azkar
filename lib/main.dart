@@ -290,6 +290,23 @@ class _MainNavigationState extends State<MainNavigation> {
 
   static const _whatsNewKey = 'whats_new_seen';
 
+  /// The release _showWhatsNew's list describes. Later releases with nothing
+  /// readers would notice leave it alone, so a reader who already saw this
+  /// list isn't shown it again.
+  static const _whatsNewFor = '1.6.47';
+
+  /// Whether dotted version [a] comes before [b] ("1.6.9" < "1.6.10").
+  static bool _versionBefore(String a, String b) {
+    final x = a.split('.').map((p) => int.tryParse(p) ?? 0).toList();
+    final y = b.split('.').map((p) => int.tryParse(p) ?? 0).toList();
+    for (var i = 0; i < x.length || i < y.length; i++) {
+      final l = i < x.length ? x[i] : 0;
+      final r = i < y.length ? y[i] : 0;
+      if (l != r) return l < r;
+    }
+    return false;
+  }
+
   Future<void> _checkWhatsNew() async {
     if (!mounted) return;
     final info = await PackageInfo.fromPlatform();
@@ -301,6 +318,7 @@ class _MainNavigationState extends State<MainNavigation> {
     // A first install has nothing "new" to show — the language notice and
     // permission prompts are enough for a first launch.
     if (seen == null) return;
+    if (!_versionBefore(seen, _whatsNewFor)) return;
     if (!mounted) return;
     _showWhatsNew(version);
   }
