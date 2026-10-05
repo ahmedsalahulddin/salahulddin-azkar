@@ -34,11 +34,12 @@ class AuthConfig {
   /// Where the provider returns to after sign-in.
   ///
   /// On a device this is the app's own deep link, registered in
-  /// AndroidManifest. On the web there is no deep link to return to, so the
-  /// project's Site URL is used instead — passing the app scheme there would
-  /// strand the browser on a URL it cannot open.
-  static String? get redirect =>
-      kIsWeb ? null : 'com.salahulddin.azkar://login-callback';
+  /// AndroidManifest. On the web it is the site the reader is on — not the
+  /// project's Site URL, which once pointed at a domain that no longer
+  /// exists. The origin must be listed in the project's Redirect URLs.
+  static String? get redirect => kIsWeb
+      ? '${Uri.base.origin}/'
+      : 'com.salahulddin.azkar://login-callback';
 
   static bool get isSet => url.isNotEmpty && anonKey.isNotEmpty;
 }
