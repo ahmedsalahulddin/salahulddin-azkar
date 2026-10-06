@@ -28,11 +28,13 @@ class NotificationRouter {
     _go(nav, payload);
   }
 
-  /// Called once the home screen exists.
-  static void flushPending() {
+  /// Called once the home screen exists. True when a tapped reminder was
+  /// waiting and is now being opened.
+  static bool flushPending() {
     final p = _pending;
     _pending = null;
     if (p != null) open(p);
+    return p != null;
   }
 
   static Future<void> _go(NavigatorState nav, String payload) async {

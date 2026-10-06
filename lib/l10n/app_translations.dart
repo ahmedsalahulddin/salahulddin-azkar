@@ -145,7 +145,7 @@ const appTranslations = <String, Map<String, String>>{
     'misc.stop': 'Arrêter',
     'misc.readingProgress': 'Lecture {current} sur {total}',
     'misc.next': 'Suivant',
-    'misc.myAdhkarTitle': 'Mes adhkar',
+    'misc.myAdhkarTitle': 'Favoris',
     'misc.savedAdhkarCount': '{count} adhkar enregistrés',
     'misc.noSavedAdhkar': 'Aucun dhikr enregistré',
     'misc.favoritesEmptyHint':
@@ -213,7 +213,7 @@ const appTranslations = <String, Map<String, String>>{
         'Glissez pour réorganiser · Le changement atteint tout le monde sans mise à jour',
     'misc.searchInCategoryHint': 'Rechercher dans {name}...',
     'misc.noResults': 'Aucun résultat',
-    'misc.addedToMyAdhkar': 'Ajouté à Mes adhkar',
+    'misc.addedToMyAdhkar': 'Ajouté aux Favoris',
     'crd.storyLanguageSheetTitle': 'Langue de l\'histoire',
     'crd.arabicOriginalOption': 'Arabe (original)',
     'crd.comingSoon': 'bientôt disponible',
@@ -336,7 +336,8 @@ const appTranslations = <String, Map<String, String>>{
     'support.open': 'En cours',
     'support.myTitle': 'Mes messages',
     'support.myRowSub': 'Vos demandes aux administrateurs et leurs réponses',
-    'support.mySub': 'Écrivez aux administrateurs pour toute demande, problème ou suggestion — la réponse arrive ici.',
+    'support.mySub':
+        'Écrivez aux administrateurs pour toute demande, problème ou suggestion — la réponse arrive ici.',
     'support.myEmpty': 'Aucun message — touchez « Nouveau message ».',
     'support.new': 'Nouveau message',
     'support.sent': 'Votre message est arrivé',
@@ -345,15 +346,53 @@ const appTranslations = <String, Map<String, String>>{
     'support.writeHint': 'Décrivez votre demande…',
     'support.send': 'Envoyer',
     'support.sendFailed': 'Non envoyé, réessayez',
-    'support.loadFailed': 'Chargement impossible — tirez vers le bas pour réessayer',
+    'support.loadFailed':
+        'Chargement impossible — tirez vers le bas pour réessayer',
     'support.adminName': 'Administrateurs',
     'support.replyHint': 'Écrire une réponse…',
     'account.guideTitle': 'Guide d’utilisation',
-    'account.guideSub': 'Chaque partie de l’application expliquée — s’ouvre sur le site',
-    'update.ready': 'La mise à jour est téléchargée — terminez-la maintenant ou plus tard',
+    'account.guideSub':
+        'Chaque partie de l’application expliquée — s’ouvre sur le site',
+    'welcome.title': 'Bienvenue dans Azkar Salahulddin',
+    'welcome.sub': 'Un aperçu rapide de l’essentiel de l’application',
+    'welcome.homeT': 'Accueil',
+    'welcome.homeB':
+        'Saint Coran, adhkar, histoires, leçons et bibliothèque — chacun sur son rayon. Faites glisser un rayon sur le côté et ouvrez n’importe quelle carte.',
+    'welcome.favT': 'Favoris',
+    'welcome.favB':
+        'Touchez l’étoile ★ sur n’importe quel dhikr : vous le retrouverez dans l’onglet Favoris en bas.',
+    'welcome.remT': 'Mes rappels',
+    'welcome.remB':
+        'Compte → Rappels → Mes rappels : activez d’une seule touche les adhkar du matin et du soir, la sourate Al-Mulk et la sourate Al-Kahf, ou ajoutez un rappel aux jours et heures de votre choix.',
+    'welcome.adhanT': 'Adhan et horaires de prière',
+    'welcome.adhanB':
+        'Compte → Prière : activez les alertes de prière et choisissez le son de l’adhan.',
+    'welcome.tahfeezT': 'Mémorisation',
+    'welcome.tahfeezB':
+        'Rejoignez un cercle avec un enseignant approuvé et suivez vos séances, vos évaluations et vos points.',
+    'welcome.signT': 'Pas besoin de connexion Google',
+    'welcome.signB':
+        'Le Coran, les adhkar, les rappels et l’adhan fonctionnent tous sans compte. Il ne vous en faut un que pour rejoindre un cercle de Mémorisation, ou pour garder vos favoris sur tous vos appareils.',
+    'welcome.more':
+        'Le guide complet se trouve dans Compte → Guide d’utilisation.',
+    'welcome.dontShow': 'Ne plus afficher',
+    'welcome.start': 'Commencer',
+    'place.title': 'Choisir une ville',
+    'place.search': 'Tapez le nom d’une ville',
+    'place.hint':
+        'Les horaires s’affichent à l’heure de la ville, et l’adhan les suit.',
+    'place.myLocation': 'Ma position actuelle',
+    'place.myLocationSub':
+        'Les horaires suivent la position de votre téléphone',
+    'place.noResults': 'Aucun résultat — essayez un autre nom',
+    'place.failed': 'Recherche impossible — vérifiez votre connexion Internet',
+    'place.row': 'Lieu',
+    'update.ready':
+        'La mise à jour est téléchargée — terminez-la maintenant ou plus tard',
     'update.restart': 'Mettre à jour',
     'wn.myremTitle': 'Mes rappels',
-    'wn.myremSub': 'Une sourate ou des adhkar aux jours et heures de votre choix — dans Rappels',
+    'wn.myremSub':
+        'Une sourate ou des adhkar aux jours et heures de votre choix — dans Rappels',
     'wn.amerTitle': 'La récitation de Cheikh Ahmed Amer',
     'wn.amerSub':
         'Dans le Mushaf, les traductions, la récitation et l’écoute continue',
@@ -394,7 +433,7 @@ const appTranslations = <String, Map<String, String>>{
         'Pour que l\'adhan retentisse à l\'heure même téléphone verrouillé, autorisez l\'application dans « Alarmes et rappels ». Sans cela, le système peut retarder l\'alerte.',
     'adh.exactButton': 'Autoriser',
     'adh.alertsAutoUpdateNote':
-        'Les alertes sont réglées sur vos horaires de prière du jour et se renouvellent chaque jour.',
+        'Les alertes sont réglées pour les prochains jours et se renouvellent à chaque ouverture de l’application.',
     'adh.tapHeadingHint':
         'Touchez le titre pour régler les cinq prières en même temps',
     'adh.allLabel': 'Tout',
@@ -785,7 +824,7 @@ const appTranslations = <String, Map<String, String>>{
     'misc.noMemtestResultsYet': 'Aucun test effectué pour l\'instant',
     'misc.questionCountLabel': 'Nombre de questions du test',
     'misc.questionsAvailable': 'Questions disponibles : {count}',
-    'misc.removedFromMyAdhkar': 'Retiré de Mes adhkar',
+    'misc.removedFromMyAdhkar': 'Retiré des Favoris',
     'misc.resultSaveFailed':
         'Impossible d\'enregistrer le résultat — réessayez',
     'misc.resultSaved': 'Résultat enregistré',
@@ -803,7 +842,7 @@ const appTranslations = <String, Map<String, String>>{
     'mushaf.worksOfflineAfterDownloadShort':
         'Fonctionne hors ligne après le téléchargement',
     'nav.account': 'Compte',
-    'nav.adhkar': 'Mes adhkar',
+    'nav.adhkar': 'Favoris',
     'nav.home': 'Accueil',
     'nav.tahfeez': 'Mémorisation',
     'playback.decreaseFont': 'Réduire la taille du texte',
@@ -1008,7 +1047,7 @@ const appTranslations = <String, Map<String, String>>{
     'misc.stop': 'روکیں',
     'misc.readingProgress': '{total} میں سے {current} پڑھ رہا ہے',
     'misc.next': 'اگلا',
-    'misc.myAdhkarTitle': 'میرے اذکار',
+    'misc.myAdhkarTitle': 'پسندیدہ',
     'misc.savedAdhkarCount': '{count} اذکار محفوظ ہیں',
     'misc.noSavedAdhkar': 'کوئی ذکر محفوظ نہیں',
     'misc.favoritesEmptyHint':
@@ -1073,7 +1112,7 @@ const appTranslations = <String, Map<String, String>>{
         'ترتیب بدلنے کے لیے گھسیٹیں · تبدیلی بغیر اپ ڈیٹ کے سب تک پہنچ جاتی ہے',
     'misc.searchInCategoryHint': '{name} میں تلاش کریں...',
     'misc.noResults': 'کوئی نتیجہ نہیں',
-    'misc.addedToMyAdhkar': 'میرے اذکار میں شامل ہو گیا',
+    'misc.addedToMyAdhkar': 'پسندیدہ میں شامل ہو گیا',
     'crd.storyLanguageSheetTitle': 'کہانی کی زبان',
     'crd.arabicOriginalOption': 'عربی (اصل)',
     'crd.comingSoon': 'جلد آ رہا ہے',
@@ -1192,7 +1231,8 @@ const appTranslations = <String, Map<String, String>>{
     'support.open': 'ابھی زیرِ غور',
     'support.myTitle': 'میرے پیغامات',
     'support.myRowSub': 'انتظامیہ کو آپ کی درخواستیں اور جوابات',
-    'support.mySub': 'کوئی بھی درخواست، مسئلہ یا تجویز انتظامیہ کو لکھیں — جواب یہیں آئے گا۔',
+    'support.mySub':
+        'کوئی بھی درخواست، مسئلہ یا تجویز انتظامیہ کو لکھیں — جواب یہیں آئے گا۔',
     'support.myEmpty': 'ابھی کوئی پیغام نہیں — «نیا پیغام» دبائیں۔',
     'support.new': 'نیا پیغام',
     'support.sent': 'آپ کا پیغام انتظامیہ تک پہنچ گیا',
@@ -1206,10 +1246,43 @@ const appTranslations = <String, Map<String, String>>{
     'support.replyHint': 'جواب لکھیں…',
     'account.guideTitle': 'استعمال کی رہنمائی',
     'account.guideSub': 'ایپ کے ہر حصے کی وضاحت — ویب سائٹ پر کھلتی ہے',
+    'welcome.title': 'Azkar Salahulddin میں خوش آمدید',
+    'welcome.sub': 'ایپ کی اہم چیزوں پر ایک مختصر نظر',
+    'welcome.homeT': 'ہوم',
+    'welcome.homeB':
+        'قرآن کریم، اذکار، قصے، اسباق اور لائبریری — ہر حصہ اپنے شیلف پر۔ شیلف کو دائیں بائیں سرکائیں اور کوئی بھی کارڈ کھولیں۔',
+    'welcome.favT': 'پسندیدہ',
+    'welcome.favB':
+        'کسی بھی ذکر پر ستارہ ★ دبائیں، وہ آپ کو نیچے پسندیدہ ٹیب میں مل جائے گا۔',
+    'welcome.remT': 'میری یاددہانیاں',
+    'welcome.remB':
+        'اکاؤنٹ ← یاد دہانیاں ← میری یاددہانیاں: صبح و شام کے اذکار، سورۃ الملک اور سورۃ الکہف ایک ٹیپ سے آن کریں، یا اپنی پسند کے دنوں اور اوقات پر یاد دہانی شامل کریں۔',
+    'welcome.adhanT': 'اذان اور نماز کے اوقات',
+    'welcome.adhanB':
+        'اکاؤنٹ ← نماز: نماز کے الرٹس آن کریں اور اذان کی آواز منتخب کریں۔',
+    'welcome.tahfeezT': 'حفظ',
+    'welcome.tahfeezB':
+        'کسی منظور شدہ استاد کے حلقے میں شامل ہوں، اور اپنی نشستیں، جانچ اور پوائنٹس دیکھتے رہیں۔',
+    'welcome.signT': 'گوگل سے سائن ان ضروری نہیں',
+    'welcome.signB':
+        'قرآن، اذکار، یاد دہانیاں اور اذان سب بغیر اکاؤنٹ کے چلتے ہیں۔ اکاؤنٹ صرف حفظ کے حلقے میں شامل ہونے، یا اپنے پسندیدہ اپنے تمام آلات پر محفوظ رکھنے کے لیے چاہیے۔',
+    'welcome.more': 'مکمل رہنمائی اکاؤنٹ ← استعمال کی رہنمائی میں ہے۔',
+    'welcome.dontShow': 'یہ تعارف دوبارہ نہ دکھائیں',
+    'welcome.start': 'شروع کریں',
+    'place.title': 'شہر منتخب کریں',
+    'place.search': 'شہر کا نام لکھیں',
+    'place.hint':
+        'اوقات اسی شہر کے وقت کے مطابق دکھائے جائیں گے، اور اذان انہی اوقات پر ہوگی۔',
+    'place.myLocation': 'میرا موجودہ مقام',
+    'place.myLocationSub': 'اوقات آپ کے فون کے مقام سے طے ہوتے ہیں',
+    'place.noResults': 'کوئی نتیجہ نہیں — کوئی اور نام آزمائیں',
+    'place.failed': 'تلاش نہیں ہو سکی — انٹرنیٹ کنکشن چیک کریں',
+    'place.row': 'مقام',
     'update.ready': 'نیا اپڈیٹ ڈاؤن لوڈ ہو گیا — ابھی مکمل کریں یا بعد میں',
     'update.restart': 'اپڈیٹ',
     'wn.myremTitle': 'میری یاددہانیاں',
-    'wn.myremSub': 'کوئی سورت یا اذکار، آپ کے چنے ہوئے دنوں اور اوقات میں — یاددہانیوں میں',
+    'wn.myremSub':
+        'کوئی سورت یا اذکار، آپ کے چنے ہوئے دنوں اور اوقات میں — یاددہانیوں میں',
     'wn.amerTitle': 'شیخ احمد عامر کی تلاوت',
     'wn.amerSub': 'مصحف، تراجم، تلاوت و تدبر اور مسلسل سماعت میں',
     'wn.sunnahTitle': 'احادیث کی تصدیق sunnah.com پر',
@@ -1244,7 +1317,7 @@ const appTranslations = <String, Map<String, String>>{
         'تاکہ فون لاک ہونے پر بھی اذان وقت پر بجے، ایپ کو «الارمز اور یاد دہانیاں» میں اجازت دیں۔ اس کے بغیر سسٹم اطلاع میں تاخیر کر سکتا ہے۔',
     'adh.exactButton': 'ابھی اجازت دیں',
     'adh.alertsAutoUpdateNote':
-        'تنبیہات آپ کی روزانہ کی نماز کے اوقات پر مقرر ہوتی ہیں اور ہر روز خود بخود تازہ ہوتی ہیں۔',
+        'تنبیہات آنے والے دنوں کے اوقات پر مقرر ہیں اور ہر بار ایپ کھولنے پر تازہ ہو جاتی ہیں۔',
     'adh.tapHeadingHint':
         'پانچوں نمازیں ایک ساتھ مقرر کرنے کے لیے عنوان دبائیں',
     'adh.allLabel': 'تمام',
@@ -1616,7 +1689,7 @@ const appTranslations = <String, Map<String, String>>{
     'misc.noMemtestResultsYet': 'ابھی تک کوئی ٹیسٹ نہیں دیا گیا',
     'misc.questionCountLabel': 'ٹیسٹ کے سوالات کی تعداد',
     'misc.questionsAvailable': 'دستیاب سوالات: {count}',
-    'misc.removedFromMyAdhkar': 'میرے اذکار سے ہٹا دیا گیا',
+    'misc.removedFromMyAdhkar': 'پسندیدہ سے ہٹا دیا گیا',
     'misc.resultSaveFailed': 'نتیجہ محفوظ نہیں ہو سکا — دوبارہ کوشش کریں',
     'misc.resultSaved': 'نتیجہ محفوظ ہو گیا',
     'misc.saveResult': 'نتیجہ محفوظ کریں',
@@ -1633,7 +1706,7 @@ const appTranslations = <String, Map<String, String>>{
     'mushaf.worksOfflineAfterDownloadShort':
         'ڈاؤن لوڈ کے بعد بغیر انٹرنیٹ کام کرتا ہے',
     'nav.account': 'اکاؤنٹ',
-    'nav.adhkar': 'میرے اذکار',
+    'nav.adhkar': 'پسندیدہ',
     'nav.home': 'ہوم',
     'nav.tahfeez': 'حفظ',
     'playback.decreaseFont': 'فونٹ چھوٹا کریں',
@@ -1841,7 +1914,7 @@ const appTranslations = <String, Map<String, String>>{
     'misc.stop': 'Berhenti',
     'misc.readingProgress': 'Membaca {current} dari {total}',
     'misc.next': 'Selanjutnya',
-    'misc.myAdhkarTitle': 'Zikir Saya',
+    'misc.myAdhkarTitle': 'Favorit',
     'misc.savedAdhkarCount': '{count} zikir tersimpan',
     'misc.noSavedAdhkar': 'Belum ada zikir tersimpan',
     'misc.favoritesEmptyHint':
@@ -1907,7 +1980,7 @@ const appTranslations = <String, Map<String, String>>{
         'Seret untuk mengatur ulang · Perubahan langsung sampai ke semua orang tanpa pembaruan aplikasi',
     'misc.searchInCategoryHint': 'Cari di {name}...',
     'misc.noResults': 'Tidak ada hasil',
-    'misc.addedToMyAdhkar': 'Ditambahkan ke Zikir Saya',
+    'misc.addedToMyAdhkar': 'Ditambahkan ke Favorit',
     'crd.storyLanguageSheetTitle': 'Bahasa cerita',
     'crd.arabicOriginalOption': 'Bahasa Arab (asli)',
     'crd.comingSoon': 'segera hadir',
@@ -2027,7 +2100,8 @@ const appTranslations = <String, Map<String, String>>{
     'support.open': 'Belum selesai',
     'support.myTitle': 'Pesan saya',
     'support.myRowSub': 'Permintaan Anda ke admin dan balasannya',
-    'support.mySub': 'Tulis ke admin tentang permintaan, masalah, atau saran apa pun — balasannya muncul di sini.',
+    'support.mySub':
+        'Tulis ke admin tentang permintaan, masalah, atau saran apa pun — balasannya muncul di sini.',
     'support.myEmpty': 'Belum ada pesan — ketuk «Pesan baru».',
     'support.new': 'Pesan baru',
     'support.sent': 'Pesan Anda sudah sampai ke admin',
@@ -2040,11 +2114,45 @@ const appTranslations = <String, Map<String, String>>{
     'support.adminName': 'Admin',
     'support.replyHint': 'Tulis balasan…',
     'account.guideTitle': 'Panduan penggunaan',
-    'account.guideSub': 'Penjelasan setiap bagian aplikasi — dibuka di situs web',
+    'account.guideSub':
+        'Penjelasan setiap bagian aplikasi — dibuka di situs web',
+    'welcome.title': 'Selamat datang di Azkar Salahulddin',
+    'welcome.sub': 'Sekilas tentang fitur terbaik aplikasi',
+    'welcome.homeT': 'Beranda',
+    'welcome.homeB':
+        'Al-Qur\'an Al-Karim, zikir, kisah, pelajaran, dan perpustakaan — masing-masing di raknya sendiri. Geser rak ke samping dan buka kartu mana pun.',
+    'welcome.favT': 'Favorit',
+    'welcome.favB':
+        'Ketuk bintang ★ pada zikir mana pun, lalu Anda akan menemukannya di tab Favorit di bawah.',
+    'welcome.remT': 'Pengingatku',
+    'welcome.remB':
+        'Akun → Pengingat → Pengingatku: aktifkan zikir pagi dan petang, Surah Al-Mulk, dan Surah Al-Kahfi dengan sekali ketuk, atau tambahkan pengingat pada hari dan jam pilihan Anda.',
+    'welcome.adhanT': 'Azan dan jadwal salat',
+    'welcome.adhanB':
+        'Akun → Salat: aktifkan alarm salat dan pilih suara azan.',
+    'welcome.tahfeezT': 'Tahfiz',
+    'welcome.tahfeezB':
+        'Bergabunglah dengan halaqah bersama pengajar yang disetujui, lalu pantau sesi, penilaian, dan poin Anda.',
+    'welcome.signT': 'Tidak perlu masuk dengan Google',
+    'welcome.signB':
+        'Al-Qur\'an, zikir, pengingat, dan azan semuanya berfungsi tanpa akun. Akun hanya diperlukan untuk bergabung dengan halaqah Tahfiz, atau menyimpan favorit Anda di semua perangkat.',
+    'welcome.more': 'Panduan lengkap ada di Akun → Panduan penggunaan.',
+    'welcome.dontShow': 'Jangan tampilkan lagi',
+    'welcome.start': 'Mulai',
+    'place.title': 'Pilih kota',
+    'place.search': 'Ketik nama kota',
+    'place.hint':
+        'Jadwal ditampilkan sesuai jam kota tersebut, dan azan mengikutinya.',
+    'place.myLocation': 'Lokasi saya saat ini',
+    'place.myLocationSub': 'Jadwal mengikuti lokasi ponsel Anda',
+    'place.noResults': 'Tidak ada hasil — coba nama lain',
+    'place.failed': 'Pencarian gagal — periksa koneksi internet',
+    'place.row': 'Lokasi',
     'update.ready': 'Pembaruan sudah diunduh — selesaikan sekarang atau nanti',
     'update.restart': 'Perbarui',
     'wn.myremTitle': 'Pengingatku',
-    'wn.myremSub': 'Surah atau zikir pada hari dan jam pilihanmu — di Pengingat',
+    'wn.myremSub':
+        'Surah atau zikir pada hari dan jam pilihanmu — di Pengingat',
     'wn.amerTitle': 'Bacaan Syekh Ahmad Amir',
     'wn.amerSub': 'Di mushaf, terjemahan, tilawah, dan mendengar berkelanjutan',
     'wn.sunnahTitle': 'Periksa hadis di sunnah.com',
@@ -2082,7 +2190,7 @@ const appTranslations = <String, Map<String, String>>{
         'Agar azan berbunyi tepat waktu meski ponsel terkunci, izinkan aplikasi di “Alarm & pengingat”. Tanpa izin ini sistem bisa menunda pengingat.',
     'adh.exactButton': 'Izinkan sekarang',
     'adh.alertsAutoUpdateNote':
-        'Notifikasi disesuaikan dengan waktu salat harian Anda dan diperbarui setiap hari.',
+        'Notifikasi diatur untuk beberapa hari ke depan dan diperbarui setiap kali Anda membuka aplikasi.',
     'adh.tapHeadingHint':
         'Ketuk judul untuk mengatur kelima waktu salat sekaligus',
     'adh.allLabel': 'Semua',
@@ -2461,7 +2569,7 @@ const appTranslations = <String, Map<String, String>>{
     'misc.noMemtestResultsYet': 'Belum ada tes yang dikerjakan',
     'misc.questionCountLabel': 'Jumlah soal tes',
     'misc.questionsAvailable': 'Soal tersedia: {count}',
-    'misc.removedFromMyAdhkar': 'Dihapus dari Zikir Saya',
+    'misc.removedFromMyAdhkar': 'Dihapus dari Favorit',
     'misc.resultSaveFailed': 'Gagal menyimpan hasil — coba lagi',
     'misc.resultSaved': 'Hasil tersimpan',
     'misc.saveResult': 'Simpan Hasil',
@@ -2478,7 +2586,7 @@ const appTranslations = <String, Map<String, String>>{
     'mushaf.worksOfflineAfterDownloadShort':
         'Berfungsi offline setelah diunduh',
     'nav.account': 'Akun',
-    'nav.adhkar': 'Zikir Saya',
+    'nav.adhkar': 'Favorit',
     'nav.home': 'Beranda',
     'nav.tahfeez': 'Tahfiz',
     'playback.decreaseFont': 'Perkecil huruf',
@@ -2688,7 +2796,7 @@ const appTranslations = <String, Map<String, String>>{
     'misc.stop': 'Henti',
     'misc.readingProgress': 'Membaca {current} daripada {total}',
     'misc.next': 'Seterusnya',
-    'misc.myAdhkarTitle': 'Zikir Saya',
+    'misc.myAdhkarTitle': 'Kegemaran',
     'misc.savedAdhkarCount': '{count} zikir disimpan',
     'misc.noSavedAdhkar': 'Tiada zikir disimpan',
     'misc.favoritesEmptyHint':
@@ -2754,7 +2862,7 @@ const appTranslations = <String, Map<String, String>>{
         'Seret untuk menyusun semula · Perubahan sampai kepada semua tanpa kemas kini',
     'misc.searchInCategoryHint': 'Cari dalam {name}...',
     'misc.noResults': 'Tiada hasil',
-    'misc.addedToMyAdhkar': 'Ditambah ke Zikir Saya',
+    'misc.addedToMyAdhkar': 'Ditambah ke Kegemaran',
     'crd.storyLanguageSheetTitle': 'Bahasa cerita',
     'crd.arabicOriginalOption': 'Arab (asal)',
     'crd.comingSoon': 'akan datang',
@@ -2875,7 +2983,8 @@ const appTranslations = <String, Map<String, String>>{
     'support.open': 'Belum selesai',
     'support.myTitle': 'Mesej saya',
     'support.myRowSub': 'Permintaan anda kepada admin dan balasannya',
-    'support.mySub': 'Tulis kepada admin tentang sebarang permintaan, masalah atau cadangan — balasan akan muncul di sini.',
+    'support.mySub':
+        'Tulis kepada admin tentang sebarang permintaan, masalah atau cadangan — balasan akan muncul di sini.',
     'support.myEmpty': 'Belum ada mesej — ketik «Mesej baharu».',
     'support.new': 'Mesej baharu',
     'support.sent': 'Mesej anda telah sampai kepada admin',
@@ -2888,11 +2997,46 @@ const appTranslations = <String, Map<String, String>>{
     'support.adminName': 'Admin',
     'support.replyHint': 'Tulis balasan…',
     'account.guideTitle': 'Panduan pengguna',
-    'account.guideSub': 'Penerangan setiap bahagian aplikasi — dibuka di laman web',
-    'update.ready': 'Kemas kini telah dimuat turun — selesaikan sekarang atau kemudian',
+    'account.guideSub':
+        'Penerangan setiap bahagian aplikasi — dibuka di laman web',
+    'welcome.title': 'Selamat datang ke Azkar Salahulddin',
+    'welcome.sub': 'Tinjauan ringkas tentang ciri terbaik aplikasi',
+    'welcome.homeT': 'Utama',
+    'welcome.homeB':
+        'Al-Quran Al-Karim, zikir, kisah, pengajaran dan perpustakaan — setiap satu di raknya sendiri. Leret rak ke tepi dan buka mana-mana kad.',
+    'welcome.favT': 'Kegemaran',
+    'welcome.favB':
+        'Ketik bintang ★ pada mana-mana zikir dan anda akan menemuinya dalam tab Kegemaran di bawah.',
+    'welcome.remT': 'Peringatan saya',
+    'welcome.remB':
+        'Akaun → Peringatan → Peringatan saya: hidupkan zikir pagi dan petang, Surah Al-Mulk dan Surah Al-Kahfi dengan satu ketikan, atau tambah peringatan pada hari dan waktu pilihan anda.',
+    'welcome.adhanT': 'Azan dan waktu solat',
+    'welcome.adhanB':
+        'Akaun → Solat: hidupkan makluman solat dan pilih bunyi azan.',
+    'welcome.tahfeezT': 'Tahfiz',
+    'welcome.tahfeezB':
+        'Sertai halaqah bersama guru yang diluluskan, dan ikuti sesi, penilaian serta mata anda.',
+    'welcome.signT': 'Tidak perlu log masuk Google',
+    'welcome.signB':
+        'Al-Quran, zikir, peringatan dan azan semuanya berfungsi tanpa akaun. Anda hanya memerlukannya untuk menyertai halaqah Tahfiz, atau menyimpan kegemaran anda di semua peranti.',
+    'welcome.more': 'Panduan penuh ada di Akaun → Panduan pengguna.',
+    'welcome.dontShow': 'Jangan tunjukkan lagi',
+    'welcome.start': 'Mula',
+    'place.title': 'Pilih bandar',
+    'place.search': 'Taip nama bandar',
+    'place.hint':
+        'Waktu dipaparkan mengikut jam bandar itu, dan azan mengikutinya.',
+    'place.myLocation': 'Lokasi semasa saya',
+    'place.myLocationSub': 'Waktu mengikut lokasi telefon anda',
+    'place.noResults': 'Tiada hasil — cuba nama lain',
+    'place.failed': 'Carian gagal — semak sambungan internet',
+    'place.row': 'Lokasi',
+    'update.ready':
+        'Kemas kini telah dimuat turun — selesaikan sekarang atau kemudian',
     'update.restart': 'Kemas kini',
     'wn.myremTitle': 'Peringatan saya',
-    'wn.myremSub': 'Surah atau zikir pada hari dan masa pilihan anda — dalam Peringatan',
+    'wn.myremSub':
+        'Surah atau zikir pada hari dan masa pilihan anda — dalam Peringatan',
     'wn.amerTitle': 'Bacaan Syeikh Ahmad Amir',
     'wn.amerSub': 'Dalam mushaf, terjemahan, tilawah dan dengar berterusan',
     'wn.sunnahTitle': 'Semak hadis di sunnah.com',
@@ -2929,7 +3073,7 @@ const appTranslations = <String, Map<String, String>>{
         'Supaya azan berkumandang tepat pada waktunya walaupun telefon dikunci, benarkan aplikasi dalam “Penggera & peringatan”. Tanpanya sistem mungkin melewatkan peringatan.',
     'adh.exactButton': 'Benarkan sekarang',
     'adh.alertsAutoUpdateNote':
-        'Makluman ditetapkan mengikut waktu solat harian anda dan diperbaharui setiap hari.',
+        'Makluman ditetapkan untuk beberapa hari akan datang dan diperbaharui setiap kali anda membuka aplikasi.',
     'adh.tapHeadingHint':
         'Ketik tajuk untuk menetapkan kelima-lima waktu solat sekali gus',
     'adh.allLabel': 'Semua',
@@ -3312,7 +3456,7 @@ const appTranslations = <String, Map<String, String>>{
     'misc.noMemtestResultsYet': 'Belum ada ujian dijalankan',
     'misc.questionCountLabel': 'Bilangan soalan ujian',
     'misc.questionsAvailable': 'Soalan tersedia: {count}',
-    'misc.removedFromMyAdhkar': 'Dikeluarkan daripada Zikir Saya',
+    'misc.removedFromMyAdhkar': 'Dikeluarkan daripada Kegemaran',
     'misc.resultSaveFailed': 'Gagal menyimpan keputusan — cuba lagi',
     'misc.resultSaved': 'Keputusan disimpan',
     'misc.saveResult': 'Simpan Keputusan',
@@ -3329,7 +3473,7 @@ const appTranslations = <String, Map<String, String>>{
     'mushaf.worksOfflineAfterDownloadShort':
         'Berfungsi luar talian selepas dimuat turun',
     'nav.account': 'Akaun',
-    'nav.adhkar': 'Zikir Saya',
+    'nav.adhkar': 'Kegemaran',
     'nav.home': 'Utama',
     'nav.tahfeez': 'Tahfiz',
     'playback.decreaseFont': 'Kecilkan saiz fon',
@@ -3532,7 +3676,7 @@ const appTranslations = <String, Map<String, String>>{
     'misc.stop': 'रोकें',
     'misc.readingProgress': '{total} में से {current} पढ़ रहे हैं',
     'misc.next': 'अगला',
-    'misc.myAdhkarTitle': 'मेरे अज़कार',
+    'misc.myAdhkarTitle': 'पसंदीदा',
     'misc.savedAdhkarCount': '{count} अज़कार सहेजे गए',
     'misc.noSavedAdhkar': 'कोई ज़िक्र सहेजा नहीं गया',
     'misc.favoritesEmptyHint':
@@ -3596,7 +3740,7 @@ const appTranslations = <String, Map<String, String>>{
         'तरतीब बदलने के लिए खींचें · बदलाव बिना अपडेट के सबको पहुँचता है',
     'misc.searchInCategoryHint': '{name} में खोजें...',
     'misc.noResults': 'कोई नतीजा नहीं',
-    'misc.addedToMyAdhkar': 'मेरे अज़कार में जोड़ा गया',
+    'misc.addedToMyAdhkar': 'पसंदीदा में जोड़ा गया',
     'crd.storyLanguageSheetTitle': 'कहानी की भाषा',
     'crd.arabicOriginalOption': 'अरबी (मूल)',
     'crd.comingSoon': 'जल्द आ रहा है',
@@ -3715,7 +3859,8 @@ const appTranslations = <String, Map<String, String>>{
     'support.open': 'अभी बाकी',
     'support.myTitle': 'मेरे संदेश',
     'support.myRowSub': 'प्रशासन को आपके अनुरोध और उनके जवाब',
-    'support.mySub': 'कोई भी अनुरोध, समस्या या सुझाव प्रशासन को लिखें — जवाब यहीं आएगा।',
+    'support.mySub':
+        'कोई भी अनुरोध, समस्या या सुझाव प्रशासन को लिखें — जवाब यहीं आएगा।',
     'support.myEmpty': 'अभी कोई संदेश नहीं — «नया संदेश» दबाएँ।',
     'support.new': 'नया संदेश',
     'support.sent': 'आपका संदेश प्रशासन तक पहुँच गया',
@@ -3729,10 +3874,43 @@ const appTranslations = <String, Map<String, String>>{
     'support.replyHint': 'जवाब लिखें…',
     'account.guideTitle': 'उपयोग गाइड',
     'account.guideSub': 'ऐप के हर हिस्से की जानकारी — वेबसाइट पर खुलती है',
+    'welcome.title': 'Azkar Salahulddin में आपका स्वागत है',
+    'welcome.sub': 'ऐप की ख़ास चीज़ों पर एक नज़र',
+    'welcome.homeT': 'होम',
+    'welcome.homeB':
+        'क़ुरआन करीम, अज़कार, कहानियाँ, सबक़ और लाइब्रेरी — हर एक अपनी शेल्फ़ पर। शेल्फ़ को बगल में स्वाइप करें और कोई भी कार्ड खोलें।',
+    'welcome.favT': 'पसंदीदा',
+    'welcome.favB':
+        'किसी भी ज़िक्र पर सितारे ★ को टैप करें, वह आपको नीचे पसंदीदा टैब में मिलेगा।',
+    'welcome.remT': 'मेरे रिमाइंडर',
+    'welcome.remB':
+        'खाता → याद दिलाना → मेरे रिमाइंडर: सुबह और शाम के अज़कार, सूरह अल-मुल्क और सूरह अल-कहफ़ एक टैप में चालू करें, या अपनी पसंद के दिनों और समय पर रिमाइंडर जोड़ें।',
+    'welcome.adhanT': 'अज़ान और नमाज़ के समय',
+    'welcome.adhanB':
+        'खाता → नमाज़: नमाज़ अलर्ट चालू करें और अज़ान की आवाज़ चुनें।',
+    'welcome.tahfeezT': 'हिफ़्ज़',
+    'welcome.tahfeezB':
+        'किसी मंज़ूरशुदा शिक्षक के हलक़े में शामिल हों, और अपने सत्र, मूल्यांकन और पॉइंट देखते रहें।',
+    'welcome.signT': 'Google से साइन इन ज़रूरी नहीं',
+    'welcome.signB':
+        'क़ुरआन, अज़कार, रिमाइंडर और अज़ान सब बिना खाते के चलते हैं। खाते की ज़रूरत सिर्फ़ हिफ़्ज़ के हलक़े में शामिल होने, या अपने पसंदीदा को अपने सभी डिवाइस पर रखने के लिए है।',
+    'welcome.more': 'पूरी गाइड खाता → उपयोग गाइड में है।',
+    'welcome.dontShow': 'यह परिचय दोबारा न दिखाएँ',
+    'welcome.start': 'शुरू करें',
+    'place.title': 'शहर चुनें',
+    'place.search': 'शहर का नाम लिखें',
+    'place.hint':
+        'समय उसी शहर की घड़ी के हिसाब से दिखेंगे, और अज़ान उन्हीं पर होगी।',
+    'place.myLocation': 'मेरी मौजूदा लोकेशन',
+    'place.myLocationSub': 'समय आपके फ़ोन की लोकेशन से तय होते हैं',
+    'place.noResults': 'कोई नतीजा नहीं — कोई और नाम आज़माएँ',
+    'place.failed': 'खोज नहीं हो सकी — इंटरनेट कनेक्शन जाँचें',
+    'place.row': 'लोकेशन',
     'update.ready': 'नया अपडेट डाउनलोड हो गया — अभी पूरा करें या बाद में',
     'update.restart': 'अपडेट',
     'wn.myremTitle': 'मेरे रिमाइंडर',
-    'wn.myremSub': 'कोई सूरह या अज़कार, आपके चुने दिनों और समय पर — रिमाइंडर में',
+    'wn.myremSub':
+        'कोई सूरह या अज़कार, आपके चुने दिनों और समय पर — रिमाइंडर में',
     'wn.amerTitle': 'शेख़ अहमद आमिर की तिलावत',
     'wn.amerSub': 'मुसहफ़, अनुवाद, तिलावत और लगातार सुनने में',
     'wn.sunnahTitle': 'हदीसों की पुष्टि sunnah.com पर',
@@ -3768,7 +3946,7 @@ const appTranslations = <String, Map<String, String>>{
         'ताकि फ़ोन लॉक होने पर भी अज़ान समय पर बजे, ऐप को “अलार्म और रिमाइंडर” में अनुमति दें। इसके बिना सिस्टम सूचना में देरी कर सकता है।',
     'adh.exactButton': 'अभी अनुमति दें',
     'adh.alertsAutoUpdateNote':
-        'तनबीहें आपकी रोज़ की नमाज़ों के अवक़ात पर सेट होती हैं और हर दिन ख़ुद-ब-ख़ुद नई होती हैं।',
+        'तनबीहें आने वाले दिनों के अवक़ात पर सेट हैं और हर बार ऐप खोलने पर नई हो जाती हैं।',
     'adh.tapHeadingHint':
         'पाँचों नमाज़ों को एक साथ सेट करने के लिए हेडिंग दबाएँ',
     'adh.allLabel': 'सभी',
@@ -4144,7 +4322,7 @@ const appTranslations = <String, Map<String, String>>{
     'misc.noMemtestResultsYet': 'अभी तक कोई परीक्षण नहीं दिया',
     'misc.questionCountLabel': 'परीक्षा के प्रश्नों की संख्या',
     'misc.questionsAvailable': 'उपलब्ध प्रश्न: {count}',
-    'misc.removedFromMyAdhkar': 'मेरे अज़कार से हटाया गया',
+    'misc.removedFromMyAdhkar': 'पसंदीदा से हटाया गया',
     'misc.resultSaveFailed': 'नतीजा सहेजा नहीं जा सका — फिर से कोशिश करें',
     'misc.resultSaved': 'नतीजा सहेजा गया',
     'misc.saveResult': 'नतीजा सहेजें',
@@ -4161,7 +4339,7 @@ const appTranslations = <String, Map<String, String>>{
     'mushaf.worksOfflineAfterDownloadShort':
         'डाउनलोड के बाद बिना इंटरनेट के काम करता है',
     'nav.account': 'खाता',
-    'nav.adhkar': 'मेरे अज़कार',
+    'nav.adhkar': 'पसंदीदा',
     'nav.home': 'होम',
     'nav.tahfeez': 'हिफ़्ज़',
     'playback.decreaseFont': 'फ़ॉन्ट आकार घटाएं',
@@ -4364,7 +4542,7 @@ const appTranslations = <String, Map<String, String>>{
     'misc.stop': 'Durdur',
     'misc.readingProgress': '{current} / {total} okunuyor',
     'misc.next': 'Sonraki',
-    'misc.myAdhkarTitle': 'Zikirlerim',
+    'misc.myAdhkarTitle': 'Favoriler',
     'misc.savedAdhkarCount': '{count} kayıtlı zikir',
     'misc.noSavedAdhkar': 'Kayıtlı zikir yok',
     'misc.favoritesEmptyHint':
@@ -4431,7 +4609,7 @@ const appTranslations = <String, Map<String, String>>{
         'Sıralamak için sürükleyin · Değişiklik güncelleme gerekmeden herkese ulaşır',
     'misc.searchInCategoryHint': '{name} içinde arayın…',
     'misc.noResults': 'Sonuç yok',
-    'misc.addedToMyAdhkar': 'Zikirlerime eklendi',
+    'misc.addedToMyAdhkar': 'Favorilere eklendi',
     'crd.storyLanguageSheetTitle': 'Hikaye dili',
     'crd.arabicOriginalOption': 'Arapça (orijinal)',
     'crd.comingSoon': 'yakında',
@@ -4550,7 +4728,8 @@ const appTranslations = <String, Map<String, String>>{
     'support.open': 'Açık',
     'support.myTitle': 'Mesajlarım',
     'support.myRowSub': 'Yöneticilere istekleriniz ve yanıtları',
-    'support.mySub': 'Her türlü istek, sorun veya öneri için yöneticilere yazın — yanıt burada görünür.',
+    'support.mySub':
+        'Her türlü istek, sorun veya öneri için yöneticilere yazın — yanıt burada görünür.',
     'support.myEmpty': 'Henüz mesaj yok — «Yeni mesaj»a dokunun.',
     'support.new': 'Yeni mesaj',
     'support.sent': 'Mesajınız yöneticilere ulaştı',
@@ -4563,11 +4742,45 @@ const appTranslations = <String, Map<String, String>>{
     'support.adminName': 'Yöneticiler',
     'support.replyHint': 'Yanıt yazın…',
     'account.guideTitle': 'Kullanım kılavuzu',
-    'account.guideSub': 'Uygulamanın her bölümünün açıklaması — web sitesinde açılır',
+    'account.guideSub':
+        'Uygulamanın her bölümünün açıklaması — web sitesinde açılır',
+    'welcome.title': 'Azkar Salahulddin’e hoş geldiniz',
+    'welcome.sub': 'Uygulamanın en güzel yönlerine kısa bir bakış',
+    'welcome.homeT': 'Ana Sayfa',
+    'welcome.homeB':
+        'Kur\'an-ı Kerim, zikirler, hikayeler, dersler ve kütüphane — her biri kendi rafında. Bir rafı yana kaydırın ve istediğiniz kartı açın.',
+    'welcome.favT': 'Favoriler',
+    'welcome.favB':
+        'Herhangi bir zikirdeki yıldıza ★ dokunun; onu alttaki Favoriler sekmesinde bulursunuz.',
+    'welcome.remT': 'Hatırlatıcılarım',
+    'welcome.remB':
+        'Hesabım → Hatırlatıcılar → Hatırlatıcılarım: sabah ve akşam zikirlerini, Mülk ve Kehf surelerini tek dokunuşla açın ya da seçtiğiniz gün ve saatlere hatırlatıcı ekleyin.',
+    'welcome.adhanT': 'Ezan ve namaz vakitleri',
+    'welcome.adhanB':
+        'Hesabım → Namaz: namaz uyarılarını açın ve ezan sesini seçin.',
+    'welcome.tahfeezT': 'Hıfız',
+    'welcome.tahfeezB':
+        'Onaylı bir öğretmenin halkasına katılın; derslerinizi, değerlendirmelerinizi ve puanlarınızı takip edin.',
+    'welcome.signT': 'Google ile giriş gerekmez',
+    'welcome.signB':
+        'Kur\'an, zikirler, hatırlatıcılar ve ezan hesap olmadan çalışır. Hesaba yalnızca bir Hıfız halkasına katılmak veya favorilerinizi tüm cihazlarınızda tutmak için ihtiyacınız olur.',
+    'welcome.more': 'Tam kılavuz Hesabım → Kullanım kılavuzu bölümündedir.',
+    'welcome.dontShow': 'Bunu bir daha gösterme',
+    'welcome.start': 'Başla',
+    'place.title': 'Şehir seçin',
+    'place.search': 'Şehir adı yazın',
+    'place.hint':
+        'Vakitler şehrin kendi saatine göre gösterilir ve ezan bu vakitlere göre okunur.',
+    'place.myLocation': 'Şu anki konumum',
+    'place.myLocationSub': 'Vakitler telefonunuzun konumuna göre belirlenir',
+    'place.noResults': 'Sonuç yok — başka bir ad deneyin',
+    'place.failed': 'Arama yapılamadı — internet bağlantınızı kontrol edin',
+    'place.row': 'Konum',
     'update.ready': 'Güncelleme indirildi — şimdi veya daha sonra tamamlayın',
     'update.restart': 'Güncelle',
     'wn.myremTitle': 'Hatırlatıcılarım',
-    'wn.myremSub': 'Seçtiğiniz gün ve saatlerde bir sure veya zikirler — Hatırlatıcılar’da',
+    'wn.myremSub':
+        'Seçtiğiniz gün ve saatlerde bir sure veya zikirler — Hatırlatıcılar’da',
     'wn.amerTitle': 'Şeyh Ahmed Âmir’in kıraati',
     'wn.amerSub': 'Mushaf, mealler, tilavet ve kesintisiz dinlemede',
     'wn.sunnahTitle': 'Hadisleri sunnah.com’da doğrulayın',
@@ -4605,7 +4818,7 @@ const appTranslations = <String, Map<String, String>>{
         'Telefon kilitliyken bile ezanın vaktinde okunması için uygulamaya “Alarmlar ve hatırlatıcılar” izni verin. Bu izin olmadan sistem uyarıyı geciktirebilir.',
     'adh.exactButton': 'Şimdi izin ver',
     'adh.alertsAutoUpdateNote':
-        'Bildirimler günlük namaz vakitlerinize göre ayarlanır ve her gün yenilenir.',
+        'Bildirimler önümüzdeki günler için ayarlanır ve uygulamayı her açtığınızda yenilenir.',
     'adh.tapHeadingHint': 'Beş vakti birlikte ayarlamak için başlığa dokunun',
     'adh.allLabel': 'Tümü',
     'adh.notifyToggleLabel': '📳 Bildirim',
@@ -4976,7 +5189,7 @@ const appTranslations = <String, Map<String, String>>{
     'misc.noMemtestResultsYet': 'Henüz test yapılmadı',
     'misc.questionCountLabel': 'Test soru sayısı',
     'misc.questionsAvailable': 'Mevcut sorular: {count}',
-    'misc.removedFromMyAdhkar': 'Zikirlerimden kaldırıldı',
+    'misc.removedFromMyAdhkar': 'Favorilerden kaldırıldı',
     'misc.resultSaveFailed': 'Sonuç kaydedilemedi — tekrar deneyin',
     'misc.resultSaved': 'Sonuç kaydedildi',
     'misc.saveResult': 'Sonucu Kaydet',
@@ -4993,7 +5206,7 @@ const appTranslations = <String, Map<String, String>>{
     'mushaf.worksOfflineAfterDownloadShort':
         'İndirdikten sonra çevrimdışı çalışır',
     'nav.account': 'Hesabım',
-    'nav.adhkar': 'Zikirlerim',
+    'nav.adhkar': 'Favoriler',
     'nav.home': 'Ana Sayfa',
     'nav.tahfeez': 'Hıfız',
     'playback.decreaseFont': 'Yazı boyutunu küçült',
@@ -5197,7 +5410,7 @@ const appTranslations = <String, Map<String, String>>{
     'misc.stop': 'থামান',
     'misc.readingProgress': '{total} এর মধ্যে {current} পড়া হচ্ছে',
     'misc.next': 'পরবর্তী',
-    'misc.myAdhkarTitle': 'আমার আযকার',
+    'misc.myAdhkarTitle': 'প্রিয়',
     'misc.savedAdhkarCount': '{count}টি আযকার সংরক্ষিত',
     'misc.noSavedAdhkar': 'কোনো আযকার সংরক্ষিত নেই',
     'misc.favoritesEmptyHint':
@@ -5262,7 +5475,7 @@ const appTranslations = <String, Map<String, String>>{
         'সাজানো বদলাতে টেনে আনুন · আপডেট ছাড়াই পরিবর্তন সবার কাছে পৌঁছায়',
     'misc.searchInCategoryHint': '{name}-এ খুঁজুন...',
     'misc.noResults': 'কোনো ফলাফল নেই',
-    'misc.addedToMyAdhkar': 'আমার আযকারে যোগ হয়েছে',
+    'misc.addedToMyAdhkar': 'প্রিয়তে যোগ হয়েছে',
     'crd.storyLanguageSheetTitle': 'গল্পের ভাষা',
     'crd.arabicOriginalOption': 'আরবি (মূল)',
     'crd.comingSoon': 'শীঘ্রই আসছে',
@@ -5381,7 +5594,8 @@ const appTranslations = <String, Map<String, String>>{
     'support.open': 'এখনো বাকি',
     'support.myTitle': 'আমার বার্তা',
     'support.myRowSub': 'প্রশাসনের কাছে আপনার অনুরোধ ও উত্তর',
-    'support.mySub': 'যেকোনো অনুরোধ, সমস্যা বা পরামর্শ প্রশাসনকে লিখুন — উত্তর এখানে আসবে।',
+    'support.mySub':
+        'যেকোনো অনুরোধ, সমস্যা বা পরামর্শ প্রশাসনকে লিখুন — উত্তর এখানে আসবে।',
     'support.myEmpty': 'এখনো কোনো বার্তা নেই — «নতুন বার্তা» চাপুন।',
     'support.new': 'নতুন বার্তা',
     'support.sent': 'আপনার বার্তা প্রশাসনের কাছে পৌঁছেছে',
@@ -5395,10 +5609,43 @@ const appTranslations = <String, Map<String, String>>{
     'support.replyHint': 'উত্তর লিখুন…',
     'account.guideTitle': 'ব্যবহার নির্দেশিকা',
     'account.guideSub': 'অ্যাপের প্রতিটি অংশের ব্যাখ্যা — ওয়েবসাইটে খোলে',
+    'welcome.title': 'Azkar Salahulddin-এ স্বাগতম',
+    'welcome.sub': 'অ্যাপের সেরা দিকগুলোর এক ঝলক',
+    'welcome.homeT': 'হোম',
+    'welcome.homeB':
+        'আল-কুরআনুল কারীম, আযকার, কাহিনী, শিক্ষা ও লাইব্রেরি — প্রতিটি নিজের তাকে। তাক পাশে সোয়াইপ করুন এবং যেকোনো কার্ড খুলুন।',
+    'welcome.favT': 'প্রিয়',
+    'welcome.favB':
+        'যেকোনো যিকরের তারকা ★ চিহ্নে ট্যাপ করুন, নিচের প্রিয় ট্যাবে সেটি পেয়ে যাবেন।',
+    'welcome.remT': 'আমার রিমাইন্ডার',
+    'welcome.remB':
+        'অ্যাকাউন্ট → অনুস্মারক → আমার রিমাইন্ডার: এক ট্যাপে সকাল-সন্ধ্যার আযকার, সূরা মুলক ও সূরা কাহফ চালু করুন, অথবা আপনার পছন্দের দিন ও সময়ে রিমাইন্ডার যোগ করুন।',
+    'welcome.adhanT': 'আযান ও নামাযের সময়',
+    'welcome.adhanB':
+        'অ্যাকাউন্ট → নামাজ: নামাযের সতর্কতা চালু করুন এবং আযানের শব্দ বেছে নিন।',
+    'welcome.tahfeezT': 'হিফজ',
+    'welcome.tahfeezB':
+        'অনুমোদিত শিক্ষকের সঙ্গে একটি হালাকায় যোগ দিন, এবং আপনার সেশন, মূল্যায়ন ও পয়েন্ট দেখুন।',
+    'welcome.signT': 'Google দিয়ে সাইন ইন জরুরি নয়',
+    'welcome.signB':
+        'কুরআন, আযকার, অনুস্মারক ও আযান — সবই অ্যাকাউন্ট ছাড়া চলে। অ্যাকাউন্ট লাগবে শুধু হিফজ হালাকায় যোগ দিতে, অথবা আপনার প্রিয়গুলো সব ডিভাইসে রাখতে।',
+    'welcome.more': 'সম্পূর্ণ গাইড: অ্যাকাউন্ট → ব্যবহার নির্দেশিকা।',
+    'welcome.dontShow': 'এটি আর দেখাবেন না',
+    'welcome.start': 'শুরু করুন',
+    'place.title': 'শহর বেছে নিন',
+    'place.search': 'শহরের নাম লিখুন',
+    'place.hint':
+        'সময় সেই শহরের ঘড়ি অনুযায়ী দেখাবে, আর আযান সেই সময়েই হবে।',
+    'place.myLocation': 'আমার বর্তমান অবস্থান',
+    'place.myLocationSub': 'সময় আপনার ফোনের অবস্থান অনুযায়ী নির্ধারিত হয়',
+    'place.noResults': 'কোনো ফল নেই — অন্য নাম চেষ্টা করুন',
+    'place.failed': 'খোঁজা যায়নি — ইন্টারনেট সংযোগ দেখুন',
+    'place.row': 'অবস্থান',
     'update.ready': 'নতুন আপডেট ডাউনলোড হয়েছে — এখন বা পরে শেষ করুন',
     'update.restart': 'আপডেট',
     'wn.myremTitle': 'আমার রিমাইন্ডার',
-    'wn.myremSub': 'আপনার বাছাই করা দিন ও সময়ে কোনো সূরা বা যিকির — রিমাইন্ডারে',
+    'wn.myremSub':
+        'আপনার বাছাই করা দিন ও সময়ে কোনো সূরা বা যিকির — রিমাইন্ডারে',
     'wn.amerTitle': 'শায়খ আহমদ আমেরের তিলাওয়াত',
     'wn.amerSub': 'মুসহাফ, অনুবাদ, তিলাওয়াত ও একটানা শোনায়',
     'wn.sunnahTitle': 'sunnah.com-এ হাদিস যাচাই করুন',
@@ -5435,7 +5682,7 @@ const appTranslations = <String, Map<String, String>>{
         'ফোন লক থাকলেও যেন আজান সময়মতো বাজে, অ্যাপটিকে “অ্যালার্ম ও রিমাইন্ডার”-এ অনুমতি দিন। এটি ছাড়া সিস্টেম সতর্কতা দেরি করতে পারে।',
     'adh.exactButton': 'এখনই অনুমতি দিন',
     'adh.alertsAutoUpdateNote':
-        'সতর্কবার্তা আপনার দিনের নামাজের সময় অনুযায়ী নির্ধারিত হয় এবং প্রতিদিন নবায়ন হয়।',
+        'সতর্কবার্তা সামনের কয়েক দিনের জন্য নির্ধারিত থাকে এবং অ্যাপ খুললেই নবায়ন হয়।',
     'adh.tapHeadingHint': 'পাঁচ ওয়াক্ত একসাথে নির্ধারণ করতে শিরোনামে চাপুন',
     'adh.allLabel': 'সব',
     'adh.notifyToggleLabel': '📳 বিজ্ঞপ্তি',
@@ -5806,7 +6053,7 @@ const appTranslations = <String, Map<String, String>>{
     'misc.noMemtestResultsYet': 'এখনো কোনো পরীক্ষা দেওয়া হয়নি',
     'misc.questionCountLabel': 'পরীক্ষার প্রশ্ন সংখ্যা',
     'misc.questionsAvailable': 'উপলব্ধ প্রশ্ন: {count}',
-    'misc.removedFromMyAdhkar': 'আমার যিকর থেকে সরানো হয়েছে',
+    'misc.removedFromMyAdhkar': 'প্রিয় থেকে সরানো হয়েছে',
     'misc.resultSaveFailed': 'ফলাফল সংরক্ষণ করা যায়নি — আবার চেষ্টা করুন',
     'misc.resultSaved': 'ফলাফল সংরক্ষিত হয়েছে',
     'misc.saveResult': 'ফলাফল সংরক্ষণ করুন',
@@ -5822,7 +6069,7 @@ const appTranslations = <String, Map<String, String>>{
         'এই ক্বারীর তেলাওয়াত প্রতিটি সূরার জন্য একটি ফাইলে রেকর্ড করা — তাই আয়াত অনুযায়ী চলাচল ও পুনরাবৃত্তি সুবিধা নেই, এবং সূরা শুরু থেকে চালু হবে',
     'mushaf.worksOfflineAfterDownloadShort': 'ডাউনলোডের পর অফলাইনে কাজ করে',
     'nav.account': 'অ্যাকাউন্ট',
-    'nav.adhkar': 'আমার যিকর',
+    'nav.adhkar': 'প্রিয়',
     'nav.home': 'হোম',
     'nav.tahfeez': 'হিফজ',
     'playback.decreaseFont': 'ফন্ট ছোট করুন',
@@ -6026,7 +6273,7 @@ const appTranslations = <String, Map<String, String>>{
     'misc.stop': 'Dakatarwa',
     'misc.readingProgress': 'Yana karanta {current} daga cikin {total}',
     'misc.next': 'Na gaba',
-    'misc.myAdhkarTitle': 'Azkarina',
+    'misc.myAdhkarTitle': 'Na fi so',
     'misc.savedAdhkarCount': 'Azkari {count} da aka ajiye',
     'misc.noSavedAdhkar': 'Babu azkarin da aka ajiye',
     'misc.favoritesEmptyHint':
@@ -6093,7 +6340,7 @@ const appTranslations = <String, Map<String, String>>{
         'Ja don sake tsarawa · Canjin yana kaiwa kowa ba tare da sabuntawa ba',
     'misc.searchInCategoryHint': 'Bincika a {name}…',
     'misc.noResults': 'Babu sakamako',
-    'misc.addedToMyAdhkar': 'An ƙara zuwa Azkarina',
+    'misc.addedToMyAdhkar': 'An ƙara zuwa Na fi so',
     'crd.storyLanguageSheetTitle': 'Harshen labari',
     'crd.arabicOriginalOption': 'Larabci (na asali)',
     'crd.comingSoon': 'nan gaba kaɗan',
@@ -6212,7 +6459,8 @@ const appTranslations = <String, Map<String, String>>{
     'support.open': 'Ba a warware ba',
     'support.myTitle': 'Saƙonnina',
     'support.myRowSub': 'Buƙatunka ga masu gudanarwa da amsoshinsu',
-    'support.mySub': 'Rubuta wa masu gudanarwa kowace buƙata, matsala ko shawara — amsar za ta zo nan.',
+    'support.mySub':
+        'Rubuta wa masu gudanarwa kowace buƙata, matsala ko shawara — amsar za ta zo nan.',
     'support.myEmpty': 'Babu saƙo tukuna — danna «Sabon saƙo».',
     'support.new': 'Sabon saƙo',
     'support.sent': 'Saƙonka ya isa ga masu gudanarwa',
@@ -6225,11 +6473,45 @@ const appTranslations = <String, Map<String, String>>{
     'support.adminName': 'Masu gudanarwa',
     'support.replyHint': 'Rubuta amsa…',
     'account.guideTitle': 'Jagorar amfani',
-    'account.guideSub': 'Bayanin kowane sashe na manhajar — yana buɗewa a shafin yanar gizo',
+    'account.guideSub':
+        'Bayanin kowane sashe na manhajar — yana buɗewa a shafin yanar gizo',
+    'welcome.title': 'Barka da zuwa Azkar Salahulddin',
+    'welcome.sub': 'Taƙaitaccen kallo kan mafi kyawun abubuwan manhajar',
+    'welcome.homeT': 'Gida',
+    'welcome.homeB':
+        'Al-Qur\'ani Mai Girma, azkar, labarai, darussa da laburare — kowanne a kan shiryayyensa. Ja shiryayye gefe ka buɗe kowane kati.',
+    'welcome.favT': 'Na fi so',
+    'welcome.favB':
+        'Taɓa tauraro ★ a kan kowane zikiri, za ka same shi a shafin Na fi so a ƙasa.',
+    'welcome.remT': 'Tunatarwata',
+    'welcome.remB':
+        'Asusu → Tunatarwa → Tunatarwata: kunna azkar na safiya da maraice, Suratul Mulk da Suratul Kahfi da taɓawa ɗaya, ko ka ƙara tunatarwa a ranaku da lokutan da ka zaɓa.',
+    'welcome.adhanT': 'Azãni da lokutan sallah',
+    'welcome.adhanB':
+        'Asusu → Sallah: kunna faɗakarwar sallah ka zaɓi sautin azãni.',
+    'welcome.tahfeezT': 'Haddar',
+    'welcome.tahfeezB':
+        'Shiga halƙa tare da malami da aka amince da shi, ka bibiyi zaman karatunka, kimantawarka da makinka.',
+    'welcome.signT': 'Ba dole ba ne ka shiga da Google',
+    'welcome.signB':
+        'Al-Qur\'ani, azkar, tunatarwa da azãni duk suna aiki ba tare da asusu ba. Kana buƙatar asusu ne kawai don shiga halƙar Haddar, ko don adana abubuwan da ka fi so a dukan na\'urorinka.',
+    'welcome.more': 'Cikakken jagora yana a Asusu → Jagorar amfani.',
+    'welcome.dontShow': 'Kada a sake nuna wannan',
+    'welcome.start': 'Fara',
+    'place.title': 'Zaɓi gari',
+    'place.search': 'Rubuta sunan gari',
+    'place.hint':
+        'Za a nuna lokuta bisa agogon garin, kuma kiran sallah zai bi su.',
+    'place.myLocation': 'Wurin da nake yanzu',
+    'place.myLocationSub': 'Lokuta suna bin wurin wayarka',
+    'place.noResults': 'Babu sakamako — gwada wani suna',
+    'place.failed': 'Ba a iya bincike ba — duba haɗin intanet',
+    'place.row': 'Wuri',
     'update.ready': 'An sauke sabuntawa — kammala shi yanzu ko daga baya',
     'update.restart': 'Sabunta',
     'wn.myremTitle': 'Tunatarwata',
-    'wn.myremSub': 'Sura ko azkar a ranaku da lokutan da ka zaɓa — a cikin Tunatarwa',
+    'wn.myremSub':
+        'Sura ko azkar a ranaku da lokutan da ka zaɓa — a cikin Tunatarwa',
     'wn.amerTitle': 'Karatun Sheikh Ahmad Amir',
     'wn.amerSub': 'A cikin Mushafi, fassarori, karatu da sauraro ba tsayawa',
     'wn.sunnahTitle': 'Tabbatar da hadisai a sunnah.com',
@@ -6267,7 +6549,7 @@ const appTranslations = <String, Map<String, String>>{
         'Domin kiran sallah ya yi a kan lokaci ko da wayar a kulle take, ba wa manhajar izini a “Agogon ƙararrawa da tunatarwa”. Ba tare da shi ba tsarin zai iya jinkirta sanarwar.',
     'adh.exactButton': 'Bayar da izini yanzu',
     'adh.alertsAutoUpdateNote':
-        'Ana saita tunatarwa bisa lokutan sallar yau da kullum, kuma suna sabuntuwa kowace rana.',
+        'An saita tunatarwa na kwanaki masu zuwa, kuma suna sabuntuwa duk lokacin da ka buɗe manhajar.',
     'adh.tapHeadingHint': 'Danna take don saita sallolin biyar a lokaci guda',
     'adh.allLabel': 'Duka',
     'adh.notifyToggleLabel': '📳 Sanarwa',
@@ -6642,7 +6924,7 @@ const appTranslations = <String, Map<String, String>>{
     'misc.noMemtestResultsYet': 'Ba a yi wata jarabawa ba tukuna',
     'misc.questionCountLabel': 'Yawan tambayoyin jarabawa',
     'misc.questionsAvailable': 'Tambayoyin da ake da su: {count}',
-    'misc.removedFromMyAdhkar': 'An cire daga Azkarina',
+    'misc.removedFromMyAdhkar': 'An cire daga Na fi so',
     'misc.resultSaveFailed': 'An kasa ajiye sakamakon — a sake gwadawa',
     'misc.resultSaved': 'An ajiye sakamako',
     'misc.saveResult': 'Ajiye Sakamako',
@@ -6659,7 +6941,7 @@ const appTranslations = <String, Map<String, String>>{
     'mushaf.worksOfflineAfterDownloadShort':
         'Yana aiki ba tare da intanet ba bayan saukarwa',
     'nav.account': 'Asusu',
-    'nav.adhkar': 'Azkarina',
+    'nav.adhkar': 'Na fi so',
     'nav.home': 'Gida',
     'nav.tahfeez': 'Haddar',
     'playback.decreaseFont': 'Rage girman rubutu',

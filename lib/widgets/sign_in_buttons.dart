@@ -34,6 +34,18 @@ class _BrandMark {
   };
 }
 
+/// A provider's own mark on its own, e.g. to show which accounts work.
+class BrandMark extends StatelessWidget {
+  final SignInProvider provider;
+  final double size;
+
+  const BrandMark(this.provider, {super.key, this.size = 18});
+
+  @override
+  Widget build(BuildContext context) =>
+      SvgPicture.string(_BrandMark.of(provider), width: size, height: size);
+}
+
 /// A sign-in button in the provider's own colours, as their terms require.
 class SignInButton extends StatelessWidget {
   final SignInProvider provider;

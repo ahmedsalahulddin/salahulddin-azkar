@@ -750,21 +750,6 @@ class _TahfeezTabState extends State<TahfeezTab> {
           _load();
         },
       ),
-      const SizedBox(height: 8),
-      _tile(
-        icon: Icons.badge_outlined,
-        title: t('tahfeez.teacherProfile'),
-        subtitle: t('tahfeez.teacherProfileSub'),
-        onTap: () async {
-          await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => TeacherProfileScreen(profile: profile),
-            ),
-          );
-          _load();
-        },
-      ),
     ],
     if (_joined.isNotEmpty) ...[
       const SizedBox(height: 14),
@@ -909,14 +894,14 @@ class _TahfeezTabState extends State<TahfeezTab> {
     myGender: profile.gender,
     defaultCountry: profile.country,
     initialTeachers: widget.initialTeachers,
-    header: profile.isTeacher ? _listedSwitch(profile) : null,
     onChanged: _load,
   );
 
-  /// A teacher's own "show me in this list" switch, right where the list is.
+  /// A teacher's own "show me in the teachers' list" switch, on their card
+  /// at the top, where it is in sight whichever section is open.
   Widget _listedSwitch(TahfeezProfile profile) {
-    return TahfeezCard(
-      padding: const EdgeInsets.fromLTRB(14, 6, 6, 6),
+    return SizedBox(
+      height: 44,
       child: Row(
         children: [
           Icon(
@@ -926,34 +911,98 @@ class _TahfeezTabState extends State<TahfeezTab> {
           ),
           const SizedBox(width: 10),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  t('tahfeez.listed'),
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 13,
-                  ),
-                ),
-                Text(
-                  profile.listed
-                      ? t('tahfeez.listedOn')
-                      : t('tahfeez.listedOff'),
-                  style: const TextStyle(
-                    color: AppColors.textMuted,
-                    fontSize: 11,
-                  ),
-                ),
-              ],
+            child: _titleWithNote(
+              t('tahfeez.listed'),
+              profile.listed
+                  ? t('tahfeez.listedOnShort')
+                  : t('tahfeez.listedOffShort'),
             ),
           ),
-          Switch(
-            value: profile.listed,
-            activeThumbColor: AppColors.gold,
-            onChanged: (v) => _setListed(v),
+          Transform.scale(
+            scale: 0.8,
+            child: Switch(
+              value: profile.listed,
+              activeThumbColor: AppColors.gold,
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              onChanged: (v) => _setListed(v),
+            ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// A row's name with its short note beside it, on one line.
+  Widget _titleWithNote(String title, String note) {
+    return Text.rich(
+      TextSpan(
+        children: [
+          TextSpan(
+            text: title,
+            style: const TextStyle(color: AppColors.textPrimary, fontSize: 13),
+          ),
+          TextSpan(
+            text: '  $note',
+            style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+          ),
+        ],
+      ),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+    );
+  }
+
+  /// The teacher's page in the directory — bio, plan, free sessions — one
+  /// tap from their card.
+  Widget _teacherProfileRow(TahfeezProfile profile) {
+    return InkWell(
+      onTap: () async {
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => TeacherProfileScreen(profile: profile),
+          ),
+        );
+        _load();
+      },
+      child: SizedBox(
+        height: 44,
+        child: Row(
+          children: [
+            const Icon(Icons.badge_outlined, color: AppColors.gold, size: 20),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _titleWithNote(
+                t('tahfeez.teacherProfile'),
+                t('tahfeez.teacherProfileShort'),
+              ),
+            ),
+            // A button, not a bare arrow, so it reads as something to press.
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppColors.goldMuted,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: AppColors.gold),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.edit, color: AppColors.gold, size: 13),
+                  const SizedBox(width: 4),
+                  Text(
+                    t('tahfeez.editBtn'),
+                    style: const TextStyle(
+                      color: AppColors.gold,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1462,6 +1511,13 @@ class _TahfeezTabState extends State<TahfeezTab> {
               ),
             ],
           ),
+          if (profile.isTeacher) ...[
+            const SizedBox(height: 8),
+            const Divider(height: 1, color: AppColors.goldBorder),
+            _listedSwitch(profile),
+            const Divider(height: 1, color: AppColors.goldBorder),
+            _teacherProfileRow(profile),
+          ],
         ],
       ),
     );

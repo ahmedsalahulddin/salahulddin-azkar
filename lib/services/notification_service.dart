@@ -1,7 +1,13 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
-import 'package:timezone/data/latest.dart' as tz;
+import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
 import '../data/adhkar_data.dart';
@@ -11,6 +17,7 @@ import 'app_locale.dart';
 import 'custom_reminders.dart';
 import 'notification_router.dart';
 import 'daily_reminders.dart';
+import 'dhikr_reminder.dart';
 import 'prayer_alerts.dart';
 
 class NotificationService {
@@ -23,6 +30,7 @@ class NotificationService {
   /// Its own id, so trying it twice replaces rather than stacks.
   static const _testId = 900;
   static const _scheduledTestId = 901;
+  static const _adhanTestId = 902;
 
   /// How loudly every channel the app schedules on is allowed to speak.
   ///
@@ -43,9 +51,44 @@ class NotificationService {
     'salahulddin_test',
   ];
 
+  /// The adhan clips iOS can play with a notification. iOS plays only sounds
+  /// inside the app's bundle or its Library/Sounds folder, and only the first
+  /// 30 seconds, so a 29-second fading clip of each adhan (assets/sounds) is
+  /// copied there once. Without it the iPhone played its default chime.
+  static Future<void> _installIosSounds() async {
+    if (defaultTargetPlatform != TargetPlatform.iOS) return;
+    try {
+      final lib = await getLibraryDirectory();
+      final dir = Directory('${lib.path}/Sounds');
+      if (!dir.existsSync()) dir.createSync(recursive: true);
+      // Each on its own, the small one first: one that cannot be written
+      // must not cost the others.
+      for (final name in const ['silence', 'adhan_makkah', 'adhan_madinah']) {
+        try {
+          final data = await rootBundle.load('assets/sounds/$name.caf');
+          final file = File('${dir.path}/$name.caf');
+          if (file.existsSync() && file.lengthSync() == data.lengthInBytes) {
+            continue;
+          }
+          await file.writeAsBytes(data.buffer.asUint8List(), flush: true);
+        } catch (_) {
+          // That one plays the default sound instead.
+        }
+      }
+    } catch (_) {
+      // The default sound still plays.
+    }
+  }
+
+  /// The iOS notification sound for an adhan resource, or null for the
+  /// system default.
+  static String? _iosSound(String? resource) =>
+      resource == null ? null : '$resource.caf';
+
   static Future<void> init() async {
     if (kIsWeb || _initialized) return;
     await _ensureZone();
+    await _installIosSounds();
 
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
     const ios = DarwinInitializationSettings(
@@ -111,16 +154,24 @@ class NotificationService {
       // No name, or a name this build of the database does not carry.
     }
     try {
+      // A real zone on the same clock as the phone. It has to be one the
+      // platform knows by name too: Android schedules by the zone's name,
+      // and a made-up one ("local") made every prayer alert fail to
+      // schedule. Etc/GMT zones carry the sign the other way round.
       final offset = DateTime.now().timeZoneOffset;
-      tz.setLocalLocation(
-        tz.Location('local', const [tz.minTime], const [0], [
-          tz.TimeZone(
-            offset.inMilliseconds,
-            isDst: false,
-            abbreviation: DateTime.now().timeZoneName,
-          ),
-        ]),
-      );
+      final ms = offset.inMilliseconds;
+      final hours = offset.inHours;
+      tz.Location? match;
+      if (offset.inMinutes % 60 == 0 && hours.abs() <= 12) {
+        final etc = hours == 0
+            ? 'Etc/UTC'
+            : 'Etc/GMT${hours > 0 ? '-' : '+'}${hours.abs()}';
+        match = tz.timeZoneDatabase.locations[etc];
+      }
+      match ??= tz.timeZoneDatabase.locations.values
+          .where((l) => l.currentTimeZone.offset == ms)
+          .firstOrNull;
+      if (match != null) tz.setLocalLocation(match);
     } catch (_) {
       // UTC, and the times will be wrong — but nothing here may throw and
       // take the whole notification system down with it.
@@ -311,7 +362,7 @@ class NotificationService {
       final channel =
           'salahulddin_prayer_sound_v5_${soundResource ?? 'default'}';
       await _plugin.show(
-        _testId + 1,
+        _adhanTestId,
         'جرّبت صوت الأذان',
         'هكذا سيصلك التنبيه وقت الصلاة.',
         NotificationDetails(
@@ -327,7 +378,10 @@ class NotificationService {
                 : null,
             visibility: NotificationVisibility.public,
           ),
-          iOS: const DarwinNotificationDetails(presentSound: true),
+          iOS: DarwinNotificationDetails(
+            presentSound: true,
+            sound: _iosSound(soundResource),
+          ),
         ),
       );
       return null;
@@ -457,37 +511,41 @@ class NotificationService {
   /// — every pending id in the custom range is cancelled first, so a deleted
   /// reminder or a removed time leaves nothing behind.
   static Future<void> scheduleCustomReminders() async {
-    if (kIsWeb) return;
-    await _ensureZone();
     try {
-      for (final p in await _plugin.pendingNotificationRequests()) {
-        if (p.id >= CustomReminder.firstNotificationId) {
-          await _plugin.cancel(p.id);
+      if (kIsWeb) return;
+      await _ensureZone();
+      try {
+        for (final p in await _plugin.pendingNotificationRequests()) {
+          if (p.id >= CustomReminder.firstNotificationId) {
+            await _plugin.cancel(p.id);
+          }
         }
+      } catch (_) {
+        // Could not list them; laying down below still overwrites by id.
       }
-    } catch (_) {
-      // Could not list them; laying down below still overwrites by id.
-    }
 
-    final surahs = await QuranService.index();
-    for (final r in CustomReminders.list.value) {
-      if (!r.enabled || r.days.isEmpty || r.times.isEmpty) continue;
-      final (title, body) = _customText(r, surahs);
-      for (final day in r.days) {
-        for (var slot = 0; slot < r.times.length; slot++) {
-          final id = CustomReminder.notificationId(r.id, day, slot);
-          final at = nextWeekly(
-            tz.TZDateTime.now(tz.local),
-            day,
-            r.times[slot],
-          );
-          try {
-            await _scheduleWeekly(id, title, body, at, r.payload);
-          } catch (_) {
-            // One slot failing must not stop the rest.
+      final surahs = await QuranService.index();
+      for (final r in CustomReminders.list.value) {
+        if (!r.enabled || r.days.isEmpty || r.times.isEmpty) continue;
+        final (title, body) = _customText(r, surahs);
+        for (final day in r.days) {
+          for (var slot = 0; slot < r.times.length; slot++) {
+            final id = CustomReminder.notificationId(r.id, day, slot);
+            final at = nextWeekly(
+              tz.TZDateTime.now(tz.local),
+              day,
+              r.times[slot],
+            );
+            try {
+              await _scheduleWeekly(id, title, body, at, r.payload);
+            } catch (_) {
+              // One slot failing must not stop the rest.
+            }
           }
         }
       }
+    } finally {
+      _relayPrayersOnIos();
     }
   }
 
@@ -608,36 +666,226 @@ class NotificationService {
     return exactAlarmsAllowed();
   }
 
+  /// Prayer alert ids: 1000 + slot × 100 + prayer × 10 + when, where the
+  /// slot is the alert's calendar day modulo ten. A given prayer on a given
+  /// day keeps its id however often the times are worked out again, so a
+  /// reload can neither cut off an adhan as it sounds nor leave an older
+  /// alarm waiting under a different number.
+  static int _prayerId(int slot, AlertPrayer prayer, AlertWhen when) =>
+      1000 + slot * 100 + prayer.index * 10 + when.index;
+
+  static int _epochDay(DateTime d) =>
+      DateTime.utc(d.year, d.month, d.day).millisecondsSinceEpoch ~/
+      Duration.millisecondsPerDay;
+
+  /// Every prayer alert carries the moment it is for, so a pending one can
+  /// be told apart: due now, or left over from times that have moved.
+  static const _prayerPayload = 'prayer:';
+
+  static DateTime? _payloadMoment(String? payload) {
+    if (payload == null || !payload.startsWith(_prayerPayload)) return null;
+    final ms = int.tryParse(payload.substring(_prayerPayload.length));
+    return ms == null ? null : DateTime.fromMillisecondsSinceEpoch(ms);
+  }
+
+  /// Lays down the alerts for [times] (the day in [PrayerAlerts.firstDay]),
+  /// [tomorrow] and the days in [PrayerAlerts.later], plus last night's Isha
+  /// while it is still to come — a week on Android, and on iPhone as many
+  /// days as fit beside the app's other reminders under its 64.
   static Future<void> schedulePrayerAlerts(
     Map<AlertPrayer, DateTime> times, [
     Map<AlertPrayer, DateTime> tomorrow = const {},
-  ]) async {
+  ]) {
+    if (kIsWeb) return Future.value();
+    // One run at a time: launch, the card, the ticker and a setting can all
+    // ask at once, and two runs interleaving could undo each other.
+    return _prayerRun = _prayerRun
+        .then((_) => _schedulePrayerAlerts(times, tomorrow))
+        .catchError((_) {});
+  }
+
+  static Future<void> _prayerRun = Future.value();
+
+  /// What was last laid under each prayer id (id → epoch ms), so a prayer
+  /// that has already been announced is not announced again when a reload
+  /// works its time out a minute differently.
+  static const _laidKey = 'prayer_alerts_laid';
+
+  /// Times that differ by less than this are the same prayer, recomputed.
+  static const _sameAlert = Duration(minutes: 3);
+
+  /// iPhone: the app's other pending reminders, counted from the settings
+  /// rather than from what iOS kept (which is already cut at 64).
+  static int _otherReminderCount() {
+    var n = 0;
+    try {
+      if (DhikrReminder.enabled.value) n += DhikrReminder.slotMinutes().length;
+    } catch (_) {
+      n += 12;
+    }
+    if (DailyReminders.verseOn.value) n += 2;
+    if (DailyReminders.morningOn.value) n += 1;
+    if (DailyReminders.eveningOn.value) n += 1;
+    for (final r in CustomReminders.list.value) {
+      if (r.enabled) n += r.days.length * r.times.length;
+    }
+    return n;
+  }
+
+  /// iPhone keeps the 64 notifications set last, so after another kind of
+  /// reminder is laid down the prayers are laid again on top of it.
+  static void _relayPrayersOnIos() {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.iOS) return;
+    if (PrayerAlerts.lastTimes.isEmpty) return;
+    schedulePrayerAlerts(PrayerAlerts.lastTimes, PrayerAlerts.tomorrow);
+  }
+
+  static Future<void> _schedulePrayerAlerts(
+    Map<AlertPrayer, DateTime> times,
+    Map<AlertPrayer, DateTime> tomorrow,
+  ) async {
     await _ensureZone();
-    await _layDown(times, dayOffset: 0);
-    await _layDown(tomorrow, dayOffset: 1);
+    SharedPreferences? prefs;
+    final laid = <int, int>{};
+    try {
+      prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_laidKey);
+      if (raw != null) {
+        for (final e in (jsonDecode(raw) as Map).entries) {
+          laid[int.parse(e.key as String)] = (e.value as num).toInt();
+        }
+      }
+    } catch (_) {}
+    Map<int, DateTime?>? pending;
+    try {
+      pending = {
+        for (final r in await _plugin.pendingNotificationRequests())
+          r.id: _payloadMoment(r.payload),
+      };
+    } catch (_) {
+      // Unknown: the rules below then lean on cancelling only what is safe.
+    }
+
+    // The ids used before alerts covered a week (100–241).
+    for (var day = 0; day < 2; day++) {
+      for (final prayer in AlertPrayer.values) {
+        for (final when in AlertWhen.values) {
+          final old = 100 + day * 100 + prayer.index * 10 + when.index;
+          if (pending != null && !pending.containsKey(old)) continue;
+          try {
+            await _plugin.cancel(old);
+          } catch (_) {}
+          pending?.remove(old);
+        }
+      }
+    }
+
+    final perDay = AlertPrayer.values
+        .expand((p) => AlertWhen.values.map((w) => PrayerAlerts.modeFor(p, w)))
+        .where((m) => !m.isOff)
+        .length;
+    var days = PrayerAlerts.daysAhead;
+    if (defaultTargetPlatform == TargetPlatform.iOS && perDay > 0) {
+      // iPhone keeps only the 64 most recently set notifications of an app.
+      // The prayers get what the other reminders leave, today at least.
+      days = ((64 - 2 - _otherReminderCount()) ~/ perDay).clamp(1, 4);
+    }
+
+    final first = PrayerAlerts.firstDay ?? DateTime.now();
+    final today = _epochDay(first);
+    final byDay = <int, Map<AlertPrayer, DateTime>>{
+      if (PrayerAlerts.lateIsha != null)
+        today - 1: {AlertPrayer.isha: PrayerAlerts.lateIsha!},
+      today: times,
+      if (days > 1) today + 1: tomorrow,
+      for (var i = 0; i < PrayerAlerts.later.length && i + 2 < days; i++)
+        today + 2 + i: PrayerAlerts.later[i],
+    };
+
+    // Farthest first, so today's are the last set — iPhone keeps those.
+    for (var day = today + 8; day >= today - 1; day--) {
+      await _layDown(
+        byDay[day] ?? const {},
+        slot: day % 10,
+        pending: pending,
+        laid: laid,
+      );
+    }
+    try {
+      await prefs?.setString(
+        _laidKey,
+        jsonEncode({for (final e in laid.entries) '${e.key}': e.value}),
+      );
+    } catch (_) {}
   }
 
   static Future<void> _layDown(
     Map<AlertPrayer, DateTime> times, {
-    required int dayOffset,
+    required int slot,
+    required Map<int, DateTime?>? pending,
+    required Map<int, int> laid,
   }) async {
+    final now = DateTime.now();
     for (final prayer in AlertPrayer.values) {
       final at = times[prayer];
       for (final when in AlertWhen.values) {
-        final id = 100 + dayOffset * 100 + prayer.index * 10 + when.index;
-        try {
-          await _plugin.cancel(id);
-        } catch (_) {
-          // Nothing to cancel, or the system would not; either way carry on.
+        final id = _prayerId(slot, prayer, when);
+        final mode = PrayerAlerts.modeFor(prayer, when);
+        final waiting = pending == null
+            ? null
+            : (pending.containsKey(id) ? pending[id] : null);
+        final isPending = pending == null || pending.containsKey(id);
+
+        Future<void> drop() async {
+          try {
+            await _plugin.cancel(id);
+          } catch (_) {
+            // Nothing to cancel, or the system would not; carry on.
+          }
         }
 
-        final mode = PrayerAlerts.modeFor(prayer, when);
-        if (mode.isOff || at == null) continue;
+        if (mode.isOff) {
+          if (isPending) await drop();
+          continue;
+        }
+        if (at == null) {
+          // Nothing wanted here. A pending alert that is already due is left
+          // to arrive (an inexact alarm can run late); anything still ahead
+          // is left over and goes.
+          if (isPending && (waiting == null || waiting.isAfter(now))) {
+            await drop();
+          }
+          continue;
+        }
 
         final moment = when == AlertWhen.before
             ? at.subtract(Duration(minutes: PrayerAlerts.lead.value))
             : at;
-        if (moment.isBefore(DateTime.now())) continue;
+        if (!moment.isAfter(now)) {
+          // Due: it has fired or is sounding now — left alone, since the
+          // card reloads the second a prayer comes in. Unless what waits
+          // under this id is for a later moment (the times moved earlier,
+          // say the Asr school changed): that one would ring at the old
+          // time, so it goes.
+          if (waiting != null &&
+              waiting.difference(moment) > _sameAlert &&
+              waiting.isAfter(now)) {
+            await drop();
+          }
+          continue;
+        }
+
+        // Already announced: this id fired a moment ago for a time within a
+        // few minutes of this one — the same prayer, worked out again from a
+        // slightly different fix. Laying it again would sound it twice.
+        final last = laid[id];
+        if (last != null &&
+            !(pending?.containsKey(id) ?? true) &&
+            last <= now.millisecondsSinceEpoch &&
+            (moment.millisecondsSinceEpoch - last).abs() <=
+                _sameAlert.inMilliseconds) {
+          continue;
+        }
 
         // Each on its own. One alert the system will not take — a sound it
         // cannot find, a channel it refuses — must not cost the other nine.
@@ -667,6 +915,7 @@ class NotificationService {
                 ? PrayerAlerts.bundledResource
                 : null,
           );
+          laid[id] = moment.millisecondsSinceEpoch;
         } catch (_) {
           // Rebuilt at the next launch and at the next prayer-times load.
         }
@@ -710,7 +959,12 @@ class NotificationService {
       // Disturb's "alarms" exception and the lock screen treat it as one.
       category: AndroidNotificationCategory.alarm,
     );
-    final iosDetails = DarwinNotificationDetails(presentSound: mode.sound);
+    // iPhone only vibrates for a notification that plays a sound, so
+    // "notification and vibration" plays a second of silence.
+    final iosDetails = DarwinNotificationDetails(
+      presentSound: mode.sound || mode.notify,
+      sound: mode.sound ? _iosSound(soundResource) : _iosSound('silence'),
+    );
     final details = NotificationDetails(
       android: androidDetails,
       iOS: iosDetails,
@@ -728,6 +982,7 @@ class NotificationService {
         body,
         tzAt,
         details,
+        payload: '$_prayerPayload${at.millisecondsSinceEpoch}',
         androidScheduleMode: AndroidScheduleMode.alarmClock,
         uiLocalNotificationDateInterpretation:
             UILocalNotificationDateInterpretation.absoluteTime,
@@ -742,6 +997,7 @@ class NotificationService {
       body,
       tzAt,
       details,
+      payload: '$_prayerPayload${at.millisecondsSinceEpoch}',
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
@@ -756,56 +1012,60 @@ class NotificationService {
     required List<int> minutes,
     required List<Dhikr> pool,
   }) async {
-    await _ensureZone();
-    // Clear the whole block first: the count can shrink, and yesterday's
-    // extra slots would otherwise keep firing forever.
-    for (var i = 0; i < 24; i++) {
-      await _plugin.cancel(300 + i);
-    }
-    if (!enabled || pool.isEmpty) return;
+    try {
+      await _ensureZone();
+      // Clear the whole block first: the count can shrink, and yesterday's
+      // extra slots would otherwise keep firing forever.
+      for (var i = 0; i < 24; i++) {
+        await _plugin.cancel(300 + i);
+      }
+      if (!enabled || pool.isEmpty) return;
 
-    const details = NotificationDetails(
-      android: AndroidNotificationDetails(
-        // v2, and it has to be: Android fixes a channel's importance when it
-        // is created and an app may only ever lower it. The first id was made
-        // at default importance, which puts a notification in the shade but
-        // never on the screen — so these arrived and were never seen. Raising
-        // the value alone would have changed nothing on a phone that already
-        // had the app; only a new channel is created afresh.
-        'salahulddin_dhikr_v2',
-        'تذكير بالذكر',
-        channelDescription: 'ذكر قصير يصلك خلال اليوم',
-        importance: reminderImportance,
-        priority: reminderPriority,
-        visibility: NotificationVisibility.public,
-      ),
-      iOS: DarwinNotificationDetails(),
-    );
-
-    for (var i = 0; i < minutes.length && i < 24; i++) {
-      final dhikr = pool[i % pool.length];
-      final now = tz.TZDateTime.now(tz.local);
-      var at = tz.TZDateTime(
-        tz.local,
-        now.year,
-        now.month,
-        now.day,
-        minutes[i] ~/ 60,
-        minutes[i] % 60,
+      const details = NotificationDetails(
+        android: AndroidNotificationDetails(
+          // v2, and it has to be: Android fixes a channel's importance when it
+          // is created and an app may only ever lower it. The first id was made
+          // at default importance, which puts a notification in the shade but
+          // never on the screen — so these arrived and were never seen. Raising
+          // the value alone would have changed nothing on a phone that already
+          // had the app; only a new channel is created afresh.
+          'salahulddin_dhikr_v2',
+          'تذكير بالذكر',
+          channelDescription: 'ذكر قصير يصلك خلال اليوم',
+          importance: reminderImportance,
+          priority: reminderPriority,
+          visibility: NotificationVisibility.public,
+        ),
+        iOS: DarwinNotificationDetails(),
       );
-      if (at.isBefore(now)) at = at.add(const Duration(days: 1));
 
-      await _plugin.zonedSchedule(
-        300 + i,
-        'ذكر',
-        dhikr.text,
-        at,
-        details,
-        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
-        matchDateTimeComponents: DateTimeComponents.time,
-      );
+      for (var i = 0; i < minutes.length && i < 24; i++) {
+        final dhikr = pool[i % pool.length];
+        final now = tz.TZDateTime.now(tz.local);
+        var at = tz.TZDateTime(
+          tz.local,
+          now.year,
+          now.month,
+          now.day,
+          minutes[i] ~/ 60,
+          minutes[i] % 60,
+        );
+        if (at.isBefore(now)) at = at.add(const Duration(days: 1));
+
+        await _plugin.zonedSchedule(
+          300 + i,
+          'ذكر',
+          dhikr.text,
+          at,
+          details,
+          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+          uiLocalNotificationDateInterpretation:
+              UILocalNotificationDateInterpretation.absoluteTime,
+          matchDateTimeComponents: DateTimeComponents.time,
+        );
+      }
+    } finally {
+      _relayPrayersOnIos();
     }
   }
 
@@ -816,41 +1076,45 @@ class NotificationService {
   /// schedule is to lay it down again — patching it leaves yesterday's slots
   /// firing beside today's.
   static Future<void> scheduleDailyReminders() async {
-    await _ensureZone();
-    for (final id in [400, 401, 410, 411]) {
-      await _plugin.cancel(id);
-    }
+    try {
+      await _ensureZone();
+      for (final id in [400, 401, 410, 411]) {
+        await _plugin.cancel(id);
+      }
 
-    if (DailyReminders.verseOn.value) {
-      // Two different verses, so the second arrival is not the first repeated.
-      await _daily(
-        400,
-        'آية وتفسيرها',
-        await _verseLine(0),
-        DailyReminders.verseFirst.value,
-      );
-      await _daily(
-        401,
-        'آية وتفسيرها',
-        await _verseLine(1),
-        DailyReminders.verseSecond.value,
-      );
-    }
-    if (DailyReminders.morningOn.value) {
-      await _daily(
-        410,
-        'أذكار الصباح',
-        'حان وقت أذكار الصباح',
-        DailyReminders.morningAt.value,
-      );
-    }
-    if (DailyReminders.eveningOn.value) {
-      await _daily(
-        411,
-        'أذكار المساء',
-        'حان وقت أذكار المساء',
-        DailyReminders.eveningAt.value,
-      );
+      if (DailyReminders.verseOn.value) {
+        // Two different verses, so the second arrival is not the first repeated.
+        await _daily(
+          400,
+          'آية وتفسيرها',
+          await _verseLine(0),
+          DailyReminders.verseFirst.value,
+        );
+        await _daily(
+          401,
+          'آية وتفسيرها',
+          await _verseLine(1),
+          DailyReminders.verseSecond.value,
+        );
+      }
+      if (DailyReminders.morningOn.value) {
+        await _daily(
+          410,
+          'أذكار الصباح',
+          'حان وقت أذكار الصباح',
+          DailyReminders.morningAt.value,
+        );
+      }
+      if (DailyReminders.eveningOn.value) {
+        await _daily(
+          411,
+          'أذكار المساء',
+          'حان وقت أذكار المساء',
+          DailyReminders.eveningAt.value,
+        );
+      }
+    } finally {
+      _relayPrayersOnIos();
     }
   }
 

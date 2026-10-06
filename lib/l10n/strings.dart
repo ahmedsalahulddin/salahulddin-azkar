@@ -127,7 +127,7 @@ const _ar = <String, String>{
   'langNotice.sendFailed': 'تعذر الإرسال، حاول مرة أخرى',
 
   // Bottom navigation
-  'nav.adhkar': 'أذكاري',
+  'nav.adhkar': 'المفضلة',
   'nav.home': 'الرئيسية',
   'nav.account': 'حسابي',
 
@@ -420,9 +420,9 @@ const _ar = <String, String>{
   'settings.prayerCalc': 'حساب مواقيت الصلاة',
   'settings.reminders': 'التذكيرات',
   'settings.asrTime': 'وقت العصر',
-  'settings.sound.title': 'إشعارات بالصوت',
-  'settings.sound.on': 'بعض التنبيهات تصدر صوتاً',
-  'settings.sound.off': 'كل التنبيهات صامتة الآن',
+  'settings.sound.title': 'صوت تنبيهات الصلاة',
+  'settings.sound.on': 'الأذان شغّال مع تنبيهات الصلاة',
+  'settings.sound.off': 'تنبيهات الصلاة صامتة الآن',
   'settings.alerts.title': 'تنبيهات أوقات الصلاة',
   'settings.alerts.none': 'لا تنبيه مفعّل',
   'settings.alerts.on': 'مفعّل لـ %s من عشرة',
@@ -562,7 +562,8 @@ const _ar = <String, String>{
   'account.adminDuasTitle': 'الأدعية العامة',
   'account.adminDuasSub': 'تعديل مجموعة الأدعية اللي يشوفها الكل',
   'admins.title': 'المشرفين',
-  'admins.sub': 'المشرف يقدر يعدّل الأقسام والأدعية العامة، ويقبل المحفّظين، ويشوف البلاغات والملاحظات. اكتب الإيميل اللي الشخص دخل بيه التطبيق — لازم يكون دخل مرة واحدة على الأقل.',
+  'admins.sub':
+      'المشرف يقدر يعدّل الأقسام والأدعية العامة، ويقبل المحفّظين، ويشوف البلاغات والملاحظات. اكتب الإيميل اللي الشخص دخل بيه التطبيق — لازم يكون دخل مرة واحدة على الأقل.',
   'admins.emailHint': 'الإيميل',
   'admins.add': 'إضافة',
   'admins.added': 'اتضاف مشرف',
@@ -739,13 +740,16 @@ const _ar = <String, String>{
   'tahfeez.filter.clear': 'مسح',
   'tahfeez.tab.sessions': 'أوقات العمل',
   'tahfeez.weekSessions': 'باقي الأسبوع',
-  'tahfeez.noJoined': 'لسه ما انضمّيتش لأي حلقة — اطلب من محفّظ، أو اكتب كود حلقة تحت.',
-  'tahfeez.noMyTeachers': 'لسه ما عندكش محفّظ — اختار واحد من المحفظين المتاحين.',
+  'tahfeez.noJoined':
+      'لسه ما انضمّيتش لأي حلقة — اطلب من محفّظ، أو اكتب كود حلقة تحت.',
+  'tahfeez.noMyTeachers':
+      'لسه ما عندكش محفّظ — اختار واحد من المحفظين المتاحين.',
   'tahfeez.findTeacher': 'ابحث عن محفّظ',
   'tahfeez.myProgressSub': 'تقييماتك ومستواك في كل حلقة',
   'tahfeez.scheduleSub': 'مواعيد حلقاتك على مدار الأسبوع',
   'tahfeez.avail.title': 'أوقاتي المتاحة للعمل',
-  'tahfeez.avail.sub': 'اختار الأيام والساعات اللي تقدر تحفّظ فيها — هتظهر للطلاب في كارتك في قائمة المحفظين.',
+  'tahfeez.avail.sub':
+      'اختار الأيام والساعات اللي تقدر تحفّظ فيها — هتظهر للطلاب في كارتك في قائمة المحفظين.',
   'tahfeez.avail.addRange': 'وقت',
   'tahfeez.avail.from': 'من',
   'tahfeez.avail.to': 'إلى',
@@ -754,19 +758,24 @@ const _ar = <String, String>{
   'tahfeez.avail.badRange': 'وقت النهاية لازم يكون بعد البداية',
   'tahfeez.avail.shown': 'المواعيد المتاحة',
   'tahfeez.avail.none': 'حدّد الأيام والساعات اللي تقدر تحفّظ فيها',
-  'tahfeez.hiddenNone': 'مفيش محفّظين مخفيين — أي محفّظ تخفيه من القائمة هيظهر هنا وتقدر ترجّعه.',
-  'tahfeez.hiddenSub': 'دول المحفّظين اللي خفيتهم من قائمة المحفظين المتاحين. اضغط «إظهار» علشان يرجع يظهر لك.',
+  'tahfeez.hiddenNone':
+      'مفيش محفّظين مخفيين — أي محفّظ تخفيه من القائمة هيظهر هنا وتقدر ترجّعه.',
+  'tahfeez.hiddenSub':
+      'دول المحفّظين اللي خفيتهم من قائمة المحفظين المتاحين. اضغط «إظهار» علشان يرجع يظهر لك.',
   'tahfeez.hiddenRowSub': 'المحفّظين اللي خفيتهم من القائمة — ترجّعهم من هنا',
   'tahfeez.unhidden': 'رجع يظهر:',
-  'tahfeez.nameLocked': 'مش هينفع تغيّر اسمك وانت مسجّل في حلقة — اسمك بيفضل زي ما هو عند محفّظك لحد ما تخرج من الحلقة.',
+  'tahfeez.nameLocked':
+      'مش هينفع تغيّر اسمك وانت مسجّل في حلقة — اسمك بيفضل زي ما هو عند محفّظك لحد ما تخرج من الحلقة.',
   'tahfeez.myStudentCode': 'كودك:',
   'tahfeez.searchStudents': 'ابحث بالاسم أو الكود',
   'tahfeez.view.current': 'الطلاب الحاليين',
   'tahfeez.view.currentScores': 'تقييمات الطلاب الحاليين',
   'tahfeez.view.allScores': 'تقييمات كل الطلاب',
   'tahfeez.noScores': 'لسه مفيش تقييمات',
-  'tahfeez.currentScoresSub': 'الطلاب المشتركين دلوقتي، بدرجاتهم في الحلقات اللي هم فيها حالياً — الأعلى فوق.',
-  'tahfeez.allScoresSub': 'كل طالب درّسته، بإجمالي درجاته في كل الحلقات — اضغط على الاسم تشوف سجله.',
+  'tahfeez.currentScoresSub':
+      'الطلاب المشتركين دلوقتي، بدرجاتهم في الحلقات اللي هم فيها حالياً — الأعلى فوق.',
+  'tahfeez.allScoresSub':
+      'كل طالب درّسته، بإجمالي درجاته في كل الحلقات — اضغط على الاسم تشوف سجله.',
   'tahfeez.evaluationsCount': 'تقييم',
   'tahfeez.points': 'درجة',
   'tahfeez.recordByHalaqa': 'الدرجات في كل حلقة',
@@ -776,8 +785,10 @@ const _ar = <String, String>{
   'tahfeez.outOf': 'من',
   'tahfeez.part.sessions': 'الحصص',
   'tahfeez.part.calendar': 'الجدول',
-  'tahfeez.noSessionsInHalaqa': 'مفيش حصص لسه — افتح «الجدول» واختار أيام الحصص ومواعيدها.',
-  'tahfeez.calendarHint': 'اضغط على أي يوم تختاره يوم حصص (كل الأسابيع)، أو على يوم ذهبي تعدّل مواعيده.',
+  'tahfeez.noSessionsInHalaqa':
+      'مفيش حصص لسه — افتح «الجدول» واختار أيام الحصص ومواعيدها.',
+  'tahfeez.calendarHint':
+      'اضغط على أي يوم تختاره يوم حصص (كل الأسابيع)، أو على يوم ذهبي تعدّل مواعيده.',
   'tahfeez.workingHours': 'أوقات العمل',
   'tahfeez.addWorkTime': 'إضافة وقت',
   'tahfeez.dur.halfHour': 'نص ساعة',
@@ -789,11 +800,13 @@ const _ar = <String, String>{
   'tahfeez.dur.and': ' و',
   'tahfeez.avail.setNow': 'حدّد أوقاتي الآن',
   'tahfeez.availFirstTitle': 'حدّد أوقاتك المتاحة للعمل أولاً',
-  'tahfeez.availFirstBody': 'قبل ما تعمل أول حلقة، حدّد الأيام والساعات اللي تقدر تحفّظ فيها، علشان الطلاب يعرفوا مواعيدك.',
+  'tahfeez.availFirstBody':
+      'قبل ما تعمل أول حلقة، حدّد الأيام والساعات اللي تقدر تحفّظ فيها، علشان الطلاب يعرفوا مواعيدك.',
   'tahfeez.mode.work': 'أوقات العمل',
   'tahfeez.mode.free': 'أوقات متاحة',
   'tahfeez.freeNone': 'مفيش وقت متاح',
-  'tahfeez.freeNeedsAvail': 'حدّد «أوقاتي المتاحة للعمل» الأول علشان يظهر هنا الوقت الفاضي.',
+  'tahfeez.freeNeedsAvail':
+      'حدّد «أوقاتي المتاحة للعمل» الأول علشان يظهر هنا الوقت الفاضي.',
   'tahfeez.later': 'بعدين',
   'guide.title': 'دليل الاستخدام',
   'guide.of': 'من',
@@ -804,58 +817,110 @@ const _ar = <String, String>{
   'guide.forTeacher': 'للمحفّظ',
   'guide.forStudent': 'للطالب',
   'guide.t1.title': 'اطلب اعتمادك كمحفّظ',
-  'guide.t1.body': 'من «محفظيّ» اضغط «اطلب اعتمادك كمحفظ» واكتب نبذة عنك. لما الإدارة توافق هتوصلك رسالة.',
+  'guide.t1.body':
+      'من «محفظيّ» اضغط «اطلب اعتمادك كمحفظ» واكتب نبذة عنك. لما الإدارة توافق هتوصلك رسالة.',
   'guide.t2.title': 'حدّد أوقاتي المتاحة للعمل',
-  'guide.t2.body': 'من «أوقات العمل» ← «أوقاتي المتاحة للعمل»: اختار الأيام والساعات اللي تقدر تحفّظ فيها. الطلاب بيشوفوها في كارتك.',
+  'guide.t2.body':
+      'من «أوقات العمل» ← «أوقاتي المتاحة للعمل»: اختار الأيام والساعات اللي تقدر تحفّظ فيها. الطلاب بيشوفوها في كارتك.',
   'guide.t3.title': 'اعمل حلقة',
   'guide.t3.body': 'من «حلقاتي» اضغط «حلقة جديدة» واكتب اسمها.',
   'guide.t4.title': 'حدّد أيام ومواعيد الحصص',
-  'guide.t4.body': 'افتح الحلقة ← «الجدول»: اضغط على الأيام في الكالندر، واكتب الوقت من كام لكام. وتقدر تعدّله من «أوقات العمل» تحت الكالندر.',
+  'guide.t4.body':
+      'افتح الحلقة ← «الجدول»: اضغط على الأيام في الكالندر، واكتب الوقت من كام لكام. وتقدر تعدّله من «أوقات العمل» تحت الكالندر.',
   'guide.t5.title': 'استقبل الطلاب وضيفهم',
-  'guide.t5.body': 'شارك كودك مع طلابك. طلبات الانضمام بتوصلك في «طلابي» — وافق عليها، وبعدين من الحلقة ← «الطلاب» ← «إضافة طالب للحلقة».',
+  'guide.t5.body':
+      'شارك كودك مع طلابك. طلبات الانضمام بتوصلك في «طلابي» — وافق عليها، وبعدين من الحلقة ← «الطلاب» ← «إضافة طالب للحلقة».',
   'guide.t6.title': 'قيّم الطلاب',
-  'guide.t6.body': 'من الحصة ← «تقييم الطلاب»: المراجعة والحفظ الجديد والتفسير، وكل تقييم بدرجة: ممتاز ١٠، جيد جداً ٧، جيد ٥، مقبول ٢، يحتاج إعادة صفر.',
+  'guide.t6.body':
+      'من الحصة ← «تقييم الطلاب»: المراجعة والحفظ الجديد والتفسير، وكل تقييم بدرجة: ممتاز ١٠، جيد جداً ٧، جيد ٥، مقبول ٢، يحتاج إعادة صفر.',
   'guide.t7.title': 'تابع الدرجات',
-  'guide.t7.body': 'من «طلابي»: «تقييمات الطلاب الحاليين» أو «تقييمات كل الطلاب». اضغط على أي اسم تشوف درجاته في كل حلقة وكل حصة.',
+  'guide.t7.body':
+      'من «طلابي»: «تقييمات الطلاب الحاليين» أو «تقييمات كل الطلاب». اضغط على أي اسم تشوف درجاته في كل حلقة وكل حصة.',
   'guide.t8.title': 'اظهر أو اختفي من القائمة',
-  'guide.t8.body': 'من «المحفظون المتاحون» فوق القائمة: مفتاح «الظهور في دليل المحفظين». لو قفلته، الطلاب يقدروا ينضموا لك بكودك بس.',
+  'guide.t8.body':
+      'من «المحفظون المتاحون» فوق القائمة: مفتاح «الظهور في دليل المحفظين». لو قفلته، الطلاب يقدروا ينضموا لك بكودك بس.',
   'guide.s1.title': 'سجّل دخول وحدّد دولتك',
-  'guide.s1.body': 'ادخل بحساب جوجل أو أبل، وأول مرة هتختار دولتك علشان نعرضلك المحفظين اللي فيها.',
+  'guide.s1.body':
+      'ادخل بحساب جوجل أو أبل، وأول مرة هتختار دولتك علشان نعرضلك المحفظين اللي فيها.',
   'guide.s2.title': 'اختار محفّظ',
-  'guide.s2.body': 'من «المحفظون المتاحون»: فلتر بالدولة وذكور/إناث/أطفال واللغة، واضغط على أي محفّظ تشوف نبذته ومواعيده المتاحة.',
+  'guide.s2.body':
+      'من «المحفظون المتاحون»: فلتر بالدولة وذكور/إناث/أطفال واللغة، واضغط على أي محفّظ تشوف نبذته ومواعيده المتاحة.',
   'guide.s3.title': 'اطلب الانضمام',
-  'guide.s3.body': 'اضغط «اطلب الانضمام» واكتب كلمة للمحفّظ، أو اكتب كود المحفّظ مباشرة في آخر الصفحة.',
+  'guide.s3.body':
+      'اضغط «اطلب الانضمام» واكتب كلمة للمحفّظ، أو اكتب كود المحفّظ مباشرة في آخر الصفحة.',
   'guide.s4.title': 'محفظيّ',
-  'guide.s4.body': 'هنا حالة طلبك ومحفظينك، وزرار المحادثة علشان تكلّم المحفّظ.',
+  'guide.s4.body':
+      'هنا حالة طلبك ومحفظينك، وزرار المحادثة علشان تكلّم المحفّظ.',
   'guide.s5.title': 'حلقاتي ودرجاتي',
-  'guide.s5.body': 'بعد ما المحفّظ يضيفك لحلقة، هتلاقيها في «حلقاتي» بمواعيدها، ومن «سجلّي» تشوف تقييماتك ودرجاتك.',
+  'guide.s5.body':
+      'بعد ما المحفّظ يضيفك لحلقة، هتلاقيها في «حلقاتي» بمواعيدها، ومن «سجلّي» تشوف تقييماتك ودرجاتك.',
   'guide.s6.title': 'كودك واسمك',
-  'guide.s6.body': 'كودك تحت اسمك في الكارت، وده اللي بيظهر عند محفّظك. واسمك بيتقفل طول ما انت في حلقة.',
+  'guide.s6.body':
+      'كودك تحت اسمك في الكارت، وده اللي بيظهر عند محفّظك. واسمك بيتقفل طول ما انت في حلقة.',
   'tour.t.card.title': 'ده كارتك',
-  'tour.t.card.body': 'فيه اسمك وكود المحفّظ بتاعك — انسخه أو شاركه مع طلابك علشان ينضموا لك.',
+  'tour.t.card.body':
+      'فيه اسمك وكود المحفّظ بتاعك — انسخه أو شاركه مع طلابك علشان ينضموا لك.',
   'tour.t.hours.title': 'ابدأ من هنا: أوقات العمل',
-  'tour.t.hours.body': 'أول خطوة: حدّد «أوقاتي المتاحة للعمل». وهنا كمان الجدول الأسبوعي بأوقات العمل والأوقات المتاحة.',
+  'tour.t.hours.body':
+      'أول خطوة: حدّد «أوقاتي المتاحة للعمل». وهنا كمان الجدول الأسبوعي بأوقات العمل والأوقات المتاحة.',
   'tour.t.halaqat.title': 'حلقاتي',
-  'tour.t.halaqat.body': 'اعمل حلقاتك هنا، وافتح أي حلقة تحدد أيام حصصها بالكالندر وتضيف طلابها. و«طلابي» فيها الطلبات والدرجات.',
+  'tour.t.halaqat.body':
+      'اعمل حلقاتك هنا، وافتح أي حلقة تحدد أيام حصصها بالكالندر وتضيف طلابها. و«طلابي» فيها الطلبات والدرجات.',
   'tour.t.dir.title': 'المحفظون المتاحون',
-  'tour.t.dir.body': 'قائمة المحفظين اللي الطلاب بيختاروا منها — ومن فوقها تظهر أو تخفي اسمك.',
+  'tour.t.dir.body':
+      'قائمة المحفظين اللي الطلاب بيختاروا منها — ومن فوقها تظهر أو تخفي اسمك.',
   'tour.t.teachers.title': 'محفظيّ',
   'tour.t.teachers.body': 'لو انت كمان بتتعلم عند محفّظ، هتلاقيه هنا.',
   'tour.s.card.title': 'ده كارتك',
   'tour.s.card.body': 'فيه اسمك وكودك. الكود ده بيظهر عند محفّظك علشان يميّزك.',
   'tour.s.dir.title': 'ابدأ من هنا: اختار محفّظ',
-  'tour.s.dir.body': 'دوّر على محفّظ من دولتك بالفلاتر، وشوف مواعيده، واطلب الانضمام.',
+  'tour.s.dir.body':
+      'دوّر على محفّظ من دولتك بالفلاتر، وشوف مواعيده، واطلب الانضمام.',
   'tour.s.teachers.title': 'محفظيّ',
   'tour.s.teachers.body': 'هنا حالة طلبك والمحادثة مع محفّظك.',
   'tour.s.halaqat.title': 'حلقاتي',
-  'tour.s.halaqat.body': 'الحلقات اللي انضميت لها، و«سجلّي» فيه تقييماتك ودرجاتك.',
+  'tour.s.halaqat.body':
+      'الحلقات اللي انضميت لها، و«سجلّي» فيه تقييماتك ودرجاتك.',
   'tour.s.hours.title': 'أوقات العمل',
   'tour.s.hours.body': 'مواعيد حصصك النهارده وباقي الأسبوع.',
   'tour.help.title': 'الدليل دايماً هنا',
-  'tour.help.body': 'اضغط على علامة الاستفهام في أي وقت تشوف دليل الاستخدام أو تعيد الجولة.',
+  'tour.help.body':
+      'اضغط على علامة الاستفهام في أي وقت تشوف دليل الاستخدام أو تعيد الجولة.',
+  'welcome.title': 'أهلاً بك في أذكار صلاح الدين',
+  'welcome.sub': 'جولة سريعة على أهم ما في التطبيق',
+  'welcome.homeT': 'الرئيسية',
+  'welcome.homeB':
+      'القرآن الكريم والأذكار والقصص والدروس والمكتبة — كل قسم في رف، اسحبه يمين وشمال وافتح أي كارت.',
+  'welcome.favT': 'المفضلة',
+  'welcome.favB':
+      'اضغط على النجمة ★ في أي ذكر، وتلاقيه في تبويب «المفضلة» تحت.',
+  'welcome.remT': 'تذكيراتي',
+  'welcome.remB':
+      'من حسابي ← التذكيرات ← تذكيراتي: فعّل أذكار الصباح والمساء وسورة الملك وسورة الكهف بلمسة، أو أضف تذكيراً بالأيام والأوقات اللي تختارها.',
+  'welcome.adhanT': 'الأذان ومواقيت الصلاة',
+  'welcome.adhanB': 'من حسابي ← الصلاة: شغّل تنبيهات الصلاة واختار صوت الأذان.',
+  'welcome.tahfeezT': 'التحفيظ',
+  'welcome.tahfeezB':
+      'انضم لحلقة مع محفّظ معتمد، وتابع حصصك وتقييماتك ودرجاتك.',
+  'welcome.signT': 'التسجيل بجوجل مش ضروري',
+  'welcome.signB':
+      'القرآن والأذكار والتذكيرات والأذان شغّالة كلها من غير حساب. الحساب بتحتاجه بس لو هتنضم لحلقة تحفيظ، أو عايز مفضلتك تتحفظ على كل أجهزتك.',
+  'welcome.more': 'الشرح الكامل في حسابي ← دليل الاستخدام.',
+  'welcome.dontShow': 'لا تُظهر هذا الشرح مرة أخرى',
+  'welcome.start': 'ابدأ',
+  'place.title': 'اختيار المدينة',
+  'place.search': 'اكتب اسم المدينة',
+  'place.hint':
+      'المواقيت هتظهر بتوقيت المدينة نفسها، والأذان هيمشي على مواقيتها.',
+  'place.myLocation': 'موقعي الحالي',
+  'place.myLocationSub': 'المواقيت بتتحسب من موقع جهازك',
+  'place.noResults': 'مفيش نتايج — جرّب اسم تاني',
+  'place.failed': 'تعذّر البحث، تأكد من الاتصال بالإنترنت',
+  'place.row': 'الموقع',
   'tahfeez.allCountries': 'كل الدول',
   'tahfeez.pickCountryTitle': 'اختار دولتك',
-  'tahfeez.pickCountrySub': 'هنعرضلك المحفّظين اللي في دولتك الأول — وتقدر تغيّرها في أي وقت من فوق.',
+  'tahfeez.pickCountrySub':
+      'هنعرضلك المحفّظين اللي في دولتك الأول — وتقدر تغيّرها في أي وقت من فوق.',
   'tahfeez.country': 'الدولة',
   'tahfeez.countryHint': 'اختر الدولة',
   'tahfeez.hideTeacher': 'إخفاء هذا المحفظ',
@@ -864,9 +929,11 @@ const _ar = <String, String>{
   'tahfeez.unhide': 'إظهار',
   'tahfeez.requestCancelled': 'تم إلغاء الطلب',
   'tahfeez.notice.approvedTitle': 'تم قبولك كمحفّظ',
-  'tahfeez.notice.approvedBody': 'وافقت الإدارة على طلبك. قبل ما تبدأ:\n١. حدّد «أوقاتي المتاحة للعمل» — الأيام والساعات اللي تقدر تحفّظ فيها.\n٢. اعمل حلقاتك من «حلقاتي».\n٣. ضيف طلابك للحلقات.',
+  'tahfeez.notice.approvedBody':
+      'وافقت الإدارة على طلبك. قبل ما تبدأ:\n١. حدّد «أوقاتي المتاحة للعمل» — الأيام والساعات اللي تقدر تحفّظ فيها.\n٢. اعمل حلقاتك من «حلقاتي».\n٣. ضيف طلابك للحلقات.',
   'tahfeez.notice.rejectedTitle': 'لم يُقبل طلبك كمحفّظ',
-  'tahfeez.notice.rejectedBody': 'نعتذر، لم تتم الموافقة على طلبك هذه المرة. تقدر تبعت طلب جديد في أي وقت، وتعرّف بنفسك أكتر في الملاحظة.',
+  'tahfeez.notice.rejectedBody':
+      'نعتذر، لم تتم الموافقة على طلبك هذه المرة. تقدر تبعت طلب جديد في أي وقت، وتعرّف بنفسك أكتر في الملاحظة.',
   'tahfeez.notice.ok': 'حسناً',
   'tahfeez.notice.cancelledRequest': '{name} ألغى طلب الانضمام إليك',
   'tahfeez.myGender': 'جنسك',
@@ -952,6 +1019,10 @@ const _ar = <String, String>{
   'tahfeez.myStudents': 'طلابي',
   'tahfeez.myStudentsSub': 'طلبات الانضمام والاشتراكات',
   'tahfeez.teacherProfile': 'ملفي كمحفظ',
+  'tahfeez.teacherProfileShort': 'نبذة · خطة · حصص مجانية',
+  'tahfeez.listedOnShort': 'ظاهر للجميع',
+  'tahfeez.listedOffShort': 'مخفي — بالكود فقط',
+  'tahfeez.editBtn': 'تعديل',
   'tahfeez.teacherProfileSub': 'نبذتك وخطتك والحصص المجانية كما تظهر في الدليل',
   'tahfeez.bio': 'نبذة عنك',
   'tahfeez.bioHint': 'خبرتك، إجازاتك، طريقتك في التحفيظ…',
@@ -1130,7 +1201,7 @@ const _ar = <String, String>{
   'misc.stop': 'إيقاف',
   'misc.readingProgress': 'يقرأ {current} من {total}',
   'misc.next': 'التالي',
-  'misc.myAdhkarTitle': 'أذكاري',
+  'misc.myAdhkarTitle': 'المفضلة',
   'misc.savedAdhkarCount': '{count} أذكار محفوظة',
   'misc.noSavedAdhkar': 'لا توجد أذكار محفوظة',
   'misc.favoritesEmptyHint': 'اضغط على النجمة ★ في أي ذكر لإضافته إلى المفضلة',
@@ -1204,8 +1275,8 @@ const _ar = <String, String>{
       'اسحب لإعادة الترتيب · التغيير يصل الجميع بلا تحديث',
   'misc.searchInCategoryHint': 'ابحث في {name}...',
   'misc.noResults': 'لا توجد نتائج',
-  'misc.addedToMyAdhkar': 'أُضيف إلى أذكاري',
-  'misc.removedFromMyAdhkar': 'أُزيل من أذكاري',
+  'misc.addedToMyAdhkar': 'أُضيف إلى المفضلة',
+  'misc.removedFromMyAdhkar': 'أُزيل من المفضلة',
 
   // --- crd.* (full-app translation pass) ---
   'crd.storyLanguageSheetTitle': 'لغة القصة',
@@ -1282,7 +1353,7 @@ const _ar = <String, String>{
       'عشان الأذان يشتغل في دقيقته حتى والجوال مقفول، اسمح للتطبيق بـ «المنبّهات والتذكيرات». من غير الإذن ده ممكن النظام يأخّر التنبيه.',
   'adh.exactButton': 'تفعيل الآن',
   'adh.alertsAutoUpdateNote':
-      'التنبيهات تُضبط على مواقيت يومك وتُجدَّد كل يوم.',
+      'التنبيهات مضبوطة على مواقيت الأيام الجاية، وبتتجدد كل ما تفتح التطبيق.',
   'adh.tapHeadingHint': 'اضغط العنوان لضبط الخمس صلوات معاً',
   'adh.allLabel': 'الكل',
   'adh.notifyToggleLabel': '📳 إشعار',
@@ -1541,7 +1612,7 @@ const _en = <String, String>{
   'langNotice.sendFailed': "Couldn't send — try again",
 
   // Bottom navigation
-  'nav.adhkar': 'My Adhkar',
+  'nav.adhkar': 'Favourites',
   'nav.home': 'Home',
   'nav.account': 'Account',
 
@@ -1561,7 +1632,8 @@ const _en = <String, String>{
   'support.open': 'Open',
   'support.myTitle': 'My messages',
   'support.myRowSub': 'Your requests to the admins and their replies',
-  'support.mySub': 'Write to the admins about any request, problem or suggestion — the reply arrives here.',
+  'support.mySub':
+      'Write to the admins about any request, problem or suggestion — the reply arrives here.',
   'support.myEmpty': 'No messages yet — tap “New message”.',
   'support.new': 'New message',
   'support.sent': 'Your message reached the admins',
@@ -1574,7 +1646,8 @@ const _en = <String, String>{
   'support.adminName': 'Admins',
   'support.replyHint': 'Write a reply…',
   'support.inboxTitle': 'Request inbox',
-  'support.inboxSub': 'Readers’ messages — mark what is solved, star what matters',
+  'support.inboxSub':
+      'Readers’ messages — mark what is solved, star what matters',
   'support.inboxEmpty': 'No messages here',
   'support.filterOpen': 'Open',
   'support.filterResolved': 'Solved',
@@ -1631,7 +1704,8 @@ const _en = <String, String>{
   'wn.title': 'What\'s New',
   'wn.gotIt': 'Got it',
   'wn.myremTitle': 'My reminders',
-  'wn.myremSub': 'A surah or adhkar on the days and times you choose — in Reminders',
+  'wn.myremSub':
+      'A surah or adhkar on the days and times you choose — in Reminders',
   'wn.amerTitle': 'Sheikh Ahmed Amer’s recitation',
   'wn.amerSub':
       'In the Mushaf, translations, recitation and continuous listening',
@@ -1840,9 +1914,9 @@ const _en = <String, String>{
   'settings.prayerCalc': 'Prayer Time Calculation',
   'settings.reminders': 'Reminders',
   'settings.asrTime': 'Asr Time',
-  'settings.sound.title': 'Sound Notifications',
-  'settings.sound.on': 'Some alerts have sound',
-  'settings.sound.off': 'All alerts are silent',
+  'settings.sound.title': 'Prayer alert sounds',
+  'settings.sound.on': 'The adhan plays with prayer alerts',
+  'settings.sound.off': 'Prayer alerts are silent now',
   'settings.alerts.title': 'Prayer Time Alerts',
   'settings.alerts.none': 'No alert enabled',
   'settings.alerts.on': '%s of ten enabled',
@@ -1987,11 +2061,13 @@ const _en = <String, String>{
   'account.adminDuasTitle': 'Public Duas',
   'account.adminDuasSub': 'Edit the dua collection everyone sees',
   'admins.title': 'Admins',
-  'admins.sub': 'Admins can edit sections and the public duas, approve teachers, and see reports and feedback. Enter the email the person signed in with — they must have signed in at least once.',
+  'admins.sub':
+      'Admins can edit sections and the public duas, approve teachers, and see reports and feedback. Enter the email the person signed in with — they must have signed in at least once.',
   'admins.emailHint': 'Email',
   'admins.add': 'Add',
   'admins.added': 'Admin added',
-  'admins.noAccount': 'No account with that email — ask them to sign in to the app first',
+  'admins.noAccount':
+      'No account with that email — ask them to sign in to the app first',
   'admins.badEmail': 'Enter a valid email',
   'admins.failed': 'Something went wrong, try again',
   'admins.loadFailed': 'Could not load the list',
@@ -2168,13 +2244,16 @@ const _en = <String, String>{
   'tahfeez.filter.clear': 'Clear',
   'tahfeez.tab.sessions': 'Working hours',
   'tahfeez.weekSessions': 'Rest of the week',
-  'tahfeez.noJoined': 'You haven\'t joined a circle yet — ask a teacher, or enter a circle code below.',
-  'tahfeez.noMyTeachers': 'You don\'t have a teacher yet — pick one from the available teachers.',
+  'tahfeez.noJoined':
+      'You haven\'t joined a circle yet — ask a teacher, or enter a circle code below.',
+  'tahfeez.noMyTeachers':
+      'You don\'t have a teacher yet — pick one from the available teachers.',
   'tahfeez.findTeacher': 'Find a teacher',
   'tahfeez.myProgressSub': 'Your evaluations and level in each circle',
   'tahfeez.scheduleSub': 'Your circles\' times across the week',
   'tahfeez.avail.title': 'My available working hours',
-  'tahfeez.avail.sub': 'Choose the days and hours you can teach — students see them on your card in the teacher list.',
+  'tahfeez.avail.sub':
+      'Choose the days and hours you can teach — students see them on your card in the teacher list.',
   'tahfeez.avail.addRange': 'Time',
   'tahfeez.avail.from': 'From',
   'tahfeez.avail.to': 'To',
@@ -2183,19 +2262,25 @@ const _en = <String, String>{
   'tahfeez.avail.badRange': 'The end time must come after the start',
   'tahfeez.avail.shown': 'Available hours',
   'tahfeez.avail.none': 'Set the days and hours you can teach',
-  'tahfeez.hiddenNone': 'No hidden teachers — any teacher you hide from the list shows up here so you can bring them back.',
-  'tahfeez.hiddenSub': 'Teachers you hid from the available teachers list. Tap “Show” to see them there again.',
-  'tahfeez.hiddenRowSub': 'Teachers you hid from the list — bring them back here',
+  'tahfeez.hiddenNone':
+      'No hidden teachers — any teacher you hide from the list shows up here so you can bring them back.',
+  'tahfeez.hiddenSub':
+      'Teachers you hid from the available teachers list. Tap “Show” to see them there again.',
+  'tahfeez.hiddenRowSub':
+      'Teachers you hid from the list — bring them back here',
   'tahfeez.unhidden': 'Showing again:',
-  'tahfeez.nameLocked': 'You can\'t change your name while you are in a circle — your teacher keeps seeing the name they know until you leave it.',
+  'tahfeez.nameLocked':
+      'You can\'t change your name while you are in a circle — your teacher keeps seeing the name they know until you leave it.',
   'tahfeez.myStudentCode': 'Your code:',
   'tahfeez.searchStudents': 'Search by name or code',
   'tahfeez.view.current': 'Current students',
   'tahfeez.view.currentScores': 'Current students\' scores',
   'tahfeez.view.allScores': 'All students\' scores',
   'tahfeez.noScores': 'No evaluations yet',
-  'tahfeez.currentScoresSub': 'Students subscribed now, with their points in the circles they are in — highest first.',
-  'tahfeez.allScoresSub': 'Everyone you have taught, with their total points across circles — tap a name for their record.',
+  'tahfeez.currentScoresSub':
+      'Students subscribed now, with their points in the circles they are in — highest first.',
+  'tahfeez.allScoresSub':
+      'Everyone you have taught, with their total points across circles — tap a name for their record.',
   'tahfeez.evaluationsCount': 'evaluations',
   'tahfeez.points': 'pts',
   'tahfeez.recordByHalaqa': 'Points in each circle',
@@ -2205,8 +2290,10 @@ const _en = <String, String>{
   'tahfeez.outOf': 'of',
   'tahfeez.part.sessions': 'Sessions',
   'tahfeez.part.calendar': 'Calendar',
-  'tahfeez.noSessionsInHalaqa': 'No sessions yet — open “Calendar” and choose the session days and times.',
-  'tahfeez.calendarHint': 'Tap any day to make it a session day (every week), or a gold day to change its times.',
+  'tahfeez.noSessionsInHalaqa':
+      'No sessions yet — open “Calendar” and choose the session days and times.',
+  'tahfeez.calendarHint':
+      'Tap any day to make it a session day (every week), or a gold day to change its times.',
   'tahfeez.workingHours': 'Working hours',
   'tahfeez.addWorkTime': 'Add time',
   'tahfeez.dur.halfHour': 'half an hour',
@@ -2218,11 +2305,13 @@ const _en = <String, String>{
   'tahfeez.dur.and': ' ',
   'tahfeez.avail.setNow': 'Set my hours now',
   'tahfeez.availFirstTitle': 'Set your available working hours first',
-  'tahfeez.availFirstBody': 'Before your first circle, set the days and hours you can teach so students know when you are free.',
+  'tahfeez.availFirstBody':
+      'Before your first circle, set the days and hours you can teach so students know when you are free.',
   'tahfeez.mode.work': 'Working times',
   'tahfeez.mode.free': 'Free times',
   'tahfeez.freeNone': 'No free time',
-  'tahfeez.freeNeedsAvail': 'Set “My available working hours” first to see your free time here.',
+  'tahfeez.freeNeedsAvail':
+      'Set “My available working hours” first to see your free time here.',
   'tahfeez.later': 'Later',
   'guide.title': 'How to use',
   'guide.of': 'of',
@@ -2233,58 +2322,112 @@ const _en = <String, String>{
   'guide.forTeacher': 'For teachers',
   'guide.forStudent': 'For students',
   'guide.t1.title': 'Ask to be approved as a teacher',
-  'guide.t1.body': 'In “My teachers”, tap “Request teacher approval” and write a short note about yourself. You get a message when the admins approve.',
+  'guide.t1.body':
+      'In “My teachers”, tap “Request teacher approval” and write a short note about yourself. You get a message when the admins approve.',
   'guide.t2.title': 'Set your available working hours',
-  'guide.t2.body': 'Working hours → “My available working hours”: choose the days and hours you can teach. Students see them on your card.',
+  'guide.t2.body':
+      'Working hours → “My available working hours”: choose the days and hours you can teach. Students see them on your card.',
   'guide.t3.title': 'Create a circle',
   'guide.t3.body': 'In “My circles”, tap “New circle” and name it.',
   'guide.t4.title': 'Pick the session days and times',
-  'guide.t4.body': 'Open the circle → “Calendar”: tap days on the calendar and set the time. Change it later under “Working hours” below the calendar.',
+  'guide.t4.body':
+      'Open the circle → “Calendar”: tap days on the calendar and set the time. Change it later under “Working hours” below the calendar.',
   'guide.t5.title': 'Take students and add them',
-  'guide.t5.body': 'Share your code with students. Join requests arrive in “My students” — approve them, then in the circle → “Students” → “Add a student”.',
+  'guide.t5.body':
+      'Share your code with students. Join requests arrive in “My students” — approve them, then in the circle → “Students” → “Add a student”.',
   'guide.t6.title': 'Evaluate students',
-  'guide.t6.body': 'From a session → “Evaluate”: review, new memorisation and tafsir, each graded: excellent 10, very good 7, good 5, acceptable 2, needs redo 0.',
+  'guide.t6.body':
+      'From a session → “Evaluate”: review, new memorisation and tafsir, each graded: excellent 10, very good 7, good 5, acceptable 2, needs redo 0.',
   'guide.t7.title': 'Follow their points',
-  'guide.t7.body': 'In “My students”: current students’ scores or everyone’s. Tap a name to see their points per circle and per session.',
+  'guide.t7.body':
+      'In “My students”: current students’ scores or everyone’s. Tap a name to see their points per circle and per session.',
   'guide.t8.title': 'Show or hide yourself in the list',
-  'guide.t8.body': 'At the top of “Available teachers”: the “Show in the teacher directory” switch. Hidden, students can still join with your code.',
+  'guide.t8.body':
+      'At the top of “Available teachers”: the “Show in the teacher directory” switch. Hidden, students can still join with your code.',
   'guide.s1.title': 'Sign in and choose your country',
-  'guide.s1.body': 'Sign in with Google or Apple; the first time you pick your country so we show the teachers there.',
+  'guide.s1.body':
+      'Sign in with Google or Apple; the first time you pick your country so we show the teachers there.',
   'guide.s2.title': 'Pick a teacher',
-  'guide.s2.body': 'In “Available teachers”: filter by country, men/women/children and language, and tap a teacher for their note and free hours.',
+  'guide.s2.body':
+      'In “Available teachers”: filter by country, men/women/children and language, and tap a teacher for their note and free hours.',
   'guide.s3.title': 'Ask to join',
-  'guide.s3.body': 'Tap “Ask to join” and write a word to the teacher, or type the teacher’s code at the bottom of the page.',
+  'guide.s3.body':
+      'Tap “Ask to join” and write a word to the teacher, or type the teacher’s code at the bottom of the page.',
   'guide.s4.title': 'My teachers',
-  'guide.s4.body': 'Your request status and your teachers, with a chat button to talk to them.',
+  'guide.s4.body':
+      'Your request status and your teachers, with a chat button to talk to them.',
   'guide.s5.title': 'My circles and points',
-  'guide.s5.body': 'Once a teacher adds you to a circle it shows in “My circles” with its times; “My record” shows your evaluations and points.',
+  'guide.s5.body':
+      'Once a teacher adds you to a circle it shows in “My circles” with its times; “My record” shows your evaluations and points.',
   'guide.s6.title': 'Your code and name',
-  'guide.s6.body': 'Your code is under your name on your card — it is what your teacher sees. Your name stays fixed while you are in a circle.',
+  'guide.s6.body':
+      'Your code is under your name on your card — it is what your teacher sees. Your name stays fixed while you are in a circle.',
   'tour.t.card.title': 'This is your card',
-  'tour.t.card.body': 'Your name and your teacher code — copy or share it so students can join you.',
+  'tour.t.card.body':
+      'Your name and your teacher code — copy or share it so students can join you.',
   'tour.t.hours.title': 'Start here: working hours',
-  'tour.t.hours.body': 'First set “My available working hours”. The weekly schedule with working and free times is here too.',
+  'tour.t.hours.body':
+      'First set “My available working hours”. The weekly schedule with working and free times is here too.',
   'tour.t.halaqat.title': 'My circles',
-  'tour.t.halaqat.body': 'Create circles here; open one to pick its session days on the calendar and add students. “My students” holds requests and points.',
+  'tour.t.halaqat.body':
+      'Create circles here; open one to pick its session days on the calendar and add students. “My students” holds requests and points.',
   'tour.t.dir.title': 'Available teachers',
-  'tour.t.dir.body': 'The list students choose from — the switch above it shows or hides you.',
+  'tour.t.dir.body':
+      'The list students choose from — the switch above it shows or hides you.',
   'tour.t.teachers.title': 'My teachers',
   'tour.t.teachers.body': 'If you also study with a teacher, they appear here.',
   'tour.s.card.title': 'This is your card',
-  'tour.s.card.body': 'Your name and your code. Your teacher sees the code to tell you apart.',
+  'tour.s.card.body':
+      'Your name and your code. Your teacher sees the code to tell you apart.',
   'tour.s.dir.title': 'Start here: pick a teacher',
-  'tour.s.dir.body': 'Find a teacher in your country with the filters, see their hours, and ask to join.',
+  'tour.s.dir.body':
+      'Find a teacher in your country with the filters, see their hours, and ask to join.',
   'tour.s.teachers.title': 'My teachers',
   'tour.s.teachers.body': 'Your request status and the chat with your teacher.',
   'tour.s.halaqat.title': 'My circles',
-  'tour.s.halaqat.body': 'Circles you joined; “My record” holds your evaluations and points.',
+  'tour.s.halaqat.body':
+      'Circles you joined; “My record” holds your evaluations and points.',
   'tour.s.hours.title': 'Working hours',
   'tour.s.hours.body': 'Your sessions today and the rest of the week.',
   'tour.help.title': 'The guide is always here',
-  'tour.help.body': 'Tap the question mark any time for the guide or to replay this tour.',
+  'tour.help.body':
+      'Tap the question mark any time for the guide or to replay this tour.',
+  'welcome.title': 'Welcome to Azkar Salahulddin',
+  'welcome.sub': 'A quick look at the best of the app',
+  'welcome.homeT': 'Home',
+  'welcome.homeB':
+      'Holy Quran, adhkar, stories, lessons and the library — each on its own shelf. Swipe a shelf sideways and open any card.',
+  'welcome.favT': 'Favourites',
+  'welcome.favB':
+      'Tap the star ★ on any dhikr and you will find it in the Favourites tab below.',
+  'welcome.remT': 'My reminders',
+  'welcome.remB':
+      'Account → Reminders → My reminders: switch on morning and evening adhkar, Surah Al-Mulk and Surah Al-Kahf with one tap, or add a reminder on the days and times you choose.',
+  'welcome.adhanT': 'Adhan and prayer times',
+  'welcome.adhanB':
+      'Account → Prayer: turn on prayer alerts and choose the adhan sound.',
+  'welcome.tahfeezT': 'Hifz',
+  'welcome.tahfeezB':
+      'Join a circle with an approved teacher and follow your sessions, evaluations and points.',
+  'welcome.signT': 'No Google sign-in needed',
+  'welcome.signB':
+      'The Quran, adhkar, reminders and adhan all work without an account. You only need one to join a Hifz circle, or to keep your favourites on all your devices.',
+  'welcome.more': 'The full guide is in Account → User guide.',
+  'welcome.dontShow': 'Don\'t show this again',
+  'welcome.start': 'Start',
+  'place.title': 'Choose a city',
+  'place.search': 'Type a city name',
+  'place.hint':
+      'Times show on the city’s own clock, and the adhan follows them.',
+  'place.myLocation': 'My current location',
+  'place.myLocationSub': 'Times follow your phone’s location',
+  'place.noResults': 'No results — try another name',
+  'place.failed': 'Couldn’t search — check your internet connection',
+  'place.row': 'Location',
   'tahfeez.allCountries': 'All countries',
   'tahfeez.pickCountryTitle': 'Choose your country',
-  'tahfeez.pickCountrySub': 'We\'ll show teachers in your country first — you can change it any time from the top.',
+  'tahfeez.pickCountrySub':
+      'We\'ll show teachers in your country first — you can change it any time from the top.',
   'tahfeez.country': 'Country',
   'tahfeez.countryHint': 'Choose a country',
   'tahfeez.hideTeacher': 'Hide this teacher',
@@ -2293,9 +2436,11 @@ const _en = <String, String>{
   'tahfeez.unhide': 'Show again',
   'tahfeez.requestCancelled': 'Request cancelled',
   'tahfeez.notice.approvedTitle': 'You are approved as a teacher',
-  'tahfeez.notice.approvedBody': 'The admins approved your request. Before you start:\n1. Set “My available working hours” — the days and hours you can teach.\n2. Create your circles from “My circles”.\n3. Add your students to the circles.',
+  'tahfeez.notice.approvedBody':
+      'The admins approved your request. Before you start:\n1. Set “My available working hours” — the days and hours you can teach.\n2. Create your circles from “My circles”.\n3. Add your students to the circles.',
   'tahfeez.notice.rejectedTitle': 'Your teacher request was not approved',
-  'tahfeez.notice.rejectedBody': 'Sorry, your request was not approved this time. You can send a new one any time — tell us a little more about yourself in the note.',
+  'tahfeez.notice.rejectedBody':
+      'Sorry, your request was not approved this time. You can send a new one any time — tell us a little more about yourself in the note.',
   'tahfeez.notice.ok': 'OK',
   'tahfeez.notice.cancelledRequest':
       '{name} withdrew their request to join you',
@@ -2383,6 +2528,10 @@ const _en = <String, String>{
   'tahfeez.myStudents': 'My students',
   'tahfeez.myStudentsSub': 'Join requests and subscriptions',
   'tahfeez.teacherProfile': 'My teacher profile',
+  'tahfeez.teacherProfileShort': 'Bio · plan · free sessions',
+  'tahfeez.listedOnShort': 'Visible to all',
+  'tahfeez.listedOffShort': 'Hidden — code only',
+  'tahfeez.editBtn': 'Edit',
   'tahfeez.teacherProfileSub':
       'Your bio, plan and free sessions as shown in the directory',
   'tahfeez.bio': 'About you',
@@ -2572,7 +2721,7 @@ const _en = <String, String>{
   'misc.stop': 'Stop',
   'misc.readingProgress': 'Reading {current} of {total}',
   'misc.next': 'Next',
-  'misc.myAdhkarTitle': 'My Adhkar',
+  'misc.myAdhkarTitle': 'Favourites',
   'misc.savedAdhkarCount': '{count} saved adhkar',
   'misc.noSavedAdhkar': 'No saved adhkar',
   'misc.favoritesEmptyHint':
@@ -2649,8 +2798,8 @@ const _en = <String, String>{
       'Drag to reorder · The change reaches everyone without an update',
   'misc.searchInCategoryHint': 'Search in {name}...',
   'misc.noResults': 'No results',
-  'misc.addedToMyAdhkar': 'Added to My Adhkar',
-  'misc.removedFromMyAdhkar': 'Removed from My Adhkar',
+  'misc.addedToMyAdhkar': 'Added to Favourites',
+  'misc.removedFromMyAdhkar': 'Removed from Favourites',
 
   // --- crd.* (full-app translation pass) ---
   'crd.storyLanguageSheetTitle': 'Story language',
@@ -2727,7 +2876,7 @@ const _en = <String, String>{
       'So the adhan plays on time even with the phone locked, allow the app under “Alarms & reminders”. Without it the system may delay the alert.',
   'adh.exactButton': 'Allow now',
   'adh.alertsAutoUpdateNote':
-      'Alerts are set to your daily prayer times and renew every day.',
+      'Alerts are set for the coming days and renew whenever you open the app.',
   'adh.tapHeadingHint': 'Tap the heading to set all five prayers at once',
   'adh.allLabel': 'All',
   'adh.notifyToggleLabel': '📳 Notify',

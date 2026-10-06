@@ -64,18 +64,13 @@ class _CustomRemindersScreenState extends State<CustomRemindersScreen> {
     });
   }
 
-  Future<void> _open([CustomReminder? r]) => Navigator.push(
-    context,
-    MaterialPageRoute(builder: (_) => ReminderEditorScreen(reminder: r)),
-  );
-
-  Future<void> _addPreset(CustomReminder r) async {
-    await CustomReminders.save(r);
-    if (!mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(t('myrem.saved'))));
-  }
+  Future<void> _open([CustomReminder? r, CustomReminder? template]) =>
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ReminderEditorScreen(reminder: r, template: template),
+        ),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -88,123 +83,139 @@ class _CustomRemindersScreenState extends State<CustomRemindersScreen> {
           backgroundColor: AppColors.black,
           foregroundColor: AppColors.gold,
         ),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: _open,
-          backgroundColor: AppColors.gold,
-          foregroundColor: AppColors.black,
-          icon: const Icon(Icons.add_alarm),
-          label: Text(t('myrem.add')),
-        ),
         body: ValueListenableBuilder<List<CustomReminder>>(
           valueListenable: CustomReminders.list,
-          builder: (context, list, _) => ListView(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
-            children: [
-              Text(
-                t('myrem.sub'),
-                style: const TextStyle(
-                  color: AppColors.textMuted,
-                  fontSize: 12.5,
-                  height: 1.6,
-                ),
-              ),
-              const SizedBox(height: 14),
-              if (list.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  child: Text(
-                    t('myrem.empty'),
-                    style: const TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 13.5,
-                      height: 1.7,
-                    ),
+          builder: (context, list, _) {
+            // Each suggestion is a card of its own, switched off until the
+            // reader turns it on; a reminder already set for the same surah
+            // or adhkar takes its place. Everything else follows.
+            final used = <int>{};
+            final presetCards = <Widget>[];
+            for (final p in _presets) {
+              final existing = list
+                  .where((r) => !used.contains(r.id) && p.matches(r))
+                  .firstOrNull;
+              if (existing != null) {
+                used.add(existing.id);
+                presetCards.add(_card(existing));
+              } else {
+                presetCards.add(_suggestionCard(p.template));
+              }
+            }
+            return ListView(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 30),
+              children: [
+                Text(
+                  t('myrem.sub'),
+                  style: const TextStyle(
+                    color: AppColors.textMuted,
+                    fontSize: 12.5,
+                    height: 1.6,
                   ),
                 ),
-              for (final r in list) _card(r),
-              const SizedBox(height: 18),
-              Text(
-                t('myrem.suggestions'),
-                style: const TextStyle(
-                  color: AppColors.gold,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
+                const SizedBox(height: 14),
+                ...presetCards,
+                for (final r in list)
+                  if (!used.contains(r.id)) _card(r),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: () => _open(),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppColors.gold,
+                      foregroundColor: AppColors.black,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    icon: const Icon(Icons.add_alarm),
+                    label: Text(t('myrem.add')),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 10),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  for (final (label, make) in _presets())
-                    _presetChip(label, make),
-                ],
-              ),
-            ],
-          ),
+              ],
+            );
+          },
         ),
       ),
     );
   }
 
-  List<(String, CustomReminder Function(int))> _presets() => [
+  /// Morning adhkar, evening adhkar, Al-Mulk, Al-Kahf — in that order.
+  static final _presets = [
     (
-      t('myrem.presetKahf'),
-      (id) => CustomReminder(
-        id: id,
-        kind: ReminderKind.surah,
-        surah: 18,
-        days: const {5},
-        times: const [9 * 60],
-      ),
-    ),
-    (
-      t('myrem.presetMulk'),
-      (id) => CustomReminder(
-        id: id,
-        kind: ReminderKind.surah,
-        surah: 67,
-        days: const {1, 2, 3, 4, 5, 6, 7},
-        times: const [21 * 60 + 30],
-      ),
-    ),
-    (
-      t('myrem.presetMorning'),
-      (id) => CustomReminder(
-        id: id,
+      matches: (CustomReminder r) =>
+          r.kind == ReminderKind.adhkar && r.adhkarId == 'morning',
+      template: const CustomReminder(
+        id: -1,
         kind: ReminderKind.adhkar,
         adhkarId: 'morning',
-        days: const {1, 2, 3, 4, 5, 6, 7},
-        times: const [6 * 60],
+        days: {1, 2, 3, 4, 5, 6, 7},
+        times: [6 * 60],
+        enabled: false,
       ),
     ),
     (
-      t('myrem.presetEvening'),
-      (id) => CustomReminder(
-        id: id,
+      matches: (CustomReminder r) =>
+          r.kind == ReminderKind.adhkar && r.adhkarId == 'evening',
+      template: const CustomReminder(
+        id: -1,
         kind: ReminderKind.adhkar,
         adhkarId: 'evening',
-        days: const {1, 2, 3, 4, 5, 6, 7},
-        times: const [17 * 60],
+        days: {1, 2, 3, 4, 5, 6, 7},
+        times: [17 * 60],
+        enabled: false,
+      ),
+    ),
+    (
+      matches: (CustomReminder r) =>
+          r.kind == ReminderKind.surah && r.surah == 67,
+      template: const CustomReminder(
+        id: -1,
+        kind: ReminderKind.surah,
+        surah: 67,
+        days: {1, 2, 3, 4, 5, 6, 7},
+        times: [21 * 60 + 30],
+        enabled: false,
+      ),
+    ),
+    (
+      matches: (CustomReminder r) =>
+          r.kind == ReminderKind.surah && r.surah == 18,
+      template: const CustomReminder(
+        id: -1,
+        kind: ReminderKind.surah,
+        surah: 18,
+        days: {5},
+        times: [9 * 60],
+        enabled: false,
       ),
     ),
   ];
 
-  Widget _presetChip(String label, CustomReminder Function(int) make) {
-    return ActionChip(
-      avatar: const Icon(Icons.add, size: 16, color: AppColors.gold),
-      label: Text(label),
-      labelStyle: const TextStyle(color: AppColors.textPrimary, fontSize: 12.5),
-      backgroundColor: AppColors.blackCard,
-      side: const BorderSide(color: AppColors.goldBorder),
-      onPressed: () => _addPreset(make(CustomReminders.nextId())),
-    );
-  }
+  /// A suggestion not set up yet: looks like a reminder that is off. The
+  /// switch turns it on with its usual days and time; a tap opens it to
+  /// change them first.
+  Widget _suggestionCard(CustomReminder template) => _card(
+    template,
+    onToggle: (on) async {
+      if (!on) return;
+      await CustomReminders.save(
+        template.copyWithId(CustomReminders.nextId()).copyWith(enabled: true),
+      );
+    },
+    onTap: () => _open(null, template.copyWith(enabled: true)),
+  );
 
-  Widget _card(CustomReminder r) {
+  Widget _card(
+    CustomReminder r, {
+    ValueChanged<bool>? onToggle,
+    VoidCallback? onTap,
+  }) {
     final times = [...r.times]..sort();
     return GestureDetector(
-      onTap: () => _open(r),
+      onTap: onTap ?? () => _open(r),
       behavior: HitTestBehavior.opaque,
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
@@ -262,7 +273,9 @@ class _CustomRemindersScreenState extends State<CustomRemindersScreen> {
             Switch(
               value: r.enabled,
               activeThumbColor: AppColors.gold,
-              onChanged: (v) => CustomReminders.save(r.copyWith(enabled: v)),
+              onChanged:
+                  onToggle ??
+                  (v) => CustomReminders.save(r.copyWith(enabled: v)),
             ),
           ],
         ),
@@ -275,18 +288,22 @@ class _CustomRemindersScreenState extends State<CustomRemindersScreen> {
 class ReminderEditorScreen extends StatefulWidget {
   final CustomReminder? reminder;
 
-  const ReminderEditorScreen({super.key, this.reminder});
+  /// Starting values for a new reminder (a suggestion not yet switched on).
+  final CustomReminder? template;
+
+  const ReminderEditorScreen({super.key, this.reminder, this.template});
 
   @override
   State<ReminderEditorScreen> createState() => _ReminderEditorScreenState();
 }
 
 class _ReminderEditorScreenState extends State<ReminderEditorScreen> {
-  late ReminderKind _kind = widget.reminder?.kind ?? ReminderKind.surah;
-  late int _surah = widget.reminder?.surah ?? 18;
-  late String _adhkar = widget.reminder?.adhkarId ?? 'morning';
-  late final Set<int> _days = {...?widget.reminder?.days};
-  late final List<int> _times = [...?widget.reminder?.times];
+  late final CustomReminder? _start = widget.reminder ?? widget.template;
+  late ReminderKind _kind = _start?.kind ?? ReminderKind.surah;
+  late int _surah = _start?.surah ?? 18;
+  late String _adhkar = _start?.adhkarId ?? 'morning';
+  late final Set<int> _days = {...?_start?.days};
+  late final List<int> _times = [...?_start?.times];
   List<SurahInfo> _surahs = const [];
 
   bool get _editing => widget.reminder != null;

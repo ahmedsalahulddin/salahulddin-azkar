@@ -1,7 +1,7 @@
 name: salahulddin_azkar
 description: "salahulddin-AZKAR — أذكار المسلم والمصحف الشريف"
 publish_to: 'none'
-version: 1.6.56+97
+version: 1.6.57+98
 
 environment:
   sdk: ^3.11.5
@@ -54,6 +54,10 @@ flutter:
     - assets/tafsir/mukhtasar/
     - assets/adhkar/
     - assets/books/
+    # Short adhan clips for iOS notification sounds (copied to
+    # Library/Sounds at startup; iOS plays at most 30 s).
+    - assets/sounds/
+    - assets/images/
 
   fonts:
     # Amiri Quran (SIL OFL) — carries the Mushaf marks the KFGQPC text needs

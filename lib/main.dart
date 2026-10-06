@@ -29,6 +29,7 @@ import 'services/prayer_service.dart';
 import 'services/app_locale.dart';
 import 'services/playback_speed.dart';
 import 'services/prayer_settings.dart';
+import 'services/prayer_place.dart';
 import 'services/duas_service.dart';
 import 'services/section_config.dart';
 import 'services/sync_service.dart';
@@ -37,6 +38,7 @@ import 'widgets/dhikr_text.dart';
 import 'widgets/frame_tuning.dart';
 import 'widgets/mushaf_frames.dart';
 import 'widgets/mushaf_palettes.dart';
+import 'widgets/welcome_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -80,6 +82,7 @@ void main() async {
   await DhikrLangPref.load();
   await PlaybackSpeed.load();
   await PrayerSettings.load();
+  await PrayerPlace.load();
   PrayerAlerts.onChanged = NotificationService.schedulePrayerAlerts;
   await PrayerAlerts.load();
   await DhikrReminder.load();
@@ -187,11 +190,11 @@ class _MainNavigationState extends State<MainNavigation> {
     TahfeezService.refreshPendingBadge();
     if (!kIsWeb) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        // A reminder tapped while the app was closed opens its surah now.
-        NotificationRouter.flushPending();
-        _checkNotifications();
+        // A reminder tapped while the app was closed opens its surah now,
+        // and the welcome tour waits for another launch.
+        final fromReminder = NotificationRouter.flushPending();
         _checkForUpdate();
-        Future<void>.delayed(const Duration(milliseconds: 600), _checkWhatsNew);
+        _startupPrompts(welcome: !fromReminder);
       });
     }
   }
@@ -204,6 +207,20 @@ class _MainNavigationState extends State<MainNavigation> {
   }
 
   void _onLocale() => setState(() {});
+
+  /// One at a time, so they never stack: the welcome tour, then the
+  /// notifications prompt, then what's new.
+  Future<void> _startupPrompts({required bool welcome}) async {
+    if (welcome) {
+      await Future<void>.delayed(const Duration(milliseconds: 400));
+      if (!mounted) return;
+      await showWelcomeIfNeeded(context);
+    }
+    if (!mounted) return;
+    await _checkNotifications();
+    await Future<void>.delayed(const Duration(milliseconds: 600));
+    await _checkWhatsNew();
+  }
 
   static const _updateAskedKey = 'update_prompt_asked_at';
 
@@ -235,9 +252,8 @@ class _MainNavigationState extends State<MainNavigation> {
           action: SnackBarAction(
             label: t('update.restart'),
             textColor: AppColors.gold,
-            onPressed: () => InAppUpdate.completeFlexibleUpdate().catchError(
-              (_) {},
-            ),
+            onPressed: () =>
+                InAppUpdate.completeFlexibleUpdate().catchError((_) {}),
           ),
         ),
       );
@@ -253,7 +269,7 @@ class _MainNavigationState extends State<MainNavigation> {
     if (prefs.getBool(_promptKey) == true) return;
     await prefs.setBool(_promptKey, true);
     if (!mounted) return;
-    showDialog(
+    await showDialog<void>(
       context: context,
       builder: (ctx) => Directionality(
         textDirection: TextDirection.rtl,
@@ -356,9 +372,7 @@ class _MainNavigationState extends State<MainNavigation> {
     // This version's own changes, in the reader's language. Keep it to what
     // actually changed — an old list here points readers at things that
     // have moved or, on iPhone, do not exist.
-    final items = [
-      ('⏰', t('wn.myremTitle'), t('wn.myremSub')),
-    ];
+    final items = [('⏰', t('wn.myremTitle'), t('wn.myremSub'))];
 
     showModalBottomSheet<void>(
       context: context,

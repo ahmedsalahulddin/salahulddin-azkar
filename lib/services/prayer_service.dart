@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:adhan/adhan.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, ValueNotifier;
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -11,6 +11,7 @@ import 'dhikr_reminder.dart';
 import 'notification_service.dart';
 import 'prayer_alerts.dart';
 import 'prayer_settings.dart';
+import 'prayer_place.dart';
 
 /// Fallback location (Riyadh) used when GPS is unavailable or denied.
 final _riyadh = Coordinates(24.7136, 46.6753);
@@ -37,15 +38,21 @@ enum LocationStatus {
 
   /// Permitted, but no fix arrived (indoors, or the timeout hit).
   unavailable,
+
+  /// A city the reader picked (PrayerPlace), not the phone's location.
+  chosen,
 }
 
 extension LocationStatusLabel on LocationStatus {
   /// True when the times below actually belong to the reader.
   bool get isMine =>
-      this == LocationStatus.fixed || this == LocationStatus.remembered;
+      this == LocationStatus.fixed ||
+      this == LocationStatus.remembered ||
+      this == LocationStatus.chosen;
 
   /// The caption on the prayer card.
   String get label => switch (this) {
+    LocationStatus.chosen => PrayerPlace.current.value?.name ?? t('loc.fixed'),
     LocationStatus.fixed => t('loc.fixed'),
     LocationStatus.remembered => t('loc.remembered'),
     _ => t('loc.default'),
@@ -59,6 +66,8 @@ extension LocationStatusLabel on LocationStatus {
     LocationStatus.blocked => t('loc.exBlocked'),
     LocationStatus.serviceOff => t('loc.exServiceOff'),
     LocationStatus.unavailable => t('loc.exUnavailable'),
+    LocationStatus.chosen =>
+      PrayerPlace.current.value?.name ?? t('place.title'),
   };
 }
 
@@ -182,6 +191,11 @@ class PrayerData {
 }
 
 class PrayerService {
+  /// Bumped when the reader goes back to their own location somewhere other
+  /// than the prayer card (the settings row): the card then locates them
+  /// itself, asking for the permission if need be, and shows the result.
+  static final locateRequests = ValueNotifier<int>(0);
+
   static const _latKey = 'prayer_lat';
   static const _lngKey = 'prayer_lng';
 
@@ -219,7 +233,11 @@ class PrayerService {
   /// marker, so the app never demands the location before it has shown the
   /// reader why it wants it.
   static Future<PrayerData> load({bool ask = false}) async {
-    final (coords, status) = await currentCoordinates(ask: ask);
+    // A city the reader picked stands in for the phone's location.
+    final place = PrayerPlace.current.value;
+    final (coords, status) = place != null
+        ? (Coordinates(place.lat, place.lng), LocationStatus.chosen)
+        : await currentCoordinates(ask: ask);
 
     // The authority and the Asr rule come from the reader's settings, which
     // default to whichever method is used where they are standing.
@@ -228,22 +246,76 @@ class PrayerService {
       coords.longitude,
     );
 
-    final today = PrayerTimes.today(coords, params);
-    final next = today.nextPrayer();
+    final now = DateTime.now();
+    // "Today" is the city's today: a city hours away may still be on
+    // yesterday, or already on tomorrow.
+    final wall = PrayerPlace.onCityClock(now);
+    // Just west of the date line (Samoa, Tonga) the astronomical day the
+    // library works from is the local day before, so the calendar is
+    // shifted until today's Dhuhr falls on today's date.
+    var shift = 0;
+    PrayerTimes onDay(int offset) => PrayerTimes(
+      coords,
+      // Noon, so a summer-time change at midnight can't land on the wrong day.
+      DateComponents.from(
+        DateTime(wall.year, wall.month, wall.day + offset + shift, 12),
+      ),
+      params,
+    );
+
+    PrayerTimes? tryDay(int offset) {
+      try {
+        return onDay(offset);
+      } catch (_) {
+        // Near the poles some days have no such times at all.
+        return null;
+      }
+    }
+
+    final probe = tryDay(0);
+    if (probe == null) {
+      // No times here today (midnight sun, polar night): clear what an
+      // earlier place left waiting, then say so on the card.
+      PrayerAlerts.lastTimes = const {};
+      PrayerAlerts.tomorrow = const {};
+      PrayerAlerts.later = const [];
+      PrayerAlerts.lateIsha = null;
+      PrayerAlerts.firstDay = DateTime(wall.year, wall.month, wall.day);
+      unawaited(NotificationService.schedulePrayerAlerts(const {}));
+      throw StateError('no prayer times for this place today');
+    }
+    final noon = PrayerPlace.onCityClock(probe.dhuhr);
+    shift = DateTime.utc(
+      wall.year,
+      wall.month,
+      wall.day,
+    ).difference(DateTime.utc(noon.year, noon.month, noon.day)).inDays;
+    final today = shift == 0 ? probe : onDay(0);
+
+    // Where Isha falls after midnight, last night's is still to come in the
+    // small hours, and it is the next prayer — so long as it comes before
+    // today's Fajr.
+    final yesterdayIsha = tryDay(-1)?.isha;
+    final lateIsha =
+        yesterdayIsha != null &&
+            yesterdayIsha.isAfter(now) &&
+            yesterdayIsha.isBefore(today.fajr)
+        ? yesterdayIsha
+        : null;
+    final next = lateIsha != null ? Prayer.isha : today.nextPrayer();
 
     // After Isha, nextPrayer() returns Prayer.none — roll over to tomorrow's Fajr.
     late final String nextName;
     late final String nextNameEn;
     late final DateTime nextTime;
     if (next == Prayer.none) {
-      final tomorrow = DateTime.now().add(const Duration(days: 1));
-      nextTime = PrayerTimes(
-        coords,
-        DateComponents.from(tomorrow),
-        params,
-      ).fajr;
+      nextTime = tryDay(1)?.fajr ?? today.fajr.add(const Duration(days: 1));
       nextName = _names[Prayer.fajr]!;
       nextNameEn = _namesEn[Prayer.fajr]!;
+    } else if (lateIsha != null) {
+      nextTime = lateIsha;
+      nextName = _names[Prayer.isha]!;
+      nextNameEn = _namesEn[Prayer.isha]!;
     } else {
       nextTime = today.timeForPrayer(next)!;
       nextName = _names[next]!;
@@ -264,35 +336,39 @@ class PrayerService {
     // The times move every day, so the alerts are laid down again on every
     // load rather than once at install — and remembered, so a setting changed
     // in the meantime can rebuild them without waiting for another load.
-    PrayerAlerts.lastTimes = {
-      AlertPrayer.fajr: today.fajr,
-      AlertPrayer.dhuhr: today.dhuhr,
-      AlertPrayer.asr: today.asr,
-      AlertPrayer.maghrib: today.maghrib,
-      AlertPrayer.isha: today.isha,
-    };
-    if (PrayerAlerts.anyOn) {
-      // Tomorrow's as well, so a day of not opening the app does not leave
-      // the reader with nothing waiting for them.
-      final ahead = PrayerTimes(
-        coords,
-        DateComponents.from(DateTime.now().add(const Duration(days: 1))),
-        params,
-      );
-      PrayerAlerts.tomorrow = {
-        AlertPrayer.fajr: ahead.fajr,
-        AlertPrayer.dhuhr: ahead.dhuhr,
-        AlertPrayer.asr: ahead.asr,
-        AlertPrayer.maghrib: ahead.maghrib,
-        AlertPrayer.isha: ahead.isha,
+    // An Isha that is not before the next day's Fajr (the far north in
+    // summer) is left out of the alerts rather than ring with the Fajr.
+    Map<AlertPrayer, DateTime> alertTimes(PrayerTimes? t, PrayerTimes? next) {
+      if (t == null) return const {};
+      return {
+        AlertPrayer.fajr: t.fajr,
+        AlertPrayer.dhuhr: t.dhuhr,
+        AlertPrayer.asr: t.asr,
+        AlertPrayer.maghrib: t.maghrib,
+        if (next == null || t.isha.isBefore(next.fajr))
+          AlertPrayer.isha: t.isha,
       };
-      unawaited(
-        NotificationService.schedulePrayerAlerts(
-          PrayerAlerts.lastTimes,
-          PrayerAlerts.tomorrow,
-        ),
-      );
     }
+
+    final week = [today, for (var d = 1; d <= 7; d++) tryDay(d)];
+    final alerts = [
+      for (var d = 0; d < 7; d++) alertTimes(week[d], week[d + 1]),
+    ];
+    // All set together, and the days ahead even while every alert is off,
+    // so one switched on later in this session reaches them too.
+    PrayerAlerts.lastTimes = alerts[0];
+    PrayerAlerts.tomorrow = alerts[1];
+    PrayerAlerts.later = alerts.sublist(2);
+    PrayerAlerts.lateIsha = lateIsha;
+    PrayerAlerts.firstDay = DateTime(wall.year, wall.month, wall.day + shift);
+    // Laid down even with every alert off: that clears what an earlier
+    // session left waiting.
+    unawaited(
+      NotificationService.schedulePrayerAlerts(
+        PrayerAlerts.lastTimes,
+        PrayerAlerts.tomorrow,
+      ),
+    );
     // Reminders tied to the prayers move with them, so they are laid down
     // again here rather than once when the setting was made.
     if (DhikrReminder.enabled.value &&
@@ -325,8 +401,23 @@ class PrayerService {
       status = fix.status;
       final pos = fix.position;
       if (pos != null) {
-        coords = Coordinates(pos.latitude, pos.longitude);
-        await _remember(pos);
+        // A fix a few streets from the last one is the same place: keeping
+        // the old point keeps the times — and the alerts laid for them —
+        // from shifting a minute back and forth between reloads.
+        final last = await _lastKnown();
+        if (last != null &&
+            Geolocator.distanceBetween(
+                  last.latitude,
+                  last.longitude,
+                  pos.latitude,
+                  pos.longitude,
+                ) <
+                3000) {
+          coords = last;
+        } else {
+          coords = Coordinates(pos.latitude, pos.longitude);
+          await _remember(pos);
+        }
       } else {
         // No fix now, but a place we reached before beats defaulting to a city
         // the reader may be nowhere near.
@@ -399,6 +490,11 @@ class PrayerService {
     if (lat == null || lng == null) return null;
     return Coordinates(lat, lng);
   }
+
+  /// A prayer time as the clock reads it where the prayer is: the chosen
+  /// city's clock when there is one, the phone's otherwise.
+  static String formatPrayerTime(DateTime dt) =>
+      formatTime(PrayerPlace.onCityClock(dt));
 
   static String formatTime(DateTime dt) {
     final h = dt.hour % 12 == 0 ? 12 : dt.hour % 12;

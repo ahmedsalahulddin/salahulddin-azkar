@@ -37,9 +37,8 @@ class AuthConfig {
   /// AndroidManifest. On the web it is the site the reader is on — not the
   /// project's Site URL, which once pointed at a domain that no longer
   /// exists. The origin must be listed in the project's Redirect URLs.
-  static String? get redirect => kIsWeb
-      ? '${Uri.base.origin}/'
-      : 'com.salahulddin.azkar://login-callback';
+  static String? get redirect =>
+      kIsWeb ? '${Uri.base.origin}/' : 'com.salahulddin.azkar://login-callback';
 
   static bool get isSet => url.isNotEmpty && anonKey.isNotEmpty;
 }

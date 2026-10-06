@@ -59,6 +59,17 @@ class CustomReminder {
     enabled: enabled ?? this.enabled,
   );
 
+  /// The same reminder under another id (a suggestion being saved).
+  CustomReminder copyWithId(int newId) => CustomReminder(
+    id: newId,
+    kind: kind,
+    surah: surah,
+    adhkarId: adhkarId,
+    days: days,
+    times: times,
+    enabled: enabled,
+  );
+
   Map<String, dynamic> toJson() => {
     'id': id,
     'kind': kind.name,
@@ -80,7 +91,8 @@ class CustomReminder {
   );
 
   /// The notification id for one alert: [weekday] 1–7, [slot] its index in
-  /// [times]. Kept clear of the app's other ranges (1–2, 100–411, 900s).
+  /// [times]. Kept clear of the app's other ranges (1–2, 100–411, 900s,
+  /// 1000–1941).
   static int notificationId(int reminderId, int weekday, int slot) =>
       firstNotificationId + reminderId * 100 + weekday * 10 + slot;
 

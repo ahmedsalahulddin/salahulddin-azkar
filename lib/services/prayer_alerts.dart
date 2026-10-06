@@ -128,6 +128,25 @@ class PrayerAlerts {
   /// And the day after, so a setting changed now reaches both.
   static Map<AlertPrayer, DateTime> tomorrow = const {};
 
+  /// The days after tomorrow, up to [daysAhead] in all, so the adhan keeps
+  /// coming for days when the app is not opened. Nothing in the background
+  /// renews the alerts; opening the app does.
+  static List<Map<AlertPrayer, DateTime>> later = const [];
+
+  /// Last night's Isha while it is still to come — after midnight, in the
+  /// summers of high latitudes where Isha falls past 12.
+  static DateTime? lateIsha;
+
+  /// The calendar day [lastTimes] belongs to (the chosen city's day, when
+  /// there is one). Each alert's id is fixed by its day.
+  static DateTime? firstDay;
+
+  /// Days of alerts laid down at a time, today included. iPhone keeps only
+  /// the 64 soonest notifications of an app (prayers, dhikr and reminders
+  /// together), so it gets fewer; ten a day fit a week easily on Android.
+  static int get daysAhead =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS ? 4 : 7;
+
   /// Set at startup. Kept as a hook rather than an import so this file stays
   /// unaware of the notification plumbing.
   static Future<void> Function(

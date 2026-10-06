@@ -10,8 +10,10 @@ import '../services/daily_reminders.dart';
 import '../services/dhikr_reminder.dart';
 import '../services/notification_service.dart';
 import '../services/prayer_alerts.dart';
+import '../services/prayer_place.dart';
 import '../services/prayer_service.dart';
 import '../services/prayer_settings.dart';
+import 'city_picker_screen.dart';
 import 'custom_reminders_screen.dart';
 import 'prayer_alerts_screen.dart';
 import '../services/storage_service.dart';
@@ -117,6 +119,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ],
         if (show(SettingsSection.prayer)) ...[
           if (titled) _sectionTitle(t('settings.prayerCalc')),
+          _placeRow(),
+          const SizedBox(height: 10),
           _prayerMethod(),
           const SizedBox(height: 10),
           _asrSchool(),
@@ -1371,6 +1375,78 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         );
       },
+    );
+  }
+
+  /// Where the prayer times are for: the phone's location, or a city the
+  /// reader picked by name.
+  Widget _placeRow() {
+    return ValueListenableBuilder<PrayerPlace?>(
+      valueListenable: PrayerPlace.current,
+      builder: (context, place, _) => GestureDetector(
+        onTap: () async {
+          final choice = await Navigator.push<CityChoice>(
+            context,
+            MaterialPageRoute(builder: (_) => const CityPickerScreen()),
+          );
+          // Back on the phone's location: the prayer card finds it now,
+          // asking if need be, and shows it.
+          if (choice == CityChoice.myLocation) {
+            PrayerService.locateRequests.value++;
+          }
+        },
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+          decoration: BoxDecoration(
+            color: AppColors.blackCard,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.goldBorder),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                place == null ? Icons.my_location : Icons.location_city,
+                color: AppColors.gold,
+                size: 20,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      t('place.row'),
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 14,
+                      ),
+                    ),
+                    Text(
+                      place == null
+                          ? t('place.myLocation')
+                          : [
+                              place.name,
+                              place.where,
+                            ].where((x) => x.isNotEmpty).join(' — '),
+                      style: const TextStyle(
+                        color: AppColors.textMuted,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.chevron_left,
+                color: AppColors.textMuted,
+                size: 20,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

@@ -5,6 +5,8 @@ import '../constants/theme.dart';
 import '../l10n/strings.dart';
 import '../services/app_locale.dart';
 import '../services/prayer_service.dart';
+import '../screens/city_picker_screen.dart';
+import '../services/prayer_place.dart';
 import '../services/prayer_settings.dart';
 import 'rotating_verse.dart';
 import 'sky_arch.dart';
@@ -34,12 +36,18 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> {
     // wrong" rather than "the settings do nothing".
     PrayerSettings.method.addListener(_reload);
     PrayerSettings.school.addListener(_reload);
+    PrayerPlace.current.addListener(_reload);
+    PrayerService.locateRequests.addListener(_locateRequested);
   }
+
+  void _locateRequested() => _load(ask: true);
 
   @override
   void dispose() {
     PrayerSettings.method.removeListener(_reload);
     PrayerSettings.school.removeListener(_reload);
+    PrayerPlace.current.removeListener(_reload);
+    PrayerService.locateRequests.removeListener(_locateRequested);
     _ticker?.cancel();
     super.dispose();
   }
@@ -81,6 +89,16 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> {
     }
   }
 
+  /// The marker opens the city picker: a city by name, or the phone's own
+  /// location — and choosing that is the reader asking for it, so the
+  /// permission dialog may come up then.
+  Future<void> _chooseCity() async {
+    final choice = await Navigator.of(context).push<CityChoice>(
+      MaterialPageRoute(builder: (_) => const CityPickerScreen()),
+    );
+    if (choice == CityChoice.myLocation && mounted) await _locateMe();
+  }
+
   /// Tapping the marker is the reader asking for their own location, so this is
   /// where we may raise the permission dialog — and where we say what happened
   /// either way, rather than quietly showing Riyadh again.
@@ -104,7 +122,15 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> {
         content: Text(status.explanation, textAlign: TextAlign.right),
         backgroundColor: AppColors.blackCard,
         behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 3),
+        duration: Duration(seconds: status.isMine ? 3 : 6),
+        // No location: a city by name is the other way to the right times.
+        action: status.isMine
+            ? null
+            : SnackBarAction(
+                label: t('place.title'),
+                textColor: AppColors.gold,
+                onPressed: _chooseCity,
+              ),
       ),
     );
   }
@@ -112,7 +138,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> {
   /// A blocked permission cannot be re-asked from inside the app — only the
   /// system settings page can undo it, so we offer to open it directly.
   Future<void> _offerSettings(LocationStatus status) async {
-    final go = await showDialog<bool>(
+    final go = await showDialog<int>(
       context: context,
       builder: (ctx) => Directionality(
         textDirection: TextDirection.rtl,
@@ -132,14 +158,21 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
+              onPressed: () => Navigator.pop(ctx, 2),
+              child: Text(
+                t('place.title'),
+                style: const TextStyle(color: AppColors.gold),
+              ),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, 0),
               child: Text(
                 t('adh.laterButton'),
                 style: const TextStyle(color: AppColors.textMuted),
               ),
             ),
             TextButton(
-              onPressed: () => Navigator.pop(ctx, true),
+              onPressed: () => Navigator.pop(ctx, 1),
               child: Text(
                 t('adh.openSettingsButton'),
                 style: const TextStyle(color: AppColors.gold),
@@ -149,7 +182,8 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> {
         ),
       ),
     );
-    if (go == true) await PrayerService.openSettingsFor(status);
+    if (go == 1) await PrayerService.openSettingsFor(status);
+    if (go == 2 && mounted) await _chooseCity();
   }
 
   void _startTicker() {
@@ -249,7 +283,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> {
         ),
         const SizedBox(height: 2),
         Text(
-          PrayerService.formatTime(p.time),
+          PrayerService.formatPrayerTime(p.time),
           // "5:36 PM" reads left to right; inside the card's RTL layout it
           // would otherwise come out as "PM 5:36".
           textDirection: AppLocale.direction,
@@ -270,7 +304,9 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> {
     final tint = mine ? AppColors.textMuted : AppColors.gold;
 
     return GestureDetector(
-      onTap: _locateMe,
+      // Not located yet: the tap finds the reader. Located (or a city
+      // chosen): it opens the city picker.
+      onTap: mine ? _chooseCity : _locateMe,
       behavior: HitTestBehavior.opaque,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -295,7 +331,11 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> {
               )
             else
               Icon(
-                mine ? Icons.my_location : Icons.location_searching,
+                status == LocationStatus.chosen
+                    ? Icons.location_city
+                    : mine
+                    ? Icons.my_location
+                    : Icons.location_searching,
                 size: 13,
                 color: tint,
               ),
