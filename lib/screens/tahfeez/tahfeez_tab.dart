@@ -52,6 +52,11 @@ class TahfeezTab extends StatefulWidget {
   @visibleForTesting
   final List<TahfeezProfile>? initialTeachers;
 
+  /// Whether the Tahfeez tab is the one on screen. The tab stays alive in
+  /// the main IndexedStack while others show, so its first-visit country
+  /// question and tour wait for this rather than popping over another tab.
+  static final visible = ValueNotifier<bool>(false);
+
   @override
   State<TahfeezTab> createState() => _TahfeezTabState();
 }
@@ -133,9 +138,27 @@ class _TahfeezTabState extends State<TahfeezTab> {
 
   /// The first time someone opens the tab without a country on their
   /// profile, ask for it: the directory starts from it.
+  /// On screen now — always, for a preview pushed on its own.
+  bool get _onScreen => _offline || TahfeezTab.visible.value;
+
+  bool _waitingToShow = false;
+
   /// The first visit asks for the country, then shows the on-screen tour
-  /// once for this role.
+  /// once for this role — but only once the tab is actually showing.
   Future<void> _askCountryOnce(TahfeezProfile profile) async {
+    if (!_onScreen) {
+      if (_waitingToShow) return;
+      _waitingToShow = true;
+      void shown() {
+        if (!TahfeezTab.visible.value) return;
+        TahfeezTab.visible.removeListener(shown);
+        _waitingToShow = false;
+        if (mounted && _profile != null) _askCountryOnce(_profile!);
+      }
+
+      TahfeezTab.visible.addListener(shown);
+      return;
+    }
     if (!_askedCountry && profile.country == null && mounted) {
       _askedCountry = true;
       await _pickCountry(profile, first: true);

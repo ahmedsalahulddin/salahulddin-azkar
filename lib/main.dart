@@ -493,6 +493,12 @@ class _MainNavigationState extends State<MainNavigation> {
         if (i != _tahfeezIndex || showTahfeez) i,
     ];
     if (!tabs.contains(_currentIndex)) _currentIndex = 1;
+    // After the frame: listeners may open a sheet, which can't happen
+    // mid-build.
+    final onTahfeez = _currentIndex == _tahfeezIndex;
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => TahfeezTab.visible.value = onTahfeez,
+    );
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
