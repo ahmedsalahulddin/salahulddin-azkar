@@ -387,6 +387,18 @@ class _AccountScreenState extends State<AccountScreen> {
                 ],
                 const SizedBox(height: 12),
                 _groupRow(
+                  icon: Icons.menu_book_outlined,
+                  title: t('account.guideTitle'),
+                  subtitle: t('account.guideSub'),
+                  onTap: () => launchUrl(
+                    Uri.parse(
+                      'https://azkar.salahulddin.com/guide?lang=${AppLocale.code}',
+                    ),
+                    mode: LaunchMode.externalApplication,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                _groupRow(
                   icon: Icons.info_outline,
                   title: t('account.aboutSection'),
                   subtitle: '${t('account.version')} $_version',

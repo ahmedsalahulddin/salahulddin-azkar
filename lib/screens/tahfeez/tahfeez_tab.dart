@@ -9,6 +9,7 @@ import '../../l10n/strings.dart';
 import '../../services/app_locale.dart';
 import '../../services/auth_service.dart';
 import '../../services/tahfeez_service.dart';
+import '../../widgets/coach_marks.dart';
 import '../../widgets/sign_in_buttons.dart';
 import '../account_screen.dart' show UserAvatar;
 import 'availability_screen.dart';
@@ -21,6 +22,7 @@ import 'schedule_screen.dart';
 import 'session_evaluation_screen.dart';
 import 'student_halaqa_screen.dart';
 import 'student_progress_screen.dart';
+import 'tahfeez_guide_screen.dart';
 import 'tahfeez_widgets.dart';
 
 /// Everything the module has to offer the signed-in reader, whichever side
@@ -77,6 +79,11 @@ class _TahfeezTabState extends State<TahfeezTab> {
   /// A preview with no server behind it.
   bool get _offline => widget.initialProfile != null;
 
+  // What the on-screen tour points at.
+  final _kProfile = GlobalKey();
+  final _kHelp = GlobalKey();
+  final _kSections = {for (final s in _Section.values) s: GlobalKey()};
+
   @override
   void initState() {
     super.initState();
@@ -126,10 +133,115 @@ class _TahfeezTabState extends State<TahfeezTab> {
 
   /// The first time someone opens the tab without a country on their
   /// profile, ask for it: the directory starts from it.
-  void _askCountryOnce(TahfeezProfile profile) {
-    if (_askedCountry || profile.country != null || !mounted) return;
-    _askedCountry = true;
-    _pickCountry(profile, first: true);
+  /// The first visit asks for the country, then shows the on-screen tour
+  /// once for this role.
+  Future<void> _askCountryOnce(TahfeezProfile profile) async {
+    if (!_askedCountry && profile.country == null && mounted) {
+      _askedCountry = true;
+      await _pickCountry(profile, first: true);
+    }
+    await _tourOnce();
+  }
+
+  Future<void> _tourOnce() async {
+    final p = _profile;
+    if (p == null || !mounted) return;
+    final key = 'tahfeez_tour_seen_${p.isTeacher ? 'teacher' : 'student'}';
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (prefs.getBool(key) == true) return;
+      await prefs.setBool(key, true);
+    } catch (_) {
+      return;
+    }
+    // Let the tab finish laying out before measuring what to light up.
+    await Future<void>.delayed(const Duration(milliseconds: 400));
+    if (mounted) await _startTour();
+  }
+
+  Future<void> _startTour() async {
+    final p = _profile;
+    if (p == null) return;
+    final steps = p.isTeacher
+        ? [
+            CoachStep(
+              target: _kProfile,
+              title: t('tour.t.card.title'),
+              body: t('tour.t.card.body'),
+            ),
+            CoachStep(
+              target: _kSections[_Section.sessions]!,
+              title: t('tour.t.hours.title'),
+              body: t('tour.t.hours.body'),
+            ),
+            CoachStep(
+              target: _kSections[_Section.halaqat]!,
+              title: t('tour.t.halaqat.title'),
+              body: t('tour.t.halaqat.body'),
+            ),
+            CoachStep(
+              target: _kSections[_Section.directory]!,
+              title: t('tour.t.dir.title'),
+              body: t('tour.t.dir.body'),
+            ),
+            CoachStep(
+              target: _kSections[_Section.teachers]!,
+              title: t('tour.t.teachers.title'),
+              body: t('tour.t.teachers.body'),
+            ),
+            CoachStep(
+              target: _kHelp,
+              title: t('tour.help.title'),
+              body: t('tour.help.body'),
+            ),
+          ]
+        : [
+            CoachStep(
+              target: _kProfile,
+              title: t('tour.s.card.title'),
+              body: t('tour.s.card.body'),
+            ),
+            CoachStep(
+              target: _kSections[_Section.directory]!,
+              title: t('tour.s.dir.title'),
+              body: t('tour.s.dir.body'),
+            ),
+            CoachStep(
+              target: _kSections[_Section.teachers]!,
+              title: t('tour.s.teachers.title'),
+              body: t('tour.s.teachers.body'),
+            ),
+            CoachStep(
+              target: _kSections[_Section.halaqat]!,
+              title: t('tour.s.halaqat.title'),
+              body: t('tour.s.halaqat.body'),
+            ),
+            CoachStep(
+              target: _kSections[_Section.sessions]!,
+              title: t('tour.s.hours.title'),
+              body: t('tour.s.hours.body'),
+            ),
+            CoachStep(
+              target: _kHelp,
+              title: t('tour.help.title'),
+              body: t('tour.help.body'),
+            ),
+          ];
+    await showCoachMarks(context, steps, direction: tahfeezDirection());
+  }
+
+  Future<void> _openGuide() async {
+    final tour = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) =>
+            TahfeezGuideScreen(teacher: _profile?.isTeacher ?? false),
+      ),
+    );
+    if (tour == true && mounted) {
+      await Future<void>.delayed(const Duration(milliseconds: 350));
+      if (mounted) await _startTour();
+    }
   }
 
   @override
@@ -324,6 +436,15 @@ class _TahfeezTabState extends State<TahfeezTab> {
           foregroundColor: AppColors.gold,
           title: Text(t('tahfeez.title')),
           centerTitle: true,
+          actions: [
+            if (_profile != null)
+              IconButton(
+                key: _kHelp,
+                tooltip: t('guide.title'),
+                icon: const Icon(Icons.help_outline),
+                onPressed: _openGuide,
+              ),
+          ],
         ),
         body: ValueListenableBuilder<AppUser?>(
           valueListenable: AuthService.user,
@@ -450,7 +571,10 @@ class _TahfeezTabState extends State<TahfeezTab> {
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-          child: _profileCard(user, profile),
+          child: KeyedSubtree(
+            key: _kProfile,
+            child: _profileCard(user, profile),
+          ),
         ),
         if (_failed)
           Padding(
@@ -511,6 +635,7 @@ class _TahfeezTabState extends State<TahfeezTab> {
         children: [
           for (final (section, icon, label, badge) in items)
             Expanded(
+              key: _kSections[section],
               child: GestureDetector(
                 onTap: () => _show(section),
                 behavior: HitTestBehavior.opaque,
