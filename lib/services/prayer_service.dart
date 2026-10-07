@@ -250,30 +250,58 @@ class PrayerService {
     // "Today" is the city's today: a city hours away may still be on
     // yesterday, or already on tomorrow.
     final wall = PrayerPlace.onCityClock(now);
-    // Just west of the date line (Samoa, Tonga) the astronomical day the
-    // library works from is the local day before, so the calendar is
-    // shifted until today's Dhuhr falls on today's date.
-    var shift = 0;
-    PrayerTimes onDay(int offset) => PrayerTimes(
-      coords,
-      // Noon, so a summer-time change at midnight can't land on the wrong day.
-      DateComponents.from(
-        DateTime(wall.year, wall.month, wall.day + offset + shift, 12),
-      ),
-      params,
-    );
+    final wallDate = DateTime.utc(wall.year, wall.month, wall.day);
 
-    PrayerTimes? tryDay(int offset) {
+    PrayerTimes? libraryDay(DateTime d) {
       try {
-        return onDay(offset);
+        // Noon, so a summer-time change at midnight can't land on the wrong
+        // day.
+        return PrayerTimes(
+          coords,
+          DateComponents.from(DateTime(d.year, d.month, d.day, 12)),
+          params,
+        );
       } catch (_) {
         // Near the poles some days have no such times at all.
         return null;
       }
     }
 
-    final probe = tryDay(0);
-    if (probe == null) {
+    DateTime cityDate(DateTime moment) {
+      final c = PrayerPlace.onCityClock(moment);
+      return DateTime.utc(c.year, c.month, c.day);
+    }
+
+    // The library counts days astronomically; near the date line (Samoa,
+    // Tonga, Fiji) its day can be the local day before or after, and once a
+    // year a local day has no library day at all, or two. So each local date
+    // takes the library day whose Dhuhr falls on it — times in order, or
+    // none (polar days) — and a local date with no library day borrows a
+    // neighbour's times moved by a day.
+    ({bool found, _DayTimes? day}) exactly(DateTime date) {
+      for (final k in const [0, -1, 1]) {
+        final t = libraryDay(date.add(Duration(days: k)));
+        if (t == null) continue;
+        final d = _DayTimes.of(t);
+        if (cityDate(d.dhuhr) != date) continue;
+        return (found: true, day: d.inOrder ? d : null);
+      }
+      return (found: false, day: null);
+    }
+
+    _DayTimes? forDate(DateTime date) {
+      final own = exactly(date);
+      if (own.found) return own.day;
+      return exactly(
+            date.subtract(const Duration(days: 1)),
+          ).day?.moved(const Duration(days: 1)) ??
+          exactly(
+            date.add(const Duration(days: 1)),
+          ).day?.moved(const Duration(days: -1));
+    }
+
+    final today = forDate(wallDate);
+    if (today == null) {
       // No times here today (midnight sun, polar night): clear what an
       // earlier place left waiting, then say so on the card.
       PrayerAlerts.lastTimes = const {};
@@ -284,32 +312,31 @@ class PrayerService {
       unawaited(NotificationService.schedulePrayerAlerts(const {}));
       throw StateError('no prayer times for this place today');
     }
-    final noon = PrayerPlace.onCityClock(probe.dhuhr);
-    shift = DateTime.utc(
-      wall.year,
-      wall.month,
-      wall.day,
-    ).difference(DateTime.utc(noon.year, noon.month, noon.day)).inDays;
-    final today = shift == 0 ? probe : onDay(0);
+    final week = [
+      today,
+      for (var d = 1; d <= 7; d++) forDate(wallDate.add(Duration(days: d))),
+    ];
 
     // Where Isha falls after midnight, last night's is still to come in the
     // small hours, and it is the next prayer — so long as it comes before
     // today's Fajr.
-    final yesterdayIsha = tryDay(-1)?.isha;
+    final yesterdayIsha = forDate(
+      wallDate.subtract(const Duration(days: 1)),
+    )?.isha;
     final lateIsha =
         yesterdayIsha != null &&
             yesterdayIsha.isAfter(now) &&
             yesterdayIsha.isBefore(today.fajr)
         ? yesterdayIsha
         : null;
-    final next = lateIsha != null ? Prayer.isha : today.nextPrayer();
+    final next = lateIsha != null ? Prayer.isha : today.nextAfter(now);
 
     // After Isha, nextPrayer() returns Prayer.none — roll over to tomorrow's Fajr.
     late final String nextName;
     late final String nextNameEn;
     late final DateTime nextTime;
     if (next == Prayer.none) {
-      nextTime = tryDay(1)?.fajr ?? today.fajr.add(const Duration(days: 1));
+      nextTime = week[1]?.fajr ?? today.fajr.add(const Duration(days: 1));
       nextName = _names[Prayer.fajr]!;
       nextNameEn = _namesEn[Prayer.fajr]!;
     } else if (lateIsha != null) {
@@ -317,7 +344,7 @@ class PrayerService {
       nextName = _names[Prayer.isha]!;
       nextNameEn = _namesEn[Prayer.isha]!;
     } else {
-      nextTime = today.timeForPrayer(next)!;
+      nextTime = today.at(next);
       nextName = _names[next]!;
       nextNameEn = _namesEn[next]!;
     }
@@ -327,7 +354,7 @@ class PrayerService {
           (p) => PrayerInfo(
             name: _names[p]!,
             nameEn: _namesEn[p]!,
-            time: today.timeForPrayer(p)!,
+            time: today.at(p),
             isNext: p == next,
           ),
         )
@@ -338,7 +365,7 @@ class PrayerService {
     // in the meantime can rebuild them without waiting for another load.
     // An Isha that is not before the next day's Fajr (the far north in
     // summer) is left out of the alerts rather than ring with the Fajr.
-    Map<AlertPrayer, DateTime> alertTimes(PrayerTimes? t, PrayerTimes? next) {
+    Map<AlertPrayer, DateTime> alertTimes(_DayTimes? t, _DayTimes? next) {
       if (t == null) return const {};
       return {
         AlertPrayer.fajr: t.fajr,
@@ -350,7 +377,6 @@ class PrayerService {
       };
     }
 
-    final week = [today, for (var d = 1; d <= 7; d++) tryDay(d)];
     final alerts = [
       for (var d = 0; d < 7; d++) alertTimes(week[d], week[d + 1]),
     ];
@@ -360,7 +386,7 @@ class PrayerService {
     PrayerAlerts.tomorrow = alerts[1];
     PrayerAlerts.later = alerts.sublist(2);
     PrayerAlerts.lateIsha = lateIsha;
-    PrayerAlerts.firstDay = DateTime(wall.year, wall.month, wall.day + shift);
+    PrayerAlerts.firstDay = DateTime(wall.year, wall.month, wall.day);
     // Laid down even with every alert off: that clears what an earlier
     // session left waiting.
     unawaited(
@@ -515,5 +541,70 @@ class PrayerService {
     final m = (d.inMinutes % 60).toString().padLeft(2, '0');
     final s = (d.inSeconds % 60).toString().padLeft(2, '0');
     return '$h:$m:$s';
+  }
+}
+
+/// One local day's six times, worked out by the library or borrowed from a
+/// neighbouring day.
+class _DayTimes {
+  final DateTime fajr;
+  final DateTime sunrise;
+  final DateTime dhuhr;
+  final DateTime asr;
+  final DateTime maghrib;
+  final DateTime isha;
+
+  const _DayTimes(
+    this.fajr,
+    this.sunrise,
+    this.dhuhr,
+    this.asr,
+    this.maghrib,
+    this.isha,
+  );
+
+  factory _DayTimes.of(PrayerTimes t) =>
+      _DayTimes(t.fajr, t.sunrise, t.dhuhr, t.asr, t.maghrib, t.isha);
+
+  _DayTimes moved(Duration by) => _DayTimes(
+    fajr.add(by),
+    sunrise.add(by),
+    dhuhr.add(by),
+    asr.add(by),
+    maghrib.add(by),
+    isha.add(by),
+  );
+
+  /// Around polar day and night the library can hand back times out of
+  /// order (Asr before sunrise); such a day has no usable times.
+  bool get inOrder =>
+      fajr.isBefore(sunrise) &&
+      sunrise.isBefore(dhuhr) &&
+      dhuhr.isBefore(asr) &&
+      asr.isBefore(maghrib) &&
+      maghrib.isBefore(isha);
+
+  DateTime at(Prayer p) => switch (p) {
+    Prayer.fajr => fajr,
+    Prayer.sunrise => sunrise,
+    Prayer.dhuhr => dhuhr,
+    Prayer.asr => asr,
+    Prayer.maghrib => maghrib,
+    _ => isha,
+  };
+
+  /// The first of the six still ahead of [now], or none after Isha.
+  Prayer nextAfter(DateTime now) {
+    for (final p in const [
+      Prayer.fajr,
+      Prayer.sunrise,
+      Prayer.dhuhr,
+      Prayer.asr,
+      Prayer.maghrib,
+      Prayer.isha,
+    ]) {
+      if (at(p).isAfter(now)) return p;
+    }
+    return Prayer.none;
   }
 }

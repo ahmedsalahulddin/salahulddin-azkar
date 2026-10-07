@@ -1,7 +1,7 @@
 name: salahulddin_azkar
 description: "salahulddin-AZKAR — أذكار المسلم والمصحف الشريف"
 publish_to: 'none'
-version: 1.6.57+98
+version: 1.6.58+99
 
 environment:
   sdk: ^3.11.5
@@ -58,6 +58,13 @@ flutter:
     # Library/Sounds at startup; iOS plays at most 30 s).
     - assets/sounds/
     - assets/images/
+    # Word meanings (الميسر في غريب القرآن, King Fahd Complex), per surah.
+    - assets/gharib/
+    # أسباب النزول للواحدي and التبيان للعكبري, per surah (Quranpedia dumps).
+    - assets/asbab/
+    - assets/irab/
+    # «الباحث القرآني» book list (the books themselves are downloaded).
+    - assets/researcher/
 
   fonts:
     # Amiri Quran (SIL OFL) — carries the Mushaf marks the KFGQPC text needs

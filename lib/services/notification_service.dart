@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -514,6 +515,7 @@ class NotificationService {
     try {
       if (kIsWeb) return;
       await _ensureZone();
+      await _trimPrayersOnIos();
       try {
         for (final p in await _plugin.pendingNotificationRequests()) {
           if (p.id >= CustomReminder.firstNotificationId) {
@@ -734,6 +736,15 @@ class NotificationService {
 
   /// iPhone keeps the 64 notifications set last, so after another kind of
   /// reminder is laid down the prayers are laid again on top of it.
+  /// iPhone, before another kind of reminder is laid: lay the prayers again
+  /// under the new, smaller budget first, so the total never goes over 64
+  /// and iOS has nothing of ours to drop.
+  static Future<void> _trimPrayersOnIos() async {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.iOS) return;
+    if (PrayerAlerts.lastTimes.isEmpty) return;
+    await schedulePrayerAlerts(PrayerAlerts.lastTimes, PrayerAlerts.tomorrow);
+  }
+
   static void _relayPrayersOnIos() {
     if (kIsWeb || defaultTargetPlatform != TargetPlatform.iOS) return;
     if (PrayerAlerts.lastTimes.isEmpty) return;
@@ -784,12 +795,7 @@ class NotificationService {
         .expand((p) => AlertWhen.values.map((w) => PrayerAlerts.modeFor(p, w)))
         .where((m) => !m.isOff)
         .length;
-    var days = PrayerAlerts.daysAhead;
-    if (defaultTargetPlatform == TargetPlatform.iOS && perDay > 0) {
-      // iPhone keeps only the 64 most recently set notifications of an app.
-      // The prayers get what the other reminders leave, today at least.
-      days = ((64 - 2 - _otherReminderCount()) ~/ perDay).clamp(1, 4);
-    }
+    final days = PrayerAlerts.daysAhead;
 
     final first = PrayerAlerts.firstDay ?? DateTime.now();
     final today = _epochDay(first);
@@ -802,6 +808,33 @@ class NotificationService {
         today + 2 + i: PrayerAlerts.later[i],
     };
 
+    // iPhone keeps only the 64 most recently set notifications of an app,
+    // so the prayers take what the other reminders leave: the soonest
+    // alerts first, never fewer than the next few.
+    Set<int>? allowed;
+    if (defaultTargetPlatform == TargetPlatform.iOS && perDay > 0) {
+      final limit = math.max(62 - _otherReminderCount(), 5);
+      final now = DateTime.now();
+      final ahead = <(int, DateTime)>[];
+      for (final e in byDay.entries) {
+        for (final prayer in AlertPrayer.values) {
+          final at = e.value[prayer];
+          if (at == null) continue;
+          for (final when in AlertWhen.values) {
+            if (PrayerAlerts.modeFor(prayer, when).isOff) continue;
+            final moment = when == AlertWhen.before
+                ? at.subtract(Duration(minutes: PrayerAlerts.lead.value))
+                : at;
+            if (moment.isAfter(now)) {
+              ahead.add((_prayerId(e.key % 10, prayer, when), moment));
+            }
+          }
+        }
+      }
+      ahead.sort((x, y) => x.$2.compareTo(y.$2));
+      allowed = {for (final a in ahead.take(limit)) a.$1};
+    }
+
     // Farthest first, so today's are the last set — iPhone keeps those.
     for (var day = today + 8; day >= today - 1; day--) {
       await _layDown(
@@ -809,6 +842,7 @@ class NotificationService {
         slot: day % 10,
         pending: pending,
         laid: laid,
+        allowed: allowed,
       );
     }
     try {
@@ -824,6 +858,7 @@ class NotificationService {
     required int slot,
     required Map<int, DateTime?>? pending,
     required Map<int, int> laid,
+    Set<int>? allowed,
   }) async {
     final now = DateTime.now();
     for (final prayer in AlertPrayer.values) {
@@ -848,7 +883,15 @@ class NotificationService {
           if (isPending) await drop();
           continue;
         }
-        if (at == null) {
+        final overBudget =
+            allowed != null &&
+            at != null &&
+            !allowed.contains(id) &&
+            (when == AlertWhen.before
+                    ? at.subtract(Duration(minutes: PrayerAlerts.lead.value))
+                    : at)
+                .isAfter(now);
+        if (at == null || overBudget) {
           // Nothing wanted here. A pending alert that is already due is left
           // to arrive (an inexact alarm can run late); anything still ahead
           // is left over and goes.
@@ -1014,6 +1057,7 @@ class NotificationService {
   }) async {
     try {
       await _ensureZone();
+      await _trimPrayersOnIos();
       // Clear the whole block first: the count can shrink, and yesterday's
       // extra slots would otherwise keep firing forever.
       for (var i = 0; i < 24; i++) {
@@ -1078,6 +1122,7 @@ class NotificationService {
   static Future<void> scheduleDailyReminders() async {
     try {
       await _ensureZone();
+      await _trimPrayersOnIos();
       for (final id in [400, 401, 410, 411]) {
         await _plugin.cancel(id);
       }

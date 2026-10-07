@@ -7,6 +7,7 @@ import 'memorisation_test_screen.dart';
 import 'mushaf_screen.dart';
 import 'quran_screen.dart';
 import 'quran_translation_screen.dart';
+import 'researcher/researcher_screen.dart';
 
 /// Entry point for the Quran section: pick how you want to read.
 ///
@@ -138,6 +139,22 @@ class _QuranHomeScreenState extends State<QuranHomeScreen> {
                     ? null
                     : '${t('qs.lastReadLabel')} ${t('qs.surahPrefix')} $_lastSurahName',
                 onTap: _openTadabbur,
+              ),
+              const SizedBox(height: 14),
+
+              _modeCard(
+                icon: '🔎',
+                title: t('researcher.title'),
+                subtitle: t('researcher.sub'),
+                details: [
+                  '${t('researcher.cat.tafsir')} · ${t('researcher.cat.gharib')}',
+                  '${t('researcher.cat.irab')} · ${t('researcher.cat.asbab')}',
+                  t('researcher.search'),
+                ],
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ResearcherScreen()),
+                ),
               ),
               const SizedBox(height: 14),
 

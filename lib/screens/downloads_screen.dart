@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import '../data/researcher_data.dart';
 
 import '../constants/theme.dart';
 import '../data/adhans.dart';
@@ -722,6 +723,26 @@ class _TafsirTab extends StatelessWidget {
                 await TafsirService.download(e, onProgress: p) == 0,
             remove: () => TafsirService.deleteDownload(e),
           ),
+        const SizedBox(height: 12),
+        _Note(t('researcher.title')),
+        FutureBuilder<List<ResearcherBook>>(
+          future: ResearcherService.catalog(),
+          builder: (context, snap) => Column(
+            children: [
+              for (final b in snap.data ?? const <ResearcherBook>[])
+                _RemoteItem(
+                  key: ValueKey('qr-${b.id}'),
+                  title: b.name,
+                  subtitle:
+                      '${b.author} · ${(b.bytes / 1e6).toStringAsFixed(1)} م.ب',
+                  isDownloaded: () => ResearcherService.isDownloaded(b),
+                  download: (p) async =>
+                      await ResearcherService.download(b, onProgress: p) == 0,
+                  remove: () => ResearcherService.deleteDownload(b),
+                ),
+            ],
+          ),
+        ),
       ],
     );
   }

@@ -10,6 +10,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'constants/theme.dart';
+import 'data/tafsir_data.dart';
 import 'screens/home_screen.dart';
 import 'screens/favorites_screen.dart';
 import 'screens/account_screen.dart';
@@ -83,6 +84,7 @@ void main() async {
   await PlaybackSpeed.load();
   await PrayerSettings.load();
   await PrayerPlace.load();
+  unawaited(TafsirService.dropRetired());
   PrayerAlerts.onChanged = NotificationService.schedulePrayerAlerts;
   await PrayerAlerts.load();
   await DhikrReminder.load();

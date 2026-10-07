@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import '../constants/theme.dart';
 import '../data/tafsir_data.dart';
 import '../l10n/strings.dart';
+import '../data/ayah_notes_data.dart';
+import '../screens/researcher/researcher_screen.dart';
+import 'ayah_note_panel.dart';
+import 'gharib_panel.dart';
 import 'translation_panel.dart';
 
 const _mushafFont = 'AmiriQuran';
@@ -163,6 +167,29 @@ class _TafsirSheetState extends State<TafsirSheet> {
                           fontSize: 11,
                         ),
                       ),
+                      const SizedBox(height: 8),
+                      Center(
+                        child: TextButton.icon(
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ResearcherScreen(
+                                surah: widget.surah,
+                                ayah: widget.ayah,
+                              ),
+                            ),
+                          ),
+                          icon: const Icon(
+                            Icons.travel_explore,
+                            color: AppColors.gold,
+                            size: 18,
+                          ),
+                          label: Text(
+                            t('researcher.more'),
+                            style: const TextStyle(color: AppColors.gold),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                   // Translations
@@ -171,6 +198,21 @@ class _TafsirSheetState extends State<TafsirSheet> {
                     children: [
                       _ayahCard(),
                       const SizedBox(height: 14),
+                      GharibPanel(surah: widget.surah, ayah: widget.ayah),
+                      const SizedBox(height: 10),
+                      AyahNotePanel(
+                        kind: AyahNoteKind.asbab,
+                        surah: widget.surah,
+                        ayah: widget.ayah,
+                        initiallyExpanded: true,
+                      ),
+                      const SizedBox(height: 10),
+                      AyahNotePanel(
+                        kind: AyahNoteKind.irab,
+                        surah: widget.surah,
+                        ayah: widget.ayah,
+                      ),
+                      const SizedBox(height: 16),
                       TranslationPanel(surah: widget.surah, ayah: widget.ayah),
                     ],
                   ),

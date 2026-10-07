@@ -46,13 +46,6 @@ class TafsirService {
       author: 'مركز تفسير للدراسات القرآنية',
     ),
     TafsirEdition(
-      id: 'jalalayn',
-      name: 'تفسير الجلالين',
-      author: 'جلال الدين المحلّي وجلال الدين السيوطي',
-      remoteSlug: 'ar-tafsir-al-jalalayn',
-      downloadSize: '٣ م.ب',
-    ),
-    TafsirEdition(
       id: 'saadi',
       name: 'تفسير السعدي',
       author: 'عبد الرحمن بن ناصر السعدي',
@@ -74,25 +67,11 @@ class TafsirService {
       downloadSize: '٥٩ م.ب',
     ),
     TafsirEdition(
-      id: 'qurtubi',
-      name: 'تفسير القرطبي',
-      author: 'الجامع لأحكام القرآن — أبو عبد الله القرطبي',
-      remoteSlug: 'ar-tafseer-al-qurtubi',
-      downloadSize: '٧٤ م.ب',
-    ),
-    TafsirEdition(
       id: 'ibn-kathir',
       name: 'تفسير ابن كثير',
       author: 'الحافظ ابن كثير',
       remoteSlug: 'ar-tafsir-ibn-kathir',
       downloadSize: '٨٦ م.ب',
-    ),
-    TafsirEdition(
-      id: 'alusi',
-      name: 'تفسير الألوسي',
-      author: 'روح المعاني — شهاب الدين محمود الألوسي',
-      remoteSlug: 'tafsir-al-alusi',
-      downloadSize: '٥٤ م.ب',
     ),
     TafsirEdition(
       id: 'shawkani',
@@ -155,9 +134,43 @@ class TafsirService {
     ),
   ];
 
+  /// Editions the app no longer offers (only works of the salaf and the
+  /// people of athar are kept). Anything a reader downloaded earlier is
+  /// cleared away by [dropRetired].
+  static const _retired = ['jalalayn', 'qurtubi', 'alusi'];
+
+  /// Deletes retired editions' downloads and moves a reader who had one
+  /// selected back to the default.
+  static Future<void> dropRetired() async {
+    if (kIsWeb) return;
+    try {
+      final root = await _downloadDir();
+      for (final id in _retired) {
+        final dir = Directory('${root.path}/$id');
+        if (await dir.exists()) await dir.delete(recursive: true);
+      }
+      final prefs = await SharedPreferences.getInstance();
+      if (_retired.contains(prefs.getString(_preferenceKey))) {
+        await prefs.remove(_preferenceKey);
+      }
+    } catch (_) {
+      // Left for the next launch.
+    }
+  }
+
   static const _preferenceKey = '@noor_tafsir_edition';
-  static const _host =
-      'https://cdn.jsdelivr.net/gh/spa5k/tafsir_api@main/tafsir';
+
+  /// The remote editions, pinned to one commit so the text can't shift
+  /// under a reader, and tried in this order. jsDelivr alone kept refusing
+  /// files of this repository ("Package size exceeded the configured limit
+  /// of 50 MB") whenever its edge had them cold, so a full download almost
+  /// always ended a few surahs short — the Ibn Kathir failure on iPhone.
+  static const _commit = 'eb82bb6294efe30ad5c135c03b1864afaa70e855';
+  static const _hosts = [
+    'https://raw.githubusercontent.com/spa5k/tafsir_api/$_commit/tafsir',
+    'https://rawcdn.githack.com/spa5k/tafsir_api/$_commit/tafsir',
+    'https://fastly.jsdelivr.net/gh/spa5k/tafsir_api@$_commit/tafsir',
+  ];
 
   static TafsirEdition get defaultEdition => editions.first;
 
@@ -278,6 +291,18 @@ class TafsirService {
     }
 
     await Future.wait(List.generate(4, (_) => worker()));
+
+    // One more, slower pass over whatever failed — a mirror that refused a
+    // file a moment ago usually has it now.
+    if (failed > 0 && !_cancel) {
+      failed = 0;
+      for (var surah = 1; surah <= 114 && !_cancel; surah++) {
+        final file = File('${dir.path}/$surah.json');
+        if (!await file.exists() && !await _fetchSurah(edition, surah, file)) {
+          failed++;
+        }
+      }
+    }
     return failed;
   }
 
@@ -286,9 +311,21 @@ class TafsirService {
     int surah,
     File target,
   ) async {
+    for (final host in _hosts) {
+      if (await _fetchSurahFrom(host, edition, surah, target)) return true;
+    }
+    return false;
+  }
+
+  static Future<bool> _fetchSurahFrom(
+    String host,
+    TafsirEdition edition,
+    int surah,
+    File target,
+  ) async {
     try {
       final res = await http
-          .get(Uri.parse('$_host/${edition.remoteSlug}/$surah.json'))
+          .get(Uri.parse('$host/${edition.remoteSlug}/$surah.json'))
           .timeout(const Duration(seconds: 30));
       if (res.statusCode != 200) return false;
 

@@ -97,8 +97,13 @@ class TranslationService {
   ];
 
   static const _preferenceKey = '@noor_translation';
-  static const _host =
-      'https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/editions';
+
+  /// Tried in order: jsDelivr refuses files of very large repositories when
+  /// its edge has them cold, so a pinned GitHub mirror stands behind it.
+  static const _hosts = [
+    'https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/editions',
+    'https://raw.githubusercontent.com/fawazahmed0/quran-api/47ca096b0976443ba2eab2e45cdf0fb4096a2610/editions',
+  ];
 
   static Translation byId(String id) =>
       available.firstWhere((t) => t.id == id, orElse: () => available.first);
@@ -214,9 +219,21 @@ class TranslationService {
     int surah,
     File target,
   ) async {
+    for (final host in _hosts) {
+      if (await _fetchSurahFrom(host, translation, surah, target)) return true;
+    }
+    return false;
+  }
+
+  static Future<bool> _fetchSurahFrom(
+    String host,
+    Translation translation,
+    int surah,
+    File target,
+  ) async {
     try {
       final res = await http
-          .get(Uri.parse('$_host/${translation.slug}/$surah.json'))
+          .get(Uri.parse('$host/${translation.slug}/$surah.json'))
           .timeout(const Duration(seconds: 30));
       if (res.statusCode != 200) return false;
 

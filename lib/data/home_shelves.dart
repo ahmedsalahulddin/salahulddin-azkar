@@ -26,6 +26,7 @@ import '../screens/quran_home_screen.dart';
 import '../screens/quran_translation_screen.dart';
 import '../screens/listening_screen.dart';
 import '../screens/radio_screen.dart';
+import '../screens/researcher/researcher_screen.dart';
 import '../screens/dua_category_detail_screen.dart';
 import '../screens/quran_screen.dart';
 import '../screens/sahih_adhkar_screen.dart';
@@ -268,6 +269,13 @@ HomeShelf _quranShelf() => HomeShelf(
       subtitle: tBoth('card.recitation.sub'),
       open: (c) => _push(c, () => const QuranScreen()),
       cardKey: 'quran_recitation',
+    ),
+    ShelfItem(
+      icon: '🔎',
+      title: tBoth('researcher.title'),
+      subtitle: tBoth('researcher.sub'),
+      open: (c) => _push(c, () => const ResearcherScreen()),
+      cardKey: 'quran_researcher',
     ),
     ShelfItem(
       icon: '🧠',
