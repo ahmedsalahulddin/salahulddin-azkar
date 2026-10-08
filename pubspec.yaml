@@ -1,7 +1,7 @@
 name: salahulddin_azkar
 description: "salahulddin-AZKAR — أذكار المسلم والمصحف الشريف"
 publish_to: 'none'
-version: 1.6.58+99
+version: 1.6.59+100
 
 environment:
   sdk: ^3.11.5
@@ -72,3 +72,10 @@ flutter:
     - family: AmiriQuran
       fonts:
         - asset: assets/fonts/AmiriQuran.ttf
+
+# The iOS side of flutter_local_notifications 18.0.1 builds alert dates in
+# the device's calendar; on Hijri-calendar iPhones (ar_SA) every adhan was
+# dropped as already past. This copy uses the Gregorian calendar instead.
+dependency_overrides:
+  flutter_local_notifications:
+    path: third_party/flutter_local_notifications
