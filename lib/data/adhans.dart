@@ -1,84 +1,65 @@
 /// One recorded adhan.
 ///
-/// Android plays a notification sound from a bundled resource, never from a
-/// URL — the system reads the file itself, and it cannot reach the network to
-/// do it. So a downloadable adhan is copied into the app's own storage first,
-/// and only then can it be chosen.
+/// Only historical recordings more than fifty years old are offered (the
+/// related-rights term in Egypt and Saudi Arabia), always under the sheikh's
+/// name and trimmed only — the voice itself is never altered.
+///
+/// Each one is two files: the whole adhan, which the app plays and Android
+/// uses as the alert, and its first 29 seconds as a CAF clip, because iOS
+/// plays no longer a sound with a notification.
 class Adhan {
   final String id;
   final String name;
   final String place;
 
-  /// Present for the two that ship inside the app; the rest arrive from here.
-  final String? url;
+  /// False for the ones fetched on demand from [host].
+  final bool bundled;
 
   const Adhan({
     required this.id,
     required this.name,
     required this.place,
-    this.url,
+    this.bundled = false,
   });
 
-  bool get isBundled => url == null;
+  static const host = 'https://qdata.salahulddin.com/adhan';
+
+  bool get isBundled => bundled;
+
+  /// The file name shared by every copy: res/raw on Android, Library/Sounds
+  /// on iOS, and the server.
+  String get resource => 'adhan_$id';
+
+  /// The whole adhan, for a downloadable one.
+  String? get url => bundled ? null : '$host/$resource.m4a';
+
+  /// The 29-second iOS alert clip, for a downloadable one.
+  String? get clipUrl => bundled ? null : '$host/$resource.caf';
 }
 
 class Adhans {
-  /// Two ship with the app so the feature works on first launch, offline, and
-  /// without asking. Ten more are a tap away for whoever wants a particular
-  /// voice — bundling all twelve would add eight megabytes for eleven files
-  /// most readers will never play.
+  /// Two ship with the app so the alert works on first launch, offline; the
+  /// rest are a tap away.
   static const all = <Adhan>[
-    Adhan(id: 'makkah', name: 'أذان مكة المكرمة', place: 'مُرفق بالتطبيق'),
-    Adhan(id: 'madinah', name: 'أذان المدينة المنورة', place: 'مُرفق بالتطبيق'),
     Adhan(
-      id: 'afasy',
-      name: 'أذان مشاري العفاسي',
-      place: 'يحتاج تنزيلاً',
-      url: 'https://www.islamcan.com/audio/adhan/azan2.mp3',
+      id: 'mustafa1948',
+      name: 'الشيخ مصطفى إسماعيل',
+      place: 'القصر الملكي ١٩٤٨',
+      bundled: true,
     ),
     Adhan(
-      id: 'egypt',
-      name: 'أذان مصري',
-      place: 'يحتاج تنزيلاً',
-      url: 'https://www.islamcan.com/audio/adhan/azan3.mp3',
+      id: 'minshawi',
+      name: 'الشيخ محمد صديق المنشاوي',
+      place: 'تسجيل قديم',
+      bundled: true,
     ),
-    Adhan(
-      id: 'aqsa',
-      name: 'أذان المسجد الأقصى',
-      place: 'يحتاج تنزيلاً',
-      url: 'https://www.islamcan.com/audio/adhan/azan4.mp3',
-    ),
-    Adhan(
-      id: 'turkey',
-      name: 'أذان تركي',
-      place: 'يحتاج تنزيلاً',
-      url: 'https://www.islamcan.com/audio/adhan/azan5.mp3',
-    ),
-    Adhan(
-      id: 'fajr',
-      name: 'أذان الفجر',
-      place: 'بزيادة «الصلاة خير من النوم»',
-      url: 'https://www.islamcan.com/audio/adhan/azan6.mp3',
-    ),
-    Adhan(
-      id: 'nasser',
-      name: 'أذان ناصر القطامي',
-      place: 'يحتاج تنزيلاً',
-      url: 'https://www.islamcan.com/audio/adhan/azan7.mp3',
-    ),
-    Adhan(
-      id: 'hidayah',
-      name: 'أذان الهداية',
-      place: 'يحتاج تنزيلاً',
-      url: 'https://www.islamcan.com/audio/adhan/azan9.mp3',
-    ),
-    Adhan(
-      id: 'classic',
-      name: 'أذان كلاسيكي',
-      place: 'يحتاج تنزيلاً',
-      url: 'https://www.islamcan.com/audio/adhan/azan10.mp3',
-    ),
+    Adhan(id: 'mustafa1971', name: 'الشيخ مصطفى إسماعيل', place: 'أرمنت ١٩٧١'),
+    Adhan(id: 'refaat', name: 'الشيخ محمد رفعت', place: 'تسجيل قديم'),
   ];
+
+  static const defaultId = 'mustafa1948';
+
+  static bool known(String? id) => all.any((a) => a.id == id);
 
   static Adhan byId(String id) =>
       all.firstWhere((a) => a.id == id, orElse: () => all.first);

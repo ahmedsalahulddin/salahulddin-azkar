@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Only the downloaded adhans (path_provider's application support
+     directory is Context.getFilesDir()). -->
+<paths>
+    <files-path name="adhans" path="adhans/" />
+</paths>

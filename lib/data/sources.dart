@@ -209,10 +209,16 @@ class Sources {
     ),
     AppSource(
       title: 'أصوات الأذان',
-      holder: 'qurango.net و IslamCan.com',
+      holder:
+          'الشيخ مصطفى إسماعيل (القصر الملكي ١٩٤٨، أرمنت ١٩٧١)، '
+          'والشيخ محمد صديق المنشاوي (ت ١٩٦٩)، والشيخ محمد رفعت (ت ١٩٥٠)',
       kind: SourceKind.audio,
-      standing: Standing.hosted,
-      url: 'https://www.islamcan.com',
+      standing: Standing.publicDomain,
+      detail:
+          'تسجيلات تاريخية مضى عليها أكثر من خمسين عاماً، مدة حماية '
+          'التسجيل الصوتي في مصر والسعودية. لم يُغيَّر الصوت، واقتُصر على '
+          'قصّ البداية والنهاية',
+      url: 'https://archive.org/details/Mustafa_Azan',
     ),
     AppSource(
       title: 'الإذاعات',

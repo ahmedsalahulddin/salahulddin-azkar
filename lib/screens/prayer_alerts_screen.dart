@@ -437,22 +437,36 @@ class _PrayerAlertsScreenState extends State<PrayerAlertsScreen>
     );
   }
 
-  /// Why a downloaded adhan can be heard but not set.
-  void _sayDownloadOnly(BuildContext context, Adhan adhan) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(
-            t('adh.adhanListenOnlyTemplate').replaceFirst('%s', adhan.name),
-            textAlign: TextAlign.right,
-          ),
-          backgroundColor: AppColors.blackCard,
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 4),
+  /// Fetches [adhan], and makes it the alert's sound when [choose]; says so
+  /// if the download failed.
+  Future<void> _download(
+    BuildContext context,
+    Adhan adhan, {
+    bool choose = false,
+  }) async {
+    final ok = await AdhanDownloads.fetch(adhan);
+    if (!context.mounted) return;
+    if (ok) {
+      if (choose) await PrayerAlerts.setAdhan(adhan.id);
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          t('adh.downloadFailedTemplate').replaceFirst('%s', adhan.name),
+          textAlign: TextAlign.right,
         ),
-      );
+        backgroundColor: AppColors.blackCard,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
+
+  String _status(Adhan adhan, bool here) => adhan.isBundled
+      ? t('adh.bundledTag')
+      : here
+      ? t('adh.onDeviceListenOnly')
+      : t('adh.needsDownloadTag');
 
   Widget _adhanRow(
     BuildContext context,
@@ -468,14 +482,15 @@ class _PrayerAlertsScreenState extends State<PrayerAlertsScreen>
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),
       child: GestureDetector(
-        // Only a bundled adhan can be the alert's sound — Android reads that
-        // from inside the app and cannot reach a file the app downloaded. The
-        // row still answers a tap, and says so: one that looks exactly like
-        // its neighbours and does nothing when pressed reads as broken, which
-        // is worse than a refusal that explains itself.
-        onTap: () => adhan.isBundled
-            ? PrayerAlerts.setAdhan(adhan.id)
-            : _sayDownloadOnly(context, adhan),
+        // Any adhan can be the alert's sound; one not yet on the device is
+        // fetched first and chosen once it has arrived.
+        onTap: () {
+          if (here) {
+            PrayerAlerts.setAdhan(adhan.id);
+          } else if (busy == null) {
+            _download(context, adhan, choose: true);
+          }
+        },
         behavior: HitTestBehavior.opaque,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -489,13 +504,11 @@ class _PrayerAlertsScreenState extends State<PrayerAlertsScreen>
           child: Row(
             children: [
               Icon(
-                adhan.isBundled
-                    ? (chosen
-                          ? Icons.radio_button_checked
-                          : Icons.radio_button_unchecked)
-                    : (here
-                          ? Icons.check_circle_outline
-                          : Icons.cloud_outlined),
+                chosen
+                    ? Icons.radio_button_checked
+                    : here
+                    ? Icons.radio_button_unchecked
+                    : Icons.cloud_outlined,
                 size: 17,
                 color: chosen ? AppColors.gold : AppColors.textMuted,
               ),
@@ -512,11 +525,7 @@ class _PrayerAlertsScreenState extends State<PrayerAlertsScreen>
                       ),
                     ),
                     Text(
-                      adhan.isBundled
-                          ? adhan.place
-                          : here
-                          ? t('adh.onDeviceListenOnly')
-                          : adhan.place,
+                      '${adhan.place} · ${_status(adhan, here)}',
                       style: const TextStyle(
                         color: AppColors.textMuted,
                         fontSize: 10,
@@ -525,6 +534,17 @@ class _PrayerAlertsScreenState extends State<PrayerAlertsScreen>
                   ],
                 ),
               ),
+              if (here)
+                IconButton(
+                  tooltip: t('adh.listenTooltip'),
+                  visualDensity: VisualDensity.compact,
+                  icon: const Icon(
+                    Icons.play_circle_outline,
+                    color: AppColors.gold,
+                    size: 22,
+                  ),
+                  onPressed: () => AdhanDownloads.playFull(adhan),
+                ),
               if (!adhan.isBundled)
                 loading
                     ? const SizedBox(
@@ -543,22 +563,7 @@ class _PrayerAlertsScreenState extends State<PrayerAlertsScreen>
                                   await AdhanDownloads.remove(adhan);
                                   return;
                                 }
-                                final ok = await AdhanDownloads.fetch(adhan);
-                                if (!context.mounted) return;
-                                if (!ok) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        t(
-                                          'adh.downloadFailedTemplate',
-                                        ).replaceFirst('%s', adhan.name),
-                                        textAlign: TextAlign.right,
-                                      ),
-                                      backgroundColor: AppColors.blackCard,
-                                      behavior: SnackBarBehavior.floating,
-                                    ),
-                                  );
-                                }
+                                await _download(context, adhan);
                               },
                         child: Text(
                           here

@@ -94,8 +94,7 @@ const _ar = <String, String>{
       'ترجمات معاني القرآن التي تظهر بجوار الآيات في التفسير والمصحف.',
   'dl.bundled': 'مدمج في التطبيق',
   'dl.bookText': 'النص العربي',
-  'dl.adhanNote':
-      'الأذان المنزَّل يُسمع من داخل التطبيق، ولا يمكن استخدامه كصوت للتنبيه — تنبيه الأذان يستخدم أذان مكة أو المدينة المدمجين.',
+  'dl.adhanNote': 'الأذان المنزَّل يمكن اختياره صوتاً لتنبيه الصلاة.',
   'dl.delete': 'حذف',
   'dl.deleteConfirm': 'حذف هذا التنزيل من الجهاز؟',
   'dl.deleteAll': 'حذف الكل',
@@ -1361,10 +1360,11 @@ const _ar = <String, String>{
   'adh.leadTimeTemplate': 'يأتي قبل الأذان بـ %s دقيقة',
   'adh.adhanSectionTitle': 'الأذان',
   'adh.adhanBundledNote':
-      'المُرفقان يعملان في التنبيه. الباقي يُنزَّل للاستماع داخل التطبيق — أندرويد يقرأ صوت التنبيه من داخل التطبيق ولا يجلبه من التنزيلات.',
-  'adh.adhanListenOnlyTemplate':
-      '%s للاستماع داخل التطبيق فقط. أصوات التنبيه يقرأها النظام من داخل التطبيق نفسه، فاختر أذان مكة أو المدينة.',
-  'adh.onDeviceListenOnly': 'على جهازك — للاستماع',
+      'الأذان الذي تختاره هنا هو صوت التنبيه، مُرفقاً كان أو منزَّلاً. كلها تسجيلات قديمة لكبار القراء مضى عليها أكثر من خمسين عاماً. في الآيفون يُسمع أول ٣٠ ثانية مع الإشعار، واضغط الإشعار لسماع الأذان كاملاً.',
+  'adh.onDeviceListenOnly': 'على جهازك',
+  'adh.bundledTag': 'مُرفق بالتطبيق',
+  'adh.listenTooltip': 'استمع',
+  'adh.needsDownloadTag': 'يحتاج تنزيلاً',
   'adh.downloadFailedTemplate': 'تعذّر تنزيل %s',
   'adh.deleteButtonLabel': 'حذف',
   'adh.downloadButtonLabel': 'تنزيل',
@@ -1609,8 +1609,7 @@ const _en = <String, String>{
       'Quran meaning translations shown beside the verses in the tafsir and Mushaf.',
   'dl.bundled': 'Built into the app',
   'dl.bookText': 'Arabic text',
-  'dl.adhanNote':
-      'Downloaded adhans play inside the app only and can\'t be used as the alert sound — the adhan alert uses the built-in Makkah or Madinah adhan.',
+  'dl.adhanNote': 'A downloaded adhan can be chosen as the prayer alert sound.',
   'dl.delete': 'Delete',
   'dl.deleteConfirm': 'Delete this download from the device?',
   'dl.deleteAll': 'Delete all',
@@ -2918,10 +2917,11 @@ const _en = <String, String>{
   'adh.leadTimeTemplate': 'Comes %s minutes before adhan',
   'adh.adhanSectionTitle': 'Adhan',
   'adh.adhanBundledNote':
-      'The two bundled adhans work as the alert sound. The rest can be downloaded to listen to inside the app — Android reads the alert sound from inside the app and cannot fetch it from downloads.',
-  'adh.adhanListenOnlyTemplate':
-      '%s is for listening inside the app only. Alert sounds are read by the system from inside the app itself, so choose the Makkah or Madinah adhan.',
-  'adh.onDeviceListenOnly': 'On your device — for listening',
+      'The adhan you pick here is the alert sound, bundled or downloaded. All are historic recordings by great reciters, over fifty years old. On iPhone the first 30 seconds play with the notification — tap it to hear the full adhan.',
+  'adh.onDeviceListenOnly': 'On your device',
+  'adh.bundledTag': 'Bundled with the app',
+  'adh.listenTooltip': 'Listen',
+  'adh.needsDownloadTag': 'Needs downloading',
   'adh.downloadFailedTemplate': 'Could not download %s',
   'adh.deleteButtonLabel': 'Delete',
   'adh.downloadButtonLabel': 'Download',

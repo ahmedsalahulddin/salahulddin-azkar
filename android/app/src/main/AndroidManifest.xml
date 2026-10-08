@@ -102,6 +102,18 @@
             </intent-filter>
         </receiver>
 
+        <!-- Hands a downloaded adhan to the notification system as its sound
+             (MainActivity, "salahulddin/adhan_sound"). -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.adhanfiles"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/adhan_paths" />
+        </provider>
+
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

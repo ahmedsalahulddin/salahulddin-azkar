@@ -77,16 +77,10 @@ void main() {
           reason: 'muting is not turning off — the alerts still arrive');
     });
 
-    test('only the call itself gets an adhan, never the early warning', () {
-      // A full adhan fifteen minutes early would send people out.
-      expect(PrayerAlerts.bundledResource, 'adhan_makkah');
-      expect(Adhans.byId('makkah').isBundled, isTrue);
-      expect(Adhans.byId('afasy').isBundled, isFalse);
-      // A downloadable adhan has no resource yet, so the alert keeps the
-      // system tone rather than falling silent.
-      PrayerAlerts.adhan.value = 'afasy';
-      expect(PrayerAlerts.bundledResource, isNull);
-      PrayerAlerts.adhan.value = 'makkah';
+    test('a withdrawn voice falls back to the default adhan', () {
+      expect(Adhans.known('makkah'), isFalse);
+      expect(Adhans.known('afasy'), isFalse);
+      expect(Adhans.byId('makkah').id, Adhans.defaultId);
     });
 
     test('changing a setting rebuilds the schedule at once', () async {

@@ -1,6 +1,7 @@
 import 'package:adhan/adhan.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:salahulddin_azkar/data/adhans.dart';
+import 'package:salahulddin_azkar/services/prayer_alerts.dart';
 import 'package:salahulddin_azkar/services/prayer_settings.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -143,7 +144,15 @@ void main() {
     });
 
     test('the default adhan is one the system can play', () {
-      expect(Adhans.byId('makkah').isBundled, isTrue);
+      expect(Adhans.byId(Adhans.defaultId).isBundled, isTrue);
+      expect(PrayerAlerts.adhan.value, Adhans.defaultId);
+    });
+
+    test('every downloadable adhan has its iOS alert clip too', () {
+      for (final adhan in Adhans.all.where((a) => !a.isBundled)) {
+        expect(adhan.clipUrl, endsWith('${adhan.resource}.caf'));
+        expect(adhan.url, endsWith('${adhan.resource}.m4a'));
+      }
     });
   });
 }

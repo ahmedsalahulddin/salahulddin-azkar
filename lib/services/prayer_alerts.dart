@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../data/adhans.dart';
 import 'app_locale.dart';
 
 /// How an alert arrives.
@@ -117,7 +119,7 @@ class PrayerAlerts {
   static final lead = ValueNotifier<int>(15);
 
   /// Which adhan plays at prayer time, by [Adhan.id].
-  static final adhan = ValueNotifier<String>('makkah');
+  static final adhan = ValueNotifier<String>(Adhans.defaultId);
 
   static const leadChoices = [5, 10, 15, 20, 30, 45];
 
@@ -183,7 +185,10 @@ class PrayerAlerts {
     try {
       final prefs = await SharedPreferences.getInstance();
       lead.value = prefs.getInt(_leadKey) ?? 15;
-      adhan.value = prefs.getString(_adhanKey) ?? 'makkah';
+      // An id from an earlier catalogue (the voices that were withdrawn for
+      // want of a licence) falls back to the default rather than to silence.
+      final stored = prefs.getString(_adhanKey);
+      adhan.value = Adhans.known(stored) ? stored! : Adhans.defaultId;
       final raw = prefs.getString(_key);
       // Reset rather than return: loading must land on what is stored, and
       // "nothing is stored" means nothing is set.
@@ -301,16 +306,6 @@ class PrayerAlerts {
     await _save((prefs) => prefs.remove(_beforeMuteKey));
     await _reschedule();
   }
-
-  /// The raw resource name for the chosen adhan, or null when it is one of
-  /// the downloadable ones — those cannot be a notification sound until they
-  /// are copied in, so until then the alert keeps the system tone rather than
-  /// falling silent.
-  static String? get bundledResource => switch (adhan.value) {
-    'makkah' => 'adhan_makkah',
-    'madinah' => 'adhan_madinah',
-    _ => null,
-  };
 
   static bool get anySound => settings.value.values.any((m) => m.sound);
 

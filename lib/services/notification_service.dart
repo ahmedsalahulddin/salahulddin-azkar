@@ -11,9 +11,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
+import '../data/adhans.dart';
 import '../data/adhkar_data.dart';
 import '../data/quran_data.dart';
 import '../l10n/strings.dart';
+import 'adhan_downloads.dart';
 import 'app_locale.dart';
 import 'custom_reminders.dart';
 import 'notification_router.dart';
@@ -64,7 +66,18 @@ class NotificationService {
       if (!dir.existsSync()) dir.createSync(recursive: true);
       // Each on its own, the small one first: one that cannot be written
       // must not cost the others.
-      for (final name in const ['silence', 'adhan_makkah', 'adhan_madinah']) {
+      // The withdrawn voices' clips, left by earlier versions.
+      for (final old in const ['adhan_makkah', 'adhan_madinah']) {
+        try {
+          final f = File('${dir.path}/$old.caf');
+          if (f.existsSync()) f.deleteSync();
+        } catch (_) {}
+      }
+      for (final name in [
+        'silence',
+        for (final a in Adhans.all)
+          if (a.isBundled) a.resource,
+      ]) {
         try {
           final data = await rootBundle.load('assets/sounds/$name.caf');
           final file = File('${dir.path}/$name.caf');
@@ -85,6 +98,31 @@ class NotificationService {
   /// system default.
   static String? _iosSound(String? resource) =>
       resource == null ? null : '$resource.caf';
+
+  /// The chosen adhan as the system will play it, or null for the system's
+  /// own tone (a downloadable adhan that is not on the device).
+  static Future<_AdhanSound?> _adhanSound() async {
+    final adhan = Adhans.byId(PrayerAlerts.adhan.value);
+    if (adhan.isBundled) {
+      return _AdhanSound(
+        adhan.resource,
+        RawResourceAndroidNotificationSound(adhan.resource),
+      );
+    }
+    if (!AdhanDownloads.ready.value.contains(adhan.id)) return null;
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      return _AdhanSound(adhan.resource, null);
+    }
+    final uri = await AdhanDownloads.androidUri(adhan);
+    if (uri == null) return null;
+    // A channel keeps the sound it was made with; a new link (the file was
+    // fetched again) needs a new channel.
+    return _AdhanSound(
+      '${adhan.resource}_${uri.hashCode.toUnsigned(32).toRadixString(36)}',
+      UriAndroidNotificationSound(uri),
+      iosName: adhan.resource,
+    );
+  }
 
   static Future<void> init() async {
     if (kIsWeb || _initialized) return;
@@ -359,9 +397,8 @@ class NotificationService {
     if (kIsWeb) return 'web';
     try {
       await init();
-      final soundResource = PrayerAlerts.bundledResource;
-      final channel =
-          'salahulddin_prayer_sound_v5_${soundResource ?? 'default'}';
+      final sound = await _adhanSound();
+      final channel = 'salahulddin_prayer_sound_v5_${sound?.key ?? 'default'}';
       await _plugin.show(
         _adhanTestId,
         'جرّبت صوت الأذان',
@@ -374,14 +411,12 @@ class NotificationService {
             importance: reminderImportance,
             priority: reminderPriority,
             playSound: true,
-            sound: soundResource != null
-                ? RawResourceAndroidNotificationSound(soundResource)
-                : null,
+            sound: sound?.android,
             visibility: NotificationVisibility.public,
           ),
           iOS: DarwinNotificationDetails(
             presentSound: true,
-            sound: _iosSound(soundResource),
+            sound: _iosSound(sound?.ios),
           ),
         ),
       );
@@ -480,6 +515,9 @@ class NotificationService {
       'salahulddin_prayer_sound_v4_adhan_makkah',
       'salahulddin_prayer_sound_v4_adhan_madinah',
       'salahulddin_prayer_sound_v4_default',
+      // The withdrawn voices.
+      'salahulddin_prayer_sound_v5_adhan_makkah',
+      'salahulddin_prayer_sound_v5_adhan_madinah',
     ];
     try {
       final android = _plugin
@@ -686,7 +724,10 @@ class NotificationService {
 
   static DateTime? _payloadMoment(String? payload) {
     if (payload == null || !payload.startsWith(_prayerPayload)) return null;
-    final ms = int.tryParse(payload.substring(_prayerPayload.length));
+    // "prayer:<ms>", or "prayer:<ms>:adhan" when it sounds the adhan.
+    final ms = int.tryParse(
+      payload.substring(_prayerPayload.length).split(':').first,
+    );
     return ms == null ? null : DateTime.fromMillisecondsSinceEpoch(ms);
   }
 
@@ -954,9 +995,7 @@ class NotificationService {
             // The adhan belongs to the call to prayer, not to the warning
             // before it: a full adhan fifteen minutes early would send
             // people out.
-            soundResource: when == AlertWhen.onTime
-                ? PrayerAlerts.bundledResource
-                : null,
+            sound: when == AlertWhen.onTime ? await _adhanSound() : null,
           );
           laid[id] = moment.millisecondsSinceEpoch;
         } catch (_) {
@@ -972,7 +1011,7 @@ class NotificationService {
     required String body,
     required DateTime at,
     required AlertMode mode,
-    String? soundResource,
+    _AdhanSound? sound,
   }) async {
     // Android fixes sound and vibration to the channel, not the notification,
     // so one channel could never be silent for one prayer and audible for the
@@ -983,7 +1022,7 @@ class NotificationService {
     // v5: old v2/v3/v4 channels are deleted at startup (_dropQuietChannels) so
     // that any created without a sound get recreated here with the adhan.
     final channel = mode.sound
-        ? 'salahulddin_prayer_sound_v5_${soundResource ?? 'default'}'
+        ? 'salahulddin_prayer_sound_v5_${sound?.key ?? 'default'}'
         : 'salahulddin_prayer_silent_v2';
 
     final androidDetails = AndroidNotificationDetails(
@@ -994,9 +1033,7 @@ class NotificationService {
       priority: reminderPriority,
       playSound: mode.sound,
       enableVibration: mode.notify,
-      sound: mode.sound && soundResource != null
-          ? RawResourceAndroidNotificationSound(soundResource)
-          : null,
+      sound: mode.sound ? sound?.android : null,
       visibility: NotificationVisibility.public,
       // Marks it as an alarm rather than a chat-style notification, so Do Not
       // Disturb's "alarms" exception and the lock screen treat it as one.
@@ -1006,13 +1043,18 @@ class NotificationService {
     // "notification and vibration" plays a second of silence.
     final iosDetails = DarwinNotificationDetails(
       presentSound: mode.sound || mode.notify,
-      sound: mode.sound ? _iosSound(soundResource) : _iosSound('silence'),
+      sound: mode.sound ? _iosSound(sound?.ios) : _iosSound('silence'),
     );
     final details = NotificationDetails(
       android: androidDetails,
       iOS: iosDetails,
     );
     final tzAt = tz.TZDateTime.from(at, tz.local);
+    // Tapping an adhan alert on iPhone plays the whole adhan in the app; the
+    // notification itself can carry only its first 30 seconds.
+    final payload =
+        '$_prayerPayload${at.millisecondsSinceEpoch}'
+        '${mode.sound && sound != null ? ':adhan' : ''}';
 
     // alarmClock uses AlarmManager.setAlarmClock(), which is exempt from Doze
     // and fires at the exact minute. On Android 13+ without SCHEDULE_EXACT_ALARM
@@ -1025,7 +1067,7 @@ class NotificationService {
         body,
         tzAt,
         details,
-        payload: '$_prayerPayload${at.millisecondsSinceEpoch}',
+        payload: payload,
         androidScheduleMode: AndroidScheduleMode.alarmClock,
         uiLocalNotificationDateInterpretation:
             UILocalNotificationDateInterpretation.absoluteTime,
@@ -1040,7 +1082,7 @@ class NotificationService {
       body,
       tzAt,
       details,
-      payload: '$_prayerPayload${at.millisecondsSinceEpoch}',
+      payload: payload,
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
@@ -1220,4 +1262,15 @@ class NotificationService {
       matchDateTimeComponents: DateTimeComponents.time,
     );
   }
+}
+
+/// An adhan as handed to the system: [key] names its Android channel,
+/// [android] is the sound itself (null for the default tone), [ios] the CAF
+/// clip's name in Library/Sounds.
+class _AdhanSound {
+  final String key;
+  final AndroidNotificationSound? android;
+  final String ios;
+
+  _AdhanSound(this.key, this.android, {String? iosName}) : ios = iosName ?? key;
 }

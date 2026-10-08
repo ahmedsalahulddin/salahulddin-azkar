@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../data/adhkar_data.dart';
@@ -5,6 +6,7 @@ import '../data/quran_data.dart';
 import '../screens/category_screen.dart';
 import '../screens/deceased_screen.dart';
 import '../screens/mushaf_screen.dart';
+import 'adhan_downloads.dart';
 
 /// Opens what a tapped notification points at. The payload is the reminder's
 /// own ("surah:18", "adhkar:morning"); anything else is ignored, so older
@@ -50,6 +52,17 @@ class NotificationRouter {
         nav.push(
           MaterialPageRoute(builder: (_) => MushafScreen(initialPage: page)),
         );
+      case 'prayer':
+        // "<ms>:adhan" — the call to prayer itself, with its sound. iOS
+        // played only its first 30 seconds, so the whole adhan follows when
+        // the tap comes while it is still the time of the call.
+        final parts = value.split(':');
+        final ms = int.tryParse(parts.first);
+        if (ms == null || !parts.contains('adhan')) return;
+        if (defaultTargetPlatform != TargetPlatform.iOS) return;
+        final late = DateTime.now().millisecondsSinceEpoch - ms;
+        if (late < -60000 || late > 15 * 60000) return;
+        await AdhanDownloads.playFull();
       case 'adhkar':
         final cat = categories.where((c) => c.id == value).firstOrNull;
         if (cat == null) return;

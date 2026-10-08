@@ -92,7 +92,10 @@ void main() async {
   await DailyReminders.load();
   CustomReminders.onChanged = NotificationService.scheduleCustomReminders;
   await CustomReminders.load();
-  unawaited(AdhanDownloads.refresh());
+  // Before any alert is laid: a downloaded adhan is the alert sound only
+  // once it is known to be on the device.
+  await AdhanDownloads.refresh();
+  unawaited(AdhanDownloads.cacheBundled());
   unawaited(RecitationDownloads.refresh());
   unawaited(LibraryBookmarks.load());
   // The chosen Mushaf border, so the first page opens already wearing it —

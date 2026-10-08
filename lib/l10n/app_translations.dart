@@ -479,10 +479,11 @@ const appTranslations = <String, Map<String, String>>{
     'adh.leadTimeTemplate': 'Arrive %s minutes avant l\'adhan',
     'adh.adhanSectionTitle': 'Adhan',
     'adh.adhanBundledNote':
-        'Les deux adhans intégrés fonctionnent comme son d\'alerte. Les autres peuvent être téléchargés pour être écoutés dans l\'application — Android lit le son d\'alerte depuis l\'application elle-même et ne peut pas le récupérer dans les téléchargements.',
-    'adh.adhanListenOnlyTemplate':
-        '%s est réservé à l\'écoute dans l\'application. Les sons d\'alerte sont lus par le système depuis l\'application elle-même, choisissez donc l\'adhan de La Mecque ou de Médine.',
-    'adh.onDeviceListenOnly': 'Sur votre appareil — pour l\'écoute',
+        'L\'adhan choisi ici est le son de l\'alerte, intégré ou téléchargé. Ce sont des enregistrements historiques de grands récitateurs, vieux de plus de cinquante ans. Sur iPhone, les 30 premières secondes accompagnent la notification — touchez-la pour entendre l\'adhan complet.',
+    'adh.onDeviceListenOnly': 'Sur votre appareil',
+    'adh.bundledTag': 'Intégré à l\'application',
+    'adh.listenTooltip': 'Écouter',
+    'adh.needsDownloadTag': 'À télécharger',
     'adh.downloadFailedTemplate': 'Impossible de télécharger %s',
     'adh.deleteButtonLabel': 'Supprimer',
     'adh.downloadButtonLabel': 'Télécharger',
@@ -941,7 +942,7 @@ const appTranslations = <String, Map<String, String>>{
     'dl.bundled': 'Intégré à l\'application',
     'dl.bookText': 'Texte arabe',
     'dl.adhanNote':
-        'Les adhans téléchargés ne sont lus que dans l\'application et ne peuvent pas servir de son d\'alerte — l\'alerte d\'adhan utilise l\'adhan intégré de La Mecque ou de Médine.',
+        'Un adhan téléchargé peut être choisi comme son de l\'alerte de prière.',
     'dl.delete': 'Supprimer',
     'dl.deleteConfirm': 'Supprimer ce téléchargement de l\'appareil ?',
     'dl.deleteAll': 'Tout supprimer',
@@ -1398,10 +1399,11 @@ const appTranslations = <String, Map<String, String>>{
     'adh.leadTimeTemplate': 'اذان سے %s منٹ پہلے آتا ہے',
     'adh.adhanSectionTitle': 'اذان',
     'adh.adhanBundledNote':
-        'دونوں شامل شدہ اذانیں تنبیہ کے طور پر کام کرتی ہیں۔ باقی کو ایپ کے اندر سننے کے لیے ڈاؤن لوڈ کیا جا سکتا ہے — اینڈرائیڈ تنبیہ کی آواز ایپ کے اندر سے پڑھتا ہے اور اسے ڈاؤن لوڈز سے حاصل نہیں کرتا۔',
-    'adh.adhanListenOnlyTemplate':
-        '%s صرف ایپ کے اندر سننے کے لیے ہے۔ تنبیہ کی آوازیں نظام ایپ کے اندر سے ہی پڑھتا ہے، اس لیے مکہ یا مدینہ کی اذان منتخب کریں۔',
-    'adh.onDeviceListenOnly': 'آپ کے آلے پر — سننے کے لیے',
+        'یہاں جو اذان آپ چنیں وہی تنبیہ کی آواز ہے، شامل شدہ ہو یا ڈاؤن لوڈ کی ہوئی۔ سب بڑے قراء کی پچاس سال سے زیادہ پرانی تاریخی ریکارڈنگز ہیں۔ آئی فون پر اطلاع کے ساتھ پہلے ۳۰ سیکنڈ سنائی دیتے ہیں — پوری اذان سننے کے لیے اطلاع کو چھوئیں۔',
+    'adh.onDeviceListenOnly': 'آپ کے آلے پر',
+    'adh.bundledTag': 'ایپ میں شامل',
+    'adh.listenTooltip': 'سنیں',
+    'adh.needsDownloadTag': 'ڈاؤن لوڈ درکار',
     'adh.downloadFailedTemplate': '%s ڈاؤن لوڈ نہیں ہو سکی',
     'adh.deleteButtonLabel': 'حذف',
     'adh.downloadButtonLabel': 'ڈاؤن لوڈ',
@@ -1837,7 +1839,7 @@ const appTranslations = <String, Map<String, String>>{
     'dl.bundled': 'ایپ میں شامل',
     'dl.bookText': 'عربی متن',
     'dl.adhanNote':
-        'ڈاؤن لوڈ کی گئی اذانیں صرف ایپ کے اندر سنی جا سکتی ہیں اور انہیں اطلاع کی آواز کے طور پر استعمال نہیں کیا جا سکتا — اذان کی اطلاع ایپ میں شامل مکہ یا مدینہ کی اذان استعمال کرتی ہے۔',
+        'ڈاؤن لوڈ کی گئی اذان کو نماز کی تنبیہ کی آواز کے طور پر چنا جا سکتا ہے۔',
     'dl.delete': 'حذف کریں',
     'dl.deleteConfirm': 'یہ ڈاؤن لوڈ ڈیوائس سے حذف کریں؟',
     'dl.deleteAll': 'سب حذف کریں',
@@ -2306,10 +2308,11 @@ const appTranslations = <String, Map<String, String>>{
     'adh.leadTimeTemplate': 'Datang %s menit sebelum azan',
     'adh.adhanSectionTitle': 'Azan',
     'adh.adhanBundledNote':
-        'Kedua azan bawaan berfungsi sebagai suara notifikasi. Sisanya bisa diunduh untuk didengarkan di dalam aplikasi — Android membaca suara notifikasi dari dalam aplikasi dan tidak bisa mengambilnya dari hasil unduhan.',
-    'adh.adhanListenOnlyTemplate':
-        '%s hanya untuk didengarkan di dalam aplikasi. Suara notifikasi dibaca sistem dari dalam aplikasi itu sendiri, jadi pilih azan Makkah atau Madinah.',
-    'adh.onDeviceListenOnly': 'Di perangkat Anda — untuk didengarkan',
+        'Azan yang Anda pilih di sini menjadi suara notifikasi, baik bawaan maupun unduhan. Semuanya rekaman bersejarah para qari besar yang berusia lebih dari lima puluh tahun. Di iPhone, 30 detik pertama diputar bersama notifikasi — ketuk untuk mendengar azan lengkap.',
+    'adh.onDeviceListenOnly': 'Di perangkat Anda',
+    'adh.bundledTag': 'Bawaan aplikasi',
+    'adh.listenTooltip': 'Dengarkan',
+    'adh.needsDownloadTag': 'Perlu diunduh',
     'adh.downloadFailedTemplate': 'Gagal mengunduh %s',
     'adh.deleteButtonLabel': 'Hapus',
     'adh.downloadButtonLabel': 'Unduh',
@@ -2754,7 +2757,7 @@ const appTranslations = <String, Map<String, String>>{
     'dl.bundled': 'Sudah ada di aplikasi',
     'dl.bookText': 'Teks Arab',
     'dl.adhanNote':
-        'Azan yang diunduh hanya diputar di dalam aplikasi dan tidak bisa dipakai sebagai suara pengingat — pengingat azan memakai azan Makkah atau Madinah bawaan.',
+        'Azan yang diunduh bisa dipilih sebagai suara pengingat salat.',
     'dl.delete': 'Hapus',
     'dl.deleteConfirm': 'Hapus unduhan ini dari perangkat?',
     'dl.deleteAll': 'Hapus semua',
@@ -3224,10 +3227,11 @@ const appTranslations = <String, Map<String, String>>{
     'adh.leadTimeTemplate': 'Tiba %s minit sebelum azan',
     'adh.adhanSectionTitle': 'Azan',
     'adh.adhanBundledNote':
-        'Dua azan yang disertakan berfungsi sebagai bunyi makluman. Selebihnya boleh dimuat turun untuk didengar dalam aplikasi — Android membaca bunyi makluman dari dalam aplikasi sahaja dan tidak boleh mengambilnya daripada muat turun.',
-    'adh.adhanListenOnlyTemplate':
-        '%s hanya untuk didengar dalam aplikasi sahaja. Bunyi makluman dibaca oleh sistem dari dalam aplikasi itu sendiri, jadi pilih azan Makkah atau Madinah.',
-    'adh.onDeviceListenOnly': 'Pada peranti anda — untuk didengar',
+        'Azan yang anda pilih di sini menjadi bunyi makluman, sama ada terbina atau dimuat turun. Semuanya rakaman bersejarah qari terkenal yang berusia lebih lima puluh tahun. Di iPhone, 30 saat pertama dimainkan bersama makluman — ketik untuk mendengar azan penuh.',
+    'adh.onDeviceListenOnly': 'Pada peranti anda',
+    'adh.bundledTag': 'Terbina dalam aplikasi',
+    'adh.listenTooltip': 'Dengar',
+    'adh.needsDownloadTag': 'Perlu dimuat turun',
     'adh.downloadFailedTemplate': 'Tidak dapat memuat turun %s',
     'adh.deleteButtonLabel': 'Padam',
     'adh.downloadButtonLabel': 'Muat turun',
@@ -3675,7 +3679,7 @@ const appTranslations = <String, Map<String, String>>{
     'dl.bundled': 'Terbina dalam aplikasi',
     'dl.bookText': 'Teks Arab',
     'dl.adhanNote':
-        'Azan yang dimuat turun hanya dimainkan dalam aplikasi dan tidak boleh digunakan sebagai bunyi peringatan — peringatan azan menggunakan azan Makkah atau Madinah terbina dalam.',
+        'Azan yang dimuat turun boleh dipilih sebagai bunyi peringatan solat.',
     'dl.delete': 'Padam',
     'dl.deleteConfirm': 'Padam muat turun ini daripada peranti?',
     'dl.deleteAll': 'Padam semua',
@@ -4132,10 +4136,11 @@ const appTranslations = <String, Map<String, String>>{
     'adh.leadTimeTemplate': 'अज़ान से %s मिनट पहले आता है',
     'adh.adhanSectionTitle': 'अज़ान',
     'adh.adhanBundledNote':
-        'दोनों साथ दिए गए अज़ान तनबीह की आवाज़ के तौर पर काम करते हैं। बाक़ी ऐप के अंदर सुनने के लिए डाउनलोड किए जा सकते हैं — ऐंड्रॉइड तनबीह की आवाज़ ऐप के अंदर से ही पढ़ता है, डाउनलोड्स से नहीं लाता।',
-    'adh.adhanListenOnlyTemplate':
-        '%s केवल ऐप के अंदर सुनने के लिए है। तनबीह की आवाज़ सिस्टम ऐप के अंदर से ही पढ़ता है, इसलिए मक्का या मदीना का अज़ान चुनें।',
-    'adh.onDeviceListenOnly': 'आपके डिवाइस पर — सुनने के लिए',
+        'यहाँ जो अज़ान आप चुनें वही तनबीह की आवाज़ है, साथ दिया गया हो या डाउनलोड किया हुआ। सब बड़े क़ारियों की पचास साल से ज़्यादा पुरानी ऐतिहासिक रिकॉर्डिंग हैं। आईफ़ोन पर सूचना के साथ पहले 30 सेकंड बजते हैं — पूरा अज़ान सुनने के लिए सूचना छुएँ।',
+    'adh.onDeviceListenOnly': 'आपके डिवाइस पर',
+    'adh.bundledTag': 'ऐप के साथ',
+    'adh.listenTooltip': 'सुनें',
+    'adh.needsDownloadTag': 'डाउनलोड ज़रूरी',
     'adh.downloadFailedTemplate': '%s डाउनलोड नहीं हो सका',
     'adh.deleteButtonLabel': 'हटाएँ',
     'adh.downloadButtonLabel': 'डाउनलोड',
@@ -4575,7 +4580,7 @@ const appTranslations = <String, Map<String, String>>{
     'dl.bundled': 'ऐप में शामिल',
     'dl.bookText': 'अरबी पाठ',
     'dl.adhanNote':
-        'डाउनलोड की गई अज़ानें सिर्फ़ ऐप के अंदर चलती हैं और अलर्ट की आवाज़ के रूप में इस्तेमाल नहीं हो सकतीं — अज़ान अलर्ट ऐप में शामिल मक्का या मदीना की अज़ान इस्तेमाल करता है।',
+        'डाउनलोड किया गया अज़ान नमाज़ की तनबीह की आवाज़ के तौर पर चुना जा सकता है।',
     'dl.delete': 'हटाएँ',
     'dl.deleteConfirm': 'यह डाउनलोड डिवाइस से हटाएँ?',
     'dl.deleteAll': 'सब हटाएँ',
@@ -5038,10 +5043,11 @@ const appTranslations = <String, Map<String, String>>{
     'adh.leadTimeTemplate': 'Ezandan %s dakika önce gelir',
     'adh.adhanSectionTitle': 'Ezan',
     'adh.adhanBundledNote':
-        'Uygulamayla gelen iki ezan bildirim sesi olarak çalışır. Diğerleri, uygulama içinde dinlemek için indirilebilir — Android bildirim sesini uygulamanın içinden okur, indirilenlerden almaz.',
-    'adh.adhanListenOnlyTemplate':
-        '%s yalnızca uygulama içinde dinlemek içindir. Bildirim sesini sistem uygulamanın kendisinden okur, bu yüzden Mekke veya Medine ezanını seçin.',
-    'adh.onDeviceListenOnly': 'Cihazınızda — dinlemek için',
+        'Burada seçtiğiniz ezan, ister yerleşik ister indirilmiş olsun, uyarı sesidir. Hepsi büyük karilerin elli yılı aşkın tarihî kayıtlarıdır. iPhone\'da bildirimle ilk 30 saniye çalar — ezanın tamamını dinlemek için bildirime dokunun.',
+    'adh.onDeviceListenOnly': 'Cihazınızda',
+    'adh.bundledTag': 'Uygulamayla birlikte',
+    'adh.listenTooltip': 'Dinle',
+    'adh.needsDownloadTag': 'İndirilmesi gerekir',
     'adh.downloadFailedTemplate': '%s indirilemedi',
     'adh.deleteButtonLabel': 'Sil',
     'adh.downloadButtonLabel': 'İndir',
@@ -5478,8 +5484,7 @@ const appTranslations = <String, Map<String, String>>{
         'Tefsir ve Mushaf\'ta ayetlerin yanında gösterilen Kur\'an mealleri.',
     'dl.bundled': 'Uygulamada yerleşik',
     'dl.bookText': 'Arapça metin',
-    'dl.adhanNote':
-        'İndirilen ezanlar yalnızca uygulama içinde çalar ve bildirim sesi olarak kullanılamaz — ezan bildirimi yerleşik Mekke veya Medine ezanını kullanır.',
+    'dl.adhanNote': 'İndirilen ezan, namaz uyarısının sesi olarak seçilebilir.',
     'dl.delete': 'Sil',
     'dl.deleteConfirm': 'Bu indirme cihazdan silinsin mi?',
     'dl.deleteAll': 'Tümünü sil',
@@ -5937,10 +5942,11 @@ const appTranslations = <String, Map<String, String>>{
     'adh.leadTimeTemplate': 'আযানের %s মিনিট আগে আসে',
     'adh.adhanSectionTitle': 'আযান',
     'adh.adhanBundledNote':
-        'দুটি অন্তর্ভুক্ত আযান সতর্কবার্তার শব্দ হিসেবে কাজ করে। বাকিগুলো অ্যাপের ভেতরে শোনার জন্য ডাউনলোড করা যায় — অ্যান্ড্রয়েড সতর্কবার্তার শব্দ অ্যাপের ভেতর থেকেই পড়ে, ডাউনলোড থেকে আনে না।',
-    'adh.adhanListenOnlyTemplate':
-        '%s শুধুমাত্র অ্যাপের ভেতরে শোনার জন্য। সতর্কবার্তার শব্দ সিস্টেম অ্যাপের ভেতর থেকেই পড়ে, তাই মক্কা বা মদিনার আযান বেছে নিন।',
-    'adh.onDeviceListenOnly': 'আপনার ডিভাইসে — শোনার জন্য',
+        'এখানে যে আযান বেছে নেবেন সেটিই সতর্কতার শব্দ, অন্তর্ভুক্ত হোক বা ডাউনলোড করা। সবই বড় ক্বারিদের পঞ্চাশ বছরেরও বেশি পুরোনো ঐতিহাসিক রেকর্ডিং। আইফোনে বিজ্ঞপ্তির সঙ্গে প্রথম ৩০ সেকেন্ড বাজে — পুরো আযান শুনতে বিজ্ঞপ্তিতে চাপুন।',
+    'adh.onDeviceListenOnly': 'আপনার ডিভাইসে',
+    'adh.bundledTag': 'অ্যাপে অন্তর্ভুক্ত',
+    'adh.listenTooltip': 'শুনুন',
+    'adh.needsDownloadTag': 'ডাউনলোড প্রয়োজন',
     'adh.downloadFailedTemplate': '%s ডাউনলোড করা যায়নি',
     'adh.deleteButtonLabel': 'মুছুন',
     'adh.downloadButtonLabel': 'ডাউনলোড',
@@ -6375,7 +6381,7 @@ const appTranslations = <String, Map<String, String>>{
     'dl.bundled': 'অ্যাপে অন্তর্ভুক্ত',
     'dl.bookText': 'আরবি পাঠ',
     'dl.adhanNote':
-        'ডাউনলোড করা আযান শুধু অ্যাপের ভেতরে বাজে এবং সতর্কতার শব্দ হিসেবে ব্যবহার করা যায় না — আযানের সতর্কতা অ্যাপে অন্তর্ভুক্ত মক্কা বা মদীনার আযান ব্যবহার করে।',
+        'ডাউনলোড করা আযান নামাজের সতর্কতার শব্দ হিসেবে বেছে নেওয়া যায়।',
     'dl.delete': 'মুছুন',
     'dl.deleteConfirm': 'এই ডাউনলোডটি ডিভাইস থেকে মুছবেন?',
     'dl.deleteAll': 'সব মুছুন',
@@ -6839,10 +6845,11 @@ const appTranslations = <String, Map<String, String>>{
     'adh.leadTimeTemplate': 'Yana zuwa mintuna %s kafin azãni',
     'adh.adhanSectionTitle': 'Azãni',
     'adh.adhanBundledNote':
-        'Azãni biyu da ke tare da app ɗin suna aiki a matsayin sautin tunatarwa. Sauran za a sauke su ne don saurare a cikin app ɗin kawai — Android yana karɓan sautin tunatarwa daga cikin app ɗin ne, ba ya karɓarsa daga abubuwan da aka sauke.',
-    'adh.adhanListenOnlyTemplate':
-        '%s don saurare a cikin app ne kawai. Tsarin na\'urar yana karɓan sautin tunatarwa daga cikin app ɗin ne kansa, don haka zaɓi azãnin Makka ko na Madina.',
-    'adh.onDeviceListenOnly': 'A na\'urarka — don saurare',
+        'Kiran sallar da ka zaɓa a nan shi ne sautin sanarwa, na cikin manhaja ko wanda aka sauke. Duka tsofaffin rikodin manyan makaranta ne da suka haura shekara hamsin. A iPhone daƙiƙa 30 na farko ne ke tashi da sanarwar — taɓa ta don jin kiran sallar gaba ɗaya.',
+    'adh.onDeviceListenOnly': 'A na\'urarka',
+    'adh.bundledTag': 'Yana cikin manhaja',
+    'adh.listenTooltip': 'Saurara',
+    'adh.needsDownloadTag': 'Yana bukatar saukewa',
     'adh.downloadFailedTemplate': 'Ba a iya sauke %s ba',
     'adh.deleteButtonLabel': 'Goge',
     'adh.downloadButtonLabel': 'Sauke',
@@ -7285,7 +7292,7 @@ const appTranslations = <String, Map<String, String>>{
     'dl.bundled': 'Yana cikin manhajar',
     'dl.bookText': 'Rubutun Larabci',
     'dl.adhanNote':
-        'Azãnin da aka sauke ana jin su a cikin manhajar kawai, kuma ba za a iya amfani da su a matsayin sautin sanarwa ba — sanarwar azãni tana amfani da azãnin Makka ko Madina da ke cikin manhajar.',
+        'Ana iya zaɓar kiran sallar da aka sauke a matsayin sautin sanarwar sallah.',
     'dl.delete': 'Goge',
     'dl.deleteConfirm': 'A goge wannan saukewa daga na\'urar?',
     'dl.deleteAll': 'Goge duka',
