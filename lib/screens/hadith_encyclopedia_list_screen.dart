@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../constants/theme.dart';
 import '../data/hadith_encyclopedia_data.dart';
 import '../l10n/strings.dart';
+import '../services/app_locale.dart';
 
 /// One category's hadiths, paginated. Each row expands in place to its full
 /// text — Arabic first, then the picked language, then the explanation and
@@ -66,7 +67,7 @@ class _HadithEncyclopediaListScreenState
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppLocale.direction,
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
@@ -303,8 +304,10 @@ class _HadeethCardState extends State<_HadeethCard> {
               ),
               child: Text(
                 d.hadeeth,
-                textDirection: TextDirection.ltr,
-                textAlign: TextAlign.left,
+                textDirection: widget.lang == 'ur'
+                    ? TextDirection.rtl
+                    : TextDirection.ltr,
+                textAlign: TextAlign.start,
                 style: const TextStyle(
                   color: AppColors.textGold,
                   fontSize: 13.5,
@@ -390,8 +393,8 @@ class _HadeethCardState extends State<_HadeethCard> {
           const SizedBox(height: 8),
           Text(
             '${t('lib2.certifiedTranslationLabel')} — hadeethenc.com',
-            textDirection: TextDirection.rtl,
-            textAlign: TextAlign.right,
+            textDirection: AppLocale.direction,
+            textAlign: TextAlign.start,
             style: const TextStyle(color: AppColors.textMuted, fontSize: 10),
           ),
         ],

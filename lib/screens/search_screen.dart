@@ -9,6 +9,7 @@ import '../data/lessons.dart';
 import '../data/library_data.dart';
 import '../data/quran_data.dart';
 import '../l10n/strings.dart';
+import '../services/app_locale.dart';
 import 'book_reader_screen.dart';
 import 'books_screen.dart';
 import 'cards_screen.dart';
@@ -231,7 +232,7 @@ class AppSearch {
           title: _excerpt(ayah.text),
           subtitle: t('misc.ayahLocation')
               .replaceAll('{surah}', ayah.surahName)
-              .replaceAll('{ayah}', QuranService.toArabicDigits(ayah.ayah)),
+              .replaceAll('{ayah}', AppLocale.digits(ayah.ayah)),
           open: (c) async {
             final page = await QuranService.pageOfAyah(ayah.surah, ayah.ayah);
             if (c.mounted) {
@@ -247,7 +248,7 @@ class AppSearch {
           section: t('misc.sectionQuranVerses'),
           title: t(
             'misc.andMoreAyahs',
-          ).replaceAll('{count}', QuranService.toArabicDigits(ayat.length)),
+          ).replaceAll('{count}', AppLocale.digits(ayat.length)),
           subtitle: t('misc.openMushafSearchHint'),
           open: (c) => _push(c, () => const MushafScreen(initialPage: 1)),
         ),
@@ -334,7 +335,7 @@ class _SearchScreenState extends State<SearchScreen> {
     }
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppLocale.direction,
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
@@ -343,7 +344,6 @@ class _SearchScreenState extends State<SearchScreen> {
           title: TextField(
             controller: _controller,
             autofocus: true,
-            textAlign: TextAlign.right,
             style: const TextStyle(color: AppColors.textPrimary, fontSize: 15),
             decoration: InputDecoration(
               hintText: t('misc.searchAllSectionsHint'),
@@ -366,7 +366,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     Padding(
                       padding: const EdgeInsets.fromLTRB(2, 8, 2, 8),
                       child: Text(
-                        '${entry.key} · ${QuranService.toArabicDigits(entry.value.length)}',
+                        '${entry.key} · ${AppLocale.digits(entry.value.length)}',
                         style: const TextStyle(
                           color: AppColors.gold,
                           fontSize: 13,
@@ -461,8 +461,8 @@ class _SearchScreenState extends State<SearchScreen> {
                 ],
               ),
             ),
-            const Icon(
-              Icons.chevron_left,
+            Icon(
+              AppLocale.isRtl ? Icons.chevron_left : Icons.chevron_right,
               color: AppColors.textMuted,
               size: 18,
             ),

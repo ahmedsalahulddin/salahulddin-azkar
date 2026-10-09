@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../constants/theme.dart';
 import '../data/hisn_data.dart';
-import '../data/quran_data.dart' show QuranService;
 import '../data/umrah_data.dart';
 import '../l10n/strings.dart';
 import '../services/favourites.dart';
@@ -10,6 +9,7 @@ import '../widgets/bilingual_text.dart';
 import '../widgets/dhikr_audio.dart';
 import '../widgets/dhikr_text.dart';
 import '../widgets/favourite_star.dart';
+import '../services/app_locale.dart';
 
 /// The Umrah supplications, walked through in the order of the rites.
 ///
@@ -63,7 +63,10 @@ class _UmrahScreenState extends State<UmrahScreen> {
     HapticFeedback.lightImpact();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(t('adh.duaCopiedMsg'), textDirection: TextDirection.rtl),
+        content: Text(
+          t('adh.duaCopiedMsg'),
+          textDirection: AppLocale.direction,
+        ),
         backgroundColor: AppColors.emerald,
         duration: const Duration(seconds: 2),
       ),
@@ -75,7 +78,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
     final stages = _stages;
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppLocale.direction,
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
@@ -131,7 +134,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
           Text(
             t(
               'adh.umrahIntroSubtitleTemplate',
-            ).replaceFirst('%s', QuranService.toArabicDigits(_total)),
+            ).replaceFirst('%s', AppLocale.digits(_total)),
             style: const TextStyle(
               color: AppColors.textSecondary,
               fontSize: 13,
@@ -177,7 +180,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
                     ),
                     child: Center(
                       child: Text(
-                        QuranService.toArabicDigits(index + 1),
+                        AppLocale.digits(index + 1),
                         style: const TextStyle(
                           color: AppColors.gold,
                           fontSize: 13,
@@ -203,7 +206,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          '${QuranService.toArabicDigits(count)} ${t('adh.duaCountSuffix')}',
+                          '${AppLocale.digits(count)} ${t('adh.duaCountSuffix')}',
                           style: const TextStyle(
                             color: AppColors.textMuted,
                             fontSize: 11,
@@ -249,7 +252,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
         padding: const EdgeInsets.fromLTRB(14, 12, 14, 6),
         child: BilingualText(
           chapter.displayTitle,
-          textAlign: TextAlign.right,
+          textAlign: AppLocale.isRtl ? TextAlign.right : TextAlign.left,
           maxLines: 2,
           style: const TextStyle(
             color: AppColors.textGold,
@@ -293,7 +296,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
                         border: Border.all(color: AppColors.goldBorder),
                       ),
                       child: Text(
-                        '${QuranService.toArabicDigits(dhikr.repeat)} ${t('adh.timesCountSuffix')}',
+                        '${AppLocale.digits(dhikr.repeat)} ${t('adh.timesCountSuffix')}',
                         style: const TextStyle(
                           color: AppColors.textGold,
                           fontSize: 11,

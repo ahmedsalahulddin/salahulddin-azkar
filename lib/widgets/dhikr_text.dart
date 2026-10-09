@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/theme.dart';
 import '../l10n/strings.dart';
+import '../services/app_locale.dart';
 
 /// Display names for the machine-translated languages a caller may pass in
 /// [DhikrText.moreTranslations], in picker order.
@@ -54,7 +55,7 @@ class DhikrLangButton extends StatelessWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
       ),
       builder: (ctx) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppLocale.direction,
         child: SafeArea(
           child: ValueListenableBuilder<String?>(
             valueListenable: DhikrLangPref.selected,
@@ -179,8 +180,11 @@ class DhikrText extends StatelessWidget {
                   children: [
                     Text(
                       activeText,
-                      textDirection: TextDirection.ltr,
-                      textAlign: TextAlign.left,
+                      // Urdu reads right to left; the rest left to right.
+                      textDirection: lang == 'ur'
+                          ? TextDirection.rtl
+                          : TextDirection.ltr,
+                      textAlign: TextAlign.start,
                       style: const TextStyle(
                         color: AppColors.textGold,
                         fontSize: 13.5,
@@ -191,8 +195,8 @@ class DhikrText extends StatelessWidget {
                       const SizedBox(height: 6),
                       Text(
                         t('adh.machineTranslationDisclaimer'),
-                        textDirection: TextDirection.rtl,
-                        textAlign: TextAlign.right,
+                        textDirection: AppLocale.direction,
+                        textAlign: TextAlign.start,
                         style: const TextStyle(
                           color: AppColors.textMuted,
                           fontSize: 10,

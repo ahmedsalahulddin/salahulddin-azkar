@@ -4,6 +4,7 @@ import '../data/tafsir_data.dart';
 import '../l10n/strings.dart';
 import '../data/ayah_notes_data.dart';
 import '../screens/researcher/researcher_screen.dart';
+import '../services/app_locale.dart';
 import 'ayah_note_panel.dart';
 import 'gharib_panel.dart';
 import 'translation_panel.dart';
@@ -95,7 +96,7 @@ class _TafsirSheetState extends State<TafsirSheet> {
         SnackBar(
           content: Text(
             t('mushaf.downloadSurahsFailed').replaceFirst('%s', '$failed'),
-            textDirection: TextDirection.rtl,
+            textDirection: AppLocale.direction,
           ),
           backgroundColor: AppColors.error,
         ),
@@ -236,6 +237,7 @@ class _TafsirSheetState extends State<TafsirSheet> {
       child: Text(
         widget.ayahText,
         textAlign: TextAlign.center,
+        textDirection: TextDirection.rtl,
         style: const TextStyle(
           fontFamily: _mushafFont,
           color: AppColors.textGold,
@@ -305,6 +307,13 @@ class _TafsirSheetState extends State<TafsirSheet> {
         },
       ),
     );
+  }
+
+  /// Arabic editions carry no language suffix; of the translated ones only
+  /// Urdu reads right to left.
+  TextDirection get _editionDirection {
+    final lang = RegExp(r'-([a-z]{2})$').firstMatch(_edition.id)?.group(1);
+    return lang == null || lang == 'ur' ? TextDirection.rtl : TextDirection.ltr;
   }
 
   Widget _body() {
@@ -385,6 +394,7 @@ class _TafsirSheetState extends State<TafsirSheet> {
     return Text(
       _text ?? t('mushaf.noTafsirForThisAyah'),
       textAlign: TextAlign.justify,
+      textDirection: _text == null ? AppLocale.direction : _editionDirection,
       style: const TextStyle(
         color: AppColors.textPrimary,
         fontSize: 15,

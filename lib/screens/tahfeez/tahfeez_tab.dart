@@ -1228,7 +1228,7 @@ class _TahfeezTabState extends State<TahfeezTab> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: tahfeezDirection(),
         child: SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -1338,7 +1338,7 @@ class _TahfeezTabState extends State<TahfeezTab> {
       ),
       isScrollControlled: true,
       builder: (ctx) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: tahfeezDirection(),
         child: DraggableScrollableSheet(
           expand: false,
           initialChildSize: 0.6,

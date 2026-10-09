@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../constants/theme.dart';
-import '../../data/quran_data.dart';
 import '../../l10n/strings.dart';
 import '../../services/repeat_settings.dart';
+import '../../services/app_locale.dart';
 
 /// Sets up a memorisation drill: how many times each ayah repeats, how many
 /// ayahs the drill covers, and how many times the whole passage is replayed.
@@ -166,7 +166,7 @@ class _RepeatSheetState extends State<RepeatSheet> {
           SizedBox(
             width: 40,
             child: Text(
-              QuranService.toArabicDigits(value),
+              AppLocale.digits(value),
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: AppColors.gold,

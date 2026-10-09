@@ -55,6 +55,14 @@ class AppLocale {
   static TextDirection get direction =>
       isRtl ? TextDirection.rtl : TextDirection.ltr;
 
+  /// A count shown inside translated UI text: Arabic-Indic digits for an
+  /// Arabic reader, Western digits for everyone else.
+  static String digits(int n) => code == 'ar'
+      ? String.fromCharCodes(
+          n.toString().codeUnits.map((c) => c - 0x30 + 0x0660),
+        )
+      : '$n';
+
   static String nameOf(String c) {
     for (final (code, name) in languages) {
       if (code == c) return name;

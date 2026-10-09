@@ -6,6 +6,7 @@ import '../../constants/theme.dart';
 import '../../data/quran_data.dart';
 import '../../data/researcher_data.dart';
 import '../../l10n/strings.dart';
+import '../../services/app_locale.dart';
 
 /// Searches the books downloaded on this device. Pops with the hit the
 /// reader opens.
@@ -81,7 +82,7 @@ class _ResearcherSearchScreenState extends State<ResearcherSearchScreen> {
   Widget build(BuildContext context) {
     final typed = _query.text.trim().length >= 2;
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppLocale.direction,
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
@@ -98,6 +99,8 @@ class _ResearcherSearchScreenState extends State<ResearcherSearchScreen> {
               onChanged: _changed,
               onSubmitted: _search,
               textInputAction: TextInputAction.search,
+              // Searches the Arabic books.
+              textDirection: TextDirection.rtl,
               style: const TextStyle(color: AppColors.textPrimary),
               cursorColor: AppColors.gold,
               decoration: InputDecoration(
@@ -121,10 +124,9 @@ class _ResearcherSearchScreenState extends State<ResearcherSearchScreen> {
               Text(
                 _downloaded == 0
                     ? t('researcher.searchNoBooks')
-                    : t('researcher.searchScope').replaceFirst(
-                        '%s',
-                        QuranService.toArabicDigits(_downloaded),
-                      ),
+                    : t(
+                        'researcher.searchScope',
+                      ).replaceFirst('%s', AppLocale.digits(_downloaded)),
                 style: const TextStyle(
                   color: AppColors.textMuted,
                   fontSize: 12,
@@ -158,6 +160,7 @@ class _ResearcherSearchScreenState extends State<ResearcherSearchScreen> {
                   onTap: () => Navigator.pop(context, h),
                   title: Text(
                     '${h.book.name} — ${_surahNames[h.surah] ?? ''} ${QuranService.toArabicDigits(h.ayah)}',
+                    textDirection: TextDirection.rtl,
                     style: const TextStyle(
                       color: AppColors.gold,
                       fontSize: 13,
@@ -166,6 +169,7 @@ class _ResearcherSearchScreenState extends State<ResearcherSearchScreen> {
                   ),
                   subtitle: Text(
                     h.snippet,
+                    textDirection: TextDirection.rtl,
                     style: const TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 13,

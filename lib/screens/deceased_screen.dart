@@ -8,6 +8,7 @@ import '../l10n/strings.dart';
 import '../widgets/adhkar_card.dart';
 import '../widgets/dhikr_text.dart';
 import '../widgets/tasbih_counter.dart';
+import '../services/app_locale.dart';
 
 class DeceasedPerson {
   final String id;
@@ -86,7 +87,7 @@ class _DeceasedScreenState extends State<DeceasedScreen> {
     showDialog(
       context: context,
       builder: (ctx) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppLocale.direction,
         child: AlertDialog(
           backgroundColor: AppColors.blackCard,
           shape: RoundedRectangleBorder(
@@ -105,7 +106,6 @@ class _DeceasedScreenState extends State<DeceasedScreen> {
             children: [
               TextField(
                 controller: _nameController,
-                textAlign: TextAlign.right,
                 style: const TextStyle(color: AppColors.textPrimary),
                 decoration: InputDecoration(
                   hintText: t('misc.deceasedNameHint'),
@@ -125,7 +125,6 @@ class _DeceasedScreenState extends State<DeceasedScreen> {
               const SizedBox(height: 12),
               TextField(
                 controller: _relationController,
-                textAlign: TextAlign.right,
                 style: const TextStyle(color: AppColors.textPrimary),
                 decoration: InputDecoration(
                   hintText: t('misc.relationHintOptional'),
@@ -192,7 +191,7 @@ class _DeceasedScreenState extends State<DeceasedScreen> {
     showDialog(
       context: context,
       builder: (ctx) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppLocale.direction,
         child: AlertDialog(
           backgroundColor: AppColors.blackCard,
           shape: RoundedRectangleBorder(
@@ -238,7 +237,7 @@ class _DeceasedScreenState extends State<DeceasedScreen> {
     final duas = getAdhkarByCategory('deceased');
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppLocale.direction,
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(

@@ -8,6 +8,7 @@ import 'package:flutter_compass/flutter_compass.dart';
 import '../constants/theme.dart';
 import '../l10n/strings.dart';
 import '../services/prayer_service.dart';
+import '../services/app_locale.dart';
 
 /// Points to the Kaaba using the device's magnetometer and the reader's
 /// location — the direction itself comes from [Qibla] (part of the same
@@ -70,7 +71,7 @@ class _QiblaScreenState extends State<QiblaScreen> {
         status == LocationStatus.serviceOff;
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppLocale.direction,
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(

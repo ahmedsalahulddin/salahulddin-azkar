@@ -33,6 +33,10 @@ class _StoryScreenState extends State<StoryScreen> {
   String get _source => _translation?.source ?? widget.story.source;
   bool get _isArabic => _translation == null;
 
+  /// The story's own direction, which follows its language, not the app's.
+  TextDirection get _storyDirection =>
+      _isArabic || _lang == 'ur' ? TextDirection.rtl : TextDirection.ltr;
+
   void _pickLang() {
     showModalBottomSheet<void>(
       context: context,
@@ -45,7 +49,7 @@ class _StoryScreenState extends State<StoryScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
       ),
       builder: (ctx) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppLocale.direction,
         child: SafeArea(
           child: ListView(
             shrinkWrap: true,
@@ -123,11 +127,16 @@ class _StoryScreenState extends State<StoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: _isArabic ? TextDirection.rtl : TextDirection.ltr,
+      textDirection: AppLocale.direction,
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
-          title: Text(_title, maxLines: 1, overflow: TextOverflow.ellipsis),
+          title: Text(
+            _title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textDirection: _storyDirection,
+          ),
           backgroundColor: AppColors.black,
           foregroundColor: AppColors.gold,
           actions: [
@@ -156,66 +165,68 @@ class _StoryScreenState extends State<StoryScreen> {
         body: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.blackCard,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.goldBorder),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    _body,
-                    textAlign: _isArabic ? TextAlign.right : TextAlign.left,
-                    style: const TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 16,
-                      height: 2.0,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  Container(
-                    padding: const EdgeInsets.only(top: 10),
-                    decoration: const BoxDecoration(
-                      border: Border(
-                        top: BorderSide(color: AppColors.goldBorder),
+            Directionality(
+              textDirection: _storyDirection,
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.blackCard,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.goldBorder),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      _body,
+                      textAlign: TextAlign.start,
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 16,
+                        height: 2.0,
                       ),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Text(
-                          '📖 $_source',
-                          textAlign: _isArabic
-                              ? TextAlign.right
-                              : TextAlign.left,
-                          style: const TextStyle(
-                            color: AppColors.textGold,
-                            fontSize: 12,
-                          ),
+                    const SizedBox(height: 14),
+                    Container(
+                      padding: const EdgeInsets.only(top: 10),
+                      decoration: const BoxDecoration(
+                        border: Border(
+                          top: BorderSide(color: AppColors.goldBorder),
                         ),
-                        if (storySunnahRefs[widget.story.id]
-                            case final refs?) ...[
-                          const SizedBox(height: 10),
-                          SunnahLinks(refs: refs, isArabic: _isArabic),
-                        ],
-                        if (_translation != null) ...[
-                          const SizedBox(height: 4),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
                           Text(
-                            'Translated by ${_translation!.translator}',
-                            textAlign: TextAlign.left,
+                            '📖 $_source',
+                            textAlign: TextAlign.start,
                             style: const TextStyle(
-                              color: AppColors.textMuted,
-                              fontSize: 10,
+                              color: AppColors.textGold,
+                              fontSize: 12,
                             ),
                           ),
+                          if (storySunnahRefs[widget.story.id]
+                              case final refs?) ...[
+                            const SizedBox(height: 10),
+                            SunnahLinks(refs: refs, isArabic: _isArabic),
+                          ],
+                          if (_translation != null) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              'Translated by ${_translation!.translator}',
+                              textAlign: TextAlign.left,
+                              textDirection: TextDirection.ltr,
+                              style: const TextStyle(
+                                color: AppColors.textMuted,
+                                fontSize: 10,
+                              ),
+                            ),
+                          ],
                         ],
-                      ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 14),

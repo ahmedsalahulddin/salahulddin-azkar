@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../constants/theme.dart';
 import '../data/translation_data.dart';
 import '../l10n/strings.dart';
+import '../services/app_locale.dart';
 
 /// Shows the meanings of one ayah in another language, and lets the reader
 /// pick which translation to read. None ship with the app, so an unfetched
@@ -88,7 +89,7 @@ class _TranslationPanelState extends State<TranslationPanel> {
         SnackBar(
           content: Text(
             t('mushaf.downloadSurahsFailed').replaceFirst('%s', '$failed'),
-            textDirection: TextDirection.rtl,
+            textDirection: AppLocale.direction,
           ),
           backgroundColor: AppColors.error,
         ),

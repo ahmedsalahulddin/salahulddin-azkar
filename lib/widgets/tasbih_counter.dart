@@ -4,6 +4,7 @@ import '../constants/theme.dart';
 import '../data/adhkar_data.dart';
 import '../l10n/strings.dart';
 import '../services/storage_service.dart';
+import '../services/app_locale.dart';
 
 class TasbihCounter extends StatefulWidget {
   final Dhikr dhikr;
@@ -77,7 +78,7 @@ class _TasbihCounterState extends State<TasbihCounter>
     final remaining = (_target - _count).clamp(0, _target);
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppLocale.direction,
       child: Scaffold(
         backgroundColor: Colors.black87,
         body: SafeArea(
@@ -120,6 +121,7 @@ class _TasbihCounterState extends State<TasbihCounter>
                       height: 1.8,
                     ),
                     textAlign: TextAlign.center,
+                    textDirection: TextDirection.rtl,
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                   ),

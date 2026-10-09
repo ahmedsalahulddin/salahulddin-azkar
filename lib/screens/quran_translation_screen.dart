@@ -208,7 +208,7 @@ class _QuranTranslationScreenState extends State<QuranTranslationScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
       ),
       builder: (ctx) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppLocale.direction,
         child: SafeArea(
           child: ListView(
             shrinkWrap: true,
@@ -254,7 +254,7 @@ class _QuranTranslationScreenState extends State<QuranTranslationScreen> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppLocale.direction,
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
@@ -305,7 +305,7 @@ class _QuranTranslationScreenState extends State<QuranTranslationScreen> {
                           SizedBox(
                             width: 34,
                             child: Text(
-                              QuranService.toArabicDigits(info.number),
+                              AppLocale.digits(info.number),
                               style: const TextStyle(
                                 color: AppColors.textMuted,
                                 fontSize: 12,
@@ -335,15 +335,17 @@ class _QuranTranslationScreenState extends State<QuranTranslationScreen> {
                             ),
                           ),
                           Text(
-                            '${QuranService.toArabicDigits(info.ayahCount)} ${t('qs.ayahUnit')}',
+                            '${AppLocale.digits(info.ayahCount)} ${t('qs.ayahUnit')}',
                             style: const TextStyle(
                               color: AppColors.textMuted,
                               fontSize: 11,
                             ),
                           ),
                           const SizedBox(width: 4),
-                          const Icon(
-                            Icons.chevron_left,
+                          Icon(
+                            AppLocale.isRtl
+                                ? Icons.chevron_left
+                                : Icons.chevron_right,
                             color: AppColors.textMuted,
                             size: 18,
                           ),
@@ -453,7 +455,7 @@ class _QuranTranslationSurahScreenState
         tag: MediaItem(
           id: 'trans:${_reciter.id}:${_info.number}:${ayah.number}',
           title:
-              '${_info.name} — ${t('qs.ayahWord')} ${QuranService.toArabicDigits(ayah.number)}',
+              '${_info.name} — ${t('qs.ayahWord')} ${AppLocale.digits(ayah.number)}',
           artist: _reciter.displayName,
           album: t('qs.quranTitle'),
         ),
@@ -655,7 +657,7 @@ class _QuranTranslationSurahScreenState
         borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
       ),
       builder: (ctx) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppLocale.direction,
         child: SafeArea(
           child: ListView(
             shrinkWrap: true,
@@ -718,7 +720,7 @@ class _QuranTranslationSurahScreenState
         borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
       ),
       builder: (ctx) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppLocale.direction,
         child: SafeArea(
           child: ListView(
             shrinkWrap: true,
@@ -766,7 +768,7 @@ class _QuranTranslationSurahScreenState
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppLocale.direction,
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
@@ -995,7 +997,7 @@ class _QuranTranslationSurahScreenState
                   border: Border.all(color: AppColors.goldBorder),
                 ),
                 child: Text(
-                  QuranService.toArabicDigits(ayah.number),
+                  AppLocale.digits(ayah.number),
                   style: const TextStyle(color: AppColors.gold, fontSize: 12),
                 ),
               ),
@@ -1080,8 +1082,10 @@ class _QuranTranslationSurahScreenState
             const SizedBox(height: 10),
             Text(
               trans,
-              textDirection: TextDirection.ltr,
-              textAlign: TextAlign.left,
+              textDirection: _langCode == 'ur'
+                  ? TextDirection.rtl
+                  : TextDirection.ltr,
+              textAlign: TextAlign.start,
               style: TextStyle(
                 color: speaking ? AppColors.textGold : AppColors.textSecondary,
                 fontSize: 14,

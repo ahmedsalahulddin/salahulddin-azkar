@@ -4,6 +4,7 @@ import '../../constants/theme.dart';
 import '../../data/quran_data.dart';
 import '../../l10n/strings.dart';
 import '../../services/bookmark_service.dart';
+import '../../services/app_locale.dart';
 
 /// The search box the drawer's two search tabs share — same shape, same
 /// placement, so moving between them changes only what is being searched.
@@ -32,6 +33,8 @@ class MushafSearchField extends StatelessWidget {
         controller: controller,
         onChanged: onChanged,
         textAlign: TextAlign.right,
+        // Searches Arabic surah names and Quran words.
+        textDirection: TextDirection.rtl,
         style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
         decoration: InputDecoration(
           hintText: hint,
@@ -84,7 +87,7 @@ class _SurahTabState extends State<SurahTab> {
             itemBuilder: (context, i) => ListTile(
               dense: true,
               leading: Text(
-                QuranService.toArabicDigits(filtered[i].number),
+                AppLocale.digits(filtered[i].number),
                 style: const TextStyle(color: AppColors.gold, fontSize: 13),
               ),
               title: Text(
@@ -129,15 +132,15 @@ class JuzTab extends StatelessWidget {
       itemBuilder: (context, i) => ListTile(
         dense: true,
         leading: Text(
-          QuranService.toArabicDigits(juz[i]),
+          AppLocale.digits(juz[i]),
           style: const TextStyle(color: AppColors.gold, fontSize: 13),
         ),
         title: Text(
-          '${t('mushaf.juz')} ${QuranService.toArabicDigits(juz[i])}',
+          '${t('mushaf.juz')} ${AppLocale.digits(juz[i])}',
           style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
         ),
         subtitle: Text(
-          '${t('mushaf.startsAtPage')} ${QuranService.toArabicDigits(firstPage[juz[i]]!)}',
+          '${t('mushaf.startsAtPage')} ${AppLocale.digits(firstPage[juz[i]]!)}',
           style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
         ),
         onTap: () => onPage(firstPage[juz[i]]!),
@@ -243,11 +246,11 @@ class _WordSearchTabState extends State<WordSearchTab> {
                       : t('mushaf.occurrencesResult')
                             .replaceFirst(
                               '{count}',
-                              QuranService.toArabicDigits(_occurrences),
+                              AppLocale.digits(_occurrences),
                             )
                             .replaceFirst(
                               '{ayahs}',
-                              QuranService.toArabicDigits(_hits.length),
+                              AppLocale.digits(_hits.length),
                             ),
                   style: const TextStyle(
                     color: AppColors.textGold,
@@ -306,6 +309,7 @@ class _WordSearchTabState extends State<WordSearchTab> {
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.right,
+              textDirection: TextDirection.rtl,
               style: const TextStyle(
                 fontFamily: mushafFont,
                 color: AppColors.textPrimary,
@@ -315,7 +319,7 @@ class _WordSearchTabState extends State<WordSearchTab> {
             ),
             const SizedBox(height: 6),
             Text(
-              '${hit.surahName} — ${t('mushaf.ayah')} ${QuranService.toArabicDigits(hit.ayah)}',
+              '${hit.surahName} — ${t('mushaf.ayah')} ${AppLocale.digits(hit.ayah)}',
               style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
             ),
           ],
@@ -355,7 +359,7 @@ class _BookmarksTabState extends State<BookmarksTab> {
   /// list of marks down with it.
   String _name(int surah) =>
       widget.index.where((s) => s.number == surah).firstOrNull?.name ??
-      '${t('mushaf.surah')} ${QuranService.toArabicDigits(surah)}';
+      '${t('mushaf.surah')} ${AppLocale.digits(surah)}';
 
   @override
   Widget build(BuildContext context) {
@@ -391,7 +395,7 @@ class _BookmarksTabState extends State<BookmarksTab> {
           ),
           subtitle: Text(
             b.note ??
-                '${b.kind.label} • ${t('mushaf.page')} ${QuranService.toArabicDigits(b.page)}',
+                '${b.kind.label} • ${t('mushaf.page')} ${AppLocale.digits(b.page)}',
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(color: AppColors.textMuted, fontSize: 11),

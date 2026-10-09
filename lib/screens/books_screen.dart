@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../constants/theme.dart';
 import '../data/library_data.dart';
-import '../data/quran_data.dart' show QuranService;
 import '../l10n/strings.dart';
+import '../services/app_locale.dart';
 import 'book_reader_screen.dart';
 
 /// The shelf: three short collections ready to read, the canonical books a tap
@@ -46,7 +46,7 @@ class _BooksScreenState extends State<BooksScreen> {
     final rest = LibraryService.books.where((b) => !b.isBundled).toList();
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppLocale.direction,
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
@@ -155,7 +155,7 @@ class _BooksScreenState extends State<BooksScreen> {
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    '${QuranService.toArabicDigits(book.hadithCount)} '
+                    '${AppLocale.digits(book.hadithCount)} '
                     '${t('lib2.hadithUnit')}'
                     '${book.isBundled ? '' : ' · ${book.downloadSize}'}',
                     style: const TextStyle(
@@ -167,7 +167,9 @@ class _BooksScreenState extends State<BooksScreen> {
               ),
             ),
             Icon(
-              ready ? Icons.chevron_left : Icons.cloud_download_outlined,
+              ready
+                  ? (AppLocale.isRtl ? Icons.chevron_left : Icons.chevron_right)
+                  : Icons.cloud_download_outlined,
               color: ready ? AppColors.textMuted : AppColors.gold,
               size: 20,
             ),

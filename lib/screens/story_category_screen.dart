@@ -17,7 +17,7 @@ class StoryCategoryScreen extends StatelessWidget {
     final list = getStoriesByCategory(category.id);
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppLocale.direction,
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
@@ -103,8 +103,10 @@ class StoryCategoryScreen extends StatelessWidget {
                               ],
                             ),
                           ),
-                          const Icon(
-                            Icons.chevron_left,
+                          Icon(
+                            AppLocale.isRtl
+                                ? Icons.chevron_left
+                                : Icons.chevron_right,
                             color: AppColors.textMuted,
                             size: 18,
                           ),

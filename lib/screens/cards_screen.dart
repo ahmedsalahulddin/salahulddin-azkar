@@ -14,6 +14,7 @@ import '../data/greeting_cards.dart';
 import '../l10n/strings.dart';
 import '../services/my_cards_meta.dart';
 import '../widgets/greeting_card_view.dart';
+import '../services/app_locale.dart';
 import 'my_cards_screen.dart';
 
 /// The cards on one shelf.
@@ -74,7 +75,7 @@ class _CardsScreenState extends State<CardsScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
       ),
       builder: (ctx) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppLocale.direction,
         child: SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -124,7 +125,7 @@ class _CardsScreenState extends State<CardsScreen> {
       ..hideCurrentSnackBar()
       ..showSnackBar(
         SnackBar(
-          content: Text(message, textAlign: TextAlign.right),
+          content: Text(message),
           backgroundColor: AppColors.blackCard,
           behavior: SnackBarBehavior.floating,
         ),
@@ -137,7 +138,7 @@ class _CardsScreenState extends State<CardsScreen> {
     final yes = await showDialog<bool>(
       context: context,
       builder: (ctx) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppLocale.direction,
         child: AlertDialog(
           backgroundColor: AppColors.blackCard,
           title: Text(
@@ -182,7 +183,7 @@ class _CardsScreenState extends State<CardsScreen> {
     final total = _mine.length + cards.length;
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppLocale.direction,
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
@@ -448,10 +449,7 @@ class _CardViewerScreenState extends State<CardViewerScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              t('crd.failedPrepareCard'),
-              textAlign: TextAlign.right,
-            ),
+            content: Text(t('crd.failedPrepareCard')),
             backgroundColor: AppColors.blackCard,
             behavior: SnackBarBehavior.floating,
           ),
@@ -484,8 +482,10 @@ class _CardViewerScreenState extends State<CardViewerScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               for (var row = 0; row < 4; row++)
+                // Cells run from the right like the card's own signColumn.
                 Row(
                   mainAxisSize: MainAxisSize.min,
+                  textDirection: TextDirection.rtl,
                   children: [
                     for (var column = 0; column < 3; column++)
                       GestureDetector(
@@ -526,7 +526,6 @@ class _CardViewerScreenState extends State<CardViewerScreen> {
     return TextField(
       controller: controller,
       maxLength: maxLength,
-      textAlign: TextAlign.right,
       style: const TextStyle(color: AppColors.textPrimary, fontSize: 13),
       decoration: InputDecoration(
         hintText: hint,
@@ -550,7 +549,7 @@ class _CardViewerScreenState extends State<CardViewerScreen> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppLocale.direction,
       child: Scaffold(
         backgroundColor: AppColors.black,
         resizeToAvoidBottomInset: true,

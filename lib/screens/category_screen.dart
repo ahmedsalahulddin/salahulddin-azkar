@@ -6,6 +6,7 @@ import '../widgets/adhkar_card.dart';
 import '../widgets/bilingual_text.dart';
 import '../widgets/dhikr_text.dart';
 import '../widgets/tasbih_counter.dart';
+import '../services/app_locale.dart';
 
 class CategoryScreen extends StatefulWidget {
   final AdhkarCategory category;
@@ -52,7 +53,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
     final cat = widget.category;
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppLocale.direction,
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
@@ -82,6 +83,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
               child: Text(
                 cat.description,
                 textAlign: TextAlign.center,
+                textDirection: TextDirection.rtl,
                 style: const TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 13,
@@ -96,6 +98,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                 controller: _searchController,
                 onChanged: (v) => setState(() => _search = v),
                 textAlign: TextAlign.right,
+                // Searches the Arabic adhkar themselves.
                 textDirection: TextDirection.rtl,
                 style: const TextStyle(color: AppColors.textPrimary),
                 decoration: InputDecoration(

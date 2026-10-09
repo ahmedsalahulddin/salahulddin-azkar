@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../constants/theme.dart';
 import '../data/hisn_data.dart';
-import '../data/quran_data.dart' show QuranService;
 import '../l10n/strings.dart';
 import '../services/favourites.dart';
 import '../widgets/bilingual_text.dart';
@@ -10,6 +9,7 @@ import '../widgets/dhikr_audio.dart';
 import '../widgets/dhikr_text.dart';
 import '../widgets/favourite_star.dart';
 import '../widgets/speed_button.dart';
+import '../services/app_locale.dart';
 
 /// Reads one chapter, with a tap-to-count tracker for adhkar said more than
 /// once so the reader does not have to keep count in their head.
@@ -63,7 +63,7 @@ class _HisnChapterScreenState extends State<HisnChapterScreen> {
       SnackBar(
         content: Text(
           t('lib2.dhikrCopiedMessage'),
-          textDirection: TextDirection.rtl,
+          textDirection: AppLocale.direction,
         ),
         backgroundColor: AppColors.emerald,
         duration: const Duration(seconds: 2),
@@ -77,7 +77,7 @@ class _HisnChapterScreenState extends State<HisnChapterScreen> {
     final done = chapter.items.where(_isDone).length;
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppLocale.direction,
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
@@ -211,7 +211,7 @@ class _HisnChapterScreenState extends State<HisnChapterScreen> {
                         ? '✓ ${t('lib2.doneLabel')}'
                         : d.repeat == 1
                         ? t('lib2.onceLabel')
-                        : '${QuranService.toArabicDigits(count)} / ${QuranService.toArabicDigits(d.repeat)}',
+                        : '${AppLocale.digits(count)} / ${AppLocale.digits(d.repeat)}',
                     style: TextStyle(
                       color: done ? AppColors.white : AppColors.textGold,
                       fontSize: 12,

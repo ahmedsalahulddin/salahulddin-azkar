@@ -8,7 +8,6 @@ import '../widgets/speed_button.dart';
 import '../widgets/speak_button.dart';
 import '../widgets/sunnah_links.dart';
 import '../data/library_data.dart';
-import '../data/quran_data.dart' show QuranService;
 import '../services/library_bookmarks.dart';
 
 /// The reader's last-chosen book-translation language, shared across every
@@ -147,7 +146,7 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
         SnackBar(
           content: Text(
             t('lib2.downloadFailedMessage'),
-            textDirection: TextDirection.rtl,
+            textDirection: AppLocale.direction,
           ),
           backgroundColor: AppColors.error,
         ),
@@ -163,7 +162,7 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
       ),
       builder: (ctx) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppLocale.direction,
         child: SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -257,7 +256,7 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
         SnackBar(
           content: Text(
             t('lib2.downloadFailedMessage'),
-            textDirection: TextDirection.rtl,
+            textDirection: AppLocale.direction,
           ),
           backgroundColor: AppColors.error,
         ),
@@ -297,7 +296,7 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
       SnackBar(
         content: Text(
           t('lib2.hadithCopiedMessage'),
-          textDirection: TextDirection.rtl,
+          textDirection: AppLocale.direction,
         ),
         backgroundColor: AppColors.emerald,
         duration: const Duration(seconds: 2),
@@ -308,7 +307,7 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppLocale.direction,
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
@@ -457,7 +456,7 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
               ),
               label: Text(
                 '${t('lib2.downloadButtonPrefix')} (${widget.book.downloadSize}) — '
-                '${QuranService.toArabicDigits(widget.book.hadithCount)} '
+                '${AppLocale.digits(widget.book.hadithCount)} '
                 '${t('lib2.hadithUnit')}',
               ),
             ),
@@ -484,6 +483,7 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
             controller: _searchController,
             onChanged: (v) => setState(() => _search = v),
             textAlign: TextAlign.right,
+            textDirection: TextDirection.rtl,
             style: const TextStyle(color: AppColors.textPrimary),
             decoration: InputDecoration(
               hintText: t('lib2.searchHadithTextsHint'),
@@ -516,9 +516,9 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
             children: [
               Text(
                 _search.isEmpty
-                    ? '${QuranService.toArabicDigits(filtered.length)} '
+                    ? '${AppLocale.digits(filtered.length)} '
                           '${t('lib2.hadithUnit')}'
-                    : '${QuranService.toArabicDigits(filtered.length)} '
+                    : '${AppLocale.digits(filtered.length)} '
                           '${t('lib2.resultsUnit')}',
                 style: const TextStyle(
                   color: AppColors.textMuted,
@@ -601,11 +601,8 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
           children: [
             Text(
               t('misc.readingProgress')
-                  .replaceAll('{current}', QuranService.toArabicDigits(at + 1))
-                  .replaceAll(
-                    '{total}',
-                    QuranService.toArabicDigits(_filtered.length),
-                  ),
+                  .replaceAll('{current}', AppLocale.digits(at + 1))
+                  .replaceAll('{total}', AppLocale.digits(_filtered.length)),
               style: const TextStyle(color: AppColors.textGold, fontSize: 11),
             ),
             IconButton(
@@ -668,6 +665,7 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
                 child: Text(
                   h.text,
                   textAlign: TextAlign.justify,
+                  textDirection: TextDirection.rtl,
                   style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 16,
@@ -713,7 +711,7 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
                   border: Border.all(color: AppColors.goldBorder),
                 ),
                 child: Text(
-                  '${t('lib2.hadithUnit')} ${QuranService.toArabicDigits(h.number)}'
+                  '${t('lib2.hadithUnit')} ${AppLocale.digits(h.number)}'
                   '${h.part == 0 ? '' : _variantLetters[h.part - 1]}',
                   style: const TextStyle(
                     color: AppColors.textGold,

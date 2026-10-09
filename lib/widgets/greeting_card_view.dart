@@ -60,129 +60,136 @@ class GreetingCardView extends StatelessWidget {
     final card = resolved.card;
     final palette = card.palette;
 
-    return AspectRatio(
-      aspectRatio: aspectRatio,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          // Everything is sized from the card's own width, so the preview on
-          // screen and the exported image are the same drawing at two scales.
-          final unit = constraints.maxWidth / 400;
+    // An Arabic card, laid out and exported the same in every UI language.
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: AspectRatio(
+        aspectRatio: aspectRatio,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // Everything is sized from the card's own width, so the preview on
+            // screen and the exported image are the same drawing at two scales.
+            final unit = constraints.maxWidth / 400;
 
-          final photo = background;
+            final photo = background;
 
-          return DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [palette.top, palette.bottom],
-              ),
-              // The reader's own picture fills the card, cropped to its shape
-              // rather than squeezed into it — a face stretched to fit is
-              // worse than a face with its edges outside the frame.
-              image: photo == null
-                  ? null
-                  : DecorationImage(image: FileImage(photo), fit: BoxFit.cover),
-            ),
-            child: CustomPaint(
-              painter: MushafFramePainter(
-                // A photograph brings its own edges; an ornament drawn over
-                // them fights the picture instead of framing it.
-                frame: bare ? MushafFrame.none : card.frame,
-                color: palette.ink,
-                scale: unit,
-              ),
-              child: Padding(
-                padding: EdgeInsets.all(
-                  card.frame.insetFor(
-                        Size(constraints.maxWidth, constraints.maxHeight),
-                      ) +
-                      10 * unit,
+            return DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [palette.top, palette.bottom],
                 ),
-                child: Stack(
-                  children: [
-                    if (forSharing)
-                      Align(
-                        alignment: Alignment.bottomCenter,
-                        child: Text(
-                          'azkar.salahulddin.com',
-                          style: TextStyle(
-                            color: palette.muted,
-                            fontSize: 9 * unit,
-                            letterSpacing: 0.5,
+                // The reader's own picture fills the card, cropped to its shape
+                // rather than squeezed into it — a face stretched to fit is
+                // worse than a face with its edges outside the frame.
+                image: photo == null
+                    ? null
+                    : DecorationImage(
+                        image: FileImage(photo),
+                        fit: BoxFit.cover,
+                      ),
+              ),
+              child: CustomPaint(
+                painter: MushafFramePainter(
+                  // A photograph brings its own edges; an ornament drawn over
+                  // them fights the picture instead of framing it.
+                  frame: bare ? MushafFrame.none : card.frame,
+                  color: palette.ink,
+                  scale: unit,
+                ),
+                child: Padding(
+                  padding: EdgeInsets.all(
+                    card.frame.insetFor(
+                          Size(constraints.maxWidth, constraints.maxHeight),
+                        ) +
+                        10 * unit,
+                  ),
+                  child: Stack(
+                    children: [
+                      if (forSharing)
+                        Align(
+                          alignment: Alignment.bottomCenter,
+                          child: Text(
+                            'azkar.salahulddin.com',
+                            style: TextStyle(
+                              color: palette.muted,
+                              fontSize: 9 * unit,
+                              letterSpacing: 0.5,
+                            ),
                           ),
                         ),
-                      ),
-                    _signature(palette, unit),
-                    // A ready-made card already says what it came to say.
-                    if (!bare)
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            card.greeting,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: palette.ink,
-                              fontSize: 30 * unit,
-                              height: 1.5,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          if (card.note != null) ...[
-                            SizedBox(height: 6 * unit),
+                      _signature(palette, unit),
+                      // A ready-made card already says what it came to say.
+                      if (!bare)
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
                             Text(
-                              card.note!,
+                              card.greeting,
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                color: palette.muted,
-                                fontSize: 13 * unit,
-                                height: 1.6,
+                                color: palette.ink,
+                                fontSize: 30 * unit,
+                                height: 1.5,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
-                          ],
-                          SizedBox(height: 22 * unit),
-                          _rule(palette, unit),
-                          SizedBox(height: 22 * unit),
-                          Flexible(
-                            // Shrinks rather than clips. A card is a fixed shape and
-                            // verses are not a fixed length, so one of the two has
-                            // to give — and cutting a verse short is not an option.
-                            child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: ConstrainedBox(
-                                constraints: BoxConstraints(
-                                  maxWidth: constraints.maxWidth,
+                            if (card.note != null) ...[
+                              SizedBox(height: 6 * unit),
+                              Text(
+                                card.note!,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: palette.muted,
+                                  fontSize: 13 * unit,
+                                  height: 1.6,
                                 ),
-                                child: Text(
-                                  resolved.verse,
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontFamily: 'AmiriQuran',
-                                    color: palette.body,
-                                    fontSize: 17 * unit,
-                                    height: 2.1,
+                              ),
+                            ],
+                            SizedBox(height: 22 * unit),
+                            _rule(palette, unit),
+                            SizedBox(height: 22 * unit),
+                            Flexible(
+                              // Shrinks rather than clips. A card is a fixed shape and
+                              // verses are not a fixed length, so one of the two has
+                              // to give — and cutting a verse short is not an option.
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                    maxWidth: constraints.maxWidth,
+                                  ),
+                                  child: Text(
+                                    resolved.verse,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontFamily: 'AmiriQuran',
+                                      color: palette.body,
+                                      fontSize: 17 * unit,
+                                      height: 2.1,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                          SizedBox(height: 12 * unit),
-                          Text(
-                            resolved.citation,
-                            style: TextStyle(
-                              color: palette.ink,
-                              fontSize: 11.5 * unit,
+                            SizedBox(height: 12 * unit),
+                            Text(
+                              resolved.citation,
+                              style: TextStyle(
+                                color: palette.ink,
+                                fontSize: 11.5 * unit,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                  ],
+                          ],
+                        ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }

@@ -14,6 +14,7 @@ import '../services/recitation_service.dart';
 import '../services/storage_service.dart';
 import '../widgets/speed_button.dart';
 import '../widgets/tafsir_sheet.dart';
+import '../services/app_locale.dart';
 
 class SurahScreen extends StatefulWidget {
   final SurahInfo info;
@@ -183,7 +184,7 @@ class _SurahScreenState extends State<SurahScreen> {
               tag: MediaItem(
                 id: '${_reciter.id}:${surah.number}:${a.number}',
                 title:
-                    '${surah.name} — ${t('qs.ayahWord')} ${QuranService.toArabicDigits(a.number)}',
+                    '${surah.name} — ${t('qs.ayahWord')} ${AppLocale.digits(a.number)}',
                 artist: _reciter.displayName,
                 album: t('qs.quranTitle'),
               ),
@@ -261,7 +262,7 @@ class _SurahScreenState extends State<SurahScreen> {
       ),
       isScrollControlled: true,
       builder: (ctx) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppLocale.direction,
         child: DraggableScrollableSheet(
           expand: false,
           initialChildSize: 0.55,
@@ -363,7 +364,7 @@ class _SurahScreenState extends State<SurahScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppLocale.direction,
         child: TafsirSheet(
           surah: _info.number,
           ayah: a.number,
@@ -378,7 +379,7 @@ class _SurahScreenState extends State<SurahScreen> {
   void _toast(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message, textDirection: TextDirection.rtl),
+        content: Text(message, textDirection: AppLocale.direction),
         backgroundColor: AppColors.error,
         duration: const Duration(seconds: 3),
       ),
@@ -396,7 +397,7 @@ class _SurahScreenState extends State<SurahScreen> {
     HapticFeedback.lightImpact();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(t('qs.ayahCopied'), textDirection: TextDirection.rtl),
+        content: Text(t('qs.ayahCopied'), textDirection: AppLocale.direction),
         backgroundColor: AppColors.emerald,
         duration: const Duration(seconds: 2),
       ),
@@ -409,7 +410,7 @@ class _SurahScreenState extends State<SurahScreen> {
     final surah = _surah;
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppLocale.direction,
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
@@ -507,14 +508,14 @@ class _SurahScreenState extends State<SurahScreen> {
               const SpeedButton(showLabel: false),
               if (_audioFailed)
                 const Padding(
-                  padding: EdgeInsets.only(left: 8),
+                  padding: EdgeInsetsDirectional.only(end: 8),
                   child: Icon(Icons.wifi_off, color: AppColors.error, size: 18),
                 ),
               if (_playingAyah != null)
                 Padding(
-                  padding: const EdgeInsets.only(left: 10),
+                  padding: const EdgeInsetsDirectional.only(end: 10),
                   child: Text(
-                    '${t('qs.ayahWord')} ${QuranService.toArabicDigits(_playingAyah!)}',
+                    '${t('qs.ayahWord')} ${AppLocale.digits(_playingAyah!)}',
                     style: const TextStyle(
                       color: AppColors.textMuted,
                       fontSize: 12,
@@ -592,6 +593,7 @@ class _SurahScreenState extends State<SurahScreen> {
             Text(
               QuranService.basmala,
               textAlign: TextAlign.center,
+              textDirection: TextDirection.rtl,
               style: TextStyle(
                 fontFamily: _mushafFont,
                 color: AppColors.textGold,
@@ -647,6 +649,7 @@ class _SurahScreenState extends State<SurahScreen> {
                 ],
               ),
               textAlign: TextAlign.justify,
+              textDirection: TextDirection.rtl,
               style: TextStyle(
                 fontFamily: _mushafFont,
                 color: AppColors.textPrimary,

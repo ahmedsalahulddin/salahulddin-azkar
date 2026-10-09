@@ -124,7 +124,7 @@ class _ResearcherScreenState extends State<ResearcherScreen>
         expand: false,
         initialChildSize: 0.75,
         builder: (_, controller) => Directionality(
-          textDirection: TextDirection.rtl,
+          textDirection: AppLocale.direction,
           child: ListView.builder(
             controller: controller,
             itemCount: _surahs.length,
@@ -132,7 +132,7 @@ class _ResearcherScreenState extends State<ResearcherScreen>
               final s = _surahs[i];
               return ListTile(
                 leading: Text(
-                  QuranService.toArabicDigits(s.number),
+                  AppLocale.digits(s.number),
                   style: const TextStyle(color: AppColors.gold),
                 ),
                 title: Text(
@@ -144,7 +144,7 @@ class _ResearcherScreenState extends State<ResearcherScreen>
                   ),
                 ),
                 trailing: Text(
-                  '${QuranService.toArabicDigits(s.ayahCount)} ${t('researcher.ayat')}',
+                  '${AppLocale.digits(s.ayahCount)} ${t('researcher.ayat')}',
                   style: const TextStyle(
                     color: AppColors.textMuted,
                     fontSize: 12,
@@ -165,7 +165,7 @@ class _ResearcherScreenState extends State<ResearcherScreen>
       context: context,
       backgroundColor: AppColors.blackCard,
       builder: (ctx) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppLocale.direction,
         child: GridView.count(
           crossAxisCount: 6,
           padding: const EdgeInsets.all(16),
@@ -184,7 +184,7 @@ class _ResearcherScreenState extends State<ResearcherScreen>
                     border: Border.all(color: AppColors.goldBorder),
                   ),
                   child: Text(
-                    QuranService.toArabicDigits(a),
+                    AppLocale.digits(a),
                     style: TextStyle(
                       color: a == _ayah
                           ? AppColors.black
@@ -214,7 +214,7 @@ class _ResearcherScreenState extends State<ResearcherScreen>
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppLocale.direction,
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
@@ -279,7 +279,10 @@ class _ResearcherScreenState extends State<ResearcherScreen>
           Row(
             children: [
               IconButton(
-                icon: const Icon(Icons.chevron_right, color: AppColors.gold),
+                icon: Icon(
+                  AppLocale.isRtl ? Icons.chevron_right : Icons.chevron_left,
+                  color: AppColors.gold,
+                ),
                 onPressed: () => _step(-1),
               ),
               Expanded(
@@ -296,7 +299,7 @@ class _ResearcherScreenState extends State<ResearcherScreen>
                     Expanded(
                       flex: 2,
                       child: _selector(
-                        '${t('researcher.ayah')} ${QuranService.toArabicDigits(_ayah)}',
+                        '${t('researcher.ayah')} ${AppLocale.digits(_ayah)}',
                         _pickAyah,
                       ),
                     ),
@@ -304,7 +307,10 @@ class _ResearcherScreenState extends State<ResearcherScreen>
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.chevron_left, color: AppColors.gold),
+                icon: Icon(
+                  AppLocale.isRtl ? Icons.chevron_left : Icons.chevron_right,
+                  color: AppColors.gold,
+                ),
                 onPressed: () => _step(1),
               ),
             ],
@@ -324,6 +330,7 @@ class _ResearcherScreenState extends State<ResearcherScreen>
                 child: Text(
                   text,
                   textAlign: TextAlign.center,
+                  textDirection: TextDirection.rtl,
                   style: const TextStyle(
                     fontFamily: 'AmiriQuran',
                     color: AppColors.textGold,
@@ -495,7 +502,7 @@ class _BookPages extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${t('researcher.part')} ${QuranService.toArabicDigits(int.tryParse(p.part) ?? 1)} — ${t('researcher.page')} ${QuranService.toArabicDigits(int.tryParse(p.page) ?? 0)}',
+                      '${t('researcher.part')} ${AppLocale.digits(int.tryParse(p.part) ?? 1)} — ${t('researcher.page')} ${AppLocale.digits(int.tryParse(p.page) ?? 0)}',
                       style: const TextStyle(
                         color: AppColors.textMuted,
                         fontSize: 11,

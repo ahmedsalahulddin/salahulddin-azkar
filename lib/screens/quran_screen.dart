@@ -3,6 +3,7 @@ import '../constants/theme.dart';
 import '../data/quran_data.dart';
 import '../l10n/strings.dart';
 import '../services/storage_service.dart';
+import '../services/app_locale.dart';
 import 'surah_screen.dart';
 
 class QuranScreen extends StatefulWidget {
@@ -65,7 +66,7 @@ class _QuranScreenState extends State<QuranScreen> {
         : _all.where((s) => s.number == _lastSurah).firstOrNull;
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppLocale.direction,
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
@@ -124,8 +125,10 @@ class _QuranScreenState extends State<QuranScreen> {
                                 ],
                               ),
                             ),
-                            const Icon(
-                              Icons.chevron_left,
+                            Icon(
+                              AppLocale.isRtl
+                                  ? Icons.chevron_left
+                                  : Icons.chevron_right,
                               color: AppColors.textMuted,
                               size: 22,
                             ),
@@ -140,7 +143,6 @@ class _QuranScreenState extends State<QuranScreen> {
                     child: TextField(
                       controller: _searchController,
                       onChanged: (v) => setState(() => _search = v),
-                      textAlign: TextAlign.right,
                       style: const TextStyle(color: AppColors.textPrimary),
                       decoration: InputDecoration(
                         hintText: t('qs.searchSurahHint'),
@@ -226,7 +228,7 @@ class _QuranScreenState extends State<QuranScreen> {
               ),
               child: Center(
                 child: Text(
-                  QuranService.toArabicDigits(s.number),
+                  AppLocale.digits(s.number),
                   style: const TextStyle(
                     color: AppColors.gold,
                     fontSize: 14,

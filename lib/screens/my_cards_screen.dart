@@ -10,6 +10,7 @@ import 'package:share_plus/share_plus.dart';
 import '../constants/theme.dart';
 import '../l10n/strings.dart';
 import '../services/my_cards_meta.dart';
+import '../services/app_locale.dart';
 
 /// The reader's own cards: pictures added from the phone, kept in the app's
 /// folder so they are there next Eid too, and shared like any other card.
@@ -244,7 +245,7 @@ class _MyCardsScreenState extends State<MyCardsScreen> {
       ..hideCurrentSnackBar()
       ..showSnackBar(
         SnackBar(
-          content: Text(message, textAlign: TextAlign.right),
+          content: Text(message),
           backgroundColor: AppColors.blackCard,
           behavior: SnackBarBehavior.floating,
         ),
@@ -267,7 +268,7 @@ class _MyCardsScreenState extends State<MyCardsScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
       ),
       builder: (ctx) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppLocale.direction,
         child: SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -357,7 +358,7 @@ class _MyCardsScreenState extends State<MyCardsScreen> {
     return showDialog<String>(
       context: context,
       builder: (ctx) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppLocale.direction,
         child: AlertDialog(
           backgroundColor: AppColors.blackCard,
           title: Text(
@@ -371,7 +372,7 @@ class _MyCardsScreenState extends State<MyCardsScreen> {
               TextField(
                 controller: controller,
                 autofocus: true,
-                textDirection: TextDirection.rtl,
+                textDirection: AppLocale.direction,
                 style: const TextStyle(color: AppColors.textPrimary),
                 decoration: InputDecoration(
                   hintText: hint,
@@ -446,7 +447,7 @@ class _MyCardsScreenState extends State<MyCardsScreen> {
     final yes = await showDialog<bool>(
       context: context,
       builder: (ctx) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppLocale.direction,
         child: AlertDialog(
           backgroundColor: AppColors.blackCard,
           title: Text(
@@ -503,7 +504,7 @@ class _MyCardsScreenState extends State<MyCardsScreen> {
     final selecting = _picked.isNotEmpty;
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppLocale.direction,
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
@@ -677,7 +678,7 @@ class _MyCardsScreenState extends State<MyCardsScreen> {
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 2),
       child: TextField(
         controller: _search,
-        textDirection: TextDirection.rtl,
+        textDirection: AppLocale.direction,
         style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
         onChanged: (v) => setState(() => _query = v),
         decoration: InputDecoration(
@@ -741,7 +742,7 @@ class _MyCardsScreenState extends State<MyCardsScreen> {
 
   Widget _chip(String label, bool on, VoidCallback onTap) {
     return Padding(
-      padding: const EdgeInsets.only(left: 6),
+      padding: const EdgeInsetsDirectional.only(end: 6),
       child: GestureDetector(
         onTap: onTap,
         child: Container(

@@ -3,6 +3,7 @@ import '../constants/theme.dart';
 import '../data/hisn_data.dart';
 import '../l10n/strings.dart';
 import '../widgets/bilingual_text.dart';
+import '../services/app_locale.dart';
 import 'hisn_chapter_screen.dart';
 
 /// The 132 chapters of Hisn al-Muslim, searchable by title.
@@ -56,7 +57,7 @@ class _SahihAdhkarScreenState extends State<SahihAdhkarScreen> {
     final filtered = _filtered;
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppLocale.direction,
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
@@ -76,6 +77,8 @@ class _SahihAdhkarScreenState extends State<SahihAdhkarScreen> {
                       controller: _searchController,
                       onChanged: (v) => setState(() => _search = v),
                       textAlign: TextAlign.right,
+                      // Searches the Arabic chapter titles and adhkar.
+                      textDirection: TextDirection.rtl,
                       style: const TextStyle(color: AppColors.textPrimary),
                       decoration: InputDecoration(
                         hintText: t('adh.sahihSearchHint'),
@@ -188,7 +191,9 @@ class _SahihAdhkarScreenState extends State<SahihAdhkarScreen> {
                 children: [
                   BilingualText(
                     c.displayTitle,
-                    textAlign: TextAlign.right,
+                    textAlign: AppLocale.isRtl
+                        ? TextAlign.right
+                        : TextAlign.left,
                     maxLines: 2,
                     style: const TextStyle(
                       color: AppColors.textPrimary,
@@ -209,8 +214,8 @@ class _SahihAdhkarScreenState extends State<SahihAdhkarScreen> {
                 ],
               ),
             ),
-            const Icon(
-              Icons.chevron_left,
+            Icon(
+              AppLocale.isRtl ? Icons.chevron_left : Icons.chevron_right,
               color: AppColors.textMuted,
               size: 20,
             ),

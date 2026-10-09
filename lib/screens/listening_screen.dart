@@ -8,6 +8,7 @@ import '../services/app_audio.dart';
 import '../services/continuous_listening.dart';
 import '../services/recitation_service.dart';
 import '../widgets/speed_button.dart';
+import '../services/app_locale.dart';
 
 // surahJuz[i] = juz where surah (i+1) starts.
 const _surahJuz = [
@@ -59,7 +60,7 @@ class _ListeningScreenState extends State<ListeningScreen> {
     if (message == null || !mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message, textDirection: TextDirection.rtl),
+        content: Text(message, textDirection: AppLocale.direction),
         backgroundColor: AppColors.error,
       ),
     );
@@ -144,7 +145,7 @@ class _ListeningScreenState extends State<ListeningScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
       ),
       builder: (ctx) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppLocale.direction,
         child: SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -218,7 +219,7 @@ class _ListeningScreenState extends State<ListeningScreen> {
                         ),
                         child: Center(
                           child: Text(
-                            QuranService.toArabicDigits(juz),
+                            AppLocale.digits(juz),
                             style: TextStyle(
                               color: selected
                                   ? AppColors.gold
@@ -251,7 +252,7 @@ class _ListeningScreenState extends State<ListeningScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
       ),
       builder: (ctx) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppLocale.direction,
         child: DraggableScrollableSheet(
           initialChildSize: 0.7,
           minChildSize: 0.4,
@@ -304,7 +305,7 @@ class _ListeningScreenState extends State<ListeningScreen> {
                             SizedBox(
                               width: 30,
                               child: Text(
-                                QuranService.toArabicDigits(info.number),
+                                AppLocale.digits(info.number),
                                 style: TextStyle(
                                   color: on
                                       ? AppColors.gold
@@ -328,7 +329,7 @@ class _ListeningScreenState extends State<ListeningScreen> {
                               ),
                             ),
                             Text(
-                              '${QuranService.toArabicDigits(info.ayahCount)} ${t('qs.ayahUnit')}',
+                              '${AppLocale.digits(info.ayahCount)} ${t('qs.ayahUnit')}',
                               style: const TextStyle(
                                 color: AppColors.textMuted,
                                 fontSize: 10,
@@ -362,7 +363,7 @@ class _ListeningScreenState extends State<ListeningScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
       ),
       builder: (ctx) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppLocale.direction,
         child: DraggableScrollableSheet(
           initialChildSize: 0.55,
           minChildSize: 0.3,
@@ -411,7 +412,7 @@ class _ListeningScreenState extends State<ListeningScreen> {
                         ),
                         child: Center(
                           child: Text(
-                            QuranService.toArabicDigits(ayah),
+                            AppLocale.digits(ayah),
                             style: TextStyle(
                               color: selected
                                   ? AppColors.gold
@@ -443,7 +444,7 @@ class _ListeningScreenState extends State<ListeningScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
       ),
       builder: (ctx) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppLocale.direction,
         child: SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -491,7 +492,7 @@ class _ListeningScreenState extends State<ListeningScreen> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppLocale.direction,
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
@@ -525,7 +526,7 @@ class _ListeningScreenState extends State<ListeningScreen> {
             _chip(
               label: _juzFilter == null
                   ? t('qs.juzLabel')
-                  : '${t('qs.juzPrefix')} ${QuranService.toArabicDigits(_juzFilter!)}',
+                  : '${t('qs.juzPrefix')} ${AppLocale.digits(_juzFilter!)}',
               icon: Icons.filter_list,
               active: _juzFilter != null,
               onTap: _pickJuz,
@@ -540,7 +541,7 @@ class _ListeningScreenState extends State<ListeningScreen> {
             _chip(
               label: _startAyah == 1
                   ? t('qs.ayahWord')
-                  : '${t('qs.fromLabel')} ${QuranService.toArabicDigits(_startAyah)}',
+                  : '${t('qs.fromLabel')} ${AppLocale.digits(_startAyah)}',
               icon: Icons.format_list_numbered,
               active: _startAyah != 1,
               onTap: _pickAyah,
@@ -655,8 +656,8 @@ class _ListeningScreenState extends State<ListeningScreen> {
                     final total =
                         ContinuousListening.infoFor(number)?.ayahCount ?? 0;
                     return Text(
-                      '${t('qs.ayahWord')} ${QuranService.toArabicDigits(ayah)}'
-                      ' ${t('qs.ofLabel')} ${QuranService.toArabicDigits(total)}',
+                      '${t('qs.ayahWord')} ${AppLocale.digits(ayah)}'
+                      ' ${t('qs.ofLabel')} ${AppLocale.digits(total)}',
                       style: const TextStyle(
                         color: AppColors.textMuted,
                         fontSize: 12,
@@ -805,7 +806,7 @@ class _ListeningScreenState extends State<ListeningScreen> {
                     SizedBox(
                       width: 30,
                       child: Text(
-                        QuranService.toArabicDigits(info.number),
+                        AppLocale.digits(info.number),
                         style: TextStyle(
                           color: on ? AppColors.gold : AppColors.textMuted,
                           fontSize: 12,
@@ -823,7 +824,7 @@ class _ListeningScreenState extends State<ListeningScreen> {
                       ),
                     ),
                     Text(
-                      '${QuranService.toArabicDigits(info.ayahCount)} ${t('qs.ayahUnit')}',
+                      '${AppLocale.digits(info.ayahCount)} ${t('qs.ayahUnit')}',
                       style: const TextStyle(
                         color: AppColors.textMuted,
                         fontSize: 11,

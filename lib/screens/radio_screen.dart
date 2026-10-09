@@ -182,7 +182,6 @@ class _RadioScreenState extends State<RadioScreen> {
           SnackBar(
             content: Text(
               t('misc.radioConnectFailed').replaceAll('{name}', station.name),
-              textAlign: TextAlign.right,
             ),
             backgroundColor: AppColors.blackCard,
             behavior: SnackBarBehavior.floating,
@@ -197,7 +196,7 @@ class _RadioScreenState extends State<RadioScreen> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppLocale.direction,
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(

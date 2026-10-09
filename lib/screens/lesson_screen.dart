@@ -5,6 +5,7 @@ import '../l10n/strings.dart';
 import '../widgets/speed_button.dart';
 import '../data/lessons.dart';
 import '../widgets/speak_button.dart';
+import '../services/app_locale.dart';
 
 /// One lesson: an opening text, then the points, each with what it rests on.
 class LessonScreen extends StatelessWidget {
@@ -15,7 +16,7 @@ class LessonScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppLocale.direction,
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
@@ -25,34 +26,42 @@ class LessonScreen extends StatelessWidget {
           // The lesson is read aloud by the device's voice; this sets its pace.
           actions: const [SpeedButton(showLabel: false)],
         ),
-        body: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            Text(
-              lesson.summary,
-              style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
-            ),
-            if (lesson.opening != null) ...[
-              const SizedBox(height: 14),
-              _SourceCard(source: lesson.opening!, leading: true),
-            ],
-            const SizedBox(height: 18),
-            for (var i = 0; i < lesson.points.length; i++) ...[
-              _point(lesson.points[i], i + 1),
-              const SizedBox(height: 14),
-            ],
-            const SizedBox(height: 8),
-            Text(
-              t('lib2.lessonSourceDisclaimer'),
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: AppColors.textMuted,
-                fontSize: 11,
-                height: 1.7,
+        // The lesson itself is Arabic; only the disclaimer is translated.
+        body: Directionality(
+          textDirection: TextDirection.rtl,
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              Text(
+                lesson.summary,
+                style: const TextStyle(
+                  color: AppColors.textMuted,
+                  fontSize: 13,
+                ),
               ),
-            ),
-            const SizedBox(height: 20),
-          ],
+              if (lesson.opening != null) ...[
+                const SizedBox(height: 14),
+                _SourceCard(source: lesson.opening!, leading: true),
+              ],
+              const SizedBox(height: 18),
+              for (var i = 0; i < lesson.points.length; i++) ...[
+                _point(lesson.points[i], i + 1),
+                const SizedBox(height: 14),
+              ],
+              const SizedBox(height: 8),
+              Text(
+                t('lib2.lessonSourceDisclaimer'),
+                textAlign: TextAlign.center,
+                textDirection: AppLocale.direction,
+                style: const TextStyle(
+                  color: AppColors.textMuted,
+                  fontSize: 11,
+                  height: 1.7,
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
       ),
     );

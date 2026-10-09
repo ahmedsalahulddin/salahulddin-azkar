@@ -39,6 +39,7 @@ class ResearcherText extends StatelessWidget {
     }
     if (last < text.length) spans.add(TextSpan(text: text.substring(last)));
     return SelectableText.rich(
+      textDirection: TextDirection.rtl,
       TextSpan(
         children: spans,
         style: TextStyle(

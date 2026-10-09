@@ -21,6 +21,7 @@ import '../widgets/mushaf_chrome.dart';
 import '../widgets/mushaf_palettes.dart';
 import '../widgets/speed_button.dart';
 import '../widgets/tafsir_sheet.dart';
+import '../services/app_locale.dart';
 import 'mushaf/navigation_drawer.dart';
 import 'mushaf/page_sheet.dart';
 import 'mushaf/repeat_sheet.dart';
@@ -198,7 +199,7 @@ class _MushafScreenState extends State<MushafScreen> {
   void _toast(String message, {bool error = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message, textDirection: TextDirection.rtl),
+        content: Text(message, textDirection: AppLocale.direction),
         backgroundColor: error ? AppColors.error : AppColors.emerald,
         duration: const Duration(seconds: 2),
       ),
@@ -244,7 +245,7 @@ class _MushafScreenState extends State<MushafScreen> {
             tag: MediaItem(
               id: '${_reciter.id}:${start.surah}:$ayah',
               title:
-                  '${surah.name} — ${t('mushaf.theAyah')} ${QuranService.toArabicDigits(ayah)}',
+                  '${surah.name} — ${t('mushaf.theAyah')} ${AppLocale.digits(ayah)}',
               artist: _reciter.displayName,
               album: t('mushaf.theNobleQuran'),
             ),
@@ -400,7 +401,7 @@ class _MushafScreenState extends State<MushafScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppLocale.direction,
         child: RepeatSheet(initial: _repeat),
       ),
     );
@@ -435,7 +436,7 @@ class _MushafScreenState extends State<MushafScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppLocale.direction,
         child: SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -501,7 +502,7 @@ class _MushafScreenState extends State<MushafScreen> {
     return showDialog<String>(
       context: context,
       builder: (ctx) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppLocale.direction,
         child: AlertDialog(
           backgroundColor: AppColors.blackCard,
           title: Text(
@@ -557,7 +558,7 @@ class _MushafScreenState extends State<MushafScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppLocale.direction,
         child: TafsirSheet(
           surah: a.surah,
           ayah: a.ayah,
@@ -575,7 +576,7 @@ class _MushafScreenState extends State<MushafScreen> {
     final pages = _pages;
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppLocale.direction,
       // The paper is chosen inside the drawer, so the scaffold behind the page
       // has to listen for it rather than read it once at build time.
       child: ValueListenableBuilder<MushafPalette>(
@@ -616,25 +617,30 @@ class _MushafScreenState extends State<MushafScreen> {
                         }
                         return false;
                       },
-                      child: PageView.builder(
-                        controller: _controller,
-                        itemCount: pages.length,
-                        onPageChanged: _onPageChanged,
-                        itemBuilder: (context, i) => MushafPageSheet(
-                          page: pages[i],
-                          surahInfo: _surahInfo,
-                          selected: i + 1 == _current ? _selected : null,
-                          onAyahTapped: (a) => setState(() {
-                            _selected = a;
-                            _chromeVisible = true;
-                          }),
-                          onBackgroundTapped: () => setState(() {
-                            if (_selected != null) {
-                              _selected = null;
-                            } else {
-                              _chromeVisible = !_chromeVisible;
-                            }
-                          }),
+                      // Pages turn right to left, as in a printed Mushaf, in
+                      // every UI language.
+                      child: Directionality(
+                        textDirection: TextDirection.rtl,
+                        child: PageView.builder(
+                          controller: _controller,
+                          itemCount: pages.length,
+                          onPageChanged: _onPageChanged,
+                          itemBuilder: (context, i) => MushafPageSheet(
+                            page: pages[i],
+                            surahInfo: _surahInfo,
+                            selected: i + 1 == _current ? _selected : null,
+                            onAyahTapped: (a) => setState(() {
+                              _selected = a;
+                              _chromeVisible = true;
+                            }),
+                            onBackgroundTapped: () => setState(() {
+                              if (_selected != null) {
+                                _selected = null;
+                              } else {
+                                _chromeVisible = !_chromeVisible;
+                              }
+                            }),
+                          ),
                         ),
                       ),
                     ),
@@ -657,7 +663,7 @@ class _MushafScreenState extends State<MushafScreen> {
 
     final surahLine = selected == null
         ? '${t('mushaf.surah')} ${names.join(' · ')}'
-        : '${t('mushaf.surah')} ${_surahInfo(selected.surah).name} — ${t('mushaf.ayah')} ${QuranService.toArabicDigits(selected.ayah)}';
+        : '${t('mushaf.surah')} ${_surahInfo(selected.surah).name} — ${t('mushaf.ayah')} ${AppLocale.digits(selected.ayah)}';
 
     return Positioned(
       top: 0,
@@ -704,7 +710,7 @@ class _MushafScreenState extends State<MushafScreen> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      '${t('mushaf.juz')} ${QuranService.toArabicDigits(page.juz)} · ${t('mushaf.page')} ${QuranService.toArabicDigits(page.number)}',
+                      '${t('mushaf.juz')} ${AppLocale.digits(page.juz)} · ${t('mushaf.page')} ${AppLocale.digits(page.number)}',
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: AppColors.textMuted,
@@ -721,7 +727,11 @@ class _MushafScreenState extends State<MushafScreen> {
               ),
               // Who is reciting, then the controls.
               Padding(
-                padding: const EdgeInsets.only(right: 8, bottom: 2, top: 1),
+                padding: const EdgeInsetsDirectional.only(
+                  start: 8,
+                  bottom: 2,
+                  top: 1,
+                ),
                 // Fixed height so a larger icon cannot push the bar down over
                 // the page. Everything inside centres within it.
                 child: SizedBox(
@@ -859,7 +869,7 @@ class _MushafScreenState extends State<MushafScreen> {
             value: r,
             height: 40,
             child: Directionality(
-              textDirection: TextDirection.rtl,
+              textDirection: AppLocale.direction,
               child: Row(
                 children: [
                   if (r.id == _reciter.id)

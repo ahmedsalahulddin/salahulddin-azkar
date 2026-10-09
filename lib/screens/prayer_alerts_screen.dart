@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../constants/theme.dart';
 import '../data/adhans.dart';
-import '../data/quran_data.dart';
 import '../l10n/strings.dart';
 import '../services/adhan_downloads.dart';
 import '../services/app_locale.dart';
@@ -281,7 +280,9 @@ class _PrayerAlertsScreenState extends State<PrayerAlertsScreen>
             ),
             const SizedBox(height: 8),
             Text(
-              t('adh.jumuahLeadTemplate').replaceFirst('%s', _num(lead)),
+              t(
+                'adh.jumuahLeadTemplate',
+              ).replaceFirst('%s', AppLocale.digits(lead)),
               style: const TextStyle(
                 color: AppColors.textSecondary,
                 fontSize: 12,
@@ -312,7 +313,7 @@ class _PrayerAlertsScreenState extends State<PrayerAlertsScreen>
                             ),
                           ),
                           child: Text(
-                            _num(minutes),
+                            AppLocale.digits(minutes),
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: minutes == lead
@@ -430,7 +431,9 @@ class _PrayerAlertsScreenState extends State<PrayerAlertsScreen>
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              t('adh.leadTimeTemplate').replaceFirst('%s', _num(lead)),
+              t(
+                'adh.leadTimeTemplate',
+              ).replaceFirst('%s', AppLocale.digits(lead)),
               style: const TextStyle(
                 color: AppColors.textSecondary,
                 fontSize: 13,
@@ -460,7 +463,7 @@ class _PrayerAlertsScreenState extends State<PrayerAlertsScreen>
                             ),
                           ),
                           child: Text(
-                            _num(minutes),
+                            AppLocale.digits(minutes),
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: minutes == lead
@@ -676,8 +679,4 @@ class _PrayerAlertsScreenState extends State<PrayerAlertsScreen>
       ),
     );
   }
-
-  /// Arabic-Indic digits in Arabic, the reader's usual ones elsewhere.
-  static String _num(int n) =>
-      AppLocale.code == 'ar' ? QuranService.toArabicDigits(n) : '$n';
 }

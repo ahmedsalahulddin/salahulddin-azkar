@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../constants/theme.dart';
-import '../data/quran_data.dart' show QuranService;
 import '../l10n/strings.dart';
 import '../services/duas_service.dart';
 import '../services/favourites.dart';
 import '../widgets/favourite_star.dart';
 import '../widgets/speak_button.dart';
+import '../services/app_locale.dart';
 
 /// One category's duas — a plain bulleted list to read, or (when
 /// [editable]) a title field plus a line-per-dua editor. Shared by the
@@ -65,7 +65,7 @@ class _DuaCategoryDetailScreenState extends State<DuaCategoryDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppLocale.direction,
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
@@ -220,11 +220,8 @@ class _DuaCategoryDetailScreenState extends State<DuaCategoryDetailScreen> {
             ),
             Text(
               t('misc.readingProgress')
-                  .replaceAll('{current}', QuranService.toArabicDigits(at + 1))
-                  .replaceAll(
-                    '{total}',
-                    QuranService.toArabicDigits(duas.length),
-                  ),
+                  .replaceAll('{current}', AppLocale.digits(at + 1))
+                  .replaceAll('{total}', AppLocale.digits(duas.length)),
               style: const TextStyle(color: AppColors.textGold, fontSize: 12),
             ),
             IconButton(
@@ -260,6 +257,7 @@ class _DuaCategoryDetailScreenState extends State<DuaCategoryDetailScreen> {
           Text(
             text,
             textAlign: TextAlign.right,
+            textDirection: TextDirection.rtl,
             style: const TextStyle(
               color: AppColors.textPrimary,
               height: 1.9,

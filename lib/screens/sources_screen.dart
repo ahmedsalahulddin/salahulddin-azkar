@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../constants/theme.dart';
 import '../data/sources.dart';
 import '../l10n/strings.dart';
+import '../services/app_locale.dart';
 
 /// Whose work this app is carrying.
 ///
@@ -16,7 +17,7 @@ class SourcesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppLocale.direction,
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
@@ -110,7 +111,7 @@ class SourcesScreen extends StatelessWidget {
               child: Text(
                 url.replaceFirst(RegExp(r'^https?://'), ''),
                 textDirection: TextDirection.ltr,
-                textAlign: TextAlign.right,
+                textAlign: AppLocale.isRtl ? TextAlign.right : TextAlign.left,
                 style: const TextStyle(
                   color: AppColors.gold,
                   fontSize: 11.5,
@@ -122,7 +123,7 @@ class SourcesScreen extends StatelessWidget {
           ],
           const SizedBox(height: 8),
           Align(
-            alignment: Alignment.centerRight,
+            alignment: AlignmentDirectional.centerStart,
             child: _standing(source.standing),
           ),
         ],

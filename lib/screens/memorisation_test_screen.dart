@@ -8,6 +8,7 @@ import '../data/quran_data.dart';
 import '../l10n/strings.dart';
 import '../services/auth_service.dart';
 import '../services/tahfeez_service.dart';
+import '../services/app_locale.dart';
 import 'tahfeez/tahfeez_widgets.dart' show gradeLabel, gradeColor;
 import 'memtest_history_screen.dart';
 
@@ -30,7 +31,7 @@ Future<void> openMemorisationPicker(BuildContext context) async {
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
     builder: (ctx) => Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppLocale.direction,
       child: DraggableScrollableSheet(
         expand: false,
         initialChildSize: 0.75,
@@ -55,7 +56,7 @@ Future<void> openMemorisationPicker(BuildContext context) async {
                 itemBuilder: (ctx, i) => ListTile(
                   dense: true,
                   leading: Text(
-                    QuranService.toArabicDigits(index[i].number),
+                    AppLocale.digits(index[i].number),
                     style: const TextStyle(color: AppColors.gold, fontSize: 13),
                   ),
                   title: Text(
@@ -217,7 +218,7 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
     final bank = _bank;
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppLocale.direction,
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
@@ -264,7 +265,7 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
         children: [
           for (final mode in TestMode.values)
             Padding(
-              padding: const EdgeInsets.only(left: 8),
+              padding: const EdgeInsetsDirectional.only(end: 8),
               child: GestureDetector(
                 onTap: () => _switchMode(mode),
                 behavior: HitTestBehavior.opaque,
@@ -316,18 +317,15 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
             children: [
               Text(
                 t('misc.questionProgress')
-                    .replaceAll(
-                      '{current}',
-                      QuranService.toArabicDigits(_position + 1),
-                    )
-                    .replaceAll('{total}', QuranService.toArabicDigits(_total)),
+                    .replaceAll('{current}', AppLocale.digits(_position + 1))
+                    .replaceAll('{total}', AppLocale.digits(_total)),
                 style: const TextStyle(
                   color: AppColors.textMuted,
                   fontSize: 12,
                 ),
               ),
               Text(
-                '✓ ${QuranService.toArabicDigits(_correct)}   ✗ ${QuranService.toArabicDigits(_missed)}',
+                '✓ ${AppLocale.digits(_correct)}   ✗ ${AppLocale.digits(_missed)}',
                 style: const TextStyle(color: AppColors.textGold, fontSize: 12),
               ),
             ],
@@ -382,7 +380,7 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
               Text(
                 t(
                   'misc.questionsAvailable',
-                ).replaceAll('{count}', QuranService.toArabicDigits(available)),
+                ).replaceAll('{count}', AppLocale.digits(available)),
                 style: const TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 14,
@@ -391,10 +389,9 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
               const SizedBox(height: 18),
               if (fixedCount)
                 Text(
-                  t('misc.allAvailableQuestions').replaceAll(
-                    '{count}',
-                    QuranService.toArabicDigits(available),
-                  ),
+                  t(
+                    'misc.allAvailableQuestions',
+                  ).replaceAll('{count}', AppLocale.digits(available)),
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: AppColors.textMuted,
@@ -422,7 +419,7 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
                     SizedBox(
                       width: 64,
                       child: Text(
-                        QuranService.toArabicDigits(_requestedCount),
+                        AppLocale.digits(_requestedCount),
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                           color: AppColors.gold,
@@ -568,7 +565,7 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
                     _revealed
                         ? t('misc.ayahNumber').replaceAll(
                             '{number}',
-                            QuranService.toArabicDigits(q.ayah.number),
+                            AppLocale.digits(q.ayah.number),
                           )
                         : q.shown.isEmpty
                         ? t('misc.recallFullAyahThenReveal')
@@ -804,10 +801,9 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
                 if (_slips > 0) ...[
                   const SizedBox(height: 14),
                   Text(
-                    t('misc.mistakesCount').replaceAll(
-                      '{count}',
-                      QuranService.toArabicDigits(_slips),
-                    ),
+                    t(
+                      'misc.mistakesCount',
+                    ).replaceAll('{count}', AppLocale.digits(_slips)),
                     style: const TextStyle(
                       color: AppColors.error,
                       fontSize: 12,
@@ -917,6 +913,7 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
           Text(
             q.ayah.text,
             textAlign: TextAlign.center,
+            textDirection: TextDirection.rtl,
             style: const TextStyle(
               fontFamily: _mushafFont,
               fontSize: 22,
@@ -1023,6 +1020,7 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
             Expanded(
               child: Text(
                 label,
+                textDirection: TextDirection.rtl,
                 style: TextStyle(
                   fontFamily: font,
                   fontSize: 19,
@@ -1097,7 +1095,9 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              '%${QuranService.toArabicDigits(score)}',
+              AppLocale.isRtl
+                  ? '%${AppLocale.digits(score)}'
+                  : '${AppLocale.digits(score)}%',
               style: const TextStyle(
                 color: AppColors.gold,
                 fontSize: 46,
@@ -1132,11 +1132,8 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
             const SizedBox(height: 6),
             Text(
               t('misc.rememberedCountOf')
-                  .replaceAll(
-                    '{correct}',
-                    QuranService.toArabicDigits(_correct),
-                  )
-                  .replaceAll('{total}', QuranService.toArabicDigits(total)),
+                  .replaceAll('{correct}', AppLocale.digits(_correct))
+                  .replaceAll('{total}', AppLocale.digits(total)),
               style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
             ),
             const SizedBox(height: 22),

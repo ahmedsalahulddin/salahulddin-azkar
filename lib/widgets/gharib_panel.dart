@@ -72,6 +72,7 @@ class GharibPanel extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.only(bottom: 6),
                       child: Text.rich(
+                        textDirection: TextDirection.rtl,
                         TextSpan(
                           children: [
                             TextSpan(

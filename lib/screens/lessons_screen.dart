@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../constants/theme.dart';
 import '../data/lessons.dart';
 import '../l10n/strings.dart';
+import '../services/app_locale.dart';
 import 'lesson_screen.dart';
 
 /// The lessons shelf, in two halves.
@@ -38,7 +39,7 @@ class LessonsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppLocale.direction,
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
@@ -170,8 +171,8 @@ class LessonsScreen extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(
-              Icons.chevron_left,
+            Icon(
+              AppLocale.isRtl ? Icons.chevron_left : Icons.chevron_right,
               color: AppColors.textMuted,
               size: 20,
             ),

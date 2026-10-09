@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../constants/theme.dart';
 import '../data/hadith_encyclopedia_data.dart';
 import '../l10n/strings.dart';
+import '../services/app_locale.dart';
 import 'hadith_encyclopedia_list_screen.dart';
 
 /// Browses hadeethenc.com's topic tree — 7 top-level subjects fanning out
@@ -64,7 +65,7 @@ class _HadithEncyclopediaScreenState extends State<HadithEncyclopediaScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
       ),
       builder: (ctx) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppLocale.direction,
         child: SafeArea(
           child: ListView(
             shrinkWrap: true,
@@ -135,7 +136,7 @@ class _HadithEncyclopediaScreenState extends State<HadithEncyclopediaScreen> {
   Widget build(BuildContext context) {
     final all = _all;
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppLocale.direction,
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
@@ -228,8 +229,8 @@ class _HadithEncyclopediaScreenState extends State<HadithEncyclopediaScreen> {
               '${c.hadeethsCount} ${t('lib2.hadithUnit')}',
               style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
             ),
-            trailing: const Icon(
-              Icons.chevron_left,
+            trailing: Icon(
+              AppLocale.isRtl ? Icons.chevron_left : Icons.chevron_right,
               color: AppColors.textMuted,
             ),
             onTap: () => _open(c, children),

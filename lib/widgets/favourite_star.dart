@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../constants/theme.dart';
 import '../l10n/strings.dart';
 import '../services/storage_service.dart';
+import '../services/app_locale.dart';
 
 /// The star that keeps a dhikr, wherever it is read.
 ///
@@ -62,7 +63,7 @@ class _FavouriteStarState extends State<FavouriteStar> {
         SnackBar(
           content: Text(
             added ? t('misc.addedToMyAdhkar') : t('misc.removedFromMyAdhkar'),
-            textDirection: TextDirection.rtl,
+            textDirection: AppLocale.direction,
           ),
           backgroundColor: added ? AppColors.emerald : AppColors.blackCard,
           duration: const Duration(milliseconds: 1400),

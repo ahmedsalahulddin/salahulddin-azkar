@@ -3,6 +3,7 @@ import '../../constants/theme.dart';
 import '../../data/quran_data.dart';
 import '../../l10n/strings.dart';
 import '../../services/bookmark_service.dart';
+import '../../services/app_locale.dart';
 import 'appearance_tabs.dart';
 import 'browse_tabs.dart';
 
@@ -30,7 +31,7 @@ class MushafNavigationDrawer extends StatelessWidget {
       backgroundColor: AppColors.black,
       width: MediaQuery.sizeOf(context).width * 0.92,
       child: Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: AppLocale.direction,
         child: SafeArea(
           child: _DrawerBody(
             index: index,

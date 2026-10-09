@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/theme.dart';
 import '../data/adhkar_data.dart';
-import '../data/quran_data.dart' show QuranService;
 import '../l10n/strings.dart';
 import '../services/favourites.dart';
 import '../services/storage_service.dart';
@@ -11,6 +10,7 @@ import '../widgets/dhikr_text.dart';
 import '../widgets/favourite_star.dart';
 import '../widgets/speak_button.dart';
 import '../widgets/tasbih_counter.dart';
+import '../services/app_locale.dart';
 
 class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
@@ -104,11 +104,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             ),
             Text(
               t('misc.readingProgress')
-                  .replaceAll('{current}', QuranService.toArabicDigits(at + 1))
-                  .replaceAll(
-                    '{total}',
-                    QuranService.toArabicDigits(_favorites.length),
-                  ),
+                  .replaceAll('{current}', AppLocale.digits(at + 1))
+                  .replaceAll('{total}', AppLocale.digits(_favorites.length)),
               style: const TextStyle(color: AppColors.textGold, fontSize: 12),
             ),
             IconButton(
@@ -210,7 +207,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppLocale.direction,
       child: Scaffold(
         backgroundColor: AppColors.black,
         body: SafeArea(
