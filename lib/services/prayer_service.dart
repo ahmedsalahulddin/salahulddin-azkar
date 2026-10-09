@@ -86,8 +86,14 @@ class PrayerInfo {
     required this.isNext,
   });
 
-  /// What the reader actually sees — the one to use in UI text.
-  String get displayName => prayerNameIn(AppLocale.code, name, nameEn);
+  /// Dhuhr on a Friday: the time of Jumu'ah.
+  bool get isJumuah => name == 'الظهر' && time.weekday == DateTime.friday;
+
+  /// What the reader actually sees — the one to use in UI text. On a Friday,
+  /// Dhuhr shows as Jumu'ah.
+  String get displayName => isJumuah
+      ? prayerNameIn(AppLocale.code, 'الجمعة', "Jumu'ah")
+      : prayerNameIn(AppLocale.code, name, nameEn);
 }
 
 /// The six names in the app's other languages, keyed by the Arabic name the
@@ -100,6 +106,8 @@ const _prayerNames = <String, Map<String, String>>{
     'العصر': 'Asr',
     'المغرب': 'Maghrib',
     'العشاء': 'Isha',
+
+    'الجمعة': 'Joumou\'a',
   },
   'ur': {
     'الفجر': 'فجر',
@@ -108,6 +116,8 @@ const _prayerNames = <String, Map<String, String>>{
     'العصر': 'عصر',
     'المغرب': 'مغرب',
     'العشاء': 'عشاء',
+
+    'الجمعة': 'جمعہ',
   },
   'id': {
     'الفجر': 'Subuh',
@@ -116,6 +126,8 @@ const _prayerNames = <String, Map<String, String>>{
     'العصر': 'Asar',
     'المغرب': 'Magrib',
     'العشاء': 'Isya',
+
+    'الجمعة': 'Jumat',
   },
   'ms': {
     'الفجر': 'Subuh',
@@ -124,6 +136,8 @@ const _prayerNames = <String, Map<String, String>>{
     'العصر': 'Asar',
     'المغرب': 'Maghrib',
     'العشاء': 'Isyak',
+
+    'الجمعة': 'Jumaat',
   },
   'hi': {
     'الفجر': 'फ़ज्र',
@@ -132,6 +146,8 @@ const _prayerNames = <String, Map<String, String>>{
     'العصر': 'अस्र',
     'المغرب': 'मग़रिब',
     'العشاء': 'इशा',
+
+    'الجمعة': 'जुमा',
   },
   'tr': {
     'الفجر': 'Sabah',
@@ -140,6 +156,8 @@ const _prayerNames = <String, Map<String, String>>{
     'العصر': 'İkindi',
     'المغرب': 'Akşam',
     'العشاء': 'Yatsı',
+
+    'الجمعة': 'Cuma',
   },
   'bn': {
     'الفجر': 'ফজর',
@@ -148,6 +166,8 @@ const _prayerNames = <String, Map<String, String>>{
     'العصر': 'আসর',
     'المغرب': 'মাগরিব',
     'العشاء': 'এশা',
+
+    'الجمعة': 'জুমা',
   },
   'ha': {
     'الفجر': 'Asuba',
@@ -156,6 +176,8 @@ const _prayerNames = <String, Map<String, String>>{
     'العصر': "La'asar",
     'المغرب': 'Magariba',
     'العشاء': 'Isha',
+
+    'الجمعة': 'Juma\'a',
   },
 };
 

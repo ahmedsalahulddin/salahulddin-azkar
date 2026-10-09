@@ -123,6 +123,43 @@ class PrayerAlerts {
 
   static const leadChoices = [5, 10, 15, 20, 30, 45];
 
+  /// Jumu'ah is not prepared for like Dhuhr — ghusl, perfume, setting out
+  /// early — so on Fridays Dhuhr's early warning is replaced by one of its
+  /// own, set apart and further ahead.
+  static const fridayKey = 'jumuah_before';
+  static const _fridayLeadKey = '@noor_prayer_friday_lead';
+  static final fridayLead = ValueNotifier<int>(60);
+  static const fridayLeadChoices = [30, 45, 60, 90, 120];
+
+  static AlertMode get fridayMode => settings.value[fridayKey] ?? AlertMode.off;
+
+  /// Dhuhr on a Friday — the time of Jumu'ah.
+  static bool isJumuah(AlertPrayer prayer, DateTime at) =>
+      prayer == AlertPrayer.dhuhr && at.weekday == DateTime.friday;
+
+  /// What an alert actually does at [at]: on a Friday, Dhuhr's early warning
+  /// follows the Jumu'ah row instead of the Dhuhr one.
+  static AlertMode modeAt(AlertPrayer prayer, AlertWhen when, DateTime at) =>
+      when == AlertWhen.before && isJumuah(prayer, at)
+      ? fridayMode
+      : modeFor(prayer, when);
+
+  /// Minutes ahead the early warning comes at [at].
+  static int leadAt(AlertPrayer prayer, DateTime at) =>
+      isJumuah(prayer, at) ? fridayLead.value : lead.value;
+
+  static Future<void> setFridayMode(AlertMode mode) async {
+    settings.value = {...settings.value, fridayKey: mode};
+    await _persist();
+    await _reschedule();
+  }
+
+  static Future<void> setFridayLead(int minutes) async {
+    fridayLead.value = minutes;
+    await _save((p) => p.setInt(_fridayLeadKey, minutes));
+    await _reschedule();
+  }
+
   /// The last computed prayer times, so a setting changed in the settings
   /// screen can take effect at once instead of waiting for the next load.
   static Map<AlertPrayer, DateTime> lastTimes = const {};
@@ -185,6 +222,7 @@ class PrayerAlerts {
     try {
       final prefs = await SharedPreferences.getInstance();
       lead.value = prefs.getInt(_leadKey) ?? 15;
+      fridayLead.value = prefs.getInt(_fridayLeadKey) ?? 60;
       // An id from an earlier catalogue (the voices that were withdrawn for
       // want of a licence) falls back to the default rather than to silence.
       final stored = prefs.getString(_adhanKey);
@@ -300,6 +338,7 @@ class PrayerAlerts {
               keyFor(prayer, when): when == AlertWhen.onTime
                   ? const AlertMode(notify: true, sound: true)
                   : modeFor(prayer, when),
+          fridayKey: fridayMode,
         };
 
     await _persist();

@@ -77,6 +77,28 @@ void main() {
           reason: 'muting is not turning off — the alerts still arrive');
     });
 
+    test('on a Friday, Dhuhr\'s early warning is Jumu\'ah\'s own', () async {
+      final friday = DateTime(2026, 10, 9, 12, 0); // a Friday
+      final thursday = DateTime(2026, 10, 8, 12, 0);
+      expect(friday.weekday, DateTime.friday);
+      await PrayerAlerts.setMode(AlertPrayer.dhuhr, AlertWhen.before,
+          const AlertMode(notify: true));
+      await PrayerAlerts.setFridayMode(AlertMode.off);
+      await PrayerAlerts.setFridayLead(90);
+      expect(PrayerAlerts.isJumuah(AlertPrayer.dhuhr, friday), isTrue);
+      expect(PrayerAlerts.isJumuah(AlertPrayer.asr, friday), isFalse);
+      expect(PrayerAlerts.modeAt(AlertPrayer.dhuhr, AlertWhen.before, friday)
+          .isOff, isTrue, reason: 'the Jumu\'ah row is off');
+      expect(PrayerAlerts.modeAt(AlertPrayer.dhuhr, AlertWhen.before, thursday)
+          .notify, isTrue);
+      expect(PrayerAlerts.leadAt(AlertPrayer.dhuhr, friday), 90);
+      expect(PrayerAlerts.leadAt(AlertPrayer.dhuhr, thursday),
+          PrayerAlerts.lead.value);
+      await PrayerAlerts.setFridayMode(const AlertMode(notify: true, sound: true));
+      expect(PrayerAlerts.modeAt(AlertPrayer.dhuhr, AlertWhen.before, friday)
+          .sound, isTrue);
+    });
+
     test('a withdrawn voice falls back to the default adhan', () {
       expect(Adhans.known('makkah'), isFalse);
       expect(Adhans.known('afasy'), isFalse);

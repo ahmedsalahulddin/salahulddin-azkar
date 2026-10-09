@@ -7,11 +7,11 @@ void main() {
 
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  test('the catalogue covers six languages with unique ids and slugs', () {
+  test('the catalogue covers ten languages with unique ids and slugs', () {
     final ids = TranslationService.available.map((t) => t.id).toList();
     final slugs = TranslationService.available.map((t) => t.slug).toList();
 
-    expect(TranslationService.available.length, 6);
+    expect(TranslationService.available.length, 10);
     expect(ids.toSet().length, ids.length);
     expect(slugs.toSet().length, slugs.length);
     expect(slugs.any((s) => s.trim().isEmpty), isFalse);

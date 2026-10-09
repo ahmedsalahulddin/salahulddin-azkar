@@ -28,6 +28,12 @@ class AppColors {
   static const emeraldLight = Color(0xFF3D6B1E);
   static const emeraldMuted = Color(0x332D5016); // 20%
 
+  // Friday: a soft green, the app's own emerald brightened to read on black.
+  // A design choice for the day, not a colour the Sunnah assigns it.
+  static const jumuah = Color(0xFF7DBE6E);
+  static const jumuahMuted = Color(0x267DBE6E); // 15%
+  static const jumuahBorder = Color(0x5C7DBE6E); // 36%
+
   // Text
   static const textPrimary = Color(0xFFF5F0E8);
   static const textSecondary = Color(0xFFB8A88A);

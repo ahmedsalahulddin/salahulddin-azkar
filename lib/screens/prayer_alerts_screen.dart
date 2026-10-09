@@ -246,7 +246,102 @@ class _PrayerAlertsScreenState extends State<PrayerAlertsScreen>
             ),
             if (prayer != AlertPrayer.values.last) const SizedBox(height: 6),
           ],
+          if (when == AlertWhen.before) _fridayBlock(),
         ],
+      ),
+    );
+  }
+
+  /// Jumu'ah's own early warning, set apart under the five: it replaces
+  /// Dhuhr's on Fridays and comes further ahead, for the ghusl, the perfume
+  /// and setting out early.
+  Widget _fridayBlock() {
+    final mode = PrayerAlerts.fridayMode;
+    return ValueListenableBuilder<int>(
+      valueListenable: PrayerAlerts.fridayLead,
+      builder: (context, lead, _) => Container(
+        margin: const EdgeInsets.only(top: 14),
+        padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+        decoration: BoxDecoration(
+          color: AppColors.jumuahMuted,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.jumuahBorder),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _row(
+              label: t('adh.jumuahLabel'),
+              labelColor: AppColors.jumuah,
+              mode: mode,
+              onNotify: (v) => PrayerAlerts.setFridayMode(mode.withNotify(v)),
+              onSound: (v) => PrayerAlerts.setFridayMode(mode.withSound(v)),
+              heading: true,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              t(
+                'adh.jumuahLeadTemplate',
+              ).replaceFirst('%s', QuranService.toArabicDigits(lead)),
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 12,
+                height: 1.6,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                for (final minutes in PrayerAlerts.fridayLeadChoices)
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 2),
+                      child: GestureDetector(
+                        onTap: () => PrayerAlerts.setFridayLead(minutes),
+                        behavior: HitTestBehavior.opaque,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 7),
+                          decoration: BoxDecoration(
+                            color: minutes == lead
+                                ? AppColors.jumuahMuted
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(9),
+                            border: Border.all(
+                              color: minutes == lead
+                                  ? AppColors.jumuah
+                                  : AppColors.jumuahBorder,
+                            ),
+                          ),
+                          child: Text(
+                            QuranService.toArabicDigits(minutes),
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: minutes == lead
+                                  ? AppColors.jumuah
+                                  : AppColors.textMuted,
+                              fontSize: 12.5,
+                              fontWeight: minutes == lead
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              t('adh.jumuahNote'),
+              style: const TextStyle(
+                color: AppColors.textMuted,
+                fontSize: 10.5,
+                height: 1.6,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -268,6 +363,7 @@ class _PrayerAlertsScreenState extends State<PrayerAlertsScreen>
     required ValueChanged<bool> onNotify,
     required ValueChanged<bool> onSound,
     bool heading = false,
+    Color? labelColor,
   }) {
     return Row(
       children: [
@@ -276,7 +372,9 @@ class _PrayerAlertsScreenState extends State<PrayerAlertsScreen>
           child: Text(
             label,
             style: TextStyle(
-              color: heading ? AppColors.gold : AppColors.textSecondary,
+              color:
+                  labelColor ??
+                  (heading ? AppColors.gold : AppColors.textSecondary),
               fontSize: 13,
               fontWeight: heading ? FontWeight.bold : FontWeight.normal,
             ),

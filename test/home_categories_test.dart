@@ -23,7 +23,7 @@ void main() {
   group('the shelves themselves', () {
     test('in the order they were asked for', () {
       expect(buildShelves().map((s) => s.key).toList(),
-          ['quran', 'adhkar', 'lessons', 'library', 'cards']);
+          ['quran', 'adhkar', 'stories', 'lessons', 'library', 'cards']);
     });
 
     test('the pinned card is the one asked for on each shelf', () {
@@ -52,7 +52,15 @@ void main() {
     test('the Quran shelf: the ways to read, then the ways to listen', () {
       final quran = buildShelves().firstWhere((s) => s.key == 'quran');
       expect([quran.pinned.title, ...quran.rest.map((i) => i.title)],
-          ['القرآن الكريم', 'تلاوة وتدبّر', 'اختبار الحفظ', 'الإذاعة', 'الاستماع الدائم']);
+          [
+            'القرآن الكريم',
+            'ترجمات القرآن',
+            'تلاوة وتدبّر',
+            'الباحث القرآني',
+            'اختبار الحفظ',
+            'الإذاعة',
+            'الاستماع الدائم',
+          ]);
     });
 
     test('the adhkar shelf gathers what used to be loose on the home screen',

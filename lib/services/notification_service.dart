@@ -832,10 +832,14 @@ class NotificationService {
       }
     }
 
-    final perDay = AlertPrayer.values
-        .expand((p) => AlertWhen.values.map((w) => PrayerAlerts.modeFor(p, w)))
-        .where((m) => !m.isOff)
-        .length;
+    final perDay =
+        AlertPrayer.values
+            .expand(
+              (p) => AlertWhen.values.map((w) => PrayerAlerts.modeFor(p, w)),
+            )
+            .where((m) => !m.isOff)
+            .length +
+        (PrayerAlerts.fridayMode.isOff ? 0 : 1);
     final days = PrayerAlerts.daysAhead;
 
     final first = PrayerAlerts.firstDay ?? DateTime.now();
@@ -862,9 +866,11 @@ class NotificationService {
           final at = e.value[prayer];
           if (at == null) continue;
           for (final when in AlertWhen.values) {
-            if (PrayerAlerts.modeFor(prayer, when).isOff) continue;
+            if (PrayerAlerts.modeAt(prayer, when, at).isOff) continue;
             final moment = when == AlertWhen.before
-                ? at.subtract(Duration(minutes: PrayerAlerts.lead.value))
+                ? at.subtract(
+                    Duration(minutes: PrayerAlerts.leadAt(prayer, at)),
+                  )
                 : at;
             if (moment.isAfter(now)) {
               ahead.add((_prayerId(e.key % 10, prayer, when), moment));
@@ -906,7 +912,11 @@ class NotificationService {
       final at = times[prayer];
       for (final when in AlertWhen.values) {
         final id = _prayerId(slot, prayer, when);
-        final mode = PrayerAlerts.modeFor(prayer, when);
+        final mode = at == null
+            ? PrayerAlerts.modeFor(prayer, when)
+            : PrayerAlerts.modeAt(prayer, when, at);
+        final lead = at == null ? 0 : PrayerAlerts.leadAt(prayer, at);
+        final jumuah = at != null && PrayerAlerts.isJumuah(prayer, at);
         final waiting = pending == null
             ? null
             : (pending.containsKey(id) ? pending[id] : null);
@@ -929,7 +939,7 @@ class NotificationService {
             at != null &&
             !allowed.contains(id) &&
             (when == AlertWhen.before
-                    ? at.subtract(Duration(minutes: PrayerAlerts.lead.value))
+                    ? at.subtract(Duration(minutes: lead))
                     : at)
                 .isAfter(now);
         if (at == null || overBudget) {
@@ -943,7 +953,7 @@ class NotificationService {
         }
 
         final moment = when == AlertWhen.before
-            ? at.subtract(Duration(minutes: PrayerAlerts.lead.value))
+            ? at.subtract(Duration(minutes: lead))
             : at;
         if (!moment.isAfter(now)) {
           // Due: it has fired or is sounding now — left alone, since the
@@ -976,19 +986,35 @@ class NotificationService {
         try {
           await _scheduleAt(
             id: id,
-            title: AppLocale.isEn
+            title: jumuah
+                ? (AppLocale.isEn
+                      ? (when == AlertWhen.before
+                            ? 'Jumu\'ah is approaching'
+                            : 'It is now time for Jumu\'ah')
+                      : (when == AlertWhen.before
+                            ? 'اقتربت صلاة الجمعة'
+                            : 'حان الآن وقت صلاة الجمعة'))
+                : AppLocale.isEn
                 ? (when == AlertWhen.before
                       ? '${prayer.displayName} is approaching'
                       : 'It is now time for ${prayer.displayName}')
                 : (when == AlertWhen.before
                       ? 'اقتربت صلاة ${prayer.displayName}'
                       : 'حان الآن وقت صلاة ${prayer.displayName}'),
-            body: AppLocale.isEn
+            body: jumuah
+                ? (AppLocale.isEn
+                      ? (when == AlertWhen.before
+                            ? '$lead minutes left — ghusl, perfume, and set out early'
+                            : 'Hasten to the remembrance of Allah')
+                      : (when == AlertWhen.before
+                            ? 'بقيت $lead دقيقة — اغتسل وتطيّب وبكّر إلى المسجد'
+                            : 'فاسعوا إلى ذكر الله'))
+                : AppLocale.isEn
                 ? (when == AlertWhen.before
-                      ? '${PrayerAlerts.lead.value} minutes remaining'
+                      ? '$lead minutes remaining'
                       : 'Establish the prayer in remembrance of Me')
                 : (when == AlertWhen.before
-                      ? 'بقيت ${PrayerAlerts.lead.value} دقيقة'
+                      ? 'بقيت $lead دقيقة'
                       : 'أقم الصلاة لذكري'),
             at: moment,
             mode: mode,

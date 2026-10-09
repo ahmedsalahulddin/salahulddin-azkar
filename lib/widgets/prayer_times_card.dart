@@ -8,6 +8,7 @@ import '../services/prayer_service.dart';
 import '../screens/city_picker_screen.dart';
 import '../services/prayer_place.dart';
 import '../services/prayer_settings.dart';
+import 'jumuah_sheet.dart';
 import 'rotating_verse.dart';
 import 'sky_arch.dart';
 
@@ -258,27 +259,83 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> {
               children: data.prayers.map(_prayerColumn).toList(),
             ),
           ),
+          if (data.prayers.any((p) => p.isJumuah)) ...[
+            const SizedBox(height: 10),
+            _jumuahChip(),
+          ],
         ],
       ),
     );
   }
 
+  /// Fridays only: the day named, and a door to its sunnahs.
+  Widget _jumuahChip() {
+    return GestureDetector(
+      onTap: () => showJumuahSheet(context),
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: AppColors.jumuahMuted,
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(color: AppColors.jumuahBorder),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.wb_sunny_outlined,
+              size: 15,
+              color: AppColors.jumuah,
+            ),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                t('jumuah.dayChip'),
+                style: const TextStyle(
+                  color: AppColors.jumuah,
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(
+              AppLocale.direction == TextDirection.rtl
+                  ? Icons.chevron_left
+                  : Icons.chevron_right,
+              size: 16,
+              color: AppColors.jumuah,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   /// One prayer in the strip: name, time under it, an arrow over the next.
+  /// Jumu'ah wears Friday's green.
   Widget _prayerColumn(PrayerInfo p) {
-    final color = p.isNext ? AppColors.gold : AppColors.textMuted;
+    final color = p.isJumuah
+        ? AppColors.jumuah
+        : p.isNext
+        ? AppColors.gold
+        : AppColors.textMuted;
     return Column(
       children: [
         Icon(
           Icons.arrow_drop_down,
           size: 16,
-          color: p.isNext ? AppColors.gold : Colors.transparent,
+          color: p.isNext ? color : Colors.transparent,
         ),
         Text(
           p.displayName,
           style: TextStyle(
             color: color,
             fontSize: 12,
-            fontWeight: p.isNext ? FontWeight.bold : FontWeight.normal,
+            fontWeight: p.isNext || p.isJumuah
+                ? FontWeight.bold
+                : FontWeight.normal,
           ),
         ),
         const SizedBox(height: 2),
@@ -288,7 +345,11 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> {
           // would otherwise come out as "PM 5:36".
           textDirection: AppLocale.direction,
           style: TextStyle(
-            color: p.isNext ? AppColors.textGold : AppColors.textMuted,
+            color: p.isJumuah
+                ? AppColors.jumuah
+                : p.isNext
+                ? AppColors.textGold
+                : AppColors.textMuted,
             fontSize: 11,
           ),
         ),

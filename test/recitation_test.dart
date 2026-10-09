@@ -10,16 +10,16 @@ void main() {
   test('audio URLs zero-pad surah and ayah to three digits', () {
     expect(
       RecitationService.urlFor(reciterId: 'Husary_128kbps', surah: 1, ayah: 1),
-      'https://everyayah.com/data/Husary_128kbps/001001.mp3',
+      'https://audioazkar.salahulddin.com/everyayah/Husary_128kbps/001001.mp3',
     );
     expect(
       RecitationService.urlFor(reciterId: 'Husary_128kbps', surah: 2, ayah: 255),
-      'https://everyayah.com/data/Husary_128kbps/002255.mp3',
+      'https://audioazkar.salahulddin.com/everyayah/Husary_128kbps/002255.mp3',
     );
     // Largest addressable ayah: surah 114, ayah 6.
     expect(
       RecitationService.urlFor(reciterId: 'Alafasy_128kbps', surah: 114, ayah: 6),
-      'https://everyayah.com/data/Alafasy_128kbps/114006.mp3',
+      'https://audioazkar.salahulddin.com/everyayah/Alafasy_128kbps/114006.mp3',
     );
   });
 
