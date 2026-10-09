@@ -5,6 +5,7 @@ import '../data/adhans.dart';
 import '../data/quran_data.dart';
 import '../l10n/strings.dart';
 import '../services/adhan_downloads.dart';
+import '../services/app_locale.dart';
 import '../services/notification_service.dart';
 import '../services/prayer_alerts.dart';
 import '../services/prayer_service.dart';
@@ -67,7 +68,7 @@ class _PrayerAlertsScreenState extends State<PrayerAlertsScreen>
           error == null
               ? t('adh.adhanTestSentMsg')
               : '${t('adh.adhanTestFailedMsg')}\n$error',
-          textDirection: TextDirection.rtl,
+          textDirection: AppLocale.direction,
         ),
         duration: const Duration(seconds: 8),
       ),
@@ -77,7 +78,7 @@ class _PrayerAlertsScreenState extends State<PrayerAlertsScreen>
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: AppLocale.direction,
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
@@ -206,7 +207,7 @@ class _PrayerAlertsScreenState extends State<PrayerAlertsScreen>
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            when.label,
+            when.displayLabel,
             style: const TextStyle(
               color: AppColors.gold,
               fontSize: 16,
@@ -280,9 +281,7 @@ class _PrayerAlertsScreenState extends State<PrayerAlertsScreen>
             ),
             const SizedBox(height: 8),
             Text(
-              t(
-                'adh.jumuahLeadTemplate',
-              ).replaceFirst('%s', QuranService.toArabicDigits(lead)),
+              t('adh.jumuahLeadTemplate').replaceFirst('%s', _num(lead)),
               style: const TextStyle(
                 color: AppColors.textSecondary,
                 fontSize: 12,
@@ -313,7 +312,7 @@ class _PrayerAlertsScreenState extends State<PrayerAlertsScreen>
                             ),
                           ),
                           child: Text(
-                            QuranService.toArabicDigits(minutes),
+                            _num(minutes),
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: minutes == lead
@@ -431,9 +430,7 @@ class _PrayerAlertsScreenState extends State<PrayerAlertsScreen>
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              t(
-                'adh.leadTimeTemplate',
-              ).replaceFirst('%s', QuranService.toArabicDigits(lead)),
+              t('adh.leadTimeTemplate').replaceFirst('%s', _num(lead)),
               style: const TextStyle(
                 color: AppColors.textSecondary,
                 fontSize: 13,
@@ -463,7 +460,7 @@ class _PrayerAlertsScreenState extends State<PrayerAlertsScreen>
                             ),
                           ),
                           child: Text(
-                            QuranService.toArabicDigits(minutes),
+                            _num(minutes),
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: minutes == lead
@@ -551,7 +548,7 @@ class _PrayerAlertsScreenState extends State<PrayerAlertsScreen>
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          t('adh.downloadFailedTemplate').replaceFirst('%s', adhan.name),
+          t('adh.downloadFailedTemplate').replaceFirst('%s', adhan.displayName),
           textAlign: TextAlign.right,
         ),
         backgroundColor: AppColors.blackCard,
@@ -616,14 +613,14 @@ class _PrayerAlertsScreenState extends State<PrayerAlertsScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      adhan.name,
+                      adhan.displayName,
                       style: TextStyle(
                         color: chosen ? AppColors.gold : AppColors.textPrimary,
                         fontSize: 13,
                       ),
                     ),
                     Text(
-                      '${adhan.place} · ${_status(adhan, here)}',
+                      '${adhan.displayPlace} · ${_status(adhan, here)}',
                       style: const TextStyle(
                         color: AppColors.textMuted,
                         fontSize: 10,
@@ -679,4 +676,8 @@ class _PrayerAlertsScreenState extends State<PrayerAlertsScreen>
       ),
     );
   }
+
+  /// Arabic-Indic digits in Arabic, the reader's usual ones elsewhere.
+  static String _num(int n) =>
+      AppLocale.code == 'ar' ? QuranService.toArabicDigits(n) : '$n';
 }

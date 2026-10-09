@@ -300,13 +300,9 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> {
               ),
             ),
             const SizedBox(width: 4),
-            Icon(
-              AppLocale.direction == TextDirection.rtl
-                  ? Icons.chevron_left
-                  : Icons.chevron_right,
-              size: 16,
-              color: AppColors.jumuah,
-            ),
+            // The home screen stays right-to-left in every language, so this
+            // matches the shelves' «See all» arrows rather than the language.
+            const Icon(Icons.chevron_left, size: 16, color: AppColors.jumuah),
           ],
         ),
       ),

@@ -9,6 +9,8 @@ import 'package:http/http.dart' as http;
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../l10n/strings.dart';
+
 /// The Supabase project's public credentials.
 ///
 /// The anon key is meant to be shipped inside clients — it carries no
@@ -59,6 +61,10 @@ enum SignInProvider {
   final String label;
 
   const SignInProvider(this.key, this.brand, this.label);
+
+  /// "Continue with Google" in the reader's language — the wording each
+  /// brand's guidelines publish for its button, translated.
+  String get displayLabel => t('auth.continueWith').replaceFirst('%s', brand);
 
   OAuthProvider get oauth => switch (this) {
     SignInProvider.google => OAuthProvider.google,

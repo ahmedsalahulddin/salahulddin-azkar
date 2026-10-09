@@ -984,8 +984,8 @@ class _AdhanTab extends StatelessWidget {
         for (final a in Adhans.all.where((a) => !a.isBundled))
           _RemoteItem(
             key: ValueKey('adhan-${a.id}'),
-            title: a.name,
-            subtitle: a.place,
+            title: a.displayName,
+            subtitle: a.displayPlace,
             isDownloaded: () async => AdhanDownloads.ready.value.contains(a.id),
             download: (_) => AdhanDownloads.fetch(a),
             remove: () => AdhanDownloads.remove(a),

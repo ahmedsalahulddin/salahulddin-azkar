@@ -1,3 +1,6 @@
+import '../l10n/strings.dart';
+import '../services/app_locale.dart';
+
 /// One recorded adhan.
 ///
 /// Only historical recordings more than fifty years old are offered (the
@@ -12,6 +15,13 @@ class Adhan {
   final String name;
   final String place;
 
+  /// The sheikh's name in Latin letters, for readers of the languages that
+  /// do not use the Arabic script.
+  final String nameLatin;
+
+  /// Key under adh.place.* for [place] in the reader's language.
+  final String placeKey;
+
   /// False for the ones fetched on demand from [host].
   final bool bundled;
 
@@ -19,12 +29,22 @@ class Adhan {
     required this.id,
     required this.name,
     required this.place,
+    required this.nameLatin,
+    required this.placeKey,
     this.bundled = false,
   });
 
   static const host = 'https://qdata.salahulddin.com/adhan';
 
   bool get isBundled => bundled;
+
+  /// [name] as the reader reads it.
+  String get displayName =>
+      const {'ar', 'ur'}.contains(AppLocale.code) ? name : nameLatin;
+
+  /// [place] as the reader reads it.
+  String get displayPlace =>
+      AppLocale.code == 'ar' ? place : t('adh.place.$placeKey');
 
   /// The file name shared by every copy: res/raw on Android, Library/Sounds
   /// on iOS, and the server.
@@ -45,16 +65,32 @@ class Adhans {
       id: 'mustafa1948',
       name: 'الشيخ مصطفى إسماعيل',
       place: 'القصر الملكي ١٩٤٨',
+      nameLatin: 'Sheikh Mustafa Ismail',
+      placeKey: 'palace1948',
       bundled: true,
     ),
     Adhan(
       id: 'minshawi',
       name: 'الشيخ محمد صديق المنشاوي',
       place: 'تسجيل قديم',
+      nameLatin: 'Sheikh Muhammad Siddiq al-Minshawi',
+      placeKey: 'old',
       bundled: true,
     ),
-    Adhan(id: 'mustafa1971', name: 'الشيخ مصطفى إسماعيل', place: 'أرمنت ١٩٧١'),
-    Adhan(id: 'refaat', name: 'الشيخ محمد رفعت', place: 'تسجيل قديم'),
+    Adhan(
+      id: 'mustafa1971',
+      name: 'الشيخ مصطفى إسماعيل',
+      place: 'أرمنت ١٩٧١',
+      nameLatin: 'Sheikh Mustafa Ismail',
+      placeKey: 'armant1971',
+    ),
+    Adhan(
+      id: 'refaat',
+      name: 'الشيخ محمد رفعت',
+      place: 'تسجيل قديم',
+      nameLatin: 'Sheikh Muhammad Rifat',
+      placeKey: 'old',
+    ),
   ];
 
   static const defaultId = 'mustafa1948';

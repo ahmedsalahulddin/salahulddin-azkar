@@ -4,7 +4,9 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/adhans.dart';
+import '../l10n/strings.dart';
 import 'app_locale.dart';
+import 'prayer_service.dart' show prayerNameIn;
 
 /// How an alert arrives.
 ///
@@ -76,6 +78,10 @@ enum AlertWhen {
 
   final String id;
   final String label;
+
+  /// [label] in the reader's language.
+  String get displayLabel =>
+      t(this == AlertWhen.before ? 'adh.whenBefore' : 'adh.whenOnTime');
 }
 
 /// The five prayers that get announced. Sunrise is not among them: it is not a
@@ -98,7 +104,7 @@ enum AlertPrayer {
   final String nameEn;
 
   /// What the reader actually sees — the one to use in UI text.
-  String get displayName => AppLocale.isEn ? nameEn : name;
+  String get displayName => prayerNameIn(AppLocale.code, name, nameEn);
 }
 
 /// Every prayer's two alerts, how far ahead the early one comes, and which

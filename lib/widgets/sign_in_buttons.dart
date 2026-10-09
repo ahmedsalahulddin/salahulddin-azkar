@@ -111,7 +111,7 @@ class SignInButton extends StatelessWidget {
                     ),
                     const SizedBox(width: 10),
                     Text(
-                      provider.label,
+                      provider.displayLabel,
                       style: TextStyle(
                         color: _foreground,
                         fontSize: 14.5,

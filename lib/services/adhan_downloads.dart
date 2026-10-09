@@ -202,8 +202,8 @@ class AdhanDownloads {
           source,
           tag: MediaItem(
             id: 'adhan:${adhan.id}',
-            title: adhan.name,
-            album: adhan.place,
+            title: adhan.displayName,
+            album: adhan.displayPlace,
           ),
         ),
       );
