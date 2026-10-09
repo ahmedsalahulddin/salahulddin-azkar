@@ -155,7 +155,7 @@ class Sources {
     ),
     AppSource(
       id: 'tafsirLater',
-      title: 'تفسير الشوكاني والسعدي',
+      title: 'تفسير الشوكاني',
       holder: 'أئمة التفسير',
       kind: SourceKind.scripture,
       standing: Standing.publicDomain,

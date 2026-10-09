@@ -51,13 +51,6 @@ class TafsirService {
       author: 'مركز تفسير للدراسات القرآنية',
     ),
     TafsirEdition(
-      id: 'saadi',
-      name: 'تفسير السعدي',
-      author: 'عبد الرحمن بن ناصر السعدي',
-      remoteSlug: 'ar-tafsir-as-saadi',
-      downloadMb: 37,
-    ),
-    TafsirEdition(
       id: 'baghawi',
       name: 'تفسير البغوي',
       author: 'معالم التنزيل — الحسين بن مسعود البغوي',
@@ -142,7 +135,10 @@ class TafsirService {
   /// Editions the app no longer offers (only works of the salaf and the
   /// people of athar are kept). Anything a reader downloaded earlier is
   /// cleared away by [dropRetired].
-  static const _retired = ['jalalayn', 'qurtubi', 'alusi'];
+  /// Withdrawn: Jalalayn, Qurtubi and Alusi (creed), and al-Sa'di, whose text
+  /// is still within copyright in the countries that protect an author for
+  /// seventy years (he died in 1376 AH / 1956–57 CE).
+  static const _retired = ['jalalayn', 'qurtubi', 'alusi', 'saadi'];
 
   /// Deletes retired editions' downloads and moves a reader who had one
   /// selected back to the default.
