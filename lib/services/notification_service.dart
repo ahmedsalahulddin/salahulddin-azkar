@@ -386,6 +386,70 @@ class NotificationService {
     }
   }
 
+  /// The channel server messages arrive on (Android). Named in the
+  /// manifest as FCM's default, so a message that comes while the app is
+  /// closed lands on it too.
+  static const newsChannel = 'salahulddin_news';
+
+  /// Makes the news channel exist before any message needs it: FCM puts a
+  /// background message on its own fallback channel when the named one has
+  /// not been created yet.
+  static Future<void> ensureNewsChannel() async {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return;
+    try {
+      await init();
+      await _plugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >()
+          ?.createNotificationChannel(
+            AndroidNotificationChannel(
+              newsChannel,
+              t('push.channelName'),
+              description: t('push.channelDescription'),
+              importance: Importance.high,
+            ),
+          );
+    } catch (_) {
+      // The fallback channel still shows the message.
+    }
+  }
+
+  /// Shows a server message that arrived while the app was open — FCM shows
+  /// it by itself only when the app is in the background.
+  static Future<void> showNews({
+    required int id,
+    required String title,
+    required String body,
+    String? payload,
+  }) async {
+    if (kIsWeb) return;
+    try {
+      await init();
+      await _plugin.show(
+        id,
+        title,
+        body,
+        NotificationDetails(
+          android: AndroidNotificationDetails(
+            newsChannel,
+            t('push.channelName'),
+            channelDescription: t('push.channelDescription'),
+            importance: Importance.high,
+            priority: Priority.high,
+            icon: 'ic_stat_notify',
+            styleInformation: BigTextStyleInformation(body),
+          ),
+          iOS: const DarwinNotificationDetails(),
+        ),
+        payload: payload,
+      );
+    } catch (_) {
+      // A message missed in the foreground still sits in no tray; nothing
+      // to recover.
+    }
+  }
+
   /// Sends an immediate notification on the prayer sound channel with the
   /// chosen adhan, so the reader can hear whether the adhan plays correctly
   /// without waiting for prayer time.

@@ -20,6 +20,7 @@ import 'services/custom_reminders.dart';
 import 'services/notification_router.dart';
 import 'services/tahfeez_service.dart';
 import 'services/notification_service.dart';
+import 'services/push_service.dart';
 import 'services/adhan_downloads.dart';
 import 'services/library_bookmarks.dart';
 import 'services/recitation_downloads.dart';
@@ -106,6 +107,8 @@ void main() async {
 
   try {
     await NotificationService.init();
+    // Messages from the app's server; never holds up the launch.
+    unawaited(PushService.init());
     await NotificationService.requestPermission();
     // The morning and evening adhkar are laid down by DailyReminders now, at
     // the hour the reader chose. This clears the old fixed-hour pair, which is

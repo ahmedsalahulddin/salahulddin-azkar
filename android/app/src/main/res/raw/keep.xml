@@ -5,4 +5,4 @@
      APK/AAB — the notification then failed with "invalid_sound: resource
      adhan_makkah could not be found". -->
 <resources xmlns:tools="http://schemas.android.com/tools"
-    tools:keep="@raw/*" />
+    tools:keep="@raw/*,@drawable/ic_stat_notify" />
