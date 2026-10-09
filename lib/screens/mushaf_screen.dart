@@ -461,7 +461,7 @@ class _MushafScreenState extends State<MushafScreen> {
                     style: const TextStyle(fontSize: 20),
                   ),
                   title: Text(
-                    kind.label,
+                    kind.displayLabel,
                     style: const TextStyle(color: AppColors.textPrimary),
                   ),
                   onTap: () => Navigator.pop(ctx, kind),
@@ -492,8 +492,8 @@ class _MushafScreenState extends State<MushafScreen> {
     if (!mounted) return;
     _toast(
       marked
-          ? '${t('mushaf.bookmarkAdded')} ${kind.label}'
-          : '${t('mushaf.bookmarkRemoved')} ${kind.label}',
+          ? '${t('mushaf.bookmarkAdded')} ${kind.displayLabel}'
+          : '${t('mushaf.bookmarkRemoved')} ${kind.displayLabel}',
     );
   }
 

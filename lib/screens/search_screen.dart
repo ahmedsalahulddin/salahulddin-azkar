@@ -159,7 +159,7 @@ class AppSearch {
             title: t('misc.surahTitle').replaceAll('{name}', surah.name),
             subtitle: t('misc.ayahCountType')
                 .replaceAll('{count}', '${surah.ayahCount}')
-                .replaceAll('{type}', surah.type),
+                .replaceAll('{type}', surah.typeLabel),
             open: (c) => _push(c, () => SurahScreen(info: surah)),
           ),
       for (final chapter in chapters)

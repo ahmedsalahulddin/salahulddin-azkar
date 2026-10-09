@@ -3,6 +3,7 @@ import 'dart:async';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../l10n/strings.dart';
 import 'sync_service.dart';
 
 enum BookmarkKind {
@@ -14,6 +15,13 @@ enum BookmarkKind {
   final String icon;
 
   const BookmarkKind(this.label, this.icon);
+
+  /// [label] in the reader's language.
+  String get displayLabel => switch (this) {
+    reading => t('bookmark.reading'),
+    memorising => t('bookmark.memorising'),
+    note => t('mushaf.noteTitle'),
+  };
 }
 
 class Bookmark {

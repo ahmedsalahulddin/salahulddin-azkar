@@ -42,7 +42,7 @@ class StoryCategoryScreen extends StatelessWidget {
                 border: Border(bottom: BorderSide(color: AppColors.goldBorder)),
               ),
               child: Text(
-                category.description,
+                category.displayDescription,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   color: AppColors.textSecondary,

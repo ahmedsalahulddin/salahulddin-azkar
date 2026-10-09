@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../data/quran_data.dart';
 import '../l10n/strings.dart';
 import 'app_audio.dart';
+import 'app_locale.dart';
 import 'connectivity_check.dart';
 import 'playback_speed.dart';
 import 'recitation_downloads.dart';
@@ -184,9 +185,10 @@ class ContinuousListening {
             ),
             tag: MediaItem(
               id: '$owner$number:$n',
-              title: '${info.name} — الآية ${QuranService.toArabicDigits(n)}',
+              title:
+                  '${info.name} — ${t('qs.ayahWord')} ${AppLocale.digits(n)}',
               artist: reciter.value.name,
-              album: 'الاستماع الدائم',
+              album: t('qs.continuousListeningTitle'),
             ),
           ),
       ];
@@ -238,7 +240,7 @@ class ContinuousListening {
             id: '$owner$number:1',
             title: info.name,
             artist: reciter.value.name,
-            album: 'الاستماع الدائم',
+            album: t('qs.continuousListeningTitle'),
           ),
         ),
       );

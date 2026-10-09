@@ -660,7 +660,7 @@ class _MyCardsScreenState extends State<MyCardsScreen> {
                   const SizedBox(width: 15),
                 const SizedBox(width: 8),
                 Text(
-                  s.label,
+                  s.displayLabel,
                   style: TextStyle(
                     color: s == _sort ? AppColors.gold : AppColors.textPrimary,
                     fontSize: 13,

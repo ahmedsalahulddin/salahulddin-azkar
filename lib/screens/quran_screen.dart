@@ -252,7 +252,7 @@ class _QuranScreenState extends State<QuranScreen> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '${s.type} • ${s.ayahCount} ${t('qs.ayahUnit')}',
+                    '${s.typeLabel} • ${s.ayahCount} ${t('qs.ayahUnit')}',
                     style: const TextStyle(
                       color: AppColors.textMuted,
                       fontSize: 12,

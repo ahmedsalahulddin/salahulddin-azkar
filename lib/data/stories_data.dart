@@ -1,3 +1,4 @@
+import '../l10n/strings.dart';
 import 'story_translations/bn.dart';
 import 'story_translations/en.dart';
 import 'story_translations/fr.dart';
@@ -97,6 +98,9 @@ class StoryCategory {
     required this.description,
     this.count = 0,
   });
+
+  /// [description] in the reader's language.
+  String get displayDescription => t('story.catDesc.$id');
 }
 
 final List<StoryCategory> storyCategories = [

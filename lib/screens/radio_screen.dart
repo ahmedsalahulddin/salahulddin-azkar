@@ -28,6 +28,10 @@ class RadioStation {
     this.otherNames = const {},
   });
 
+  /// [place] in the reader's language.
+  String get displayPlace =>
+      AppLocale.code == 'ar' ? place : t('radio.place.$id');
+
   /// Arabic name with the selected language's rendering alongside it — same
   /// "Arabic (translated)" convention as tBoth().
   String get bilingualName {
@@ -166,7 +170,7 @@ class _RadioScreenState extends State<RadioScreen> {
           tag: MediaItem(
             id: 'radio:${station.id}',
             title: station.name,
-            artist: station.place,
+            artist: station.displayPlace,
             album: t('misc.radioAlbumLabel'),
           ),
         ),
@@ -277,7 +281,7 @@ class _RadioScreenState extends State<RadioScreen> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    station.place,
+                    station.displayPlace,
                     style: const TextStyle(
                       color: AppColors.textMuted,
                       fontSize: 11.5,

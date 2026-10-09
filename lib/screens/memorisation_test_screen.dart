@@ -287,7 +287,7 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
                   ),
                   child: Center(
                     child: Text(
-                      mode.label,
+                      mode.displayLabel,
                       style: TextStyle(
                         color: mode == _mode
                             ? AppColors.gold
@@ -666,7 +666,7 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
                     child: Column(
                       children: [
                         Text(
-                          d.label,
+                          d.displayLabel,
                           style: TextStyle(
                             color: d == _difficulty
                                 ? AppColors.gold
@@ -676,7 +676,7 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
                           ),
                         ),
                         Text(
-                          d.hint,
+                          d.displayHint,
                           style: const TextStyle(
                             color: AppColors.textMuted,
                             fontSize: 9,
@@ -1123,7 +1123,7 @@ class _MemorisationTestScreenState extends State<MemorisationTestScreen> {
             ),
             const SizedBox(height: 10),
             Text(
-              '${_mode.label} — ${t('misc.surahPrefix')} ${widget.info.name}',
+              '${_mode.displayLabel} — ${t('misc.surahPrefix')} ${widget.info.name}',
               style: const TextStyle(
                 color: AppColors.textSecondary,
                 fontSize: 14,

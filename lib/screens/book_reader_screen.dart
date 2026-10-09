@@ -434,7 +434,7 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
             ),
             const SizedBox(height: 10),
             Text(
-              widget.book.description,
+              widget.book.displayDescription,
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: AppColors.textMuted,

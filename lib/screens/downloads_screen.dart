@@ -734,7 +734,7 @@ class _TafsirTab extends StatelessWidget {
                   key: ValueKey('qr-${b.id}'),
                   title: b.name,
                   subtitle:
-                      '${b.author} · ${(b.bytes / 1e6).toStringAsFixed(1)} م.ب',
+                      '${b.author} · ${(b.bytes / 1e6).toStringAsFixed(1)} ${t('unit.mb')}',
                   isDownloaded: () => ResearcherService.isDownloaded(b),
                   download: (p) async =>
                       await ResearcherService.download(b, onProgress: p) == 0,

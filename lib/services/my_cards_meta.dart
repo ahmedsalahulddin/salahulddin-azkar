@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../l10n/strings.dart';
+
 /// What the app does with a picture the reader added.
 enum CardStyle {
   /// The app writes over it: the greeting, the verse, and the signature. The
@@ -22,6 +24,10 @@ enum CardStyle {
   final String note;
   const CardStyle(this.id, this.label, this.note);
 
+  /// [label] and [note] in the reader's language.
+  String get displayLabel => t('mycards.style.$name');
+  String get displayNote => t('mycards.style.$name.note');
+
   static CardStyle byId(String? id) =>
       values.where((s) => s.id == id).firstOrNull ?? background;
 }
@@ -35,6 +41,14 @@ enum CardSort {
 
   final String label;
   const CardSort(this.label);
+
+  /// [label] in the reader's language.
+  String get displayLabel => switch (this) {
+    newest => t('mycards.sort.newest'),
+    oldest => t('mycards.sort.oldest'),
+    name => t('mycards.sort.name'),
+    group => t('mycards.sort.group'),
+  };
 }
 
 /// The names and groups the reader gives their own cards.

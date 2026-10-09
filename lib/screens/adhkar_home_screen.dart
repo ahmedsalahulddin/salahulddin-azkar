@@ -207,10 +207,10 @@ class AdhkarHomeScreen extends StatelessWidget {
           children: [
             const Text('🕋', style: TextStyle(fontSize: 32)),
             const SizedBox(height: 8),
-            const Text(
-              HisnService.title,
+            Text(
+              t('card.sahih.title'),
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 color: AppColors.gold,
                 fontSize: 15,
                 fontWeight: FontWeight.bold,

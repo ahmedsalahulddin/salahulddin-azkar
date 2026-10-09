@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
 
+import '../l10n/strings.dart';
+
 class SurahInfo {
   final int number;
   final String name;
@@ -23,6 +25,9 @@ class SurahInfo {
     ayahCount: j['ayahs'],
     type: j['type'],
   );
+
+  /// [type] in the reader's language.
+  String get typeLabel => t(type == 'مكية' ? 'qs.typeMakki' : 'qs.typeMadani');
 
   /// Al-Fatiha counts the Basmala as its first ayah, and At-Tawbah has none,
   /// so only the other 112 surahs show it as a header.

@@ -38,7 +38,7 @@ class SourcesScreen extends StatelessWidget {
             ),
             const SizedBox(height: 18),
             for (final kind in SourceKind.values) ...[
-              _heading(kind.label),
+              _heading(kind.displayLabel),
               for (final source in Sources.of(kind)) _card(source),
               const SizedBox(height: 14),
             ],
@@ -74,7 +74,7 @@ class SourcesScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            source.title,
+            source.displayTitle,
             style: const TextStyle(
               color: AppColors.textPrimary,
               fontSize: 14,
@@ -83,17 +83,17 @@ class SourcesScreen extends StatelessWidget {
           ),
           const SizedBox(height: 3),
           Text(
-            source.holder,
+            source.displayHolder,
             style: const TextStyle(
               color: AppColors.textSecondary,
               fontSize: 12,
               height: 1.6,
             ),
           ),
-          if (source.detail != null) ...[
+          if (source.displayDetail case final detail?) ...[
             const SizedBox(height: 3),
             Text(
-              source.detail!,
+              detail,
               style: const TextStyle(
                 color: AppColors.textMuted,
                 fontSize: 11,
@@ -139,7 +139,7 @@ class SourcesScreen extends StatelessWidget {
     final tint = owed ? AppColors.textGold : AppColors.gold;
 
     return Tooltip(
-      message: standing.note,
+      message: standing.displayNote,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
         decoration: BoxDecoration(
@@ -148,7 +148,7 @@ class SourcesScreen extends StatelessWidget {
           border: Border.all(color: AppColors.goldBorder),
         ),
         child: Text(
-          standing.label,
+          standing.displayLabel,
           style: TextStyle(color: tint, fontSize: 10.5),
         ),
       ),

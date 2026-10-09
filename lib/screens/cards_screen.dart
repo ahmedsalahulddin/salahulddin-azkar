@@ -97,14 +97,14 @@ class _CardsScreenState extends State<CardsScreen> {
                     size: 21,
                   ),
                   title: Text(
-                    style.label,
+                    style.displayLabel,
                     style: const TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 14,
                     ),
                   ),
                   subtitle: Text(
-                    style.note,
+                    style.displayNote,
                     style: const TextStyle(
                       color: AppColors.textMuted,
                       fontSize: 11,

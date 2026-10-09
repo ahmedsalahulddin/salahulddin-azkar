@@ -61,7 +61,7 @@ class _SahihAdhkarScreenState extends State<SahihAdhkarScreen> {
       child: Scaffold(
         backgroundColor: AppColors.black,
         appBar: AppBar(
-          title: const Text(HisnService.title),
+          title: Text(t('card.sahih.title')),
           backgroundColor: AppColors.black,
           foregroundColor: AppColors.gold,
         ),

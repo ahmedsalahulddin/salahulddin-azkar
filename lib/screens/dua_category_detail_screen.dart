@@ -76,7 +76,7 @@ class _DuaCategoryDetailScreenState extends State<DuaCategoryDetailScreen> {
             if (widget.editable)
               IconButton(
                 icon: Icon(_editing ? Icons.check : Icons.edit),
-                tooltip: _editing ? 'حفظ' : 'تعديل',
+                tooltip: _editing ? t('myrem.save') : t('duaedit.edit'),
                 onPressed: () {
                   if (_editing) {
                     _saveAndPop();
@@ -101,18 +101,18 @@ class _DuaCategoryDetailScreenState extends State<DuaCategoryDetailScreen> {
           TextField(
             controller: _titleController,
             style: const TextStyle(color: AppColors.gold, fontSize: 16),
-            decoration: const InputDecoration(
-              labelText: 'اسم التصنيف',
-              labelStyle: TextStyle(color: AppColors.textMuted),
-              enabledBorder: UnderlineInputBorder(
+            decoration: InputDecoration(
+              labelText: t('duaedit.categoryName'),
+              labelStyle: const TextStyle(color: AppColors.textMuted),
+              enabledBorder: const UnderlineInputBorder(
                 borderSide: BorderSide(color: AppColors.goldBorder),
               ),
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'كل دعاء في سطر، واترك سطرًا فارغًا بين كل دعاء وآخر',
-            style: TextStyle(color: AppColors.textMuted, fontSize: 11),
+          Text(
+            t('duaedit.hint'),
+            style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
           ),
           const SizedBox(height: 8),
           Expanded(
@@ -140,10 +140,10 @@ class _DuaCategoryDetailScreenState extends State<DuaCategoryDetailScreen> {
   Widget _reader() {
     final duas = widget.category.duas;
     if (duas.isEmpty) {
-      return const Center(
+      return Center(
         child: Text(
-          'لا توجد أدعية هنا بعد',
-          style: TextStyle(color: AppColors.textMuted),
+          t('duaedit.empty'),
+          style: const TextStyle(color: AppColors.textMuted),
         ),
       );
     }

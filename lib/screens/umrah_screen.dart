@@ -197,7 +197,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          stage.title,
+                          stage.displayTitle,
                           style: const TextStyle(
                             color: AppColors.textPrimary,
                             fontSize: 15,
@@ -230,7 +230,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
               color: AppColors.blackSurface,
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               child: Text(
-                stage.guidance,
+                stage.displayGuidance,
                 style: const TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 12,

@@ -1,3 +1,6 @@
+import '../l10n/strings.dart';
+import '../services/app_locale.dart';
+
 /// Where everything in the app came from.
 ///
 /// The app carries other people's work: the Qur'an as the King Fahd Complex
@@ -16,6 +19,9 @@ enum SourceKind {
 
   final String label;
   const SourceKind(this.label);
+
+  /// [label] in the reader's language.
+  String get displayLabel => t('src.kind.$name');
 }
 
 /// How freely a source may be carried.
@@ -36,9 +42,15 @@ enum Standing {
   final String label;
   final String note;
   const Standing(this.label, this.note);
+
+  /// [label] and [note] in the reader's language.
+  String get displayLabel => t('src.standing.$name');
+  String get displayNote => t('src.standing.$name.note');
 }
 
 class AppSource {
+  /// Names this source's lines in the translation tables.
+  final String id;
   final String title;
 
   /// Who holds the right, or who the work belongs to.
@@ -57,6 +69,7 @@ class AppSource {
   final String? url;
 
   const AppSource({
+    required this.id,
     required this.title,
     required this.holder,
     required this.kind,
@@ -64,12 +77,26 @@ class AppSource {
     this.detail,
     this.url,
   });
+
+  /// One of this source's lines in the reader's language; names of books and
+  /// publishers have no translation and stay as written.
+  String _line(String field, String arabic) {
+    if (AppLocale.code == 'ar') return arabic;
+    final key = 'src.$id.$field';
+    final text = t(key);
+    return text == key ? arabic : text;
+  }
+
+  String get displayTitle => _line('title', title);
+  String get displayHolder => _line('holder', holder);
+  String? get displayDetail => detail == null ? null : _line('detail', detail!);
 }
 
 class Sources {
   static const all = <AppSource>[
     // ---- scripture and text --------------------------------------------
     AppSource(
+      id: 'mushafText',
       title: 'نصّ المصحف الشريف',
       holder: 'مجمع الملك فهد لطباعة المصحف الشريف',
       kind: SourceKind.scripture,
@@ -77,6 +104,7 @@ class Sources {
       detail: 'رواية حفص عن عاصم، بالرسم العثماني',
     ),
     AppSource(
+      id: 'mushafPages',
       title: 'صور صفحات المصحف',
       holder:
           'مجمع الملك فهد لطباعة المصحف الشريف — تُبثّ من مشروع Quran.com (files.quran.app)',
@@ -86,6 +114,7 @@ class Sources {
       url: 'https://quran.com',
     ),
     AppSource(
+      id: 'hisn',
       title: 'حصن المسلم',
       holder: 'سعيد بن علي بن وهف القحطاني',
       kind: SourceKind.scripture,
@@ -93,6 +122,7 @@ class Sources {
       detail: '١٣٢ باباً — ٢٦٧ ذكراً',
     ),
     AppSource(
+      id: 'hadeethenc',
       title: 'موسوعة الحديث',
       holder: 'hadeethenc.com — جمعية الدعوة والإرشاد وتوعية الجاليات بالربوة',
       kind: SourceKind.scripture,
@@ -102,31 +132,36 @@ class Sources {
       url: 'https://hadeethenc.com',
     ),
     AppSource(
+      id: 'muyassar',
       title: 'التفسير الميسّر',
       holder: 'مجمع الملك فهد لطباعة المصحف الشريف',
       kind: SourceKind.scripture,
       standing: Standing.permission,
     ),
     AppSource(
+      id: 'mukhtasar',
       title: 'المختصر في التفسير',
       holder: 'مركز تفسير للدراسات القرآنية',
       kind: SourceKind.scripture,
       standing: Standing.permission,
     ),
     AppSource(
-      title: 'تفسير الطبري والبغوي والقرطبي وابن كثير',
+      id: 'tafsirClassics',
+      title: 'تفسير الطبري والبغوي وابن كثير',
       holder: 'أئمة التفسير',
       kind: SourceKind.scripture,
       standing: Standing.publicDomain,
       detail: 'توفّوا بين القرنين الرابع والثامن الهجريين',
     ),
     AppSource(
-      title: 'تفسير الجلالين والشوكاني والألوسي والسعدي',
+      id: 'tafsirLater',
+      title: 'تفسير الشوكاني والسعدي',
       holder: 'أئمة التفسير',
       kind: SourceKind.scripture,
       standing: Standing.publicDomain,
     ),
     AppSource(
+      id: 'translations',
       title: 'ترجمات معاني القرآن',
       holder: 'alquran.cloud (Islamic Network) — ولكل ترجمة مترجمها',
       kind: SourceKind.scripture,
@@ -143,6 +178,7 @@ class Sources {
       url: 'https://alquran.cloud',
     ),
     AppSource(
+      id: 'quranenc',
       title: 'موسوعة القرآن الكريم المترجمة',
       holder: 'QuranEnc.com — جمعية خدمة المحتوى الإسلامي باللغات',
       kind: SourceKind.scripture,
@@ -151,6 +187,7 @@ class Sources {
       url: 'https://quranenc.com',
     ),
     AppSource(
+      id: 'tafsirFiles',
       title: 'ملفات التفاسير المُنزَّلة',
       holder: 'مستودع spa5k/tafsir_api — نصوص التفاسير من Quran.com',
       kind: SourceKind.scripture,
@@ -159,6 +196,7 @@ class Sources {
       url: 'https://github.com/spa5k/tafsir_api',
     ),
     AppSource(
+      id: 'hadithLinks',
       title: 'روابط التحقق من الأحاديث',
       holder: 'sunnah.com',
       kind: SourceKind.scripture,
@@ -167,12 +205,14 @@ class Sources {
       url: 'https://sunnah.com',
     ),
     AppSource(
+      id: 'arbaeen',
       title: 'الأربعون النووية والأربعون القدسية',
       holder: 'الإمام النووي وأهل العلم — رحمهم الله',
       kind: SourceKind.scripture,
       standing: Standing.publicDomain,
     ),
     AppSource(
+      id: 'hadithFiles',
       title: 'ملفات الأحاديث والترجمات المُنزَّلة',
       holder: 'مستودعات fawazahmed0 — ولكل ترجمة مترجمها',
       kind: SourceKind.scripture,
@@ -183,6 +223,7 @@ class Sources {
 
     // ---- audio -----------------------------------------------------------
     AppSource(
+      id: 'reciters',
       title: 'تلاوات القرّاء',
       holder: 'كل قارئ وناشر تسجيله — تُبثّ من EveryAyah.com و mp3quran.net',
       kind: SourceKind.audio,
@@ -193,6 +234,7 @@ class Sources {
       url: 'https://everyayah.com',
     ),
     AppSource(
+      id: 'mp3quran',
       title: 'تلاوات mp3quran والإذاعة',
       holder: 'mp3quran.net و qurango.net',
       kind: SourceKind.audio,
@@ -201,6 +243,7 @@ class Sources {
       url: 'https://mp3quran.net',
     ),
     AppSource(
+      id: 'azkarAudio',
       title: 'تسجيلات الأذكار',
       holder: 'hisnmuslim.com',
       kind: SourceKind.audio,
@@ -208,6 +251,7 @@ class Sources {
       url: 'https://www.hisnmuslim.com',
     ),
     AppSource(
+      id: 'adhan',
       title: 'أصوات الأذان',
       holder:
           'الشيخ مصطفى إسماعيل (القصر الملكي ١٩٤٨، أرمنت ١٩٧١)، '
@@ -221,6 +265,7 @@ class Sources {
       url: 'https://archive.org/details/Mustafa_Azan',
     ),
     AppSource(
+      id: 'radio',
       title: 'الإذاعات',
       holder:
           'إذاعة القرآن الكريم من القاهرة، وإذاعة القرآن الكريم من السعودية '
@@ -233,6 +278,7 @@ class Sources {
 
     // ---- type ------------------------------------------------------------
     AppSource(
+      id: 'amiri',
       title: 'خط أميري قرآن',
       holder: 'خالد حسني ومشروع الخط الأميري',
       kind: SourceKind.type,
@@ -242,12 +288,14 @@ class Sources {
 
     // ---- software --------------------------------------------------------
     AppSource(
+      id: 'prayerCalc',
       title: 'حساب مواقيت الصلاة',
       holder: 'حزمة adhan — خوارزميات الهيئات المعتمدة',
       kind: SourceKind.software,
       standing: Standing.licensed,
     ),
     AppSource(
+      id: 'ornaments',
       title: 'زخارف إطارات المصحف',
       holder: 'التطبيق نفسه',
       kind: SourceKind.software,

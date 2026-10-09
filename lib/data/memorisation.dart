@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import '../l10n/strings.dart';
 import 'quran_data.dart';
 
 /// The ways the drill can ask about an ayah.
@@ -19,6 +20,10 @@ enum TestMode {
 
   final String label;
   final String hint;
+
+  /// [label] and [hint] in the reader's language.
+  String get displayLabel => t('mem.mode.$name');
+  String get displayHint => t('mem.mode.$name.hint');
 }
 
 /// How much is withheld in [TestMode.complete].
@@ -31,6 +36,10 @@ enum TestDifficulty {
 
   final String label;
   final String hint;
+
+  /// [label] and [hint] in the reader's language.
+  String get displayLabel => t('mem.level.$name');
+  String get displayHint => t('mem.level.$name.hint');
 
   /// Words withheld from the end, or -1 for the whole ayah.
   final int hiddenWords;

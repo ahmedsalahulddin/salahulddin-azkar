@@ -441,7 +441,7 @@ class _ResearcherScreenState extends State<ResearcherScreen>
   Widget _bookHeader(ResearcherBook book) {
     final death = book.death.isEmpty
         ? ''
-        : ' (ت ${QuranService.toArabicDigits(int.tryParse(book.death) ?? 0)}هـ)';
+        : ' ${t('researcher.deathLabel').replaceAll('%s', AppLocale.digits(int.tryParse(book.death) ?? 0))}';
     return Row(
       children: [
         Expanded(
@@ -650,7 +650,7 @@ class _DownloadButtonState extends State<_DownloadButton> {
       onPressed: _download,
       icon: const Icon(Icons.download_rounded, size: 16, color: AppColors.gold),
       label: Text(
-        '${t('researcher.download')} ($mb ${AppLocale.isEn ? 'MB' : 'م.ب'})',
+        '${t('researcher.download')} ($mb ${t('unit.mb')})',
         style: const TextStyle(color: AppColors.gold, fontSize: 12),
       ),
     );

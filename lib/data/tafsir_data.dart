@@ -6,6 +6,8 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../l10n/strings.dart';
+
 /// One tafsir the reader can choose between.
 ///
 /// The two short works ship inside the app; the long ones are fetched on
@@ -19,18 +21,21 @@ class TafsirEdition {
   /// Slug on the remote source. Null for editions bundled with the app.
   final String? remoteSlug;
 
-  /// Rough download size, shown before the reader commits to it.
-  final String? downloadSize;
+  /// Rough download size in megabytes, shown before the reader commits to it.
+  final int? downloadMb;
 
   const TafsirEdition({
     required this.id,
     required this.name,
     required this.author,
     this.remoteSlug,
-    this.downloadSize,
+    this.downloadMb,
   });
 
   bool get isBundled => remoteSlug == null;
+
+  /// [downloadMb] as the reader reads sizes.
+  String? get downloadSize => downloadMb == null ? null : tSizeMb(downloadMb!);
 }
 
 class TafsirService {
@@ -50,35 +55,35 @@ class TafsirService {
       name: 'تفسير السعدي',
       author: 'عبد الرحمن بن ناصر السعدي',
       remoteSlug: 'ar-tafsir-as-saadi',
-      downloadSize: '٣٧ م.ب',
+      downloadMb: 37,
     ),
     TafsirEdition(
       id: 'baghawi',
       name: 'تفسير البغوي',
       author: 'معالم التنزيل — الحسين بن مسعود البغوي',
       remoteSlug: 'ar-tafsir-al-baghawi',
-      downloadSize: '٣٧ م.ب',
+      downloadMb: 37,
     ),
     TafsirEdition(
       id: 'tabari',
       name: 'تفسير الطبري',
       author: 'جامع البيان — محمد بن جرير الطبري',
       remoteSlug: 'ar-tafsir-al-tabari',
-      downloadSize: '٥٩ م.ب',
+      downloadMb: 59,
     ),
     TafsirEdition(
       id: 'ibn-kathir',
       name: 'تفسير ابن كثير',
       author: 'الحافظ ابن كثير',
       remoteSlug: 'ar-tafsir-ibn-kathir',
-      downloadSize: '٨٦ م.ب',
+      downloadMb: 86,
     ),
     TafsirEdition(
       id: 'shawkani',
       name: 'تفسير الشوكاني',
       author: 'فتح القدير — محمد بن علي الشوكاني',
       remoteSlug: 'fath-al-qadir-al-shawkani',
-      downloadSize: '١٧٢ م.ب',
+      downloadMb: 172,
     ),
     // Non-Arabic editions, one per app language this remote source actually
     // has a tafsir in — no Malay or Hausa edition exists there, so those two
@@ -88,49 +93,49 @@ class TafsirService {
       name: 'Al-Mukhtasar (English)',
       author: 'Tafsir Center for Quranic Studies',
       remoteSlug: 'en-tafsir-al-mukhtasar',
-      downloadSize: '٢ م.ب',
+      downloadMb: 2,
     ),
     TafsirEdition(
       id: 'mukhtasar-fr',
       name: 'Al-Mukhtasar (Français)',
       author: 'Tafsir Center for Quranic Studies',
       remoteSlug: 'french-mokhtasar',
-      downloadSize: '٢ م.ب',
+      downloadMb: 2,
     ),
     TafsirEdition(
       id: 'ibn-kathir-ur',
       name: 'ابن کثیر (اردو)',
       author: 'الحافظ ابن كثير',
       remoteSlug: 'ur-tafseer-ibn-e-kaseer',
-      downloadSize: '٤٦ م.ب',
+      downloadMb: 46,
     ),
     TafsirEdition(
       id: 'mukhtasar-id',
       name: 'Al-Mukhtasar (Bahasa Indonesia)',
       author: 'Tafsir Center for Quranic Studies',
       remoteSlug: 'indonesian-mokhtasar',
-      downloadSize: '٢ م.ب',
+      downloadMb: 2,
     ),
     TafsirEdition(
       id: 'mukhtasar-hi',
       name: 'मुख़्तसर (हिन्दी)',
       author: 'Tafsir Center for Quranic Studies',
       remoteSlug: 'hindi-mokhtasar',
-      downloadSize: '٥ م.ب',
+      downloadMb: 5,
     ),
     TafsirEdition(
       id: 'mukhtasar-tr',
       name: 'Muhtasar (Türkçe)',
       author: 'Tafsir Center for Quranic Studies',
       remoteSlug: 'turkish-mokhtasar',
-      downloadSize: '٢ م.ب',
+      downloadMb: 2,
     ),
     TafsirEdition(
       id: 'mukhtasar-bn',
       name: 'আল-মুখতাসার (বাংলা)',
       author: 'Tafsir Center for Quranic Studies',
       remoteSlug: 'bengali-mokhtasar',
-      downloadSize: '٥ م.ب',
+      downloadMb: 5,
     ),
   ];
 

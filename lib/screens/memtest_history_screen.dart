@@ -86,7 +86,7 @@ class _MemtestHistoryScreenState extends State<MemtestHistoryScreen> {
     final grade = _gradeOf(r.scorePercent);
     final modeLabel = TestMode.values
         .firstWhere((m) => m.name == r.mode, orElse: () => TestMode.complete)
-        .label;
+        .displayLabel;
 
     return TahfeezCard(
       child: Row(

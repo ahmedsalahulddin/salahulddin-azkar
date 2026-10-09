@@ -1,3 +1,4 @@
+import '../l10n/strings.dart';
 import 'adhkar_translations/bn.dart';
 import 'adhkar_translations/fr.dart';
 import 'adhkar_translations/ha.dart';
@@ -104,6 +105,9 @@ class AdhkarCategory {
     required this.description,
     this.count = 0,
   });
+
+  /// [description] in the reader's language.
+  String get displayDescription => t('adhkar.desc.$id');
 }
 
 final List<AdhkarCategory> categories = [

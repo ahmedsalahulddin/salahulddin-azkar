@@ -578,7 +578,7 @@ class _SurahScreenState extends State<SurahScreen> {
           ),
           const SizedBox(height: 4),
           Text(
-            '${info.type} • ${info.ayahCount} ${t('qs.ayahUnit')}',
+            '${info.typeLabel} • ${info.ayahCount} ${t('qs.ayahUnit')}',
             style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
           ),
           if (info.hasBasmala) ...[

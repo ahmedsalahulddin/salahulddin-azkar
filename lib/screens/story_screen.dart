@@ -213,9 +213,11 @@ class _StoryScreenState extends State<StoryScreen> {
                           if (_translation != null) ...[
                             const SizedBox(height: 4),
                             Text(
-                              'Translated by ${_translation!.translator}',
-                              textAlign: TextAlign.left,
-                              textDirection: TextDirection.ltr,
+                              t(
+                                'story.translatedBy',
+                              ).replaceAll('%s', _translation!.translator),
+                              textAlign: TextAlign.start,
+                              textDirection: AppLocale.direction,
                               style: const TextStyle(
                                 color: AppColors.textMuted,
                                 fontSize: 10,
@@ -231,12 +233,11 @@ class _StoryScreenState extends State<StoryScreen> {
             ),
             const SizedBox(height: 14),
             Text(
-              _isArabic
-                  ? 'القصة مرويّة بأسلوب مبسّط؛ نص الآيات والأحاديث كما وردت '
-                        'موجود في قسمَي القرآن والأحاديث بالتطبيق.'
-                  : 'This is a plain-language retelling, machine-translated '
-                        'by Claude AI — not a scholarly translation. The Arabic '
-                        'original is the version to rely on.',
+              t(
+                _isArabic
+                    ? 'story.disclaimerArabic'
+                    : 'story.disclaimerMachine',
+              ),
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: AppColors.textMuted,

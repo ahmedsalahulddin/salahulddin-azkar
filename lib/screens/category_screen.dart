@@ -81,9 +81,9 @@ class _CategoryScreenState extends State<CategoryScreen> {
                 border: Border(bottom: BorderSide(color: AppColors.goldBorder)),
               ),
               child: Text(
-                cat.description,
+                cat.displayDescription,
                 textAlign: TextAlign.center,
-                textDirection: TextDirection.rtl,
+                textDirection: AppLocale.direction,
                 style: const TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 13,

@@ -56,6 +56,9 @@ String tBoth(String key) {
   return '$ar ($other)';
 }
 
+/// A download size in whole megabytes: locale digits, then the unit.
+String tSizeMb(int mb) => '${AppLocale.digits(mb)} ${t('unit.mb')}';
+
 /// Splits a [tBoth] string back into its Arabic and English halves, so a
 /// caller can lay them out as two separate lines instead of one that wraps —
 /// a wrapped "Arabic (English)" string breaks the parenthetical apart under
@@ -1603,6 +1606,175 @@ const _ar = <String, String>{
       'ابحث عن أي كلمة في المصحف.\nلا حاجة لكتابة التشكيل.',
   'mushaf.worksOfflineAfterDownload': 'بعد تنزيله يعمل بلا إنترنت',
   'mushaf.worksOfflineAfterDownloadShort': 'بعد التنزيل تعمل بلا إنترنت',
+  'duaedit.edit': 'تعديل',
+  'duaedit.categoryName': 'اسم التصنيف',
+  'duaedit.hint': 'كل دعاء في سطر، واترك سطرًا فارغًا بين كل دعاء وآخر',
+  'duaedit.empty': 'لا توجد أدعية هنا بعد',
+  'lessons.kids.title': 'قصص الأنبياء للأطفال',
+  'lessons.kids.subtitle': 'حلقات قصيرة بلغة بسيطة',
+  'lessons.kids.detail': 'من آدم إلى محمد ﷺ، مبسّطة لمن هم دون العاشرة',
+  'lessons.prophets.title': 'قصص الأنبياء',
+  'lessons.prophets.subtitle': 'السيرة كاملة بالأدلة',
+  'lessons.prophets.detail':
+      'القصة كما وردت في الكتاب والسنة، مع مواضعها من القرآن',
+  'lessons.tafsir.title': 'التفسير',
+  'lessons.tafsir.subtitle': 'أكثر من مفسّر لكل سورة',
+  'lessons.tafsir.detail': 'تختار السورة، ثم تختار من تسمع له تفسيرها',
+  'radio.place.cairo': 'القاهرة — مصر',
+  'radio.place.saudi': 'السعودية',
+  'radio.place.tarateel': 'تلاوات خاشعة متواصلة',
+  'radio.place.mix': 'تلاوات متنوعة لعدة قرّاء',
+  'radio.place.afasy': 'تلاوات العفاسي على مدار اليوم',
+  'researcher.deathLabel': '(ت %sهـ)',
+  'unit.mb': 'م.ب',
+  'story.translatedBy': 'ترجمة: %s',
+  'story.disclaimerArabic':
+      'القصة مرويّة بأسلوب مبسّط؛ نص الآيات والأحاديث كما وردت موجود في قسمَي القرآن والأحاديث بالتطبيق.',
+  'story.disclaimerMachine':
+      'هذه إعادة سرد مبسّطة بلغة سهلة، مترجمة آليًا بواسطة Claude AI — وليست ترجمة علمية. والأصل العربي هو المعتمد.',
+  'mem.mode.complete': 'إكمال الآية',
+  'mem.mode.complete.hint': 'يُخفى آخر الآية وتسترجعه',
+  'mem.mode.order': 'ترتيب الكلمات',
+  'mem.mode.order.hint': 'رتّب كلمات الآية بالضغط عليها',
+  'mem.mode.missing': 'اكمل',
+  'mem.mode.missing.hint': 'اختر الكلمة الساقطة من موضعها',
+  'mem.mode.next': 'الآية التالية',
+  'mem.mode.next.hint': 'اختر ما يأتي بعد الآية المعروضة',
+  'mem.level.easy': 'سهل',
+  'mem.level.easy.hint': 'كلمة واحدة',
+  'mem.level.medium': 'متوسط',
+  'mem.level.medium.hint': 'ثلاث كلمات',
+  'mem.level.hard': 'صعب',
+  'mem.level.hard.hint': 'الآية كاملة',
+  'mycards.style.background': 'خلفية يُكتب عليها',
+  'mycards.style.background.note': 'التهنئة والآية والتوقيع فوق صورتك',
+  'mycards.style.asIs': 'جاهزة كما هي',
+  'mycards.style.asIs.note': 'تُرسل كما هي، ويمكن إضافة توقيعك فقط',
+  'mycards.sort.newest': 'الأحدث أولاً',
+  'mycards.sort.oldest': 'الأقدم أولاً',
+  'mycards.sort.name': 'حسب الاسم',
+  'mycards.sort.group': 'حسب المجموعة',
+  'bookmark.reading': 'القراءة',
+  'bookmark.memorising': 'الحفظ',
+  'src.kind.scripture': 'النصّ',
+  'src.kind.audio': 'الصوت',
+  'src.kind.type': 'الخطوط',
+  'src.kind.software': 'البرمجيات',
+  'src.standing.publicDomain': 'ملك عام',
+  'src.standing.publicDomain.note': 'سقطت حقوقه بالتقادم',
+  'src.standing.licensed': 'رخصة مفتوحة',
+  'src.standing.licensed.note': 'منشور برخصة تسمح بهذا الاستخدام',
+  'src.standing.permission': 'بإذن صاحبه',
+  'src.standing.permission.note': 'عمل حديث — يُستخدم وفق إذن صاحبه',
+  'src.standing.hosted': 'استضافة خارجية',
+  'src.standing.hosted.note': 'يُبثّ من خادم جهة أخرى',
+  'qs.typeMakki': 'مكية',
+  'qs.typeMadani': 'مدنية',
+  'adhkar.desc.morning': 'تُقال بعد صلاة الفجر حتى طلوع الشمس',
+  'adhkar.desc.evening': 'تُقال بعد صلاة العصر حتى المغرب',
+  'adhkar.desc.after-prayer': 'تُقال بعد التسليم من الصلاة المفروضة',
+  'adhkar.desc.sleep': 'تُقال قبل النوم',
+  'adhkar.desc.travel': 'تُقال عند السفر وركوب الدابة',
+  'adhkar.desc.ruqyah': 'آيات وأدعية للرقية والتحصين',
+  'adhkar.desc.deceased': 'ادعُ لمن توفاهم الله بالرحمة والمغفرة',
+  'story.catDesc.miracles': 'آيات خارقة أيّد الله بها أنبياءه',
+  'story.catDesc.prophets': 'سِيَر المرسلين كما قصّها القرآن',
+  'story.catDesc.animals': 'مواقف لها عبرة، من القرآن والسنة',
+  'story.catDesc.righteous': 'من سار على نهج الصحابة بعدهم',
+  'story.catDesc.children': 'نفس القصص، بأسلوب أبسط وأقصر',
+  'story.catDesc.companions': 'وفاء وتضحية وإيمان لا يتزعزع',
+  'story.catDesc.battles': 'أيام الإسلام الفاصلة في السيرة',
+  'lib.desc.nawawi': 'اثنان وأربعون حديثاً جامعة لقواعد الدين',
+  'lib.desc.qudsi': 'ما رواه النبي ﷺ عن ربه عزّ وجل',
+  'lib.desc.seerah_mukhtasar':
+      'السيرة النبوية موجزة — البداية والمناسب لأول قراءة',
+  'lib.desc.raheeq_makhtoom':
+      'السيرة النبوية بالتفصيل — بحث فاز بالجائزة الأولى لمسابقة رابطة العالم الإسلامي',
+  'lib.desc.bukhari': 'أصح كتاب بعد كتاب الله',
+  'lib.desc.muslim': 'ثاني الصحيحين',
+  'lib.desc.abudawud': 'من الكتب الستة — أحاديث الأحكام',
+  'lib.desc.tirmidhi': 'من الكتب الستة — مع بيان درجات الأحاديث',
+  'lib.desc.nasai': 'من الكتب الستة',
+  'lib.desc.ibnmajah': 'من الكتب الستة',
+  'lib.desc.malik': 'أقدم كتب الحديث المصنّفة',
+  'src.mushafText.title': 'نصّ المصحف الشريف',
+  'src.mushafText.detail': 'رواية حفص عن عاصم، بالرسم العثماني',
+  'src.mushafPages.title': 'صور صفحات المصحف',
+  'src.mushafPages.holder':
+      'مجمع الملك فهد لطباعة المصحف الشريف — تُبثّ من مشروع Quran.com (files.quran.app)',
+  'src.mushafPages.detail':
+      '٦٠٤ صفحة بمقاس مصحف المدينة، تُعرض كما هي دون تعديل',
+  'src.hisn.detail': '١٣٢ باباً — ٢٦٧ ذكراً',
+  'src.hadeethenc.detail':
+      'أحاديث مصنّفة بالموضوع مع شرحها، بترجمات معتمدة لا آلية، تُعرض دون تعديل',
+  'src.tafsirClassics.holder': 'أئمة التفسير',
+  'src.tafsirClassics.detail': 'توفّوا بين القرنين الرابع والثامن الهجريين',
+  'src.tafsirLater.holder': 'أئمة التفسير',
+  'src.translations.title': 'ترجمات معاني القرآن',
+  'src.translations.holder':
+      'alquran.cloud (Islamic Network) — ولكل ترجمة مترجمها',
+  'src.translations.detail':
+      'Saheeh International (English) · Muhammad Hamidullah (Français) · Diyanet İşleri (Türkçe) · Abul A\'la Maududi (اردو) · Kementerian Agama RI (Indonesia) · Abdullah Muhammad Basmeih (Melayu) · Suhel Farooq Khan & Saifur Rahman Nadwi (हिन्दी) · Abubakar Mahmoud Gumi (Hausa) · Abu Rida (Deutsch) · Elmir Kuliev (Русский) — والبنغالية: د. أبو بكر محمد زكريا، طبعة مجمع الملك فهد، من مستودع fawazahmed0 — والإسبانية: مركز نور الدولي (منتدى الإسلام) من موسوعة QuranEnc',
+  'src.quranenc.detail': 'الترجمة الإسبانية لمركز نور الدولي، تُعرض دون تعديل',
+  'src.tafsirFiles.title': 'ملفات التفاسير المُنزَّلة',
+  'src.tafsirFiles.holder':
+      'مستودع spa5k/tafsir_api — نصوص التفاسير من Quran.com',
+  'src.tafsirFiles.detail': 'رخصة MIT',
+  'src.hadithLinks.title': 'روابط التحقق من الأحاديث',
+  'src.hadithLinks.detail':
+      'روابط فقط تفتح الحديث على موقعهم، دون نسخ أي نصّ منه',
+  'src.arbaeen.holder': 'الإمام النووي وأهل العلم — رحمهم الله',
+  'src.hadithFiles.title': 'ملفات الأحاديث والترجمات المُنزَّلة',
+  'src.hadithFiles.holder': 'مستودعات fawazahmed0 — ولكل ترجمة مترجمها',
+  'src.hadithFiles.detail': 'رخصة Unlicense — ملك عام',
+  'src.reciters.title': 'تلاوات القرّاء',
+  'src.reciters.holder':
+      'كل قارئ وناشر تسجيله — تُبثّ من EveryAyah.com و mp3quran.net',
+  'src.reciters.detail':
+      'التسجيل عملٌ محفوظ لصاحبه، والتطبيق لا ينسخه. يُستخدم لغير غرض تجاري، وفق ما يسمح به الموقعان',
+  'src.mp3quran.title': 'تلاوات mp3quran والإذاعة',
+  'src.mp3quran.holder': 'mp3quran.net و qurango.net',
+  'src.mp3quran.detail':
+      'يسمح الموقع لأي زائر أو مطوّر باستخدام موادّه وروابطه',
+  'src.azkarAudio.title': 'تسجيلات الأذكار',
+  'src.adhan.title': 'أصوات الأذان',
+  'src.adhan.holder':
+      'الشيخ مصطفى إسماعيل (القصر الملكي ١٩٤٨، أرمنت ١٩٧١)، والشيخ محمد صديق المنشاوي (ت ١٩٦٩)، والشيخ محمد رفعت (ت ١٩٥٠)',
+  'src.adhan.detail':
+      'تسجيلات تاريخية مضى عليها أكثر من خمسين عاماً، مدة حماية التسجيل الصوتي في مصر والسعودية. لم يُغيَّر الصوت، واقتُصر على قصّ البداية والنهاية',
+  'src.radio.title': 'الإذاعات',
+  'src.radio.holder':
+      'إذاعة القرآن الكريم من القاهرة، وإذاعة القرآن الكريم من السعودية (عبر Radiojar)، وإذاعات تراتيل والقرّاء ومشاري العفاسي (عبر mp3quran)',
+  'src.radio.detail':
+      'يُشغَّل البثّ كما تنشره الإذاعة، دون إعادة بثّ، ويبقى حقّه لأصحابه',
+  'src.amiri.title': 'خط أميري قرآن',
+  'src.amiri.holder': 'خالد حسني ومشروع الخط الأميري',
+  'src.amiri.detail': 'رخصة الخطوط المفتوحة SIL OFL',
+  'src.prayerCalc.title': 'حساب مواقيت الصلاة',
+  'src.prayerCalc.holder': 'حزمة adhan — خوارزميات الهيئات المعتمدة',
+  'src.ornaments.title': 'زخارف إطارات المصحف',
+  'src.ornaments.holder': 'التطبيق نفسه',
+  'src.ornaments.detail': 'مرسومة داخل التطبيق، لا صور منقولة',
+  'umrah.stage.travel.title': 'السفر والإحرام',
+  'umrah.stage.travel.guidance':
+      'ما يُقال عند الخروج وركوب الدابة وأثناء الطريق',
+  'umrah.stage.talbiyah.title': 'التلبية',
+  'umrah.stage.talbiyah.guidance':
+      'تبدأ من الميقات وتستمر حتى تستلم الحجر الأسود',
+  'umrah.stage.enter.title': 'دخول المسجد الحرام',
+  'umrah.stage.enter.guidance': 'يُدخل بالرجل اليمنى مع هذا الدعاء',
+  'umrah.stage.tawaf.title': 'الطواف',
+  'umrah.stage.tawaf.guidance': 'سبعة أشواط تبدأ وتنتهي عند الحجر الأسود',
+  'umrah.stage.afterTawaf.title': 'بعد الطواف',
+  'umrah.stage.afterTawaf.guidance': 'ركعتان خلف مقام إبراهيم ثم هذه الأذكار',
+  'umrah.stage.sai.title': 'السعي بين الصفا والمروة',
+  'umrah.stage.sai.guidance':
+      'يُقال عند الصعود على الصفا وعلى المروة في كل شوط',
+  'umrah.stage.comprehensive.title': 'أدعية جامعة أثناء النسك',
+  'umrah.stage.comprehensive.guidance':
+      'لم يرد دعاء مخصوص في الطواف والسعي، فادعُ بما شئت',
+  'umrah.stage.exit.title': 'الخروج والعودة',
+  'umrah.stage.exit.guidance': 'عند مغادرة المسجد وعند الرجوع من السفر',
 };
 
 // ─── English ───────────────────────────────────────────────────────────────
@@ -3199,4 +3371,197 @@ const _en = <String, String>{
       'Search for any word in the Mushaf.\nNo need to type the diacritics.',
   'mushaf.worksOfflineAfterDownload': 'Works offline after downloading',
   'mushaf.worksOfflineAfterDownloadShort': 'Works offline after downloading',
+  'duaedit.edit': 'Edit',
+  'duaedit.categoryName': 'Category name',
+  'duaedit.hint':
+      'Put each dua on its own line, and leave a blank line between one dua and the next',
+  'duaedit.empty': 'No duas here yet',
+  'lessons.kids.title': 'Stories of the Prophets for Children',
+  'lessons.kids.subtitle': 'Short episodes in simple language',
+  'lessons.kids.detail':
+      'From Adam to Muhammad ﷺ, simplified for children under ten',
+  'lessons.prophets.title': 'Stories of the Prophets',
+  'lessons.prophets.subtitle': 'The full account, with the evidence',
+  'lessons.prophets.detail':
+      'The story as it comes in the Qur\'an and the Sunnah, with where each part appears in the Qur\'an',
+  'lessons.tafsir.title': 'Tafsir',
+  'lessons.tafsir.subtitle': 'More than one mufassir for each surah',
+  'lessons.tafsir.detail':
+      'You choose a surah, then choose whose tafsir of it you want to hear',
+  'radio.place.cairo': 'Cairo, Egypt',
+  'radio.place.saudi': 'Saudi Arabia',
+  'radio.place.tarateel': 'Humble recitations, non-stop',
+  'radio.place.mix': 'A variety of recitations by many reciters',
+  'radio.place.afasy': 'Al-Afasy\'s recitations around the clock',
+  'researcher.deathLabel': '(d. %s AH)',
+  'unit.mb': 'MB',
+  'story.translatedBy': 'Translated by %s',
+  'story.disclaimerArabic':
+      'The story is told in a simplified style; the text of the verses and hadiths exactly as they were reported is in the Qur\'an and Hadith sections of the app.',
+  'story.disclaimerMachine':
+      'This is a plain-language retelling, machine-translated by Claude AI — not a scholarly translation. The Arabic original is the version to rely on.',
+  'mem.mode.complete': 'Complete the ayah',
+  'mem.mode.complete.hint': 'The end of the ayah is hidden and you recall it',
+  'mem.mode.order': 'Order the words',
+  'mem.mode.order.hint': 'Arrange the ayah\'s words by tapping them',
+  'mem.mode.missing': 'Fill the gap',
+  'mem.mode.missing.hint': 'Choose the word missing from its place',
+  'mem.mode.next': 'Next ayah',
+  'mem.mode.next.hint': 'Choose what comes after the ayah shown',
+  'mem.level.easy': 'Easy',
+  'mem.level.easy.hint': 'One word',
+  'mem.level.medium': 'Medium',
+  'mem.level.medium.hint': 'Three words',
+  'mem.level.hard': 'Hard',
+  'mem.level.hard.hint': 'The whole ayah',
+  'mycards.style.background': 'A background to write on',
+  'mycards.style.background.note':
+      'The greeting, the ayah and the signature on top of your picture',
+  'mycards.style.asIs': 'Ready as it is',
+  'mycards.style.asIs.note': 'Sent as it is; only your signature can be added',
+  'mycards.sort.newest': 'Newest first',
+  'mycards.sort.oldest': 'Oldest first',
+  'mycards.sort.name': 'By name',
+  'mycards.sort.group': 'By group',
+  'bookmark.reading': 'Reading',
+  'bookmark.memorising': 'Memorising',
+  'src.kind.scripture': 'Text',
+  'src.kind.audio': 'Audio',
+  'src.kind.type': 'Fonts',
+  'src.kind.software': 'Software',
+  'src.standing.publicDomain': 'Public domain',
+  'src.standing.publicDomain.note': 'Its rights have expired with time',
+  'src.standing.licensed': 'Open licence',
+  'src.standing.licensed.note':
+      'Published under a licence that permits this use',
+  'src.standing.permission': 'With the owner\'s permission',
+  'src.standing.permission.note':
+      'A recent work — used according to its owner\'s permission',
+  'src.standing.hosted': 'Hosted elsewhere',
+  'src.standing.hosted.note': 'Streamed from another party\'s server',
+  'qs.typeMakki': 'Meccan',
+  'qs.typeMadani': 'Medinan',
+  'adhkar.desc.morning': 'Said after the Fajr prayer until sunrise',
+  'adhkar.desc.evening': 'Said after the Asr prayer until Maghrib',
+  'adhkar.desc.after-prayer':
+      'Said after the taslim that ends an obligatory prayer',
+  'adhkar.desc.sleep': 'Said before sleep',
+  'adhkar.desc.travel': 'Said when travelling and when mounting a ride',
+  'adhkar.desc.ruqyah': 'Verses and supplications for ruqyah and protection',
+  'adhkar.desc.deceased':
+      'Pray for mercy and forgiveness for those whom Allah has taken',
+  'story.catDesc.miracles':
+      'Extraordinary signs with which Allah supported His prophets',
+  'story.catDesc.prophets':
+      'The lives of the messengers as the Qur\'an tells them',
+  'story.catDesc.animals':
+      'Episodes with a lesson, from the Qur\'an and the Sunnah',
+  'story.catDesc.righteous':
+      'Those who followed the way of the Companions after them',
+  'story.catDesc.children': 'The same stories, in a simpler and shorter style',
+  'story.catDesc.companions': 'Loyalty, sacrifice and unshaken faith',
+  'story.catDesc.battles': 'The decisive days of Islam in the Seerah',
+  'lib.desc.nawawi':
+      'Forty-two comprehensive hadiths covering the foundations of the religion',
+  'lib.desc.qudsi':
+      'What the Prophet ﷺ narrated from his Lord, the Mighty and Majestic',
+  'lib.desc.seerah_mukhtasar':
+      'A concise account of the Prophet\'s life — the place to begin, suited to a first reading',
+  'lib.desc.raheeq_makhtoom':
+      'A detailed account of the Prophet\'s life — the study that won first prize in the Muslim World League\'s competition',
+  'lib.desc.bukhari': 'The most authentic book after the Book of Allah',
+  'lib.desc.muslim': 'The second of the two Sahihs',
+  'lib.desc.abudawud': 'One of the Six Books — hadiths of rulings',
+  'lib.desc.tirmidhi': 'One of the Six Books — with the grade of each hadith',
+  'lib.desc.nasai': 'One of the Six Books',
+  'lib.desc.ibnmajah': 'One of the Six Books',
+  'lib.desc.malik': 'The oldest of the organised hadith books',
+  'src.mushafText.title': 'Text of the Noble Mushaf',
+  'src.mushafText.detail': 'Riwayah of Hafs from \'Asim, in the Uthmani script',
+  'src.mushafPages.title': 'Images of the Mushaf pages',
+  'src.mushafPages.holder':
+      'مجمع الملك فهد لطباعة المصحف الشريف — streamed from the Quran.com project (files.quran.app)',
+  'src.mushafPages.detail':
+      '604 pages in the size of the Madinah Mushaf, shown as they are with no changes',
+  'src.hisn.detail': '132 chapters — 267 adhkar',
+  'src.hadeethenc.detail':
+      'Hadiths classified by topic with their explanation, in approved (not machine) translations, shown unaltered',
+  'src.tafsirClassics.holder': 'The imams of tafsir',
+  'src.tafsirClassics.detail':
+      'They died between the fourth and eighth centuries AH',
+  'src.tafsirLater.holder': 'The imams of tafsir',
+  'src.translations.title': 'Translations of the meanings of the Qur\'an',
+  'src.translations.holder':
+      'alquran.cloud (Islamic Network) — each translation has its own translator',
+  'src.translations.detail':
+      'Saheeh International (English) · Muhammad Hamidullah (Français) · Diyanet İşleri (Türkçe) · Abul A\'la Maududi (اردو) · Kementerian Agama RI (Indonesia) · Abdullah Muhammad Basmeih (Melayu) · Suhel Farooq Khan & Saifur Rahman Nadwi (हिन्दी) · Abubakar Mahmoud Gumi (Hausa) · Abu Rida (Deutsch) · Elmir Kuliev (Русский) — and Bengali: Dr. Abu Bakr Muhammad Zakaria, King Fahd Complex edition, from the fawazahmed0 repository — and Spanish: Noor International Center (Islam Forum), from the QuranEnc encyclopedia',
+  'src.quranenc.detail':
+      'The Spanish translation of the Noor International Center, shown unaltered',
+  'src.tafsirFiles.title': 'Downloaded tafsir files',
+  'src.tafsirFiles.holder':
+      'Repository spa5k/tafsir_api — tafsir texts from Quran.com',
+  'src.tafsirFiles.detail': 'MIT licence',
+  'src.hadithLinks.title': 'Links for checking hadiths',
+  'src.hadithLinks.detail':
+      'Links only, which open the hadith on their site, without copying any of its text',
+  'src.arbaeen.holder':
+      'Imam al-Nawawi and the people of knowledge — may Allah have mercy on them',
+  'src.hadithFiles.title': 'Downloaded hadith and translation files',
+  'src.hadithFiles.holder':
+      'Repositories of fawazahmed0 — each translation has its own translator',
+  'src.hadithFiles.detail': 'Unlicense licence — public domain',
+  'src.reciters.title': 'Recitations of the reciters',
+  'src.reciters.holder':
+      'Each reciter and the publisher of their recording — streamed from EveryAyah.com and mp3quran.net',
+  'src.reciters.detail':
+      'A recording is the work of its owner, and the app does not copy it. It is used for non-commercial purposes, as the two sites allow',
+  'src.mp3quran.title': 'mp3quran recitations and the radio',
+  'src.mp3quran.holder': 'mp3quran.net and qurango.net',
+  'src.mp3quran.detail':
+      'The site allows any visitor or developer to use its materials and links',
+  'src.azkarAudio.title': 'Recordings of the adhkar',
+  'src.adhan.title': 'Voices of the adhan',
+  'src.adhan.holder':
+      'Sheikh Mustafa Ismail (Royal Palace 1948, Armant 1971), Sheikh Muhammad Siddiq al-Minshawi (d. 1969), and Sheikh Muhammad Rifat (d. 1950)',
+  'src.adhan.detail':
+      'Historic recordings more than fifty years old, the length of protection of a sound recording in Egypt and Saudi Arabia. The audio was not altered; only the beginning and the end were trimmed',
+  'src.radio.title': 'The radio stations',
+  'src.radio.holder':
+      'Holy Quran Radio from Cairo and Holy Quran Radio from Saudi Arabia (via Radiojar), and the Tarateel, Reciters and Mishary Alafasy stations (via mp3quran)',
+  'src.radio.detail':
+      'The broadcast plays as the station publishes it, with no rebroadcasting, and its rights remain with its owners',
+  'src.amiri.title': 'Amiri Quran typeface',
+  'src.amiri.holder': 'Khaled Hosny and the Amiri typeface project',
+  'src.amiri.detail': 'SIL Open Font License',
+  'src.prayerCalc.title': 'Calculation of prayer times',
+  'src.prayerCalc.holder':
+      'The adhan package — algorithms of the recognised authorities',
+  'src.ornaments.title': 'Mushaf frame ornaments',
+  'src.ornaments.holder': 'The app itself',
+  'src.ornaments.detail': 'Drawn inside the app, not copied images',
+  'umrah.stage.travel.title': 'Travel and ihram',
+  'umrah.stage.travel.guidance':
+      'What is said when setting out, when mounting the ride, and along the way',
+  'umrah.stage.talbiyah.title': 'The Talbiyah',
+  'umrah.stage.talbiyah.guidance':
+      'Begins at the miqat and continues until you touch the Black Stone',
+  'umrah.stage.enter.title': 'Entering the Sacred Mosque',
+  'umrah.stage.enter.guidance':
+      'Enter with the right foot, with this supplication',
+  'umrah.stage.tawaf.title': 'Tawaf',
+  'umrah.stage.tawaf.guidance':
+      'Seven circuits, starting and ending at the Black Stone',
+  'umrah.stage.afterTawaf.title': 'After tawaf',
+  'umrah.stage.afterTawaf.guidance':
+      'Two rak\'ahs behind Maqam Ibrahim, then these adhkar',
+  'umrah.stage.sai.title': 'Sa\'i between Safa and Marwa',
+  'umrah.stage.sai.guidance':
+      'Said when climbing Safa and Marwa, in every circuit',
+  'umrah.stage.comprehensive.title':
+      'Comprehensive supplications during the rites',
+  'umrah.stage.comprehensive.guidance':
+      'No specific supplication is reported for tawaf and sa\'i, so supplicate with whatever you wish',
+  'umrah.stage.exit.title': 'Leaving and returning',
+  'umrah.stage.exit.guidance':
+      'When leaving the mosque and when returning from travel',
 };

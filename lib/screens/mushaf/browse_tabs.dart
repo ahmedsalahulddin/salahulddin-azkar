@@ -395,7 +395,7 @@ class _BookmarksTabState extends State<BookmarksTab> {
           ),
           subtitle: Text(
             b.note ??
-                '${b.kind.label} • ${t('mushaf.page')} ${AppLocale.digits(b.page)}',
+                '${b.kind.displayLabel} • ${t('mushaf.page')} ${AppLocale.digits(b.page)}',
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(color: AppColors.textMuted, fontSize: 11),

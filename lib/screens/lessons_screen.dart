@@ -18,21 +18,21 @@ class LessonsScreen extends StatelessWidget {
   static const _lessons = [
     (
       icon: '🧒',
-      title: 'قصص الأنبياء للأطفال',
-      subtitle: 'حلقات قصيرة بلغة بسيطة',
-      detail: 'من آدم إلى محمد ﷺ، مبسّطة لمن هم دون العاشرة',
+      title: 'lessons.kids.title',
+      subtitle: 'lessons.kids.subtitle',
+      detail: 'lessons.kids.detail',
     ),
     (
       icon: '🕌',
-      title: 'قصص الأنبياء',
-      subtitle: 'السيرة كاملة بالأدلة',
-      detail: 'القصة كما وردت في الكتاب والسنة، مع مواضعها من القرآن',
+      title: 'lessons.prophets.title',
+      subtitle: 'lessons.prophets.subtitle',
+      detail: 'lessons.prophets.detail',
     ),
     (
       icon: '📜',
-      title: 'التفسير',
-      subtitle: 'أكثر من مفسّر لكل سورة',
-      detail: 'تختار السورة، ثم تختار من تسمع له تفسيرها',
+      title: 'lessons.tafsir.title',
+      subtitle: 'lessons.tafsir.subtitle',
+      detail: 'lessons.tafsir.detail',
     ),
   ];
 
@@ -217,7 +217,7 @@ class LessonsScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      lesson.title,
+                      t(lesson.title),
                       style: const TextStyle(
                         color: AppColors.textPrimary,
                         fontSize: 16,
@@ -226,7 +226,7 @@ class LessonsScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      lesson.subtitle,
+                      t(lesson.subtitle),
                       style: const TextStyle(
                         color: AppColors.textMuted,
                         fontSize: 12,
@@ -254,7 +254,7 @@ class LessonsScreen extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Text(
-            lesson.detail,
+            t(lesson.detail),
             style: const TextStyle(
               color: AppColors.textSecondary,
               fontSize: 12,

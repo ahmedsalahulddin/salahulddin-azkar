@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 
+import '../l10n/strings.dart';
+
 /// One hadith as it appears in its collection.
 class Hadith {
   /// The whole hadith number.
@@ -64,7 +66,7 @@ class IslamicBook {
 
   /// Remote edition slug. Null for books bundled with the app.
   final String? remoteSlug;
-  final String? downloadSize;
+  final int? downloadMb;
 
   /// Scholarly (human) translation editions this same source publishes for
   /// this book, keyed by the app's language code. Coverage genuinely varies
@@ -80,11 +82,17 @@ class IslamicBook {
     required this.description,
     required this.hadithCount,
     this.remoteSlug,
-    this.downloadSize,
+    this.downloadMb,
     this.translations = const {},
   });
 
   bool get isBundled => remoteSlug == null;
+
+  /// [description] in the reader's language.
+  String get displayDescription => t('lib.desc.$id');
+
+  /// [downloadMb] as the reader reads sizes.
+  String? get downloadSize => downloadMb == null ? null : tSizeMb(downloadMb!);
 }
 
 /// The library: three short collections travel with the app, and the large
@@ -140,7 +148,7 @@ class LibraryService {
       description: 'أصح كتاب بعد كتاب الله',
       hadithCount: 7589,
       remoteSlug: 'ara-bukhari',
-      downloadSize: '٩ م.ب',
+      downloadMb: 9,
       translations: {
         'en': 'eng-bukhari',
         'fr': 'fra-bukhari',
@@ -157,7 +165,7 @@ class LibraryService {
       description: 'ثاني الصحيحين',
       hadithCount: 7563,
       remoteSlug: 'ara-muslim',
-      downloadSize: '٨ م.ب',
+      downloadMb: 8,
       translations: {
         'en': 'eng-muslim',
         'fr': 'fra-muslim',
@@ -174,7 +182,7 @@ class LibraryService {
       description: 'من الكتب الستة — أحاديث الأحكام',
       hadithCount: 5274,
       remoteSlug: 'ara-abudawud',
-      downloadSize: '٦ م.ب',
+      downloadMb: 6,
       translations: {
         'en': 'eng-abudawud',
         'fr': 'fra-abudawud',
@@ -191,7 +199,7 @@ class LibraryService {
       description: 'من الكتب الستة — مع بيان درجات الأحاديث',
       hadithCount: 3956,
       remoteSlug: 'ara-tirmidhi',
-      downloadSize: '٦ م.ب',
+      downloadMb: 6,
       translations: {
         'en': 'eng-tirmidhi',
         'id': 'ind-tirmidhi',
@@ -207,7 +215,7 @@ class LibraryService {
       description: 'من الكتب الستة',
       hadithCount: 5758,
       remoteSlug: 'ara-nasai',
-      downloadSize: '٦ م.ب',
+      downloadMb: 6,
       translations: {
         'en': 'eng-nasai',
         'fr': 'fra-nasai',
@@ -224,7 +232,7 @@ class LibraryService {
       description: 'من الكتب الستة',
       hadithCount: 4341,
       remoteSlug: 'ara-ibnmajah',
-      downloadSize: '٥ م.ب',
+      downloadMb: 5,
       translations: {
         'en': 'eng-ibnmajah',
         'fr': 'fra-ibnmajah',
@@ -241,7 +249,7 @@ class LibraryService {
       description: 'أقدم كتب الحديث المصنّفة',
       hadithCount: 1858,
       remoteSlug: 'ara-malik',
-      downloadSize: '٢ م.ب',
+      downloadMb: 2,
       translations: {
         'en': 'eng-malik',
         'fr': 'fra-malik',
