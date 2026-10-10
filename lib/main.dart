@@ -226,8 +226,67 @@ class _MainNavigationState extends State<MainNavigation> {
     }
     if (!mounted) return;
     await _checkNotifications();
+    await _checkExactAlarms();
     await Future<void>.delayed(const Duration(milliseconds: 600));
     await _checkWhatsNew();
+  }
+
+  static const _exactAskedKey = 'exact_alarm_prompt_at';
+
+  /// Prayer alerts are on but Android has not allowed exact alarms: without
+  /// that, a dozing phone may hold the adhan back by many minutes. Asked at
+  /// most once a day, and only while some alert is actually switched on.
+  Future<void> _checkExactAlarms() async {
+    if (!Platform.isAndroid || !PrayerAlerts.anyOn) return;
+    if (await NotificationService.exactAlarmsAllowed()) return;
+    final prefs = await SharedPreferences.getInstance();
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final last = prefs.getInt(_exactAskedKey) ?? 0;
+    if (now - last < const Duration(days: 1).inMilliseconds) return;
+    await prefs.setInt(_exactAskedKey, now);
+    if (!mounted) return;
+    final go = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => Directionality(
+        textDirection: AppLocale.direction,
+        child: AlertDialog(
+          backgroundColor: AppColors.blackCard,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: const BorderSide(color: AppColors.goldBorder),
+          ),
+          title: Text(
+            t('adh.exactTitle'),
+            style: const TextStyle(color: AppColors.gold, fontSize: 17),
+          ),
+          content: Text(
+            t('adh.exactBody'),
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 14,
+              height: 1.6,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(
+                t('adh.laterButton'),
+                style: const TextStyle(color: AppColors.textMuted),
+              ),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(
+                t('adh.exactButton'),
+                style: const TextStyle(color: AppColors.gold),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (go == true) await NotificationService.requestExactAlarms();
   }
 
   static const _updateAskedKey = 'update_prompt_asked_at';
