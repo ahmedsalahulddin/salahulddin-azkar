@@ -8,6 +8,7 @@ import '../services/app_locale.dart';
 import '../services/notification_service.dart';
 import '../services/prayer_alerts.dart';
 import '../services/prayer_service.dart';
+import '../widgets/exact_alarm_prompt.dart';
 
 /// The two moments a prayer announces itself, each with its own settings.
 ///
@@ -32,11 +33,13 @@ class _PrayerAlertsScreenState extends State<PrayerAlertsScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    PrayerAlerts.settings.addListener(_askExact);
     _checkExact();
   }
 
   @override
   void dispose() {
+    PrayerAlerts.settings.removeListener(_askExact);
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -46,6 +49,18 @@ class _PrayerAlertsScreenState extends State<PrayerAlertsScreen>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) _checkExact();
+  }
+
+  bool _askedExact = false;
+
+  /// An alert was just switched on and Android has not allowed exact alarms:
+  /// ask now, where the reader is, rather than leave a card to be found.
+  void _askExact() {
+    if (_askedExact || _exactAllowed != false || !PrayerAlerts.anyOn) return;
+    _askedExact = true;
+    offerExactAlarm(context).then((_) {
+      if (mounted) _checkExact();
+    });
   }
 
   Future<void> _checkExact() async {

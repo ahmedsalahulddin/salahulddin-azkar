@@ -102,6 +102,20 @@
             </intent-filter>
         </receiver>
 
+        <!-- The adhan as an alarm: the alarm clock wakes the receiver, which
+             starts the service that plays the whole adhan itself. -->
+        <receiver android:name=".AdhanReceiver" android:exported="false" />
+        <receiver android:name=".AdhanBootReceiver" android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
+            </intent-filter>
+        </receiver>
+        <service
+            android:name=".AdhanService"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback" />
+
         <!-- Hands a downloaded adhan to the notification system as its sound
              (MainActivity, "salahulddin/adhan_sound"). -->
         <provider

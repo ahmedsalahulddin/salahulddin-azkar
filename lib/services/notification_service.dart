@@ -3,7 +3,7 @@ import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter/services.dart' show MethodChannel, rootBundle;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:path_provider/path_provider.dart';
@@ -107,6 +107,7 @@ class NotificationService {
       return _AdhanSound(
         adhan.resource,
         RawResourceAndroidNotificationSound(adhan.resource),
+        nativeSrc: 'raw:${adhan.resource}',
       );
     }
     if (!AdhanDownloads.ready.value.contains(adhan.id)) return null;
@@ -121,6 +122,7 @@ class NotificationService {
       '${adhan.resource}_${uri.hashCode.toUnsigned(32).toRadixString(36)}',
       UriAndroidNotificationSound(uri),
       iosName: adhan.resource,
+      nativeSrc: 'file:${(await AdhanDownloads.fileFor(adhan)).path}',
     );
   }
 
@@ -462,6 +464,20 @@ class NotificationService {
     try {
       await init();
       final sound = await _adhanSound();
+      if (_nativeAdhan && sound?.nativeSrc != null) {
+        try {
+          await _adhanAlarm.invokeMethod<void>('playNow', {
+            'id': _adhanTestId,
+            'src': sound!.nativeSrc,
+            'title': 'جرّبت صوت الأذان',
+            'body': 'هكذا سيصلك التنبيه وقت الصلاة.',
+            'vibrate': true,
+          });
+          return null;
+        } catch (_) {
+          // Falls through to the notification test below.
+        }
+      }
       final channel = 'salahulddin_prayer_sound_v5_${sound?.key ?? 'default'}';
       await _plugin.show(
         _adhanTestId,
@@ -987,6 +1003,7 @@ class NotificationService {
         final isPending = pending == null || pending.containsKey(id);
 
         Future<void> drop() async {
+          await _cancelNativeAdhan(id);
           try {
             await _plugin.cancel(id);
           } catch (_) {
@@ -995,6 +1012,7 @@ class NotificationService {
         }
 
         if (mode.isOff) {
+          await _cancelNativeAdhan(id);
           if (isPending) await drop();
           continue;
         }
@@ -1010,6 +1028,7 @@ class NotificationService {
           // Nothing wanted here. A pending alert that is already due is left
           // to arrive (an inexact alarm can run late); anything still ahead
           // is left over and goes.
+          await _cancelNativeAdhan(id);
           if (isPending && (waiting == null || waiting.isAfter(now))) {
             await drop();
           }
@@ -1029,6 +1048,11 @@ class NotificationService {
               waiting.difference(moment) > _sameAlert &&
               waiting.isAfter(now)) {
             await drop();
+          }
+          // The same for the adhan alarm, which is not a pending notification.
+          final laidAt = laid[id];
+          if (laidAt != null && laidAt > now.millisecondsSinceEpoch) {
+            await _cancelNativeAdhan(id);
           }
           continue;
         }
@@ -1095,6 +1119,46 @@ class NotificationService {
     }
   }
 
+  static const _adhanAlarm = MethodChannel('salahulddin/adhan_alarm');
+
+  static bool get _nativeAdhan =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+
+  /// Lays the adhan as an alarm the phone plays itself (Android). False when
+  /// Android has not allowed exact alarms, or on any failure — the caller
+  /// then falls back to a notification with the adhan as its sound.
+  static Future<bool> _scheduleNativeAdhan({
+    required int id,
+    required DateTime at,
+    required String src,
+    required String title,
+    required String body,
+    required bool vibrate,
+  }) async {
+    try {
+      return await _adhanAlarm.invokeMethod<bool>('schedule', {
+            'id': id,
+            'at': at.millisecondsSinceEpoch,
+            'src': src,
+            'title': title,
+            'body': body,
+            'vibrate': vibrate,
+          }) ??
+          false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  static Future<void> _cancelNativeAdhan(int id) async {
+    if (!_nativeAdhan) return;
+    try {
+      await _adhanAlarm.invokeMethod<void>('cancel', {'id': id});
+    } catch (_) {
+      // Nothing laid under this id, or the platform would not say.
+    }
+  }
+
   static Future<void> _scheduleAt({
     required int id,
     required String title,
@@ -1111,6 +1175,27 @@ class NotificationService {
     //
     // v5: old v2/v3/v4 channels are deleted at startup (_dropQuietChannels) so
     // that any created without a sound get recreated here with the adhan.
+    // Android: the adhan is an alarm the phone plays itself, whole, so no
+    // other app's notification can cut it off. It replaces the notification.
+    if (_nativeAdhan) {
+      final src = mode.sound ? sound?.nativeSrc : null;
+      if (src != null &&
+          await _scheduleNativeAdhan(
+            id: id,
+            at: at,
+            src: src,
+            title: title,
+            body: body,
+            vibrate: mode.notify,
+          )) {
+        try {
+          await _plugin.cancel(id);
+        } catch (_) {}
+        return;
+      }
+      await _cancelNativeAdhan(id);
+    }
+
     final channel = mode.sound
         ? 'salahulddin_prayer_sound_v5_${sound?.key ?? 'default'}'
         : 'salahulddin_prayer_silent_v2';
@@ -1362,5 +1447,10 @@ class _AdhanSound {
   final AndroidNotificationSound? android;
   final String ios;
 
-  _AdhanSound(this.key, this.android, {String? iosName}) : ios = iosName ?? key;
+  /// What the Android adhan alarm plays: "raw:<resource>" for a bundled
+  /// adhan, "file:<path>" for a downloaded one. Null when there is none.
+  final String? nativeSrc;
+
+  _AdhanSound(this.key, this.android, {String? iosName, this.nativeSrc})
+    : ios = iosName ?? key;
 }

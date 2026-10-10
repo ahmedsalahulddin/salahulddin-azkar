@@ -40,6 +40,7 @@ import 'widgets/dhikr_text.dart';
 import 'widgets/frame_tuning.dart';
 import 'widgets/mushaf_frames.dart';
 import 'widgets/mushaf_palettes.dart';
+import 'widgets/exact_alarm_prompt.dart';
 import 'widgets/welcome_screen.dart';
 
 void main() async {
@@ -245,48 +246,7 @@ class _MainNavigationState extends State<MainNavigation> {
     if (now - last < const Duration(days: 1).inMilliseconds) return;
     await prefs.setInt(_exactAskedKey, now);
     if (!mounted) return;
-    final go = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => Directionality(
-        textDirection: AppLocale.direction,
-        child: AlertDialog(
-          backgroundColor: AppColors.blackCard,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: const BorderSide(color: AppColors.goldBorder),
-          ),
-          title: Text(
-            t('adh.exactTitle'),
-            style: const TextStyle(color: AppColors.gold, fontSize: 17),
-          ),
-          content: Text(
-            t('adh.exactBody'),
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 14,
-              height: 1.6,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: Text(
-                t('adh.laterButton'),
-                style: const TextStyle(color: AppColors.textMuted),
-              ),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: Text(
-                t('adh.exactButton'),
-                style: const TextStyle(color: AppColors.gold),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-    if (go == true) await NotificationService.requestExactAlarms();
+    await offerExactAlarm(context);
   }
 
   static const _updateAskedKey = 'update_prompt_asked_at';

@@ -41,6 +41,7 @@ class MainActivity : AudioServiceActivity() {
     // on every launch.
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        configureAdhanAlarm(flutterEngine)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "salahulddin/adhan_sound")
             .setMethodCallHandler { call, result ->
                 try {
@@ -54,6 +55,35 @@ class MainActivity : AudioServiceActivity() {
                     }
                 } catch (e: Exception) {
                     result.error("adhan_sound", e.message, null)
+                }
+            }
+    }
+
+    private fun configureAdhanAlarm(flutterEngine: FlutterEngine) {
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "salahulddin/adhan_alarm")
+            .setMethodCallHandler { call, result ->
+                try {
+                    val id = call.argument<Int>("id") ?: 0
+                    when (call.method) {
+                        "schedule" -> result.success(
+                            AdhanAlarms.schedule(
+                                this, id, (call.argument<Number>("at") ?: 0).toLong(),
+                                call.argument<String>("src") ?: "", call.argument<String>("title") ?: "",
+                                call.argument<String>("body") ?: "", call.argument<Boolean>("vibrate") ?: true,
+                            ),
+                        )
+                        "cancel" -> { AdhanAlarms.cancel(this, id); result.success(null) }
+                        "playNow" -> {
+                            AdhanAlarms.start(
+                                this, id, call.argument<String>("src") ?: "", call.argument<String>("title") ?: "",
+                                call.argument<String>("body") ?: "", call.argument<Boolean>("vibrate") ?: true,
+                            )
+                            result.success(null)
+                        }
+                        else -> result.notImplemented()
+                    }
+                } catch (e: Exception) {
+                    result.error("adhan_alarm", e.message, null)
                 }
             }
     }
