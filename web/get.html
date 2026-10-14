@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>أذكار صلاح الدين</title>
+<meta name="robots" content="noindex">
+<style>
+  :root{--bg:#0d0d0d;--gold:#c9a24a;--text:#f5f0e8}
+  body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);color:var(--text);font:16px/1.7 system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;text-align:center}
+  a{color:var(--gold)}
+</style>
+</head>
+<body>
+<p>جارٍ تحويلك للتحميل…<br><a href="/download">اضغط هنا إن لم يحدث شيء</a></p>
+<script>
+  var ua = navigator.userAgent || '';
+  var ios = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  var to = '/download';
+  if (ios) to = 'https://apps.apple.com/app/salahulddin-azkar/id6819026626';
+  else if (/Android/.test(ua)) to = 'https://play.google.com/store/apps/details?id=com.salahulddin.azkar';
+  location.replace(to);
+</script>
+<noscript><meta http-equiv="refresh" content="0;url=/download"></noscript>
+</body>
+</html>
